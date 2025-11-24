@@ -372,7 +372,7 @@ export default function Motivation() {
                   </div>
                 </div>
 
-                <div style={{ fontSize: 12, color: "#9b9b9b" }}>iMood</div>
+                <div style={{ fontSize: 12, color: "#9b9b9b" }}>Nostressia</div>
               </div>
 
               {/* Quote area */}
