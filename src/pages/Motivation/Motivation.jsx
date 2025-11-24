@@ -34,16 +34,46 @@ const HERO_INDEX = "hero";
 
 // List khusus hero quote agar tidak sama dengan card kecil
 const heroQuoteList = [
-  { text: "Setiap hari adalah kesempatan baru untuk memperbaiki diri.", category: "Pengembangan Diri" },
-  { text: "Langkah kecil hari ini bisa menjadi perubahan besar di masa depan.", category: "Progres" },
-  { text: "Fokus pada proses, bukan hasil. Hasil akan mengikuti.", category: "Mindset" },
-  { text: "Motivasi mungkin memulai kamu, tapi disiplin yang membuatmu bertahan.", category: "Disiplin" },
-  { text: "Hidup bukan menunggu badai berlalu, tapi belajar menari di tengah hujan.", category: "Ketangguhan" },
-  { text: "Jika kamu ingin melihat perubahan, mulailah dari dirimu dulu.", category: "Transformasi" },
-  { text: "Jangan bandingkan perjalananmu dengan orang lain. Fokuslah pada jalanmu sendiri.", category: "Percaya Diri" },
-  { text: "Ketika lelah, istirahatlah. Jangan berhenti.", category: "Keberlanjutan" },
-  { text: "Keajaiban terjadi ketika kamu tidak menyerah.", category: "Harapan" },
-  { text: "Konsistensi kecil setiap hari lebih kuat daripada motivasi yang datang sesekali.", category: "Konsistensi" },
+  {
+    text: "Setiap hari adalah kesempatan baru untuk memperbaiki diri.",
+    category: "Pengembangan Diri",
+  },
+  {
+    text: "Langkah kecil hari ini bisa menjadi perubahan besar di masa depan.",
+    category: "Progres",
+  },
+  {
+    text: "Fokus pada proses, bukan hasil. Hasil akan mengikuti.",
+    category: "Mindset",
+  },
+  {
+    text: "Motivasi mungkin memulai kamu, tapi disiplin yang membuatmu bertahan.",
+    category: "Disiplin",
+  },
+  {
+    text: "Hidup bukan menunggu badai berlalu, tapi belajar menari di tengah hujan.",
+    category: "Ketangguhan",
+  },
+  {
+    text: "Jika kamu ingin melihat perubahan, mulailah dari dirimu dulu.",
+    category: "Transformasi",
+  },
+  {
+    text: "Jangan bandingkan perjalananmu dengan orang lain. Fokuslah pada jalanmu sendiri.",
+    category: "Percaya Diri",
+  },
+  {
+    text: "Ketika lelah, istirahatlah. Jangan berhenti.",
+    category: "Keberlanjutan",
+  },
+  {
+    text: "Keajaiban terjadi ketika kamu tidak menyerah.",
+    category: "Harapan",
+  },
+  {
+    text: "Konsistensi kecil setiap hari lebih kuat daripada motivasi yang datang sesekali.",
+    category: "Konsistensi",
+  },
 ];
 
 export default function Motivation() {
@@ -123,7 +153,7 @@ export default function Motivation() {
     setLikedIndex((prev) => (prev === index ? null : index));
   };
 
-  // get random hero quote not needed to exclude small-card quotes 
+  // get random hero quote not needed to exclude small-card quotes
   // (we assume heroQuoteList is already different)
   const getRandomHeroQuote = () => {
     const randomIndex = Math.floor(Math.random() * heroQuoteList.length);
@@ -338,14 +368,20 @@ export default function Motivation() {
               }}
             >
               {/* visual header */}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
                 <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
                   <div
                     style={{
                       width: 56,
                       height: 56,
                       borderRadius: 12,
-                      overflow: "hidden",              // agar logo rapi dan tidak keluar kotak
+                      overflow: "hidden", // agar logo rapi dan tidak keluar kotak
                       // background: "linear-gradient(135deg, #FFFFFF, #FFFFFF)",
                       boxShadow: "0 6px 18px rgba(255,122,122,0.18)",
                       display: "flex",
@@ -359,16 +395,24 @@ export default function Motivation() {
                       style={{
                         width: "100%",
                         height: "100%",
-                        objectFit: "cover",            // cover biar penuh rapi
+                        objectFit: "cover", // cover biar penuh rapi
                       }}
                     />
                   </div>
 
                   <div>
-                    <div style={{ fontSize: 14, color: "#ff7a59", fontWeight: 700 }}>
+                    <div
+                      style={{
+                        fontSize: 14,
+                        color: "#ff7a59",
+                        fontWeight: 700,
+                      }}
+                    >
                       Motivation
                     </div>
-                    <div style={{ fontSize: 12, color: "#7b7b7b" }}>Share card</div>
+                    <div style={{ fontSize: 12, color: "#7b7b7b" }}>
+                      Share card
+                    </div>
                   </div>
                 </div>
 
@@ -376,16 +420,37 @@ export default function Motivation() {
               </div>
 
               {/* Quote area */}
-              <div style={{ padding: 20, borderRadius: 14, background: "linear-gradient(180deg,#ffffff,#fff6f2)" }}>
-                <p style={{ fontSize: 18, color: "#333", fontStyle: "italic", margin: 0 }}>
+              <div
+                style={{
+                  padding: 20,
+                  borderRadius: 14,
+                  background: "linear-gradient(180deg,#ffffff,#fff6f2)",
+                }}
+              >
+                <p
+                  style={{
+                    fontSize: 18,
+                    color: "#333",
+                    fontStyle: "italic",
+                    margin: 0,
+                  }}
+                >
                   "{shareText}"
                 </p>
               </div>
 
               {/* Footer small */}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
                 <div style={{ fontSize: 12, color: "#777" }}>— Motivation</div>
-                <div style={{ fontSize: 12, color: "#777" }}>{new Date().toLocaleDateString()}</div>
+                <div style={{ fontSize: 12, color: "#777" }}>
+                  {new Date().toLocaleDateString()}
+                </div>
               </div>
             </div>
 
