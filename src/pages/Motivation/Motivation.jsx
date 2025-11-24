@@ -172,7 +172,7 @@ export default function Motivation() {
               <div className="flex items-center gap-3 mb-2 justify-center">
                 <Sparkles className="w-9 h-9 text-yellow-500 drop-shadow-lg" />
                 <h1 className="text-5xl font-extrabold bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent drop-shadow-md">
-                  Motivation Hub
+                  Motivation
                 </h1>
               </div>
               <p className="text-gray-700 text-lg font-medium drop-shadow-sm">
@@ -366,7 +366,7 @@ export default function Motivation() {
 
                   <div>
                     <div style={{ fontSize: 14, color: "#ff7a59", fontWeight: 700 }}>
-                      Motivation Hub
+                      Motivation
                     </div>
                     <div style={{ fontSize: 12, color: "#7b7b7b" }}>Share card</div>
                   </div>
@@ -384,7 +384,7 @@ export default function Motivation() {
 
               {/* Footer small */}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div style={{ fontSize: 12, color: "#777" }}>— Motivation Hub</div>
+                <div style={{ fontSize: 12, color: "#777" }}>— Motivation</div>
                 <div style={{ fontSize: 12, color: "#777" }}>{new Date().toLocaleDateString()}</div>
               </div>
             </div>
@@ -416,8 +416,8 @@ export default function Motivation() {
         .animate-slide-up {
           opacity: 1 !important;
           transform: translateY(0) !important;
-          transition: transform 900ms cubic-bezier(0.16, 1, 0.3, 1),
-            opacity 600ms ease;
+          transition: transform 1500ms cubic-bezier(0.16, 1, 0.3, 1),
+            opacity 1500ms ease;
         }
         .translate-y-6 {
           transform: translateY(1.5rem);
