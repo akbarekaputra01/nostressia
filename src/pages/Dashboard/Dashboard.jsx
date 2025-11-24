@@ -29,7 +29,6 @@ function generateMockData() {
     const month = today.getMonth();
     const date = today.getDate();
 
-    // Loop dari tanggal 1 sampai H-1
     for (let i = 1; i < date; i++) {
         const currentDate = new Date(year, month, i);
         const dateStr = formatDate(currentDate);
@@ -52,7 +51,6 @@ function generateMockData() {
         }
     }
 
-    // SET HARI INI (KOSONG / SIAP DIISI)
     const todayStr = formatDate(today);
     data[todayStr] = {
         level: 0, sleep: 0, study: 0, social: 0, mood: "😐", 
@@ -119,7 +117,7 @@ export default function Dashboard() {
   const [hasSubmittedToday, setHasSubmittedToday] = useState(false);
   const [stressScore, setStressScore] = useState(0);
 
-  // Nama User (Bisa diganti statenya nanti dari Login)
+  // Nama User
   const [userName, setUserName] = useState("Epin");
 
   // Modal State
@@ -142,18 +140,14 @@ export default function Dashboard() {
   const [calendarDate, setCalendarDate] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
   const [selectedDate, setSelectedDate] = useState(today);
 
-  // String Tanggal Hari Ini
   const TODAY_KEY = formatDate(today);
-
   const progressRef = useRef(null);
 
-  // Loading Simulation
   useEffect(() => {
     const t = setTimeout(() => setLoading(false), 600);
     return () => clearTimeout(t);
   }, []);
 
-  // Animation Progress
   useEffect(() => {
     if (!progressRef.current) return;
     progressRef.current.style.width = "0%";
@@ -198,7 +192,6 @@ export default function Dashboard() {
     const successDescText = hasSubmittedToday ? "Perubahan data hari ini telah disimpan." : "Data telah disimpan.";
     setSuccessModal({ visible: true, title: successTitleText, text: successDescText });
 
-    // Calculate Score
     let calc = 50;
     calc += (7 - Number(sleepHours)) * 5; 
     calc += (Number(studyHours) * 2);     
@@ -209,7 +202,6 @@ export default function Dashboard() {
     setStressScore(finalScore);
     setHasSubmittedToday(true);
 
-    // Update Data Kalender Real-time
     setStressData(prev => ({
         ...prev,
         [TODAY_KEY]: {
@@ -224,7 +216,6 @@ export default function Dashboard() {
         }
     }));
 
-    // Update Trend Data Real-time
     setTrendData(prev => {
         const newData = [...prev];
         newData[6].level = finalScore; 
@@ -286,11 +277,8 @@ export default function Dashboard() {
         @keyframes circle-draw { 0% { stroke-dasharray: 0, 100; } 100% { stroke-dasharray: 100, 100; } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        /* Animasi untuk Sapaan */
         @keyframes slideDownFade { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
         .animate-slide-down { animation: slideDownFade 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
-
         .animate-success-icon { animation: success-pop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
         .animate-card-enter { animation: card-enter 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
         .custom-scroll::-webkit-scrollbar { width: 6px; }
@@ -300,7 +288,7 @@ export default function Dashboard() {
 
       <Navbar activeLink="Dashboard" onPredictClick={handleOpenForm} />
 
-      {loading && (
+      {/* {loading && (
         <div className="fixed inset-0 z-[1200] flex items-center justify-center bg-black/20 backdrop-blur-sm">
           <div className="flex flex-col items-center gap-4">
             <div className="w-28 h-28 rounded-full flex items-center justify-center bg-white/90 shadow-lg">
@@ -309,15 +297,18 @@ export default function Dashboard() {
             <div className="text-gray-700">Memuat Nostressia...</div>
           </div>
         </div>
-      )}
+      )} */}
 
       <main className="max-w-[1400px] mx-auto p-6 md:p-8 lg:p-10 pt-28">
         
         {/* --- SAPAAN USER --- */}
         <div className="mb-8 animate-slide-down">
-            <h1 className="text-3xl md:text-4xl font-extrabold text-gray-800">
+            <h1 className="text-3xl md:text-4xl font-extrabold text-gray-800 flex items-center gap-2">
                 Halo, <span style={{ color: brandBlue }}>{userName}!</span> 👋
             </h1>
+            <p className="text-gray-600 mt-2 text-lg font-medium">
+                Siap menjalani hari ini dengan lebih tenang?
+            </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -398,7 +389,17 @@ export default function Dashboard() {
                 >
                   <header className="flex justify-between items-center mb-4 transition-opacity duration-300" style={{ opacity: successModal.visible ? 0 : 1 }}>
                     <h3 className="text-xl font-bold text-gray-800">{hasSubmittedToday ? "Edit Data Hari Ini" : "Catat Data Hari Ini"}</h3>
-                    <button type="button" className="w-8 h-8 rounded-full flex items-center justify-center text-xl text-gray-600 hover:text-gray-900 hover:bg-black/5" onClick={() => setIsFlipped(false)}><i className="ph ph-x" /></button>
+                    
+                    {/* --- ICON CLOSE (SVG) SUDAH DIPERBAIKI --- */}
+                    <button 
+                        type="button" 
+                        className="w-8 h-8 rounded-full flex items-center justify-center text-gray-600 hover:text-gray-900 hover:bg-black/5 transition-colors cursor-pointer" 
+                        onClick={() => setIsFlipped(false)}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-6 h-6">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
                   </header>
                   
                   <form onSubmit={handleSaveForm} className="flex-grow overflow-y-auto pr-2 flex flex-col gap-4 transition-all duration-500 custom-scroll" style={{ opacity: successModal.visible ? 0 : 1, transform: successModal.visible ? 'scale(0.95)' : 'scale(1)', pointerEvents: successModal.visible ? 'none' : 'auto' }}>
