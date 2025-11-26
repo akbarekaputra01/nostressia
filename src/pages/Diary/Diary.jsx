@@ -86,9 +86,9 @@ export default function Diary() {
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Fredoka:wght@400;600&family=Manrope:wght@400;700;800&family=Patrick+Hand&display=swap');`}</style>
 
       {/* 2. NAVBAR: Sticky + Glassmorphism */}
-      <div className="z-50 sticky top-0 w-full backdrop-blur-md bg-white/30 border-b border-white/20 shadow-sm transition-all duration-300">
+      {/* <div className="z-50 sticky top-0 w-full backdrop-blur-md bg-white/30 border-b border-white/20 shadow-sm transition-all duration-300">
+      </div> */}
         <Navbar />
-      </div>
 
       <main className="flex-grow flex flex-col items-center w-full p-4 z-10 pt-8">
         
@@ -98,7 +98,7 @@ export default function Diary() {
             className="text-center mb-8"
         >
             <h1 className="text-4xl font-extrabold tracking-tight" style={{ color: colors.textPrimary }}>
-                Diary <span style={{ color: colors.brandBlue }}>Nostressia</span>
+                Diary <span style={{ color: "rgb(253, 92, 0)" }}>Nostressia</span>
             </h1>
             <p className="font-medium mt-1 opacity-60" style={{ color: colors.textPrimary }}>
                 Write your story today.
