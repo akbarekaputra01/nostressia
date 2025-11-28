@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from "react";
+// src/pages/Tips/Tips.jsx
+import { useState } from "react";
 import Navbar from "../../components/Navbar";
 
 const Tips = () => {
@@ -64,7 +65,7 @@ const Tips = () => {
     {
       id: 'social',
       name: 'Social Connection',
-      icon: '👥',
+      icon: '🗣️',
       tips: [
         'Spend quality time with friends and family',
         'Join community groups or clubs with similar interests',
@@ -104,18 +105,21 @@ const Tips = () => {
       {/* Navbar */}
       <Navbar onPredictClick={() => console.log('Predict clicked')} />
       
-      {/* Main Content */}
-      <div className="p-4 md:p-6 lg:p-8 pt-24 md:pt-6">
-        <div className="max-w-7xl mx-auto">
-          {/* Category Selection View */}
-          {!selectedCategory && (
+      {/* Main Content 
+          - pt-24: Jarak atas untuk Mobile (agar pas di bawah navbar fixed)
+          - md:pt-8: Jarak atas untuk Desktop
+      */}
+      <div className="w-full max-w-[1400px] mx-auto p-4 md:p-8 lg:p-10 pt-26 md:pt-8 pb-20">
+        
+        {/* Category Selection View */}
+        {!selectedCategory && (
             <div className="bg-white/40 backdrop-blur-md border border-white/20 rounded-[20px] shadow-xl p-6 md:p-8">
               {/* Header */}
-              <div className="mb-8 text-center">
+              <div className="mb-8 text-center md:text-left">
                 <h1 className="text-3xl md:text-4xl font-extrabold mb-2" style={{ color: '#3664BA' }}>
                   Stress Management Tips
                 </h1>
-                <p className="text-gray-600">
+                <p className="text-gray-600 text-sm md:text-base">
                   Choose a category to explore helpful tips for managing stress
                 </p>
               </div>
@@ -148,13 +152,13 @@ const Tips = () => {
                 ))}
               </div>
             </div>
-          )}
+        )}
 
-          {/* Tips Detail View */}
-          {selectedCategory && (
-            <div className="bg-white/40 backdrop-blur-md border border-white/20 rounded-[20px] shadow-xl p-6 md:p-8">
+        {/* Tips Detail View */}
+        {selectedCategory && (
+            <div className="bg-white/40 backdrop-blur-md border border-white/20 rounded-[20px] shadow-xl p-6 md:p-8 animate-fade-in-up">
               {/* Header with Back Button */}
-              <div className="flex items-center gap-4 mb-8">
+              <div className="flex flex-col md:flex-row items-start md:items-center gap-4 mb-8">
                 <button
                   onClick={handleBack}
                   className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/60 hover:bg-white/80 
@@ -198,7 +202,7 @@ const Tips = () => {
                       </div>
                       
                       {/* Tip Text */}
-                      <p className="text-gray-700 leading-relaxed flex-1 pt-1">
+                      <p className="text-gray-700 leading-relaxed flex-1 pt-1 text-sm md:text-base">
                         {tip}
                       </p>
                       
@@ -214,13 +218,18 @@ const Tips = () => {
               {/* Footer Note */}
               <div className="mt-8 p-4 bg-white/50 backdrop-blur-sm border border-white/30 rounded-xl">
                 <p className="text-sm text-gray-600 text-center">
-                  💡 Remember: Small consistent steps lead to big changes. Start with one tip today!
+                  ✨ Remember: Small consistent steps lead to big changes. Start with one tip today!
                 </p>
               </div>
             </div>
-          )}
-        </div>
+        )}
       </div>
+      
+      {/* Tambahan style animasi sederhana */}
+      <style>{`
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
+      `}</style>
     </div>
   );
 };
