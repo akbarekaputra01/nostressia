@@ -2,7 +2,7 @@
   "version": 2,
   "functions": {
     "api/index.py": {
-      "runtime": "python3.14"
+      "runtime": "python3.12"
     }
   },
   "routes": [
