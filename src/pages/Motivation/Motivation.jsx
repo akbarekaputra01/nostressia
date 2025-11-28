@@ -1,4 +1,4 @@
-// Motivation.jsx
+// src/pages/Motivation/Motivation.jsx
 import { useState, useEffect, useRef } from "react";
 import html2canvas from "html2canvas";
 import {
@@ -290,133 +290,137 @@ export default function Motivation() {
         <div className="fixed top-6 right-6 z-[9999] bg-orange-500 text-white px-4 py-2 rounded-xl shadow-lg">{toastMessage}</div>
       )}
       <Navbar />
-      <div className="pt-24 md:pt-10 lg:pt-6 pb-20">
-        <div className="p-6 max-w-7xl mx-auto">
-          {/* header */}
-          <div ref={headerRef} className="opacity-0 translate-y-6">
-            <div className="mb-10 text-center">
-              <div className="flex items-center gap-3 mb-2 justify-center">
-                <Sparkles className="w-9 h-9 text-yellow-500 drop-shadow-lg" />
-                <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent drop-shadow-md">
-                  Motivation Hub
-                </h1>
-              </div>
-              <p className="text-gray-600 mt-2 text-base md:text-lg font-medium">
-                Find inspiration and a boost to make your day more productive
-              </p>
+      
+      {/* CONTAINER UTAMA:
+          - pt-24: Padding Mobile (dikurangi dari pt-32 agar lebih dekat/mepet)
+          - md:pt-8: Padding Desktop
+      */}
+      <div className="w-full max-w-[1400px] mx-auto p-4 md:p-8 lg:p-10 pt-27 md:pt-8 pb-20">
+        
+        {/* HEADER */}
+        <div ref={headerRef} className="opacity-0 translate-y-6">
+          <div className="mb-10 text-center">
+            <div className="flex items-center gap-3 mb-2 justify-center">
+              <Sparkles className="w-9 h-9 text-yellow-500 drop-shadow-lg" />
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent drop-shadow-md">
+                Motivation Hub
+              </h1>
             </div>
-          </div>
-
-          {/* HERO */}
-          <div
-            ref={heroRef}
-            className="opacity-0 translate-y-6 mt-6 md:mt-10 rounded-2xl p-6 md:p-10 relative overflow-hidden"
-            style={{
-              background: "rgba(255,255,255,0.25)",
-              border: "1px solid rgba(255,255,255,0.3)",
-              backdropFilter: "blur(10px)",
-              boxShadow: "0 8px 32px rgba(0,0,0,0.06)",
-            }}
-          >
-            <div className="relative z-10">
-              <div className="inline-flex rounded-full bg-white border text-orange-700 text-sm font-medium shadow-sm px-3 py-1 mb-4 cursor-default">
-                ✨ Today's Quote
-              </div>
-              <h2 className="text-2xl md:text-3xl font-bold mb-3 text-gray-800">Featured Motivation</h2>
-              <p className="text-lg md:text-xl italic text-gray-700 max-w-3xl">"{heroQuote.text}"</p>
-              <div className="flex gap-3 mt-6 flex-wrap justify-end">
-                <button
-                  onClick={() => setHeroQuote(getRandomHeroQuote())}
-                  className="px-4 py-2 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium flex items-center gap-2 shadow hover:scale-105 transition cursor-pointer"
-                >
-                  <RefreshCw className="w-4 h-4" />
-                  New Quote
-                </button>
-                <button
-                  onClick={() => toggleLike(HERO_INDEX)}
-                  className="px-4 py-2 rounded-lg bg-white border font-medium flex items-center gap-2 shadow hover:scale-105 transition cursor-pointer"
-                  aria-label="bookmark-hero"
-                >
-                  <Bookmark
-                    className={`w-4 h-4 ${likedIndex.includes(HERO_INDEX) ? "fill-orange-500 text-orange-600" : "text-gray-500"}`}
-                  />
-                  <span className="hidden sm:inline">{likedIndex.includes(HERO_INDEX) ? "Saved" : "Save"}</span>
-                </button>
-                <button
-                  onClick={() => openShare(heroQuote.text)}
-                  className="px-4 py-2 rounded-lg bg-white border flex items-center gap-2 text-gray-700 shadow hover:scale-105 transition cursor-pointer"
-                >
-                  <Share2 className="w-4 h-4" />
-                  <span className="hidden sm:inline">Share</span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Collection */}
-          <div className="mt-8 md:mt-10 mb-6 flex items-center justify-between">
-            <h3 className="text-xl md:text-2xl font-bold text-gray-800 flex items-center gap-3">
-              <Star className="w-5 h-5 text-yellow-500" />
-              Motivation Collection
-            </h3>
-            <p className="text-gray-600 text-sm">
-              {loading ? "Loading..." : error ? error : "Inspiration for every moment"}
+            <p className="text-gray-600 mt-2 text-base md:text-lg font-medium">
+              Find inspiration and a boost to make your day more productive
             </p>
           </div>
+        </div>
 
-          {/* Cards grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-            {currentItems.map((quoteObj, idx) => {
-              const id = quoteObj.motivationID ?? `fallback-${idx}`;
-              return (
-                <div
-                  key={id}
-                  ref={(el) => (cardsRef.current[idx] = el)}
-                  className="opacity-0 translate-y-6 rounded-2xl p-5 md:p-6 relative transition-all hover:scale-105 hover:shadow-xl"
-                  style={{
-                    background: "rgba(255,255,255,0.25)",
-                    border: "1px solid rgba(255,255,255,0.3)",
-                    backdropFilter: "blur(10px)",
-                    boxShadow: "0 4px 18px rgba(0,0,0,0.04)",
-                  }}
-                >
-                  <p className="text-md md:text-lg italic text-gray-700 min-h-[72px] md:min-h-[90px]">"{quoteObj.quote}"</p>
-                  <div className="text-xs text-gray-500 mt-2">Author: {quoteObj.authorName ?? "-"}</div>
-                  <div className="mt-4 pt-4 border-t border-black/5 flex justify-end gap-3 items-center">
-                    <button
-                      onClick={() => toggleLike(id)}
-                      aria-label={`bookmark-${id}`}
-                      className="cursor-pointer"
-                    >
-                      <Bookmark
-                        className={`w-6 h-6 ${likedIndex.includes(id) ? "fill-orange-500 text-orange-600" : "text-gray-400 hover:text-orange-400"}`}
-                      />
-                    </button>
-                    <button
-                      onClick={() => openShare(quoteObj.quote)}
-                      className="text-xs sm:text-sm text-orange-500 hover:text-orange-600 font-medium flex items-center gap-1 cursor-pointer"
-                      aria-label={`share-${id}`}
-                    >
-                      <Share2 className="w-4 h-4" /> <span className="hidden sm:inline">Share</span>
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* See More Button */}
-          {hasMore && (
-            <div className="mt-8 flex items-center justify-end">
+        {/* HERO */}
+        <div
+          ref={heroRef}
+          className="opacity-0 translate-y-6 mt-6 md:mt-8 rounded-2xl p-6 md:p-10 relative overflow-hidden"
+          style={{
+            background: "rgba(255,255,255,0.25)",
+            border: "1px solid rgba(255,255,255,0.3)",
+            backdropFilter: "blur(10px)",
+            boxShadow: "0 8px 32px rgba(0,0,0,0.06)",
+          }}
+        >
+          <div className="relative z-10">
+            <div className="inline-flex rounded-full bg-white border text-orange-700 text-sm font-medium shadow-sm px-3 py-1 mb-4 cursor-default">
+              ✨ Today's Quote
+            </div>
+            <h2 className="text-2xl md:text-3xl font-bold mb-3 text-gray-800">Featured Motivation</h2>
+            <p className="text-lg md:text-xl italic text-gray-700 max-w-3xl">"{heroQuote.text}"</p>
+            <div className="flex gap-3 mt-6 flex-wrap justify-end">
               <button
-                onClick={loadMore}
-                className="text-orange-500 hover:text-orange-600 font-medium cursor-pointer"
+                onClick={() => setHeroQuote(getRandomHeroQuote())}
+                className="px-4 py-2 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium flex items-center gap-2 shadow hover:scale-105 transition cursor-pointer"
               >
-                -See More-
+                <RefreshCw className="w-4 h-4" />
+                New Quote
+              </button>
+              <button
+                onClick={() => toggleLike(HERO_INDEX)}
+                className="px-4 py-2 rounded-lg bg-white border font-medium flex items-center gap-2 shadow hover:scale-105 transition cursor-pointer"
+                aria-label="bookmark-hero"
+              >
+                <Bookmark
+                  className={`w-4 h-4 ${likedIndex.includes(HERO_INDEX) ? "fill-orange-500 text-orange-600" : "text-gray-500"}`}
+                />
+                <span className="hidden sm:inline">{likedIndex.includes(HERO_INDEX) ? "Saved" : "Save"}</span>
+              </button>
+              <button
+                onClick={() => openShare(heroQuote.text)}
+                className="px-4 py-2 rounded-lg bg-white border flex items-center gap-2 text-gray-700 shadow hover:scale-105 transition cursor-pointer"
+              >
+                <Share2 className="w-4 h-4" />
+                <span className="hidden sm:inline">Share</span>
               </button>
             </div>
-          )}
+          </div>
         </div>
+
+        {/* Collection */}
+        <div className="mt-8 md:mt-10 mb-6 flex items-center justify-between">
+          <h3 className="text-xl md:text-2xl font-bold text-gray-800 flex items-center gap-3">
+            <Star className="w-5 h-5 text-yellow-500" />
+            Motivation Collection
+          </h3>
+          <p className="text-gray-600 text-sm">
+            {loading ? "Loading..." : error ? error : "Inspiration for every moment"}
+          </p>
+        </div>
+
+        {/* Cards grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+          {currentItems.map((quoteObj, idx) => {
+            const id = quoteObj.motivationID ?? `fallback-${idx}`;
+            return (
+              <div
+                key={id}
+                ref={(el) => (cardsRef.current[idx] = el)}
+                className="opacity-0 translate-y-6 rounded-2xl p-5 md:p-6 relative transition-all hover:scale-105 hover:shadow-xl"
+                style={{
+                  background: "rgba(255,255,255,0.25)",
+                  border: "1px solid rgba(255,255,255,0.3)",
+                  backdropFilter: "blur(10px)",
+                  boxShadow: "0 4px 18px rgba(0,0,0,0.04)",
+                }}
+              >
+                <p className="text-md md:text-lg italic text-gray-700 min-h-[72px] md:min-h-[90px]">"{quoteObj.quote}"</p>
+                <div className="text-xs text-gray-500 mt-2">Author: {quoteObj.authorName ?? "-"}</div>
+                <div className="mt-4 pt-4 border-t border-black/5 flex justify-end gap-3 items-center">
+                  <button
+                    onClick={() => toggleLike(id)}
+                    aria-label={`bookmark-${id}`}
+                    className="cursor-pointer"
+                  >
+                    <Bookmark
+                      className={`w-6 h-6 ${likedIndex.includes(id) ? "fill-orange-500 text-orange-600" : "text-gray-400 hover:text-orange-400"}`}
+                    />
+                  </button>
+                  <button
+                    onClick={() => openShare(quoteObj.quote)}
+                    className="text-xs sm:text-sm text-orange-500 hover:text-orange-600 font-medium flex items-center gap-1 cursor-pointer"
+                    aria-label={`share-${id}`}
+                  >
+                    <Share2 className="w-4 h-4" /> <span className="hidden sm:inline">Share</span>
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* See More Button */}
+        {hasMore && (
+          <div className="mt-8 flex items-center justify-end">
+            <button
+              onClick={loadMore}
+              className="text-orange-500 hover:text-orange-600 font-medium cursor-pointer"
+            >
+              -See More-
+            </button>
+          </div>
+        )}
       </div>
 
       {/* SHARE MODAL */}
