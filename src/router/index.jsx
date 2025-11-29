@@ -15,10 +15,7 @@ import AdminLogin from "../pages/Admin/AdminLogin";
 // --- 1. KOMPONEN PENJAGA PINTU (PROTECTED ROUTE) ---
 // Bagian ini WAJIB ADA agar pengecekan terjadi
 const AdminRoute = () => {
-  // Cek apakah ada "tiket" login di localStorage
-  const isAuthenticated = localStorage.getItem("adminAuth") === "true";
-
-  // Jika punya tiket, boleh masuk (Outlet). Jika tidak, tendang ke login.
+  const isAuthenticated = !!localStorage.getItem("adminToken");
   return isAuthenticated ? <Outlet /> : <Navigate to="/admin/login" replace />;
 };
 
