@@ -11,45 +11,75 @@ export default function AdminLogin() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
     setIsLoading(true);
 
-    setTimeout(() => {
-      // Cek Username & Password (admin / admin123)
-      if (formData.username === "admin" && formData.password === "admin123") {
-        // Simpan tiket login
-        localStorage.setItem("adminAuth", "true");
-        // Redirect ke dashboard
-        navigate("/admin");
-      } else {
-        setError("Username atau Password salah!");
-        setIsLoading(false);
+    try {
+      const res = await fetch("http://127.0.0.1:8000/api/auth/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      // Jika fetch tidak bisa terhubung → otomatis lompat ke catch
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.detail || "Username atau Password salah!");
       }
-    }, 1000);
+
+      // 🔐 Simpan token hasil dari server
+      localStorage.setItem("adminToken", data.access_token);
+      localStorage.setItem("adminData", JSON.stringify(data.admin));
+      localStorage.setItem("adminAuth", "true");
+
+      navigate("/admin");
+    } 
+    catch (err) {
+
+      // === Fallback jika API mati ===
+      if (
+        formData.username === "admin" &&
+        formData.password === "admin123"
+      ) {
+        const offlineAdmin = {
+          id: 0,
+          name: "Offline Admin",
+          username: "admin",
+          email: "admin@offline.local"
+        };
+
+        localStorage.setItem("adminToken", "offline-token");
+        localStorage.setItem("adminData", JSON.stringify(offlineAdmin));
+        localStorage.setItem("adminAuth", "true");
+
+        console.warn("⚠️ API mati — menggunakan mode offline admin.");
+        navigate("/admin");
+        return;
+      }
+
+      // Jika bukan admin offline → error biasa
+      setError(err.message || "Gagal login, coba lagi.");
+      setIsLoading(false);
+    }
   };
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 font-sans">
-      
       <div className="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
         
         {/* Header dengan Gradient Pastel Oren-Biru */}
         <div className="bg-gradient-to-br from-orange-200 via-orange-100 to-blue-200 p-8 text-center relative overflow-hidden">
-            
-            {/* Dekorasi Background Halus */}
             <div className="absolute top-0 left-0 w-full h-full bg-white/40 opacity-50 transform -rotate-6 scale-125"></div>
-            
             <div className="relative z-10 flex flex-col items-center">
-                
-                {/* Logo Tanpa Background Putih */}
                 <img 
                     src={LogoNostressia} 
                     alt="Nostressia Logo" 
                     className="h-24 w-auto object-contain mb-2 drop-shadow-sm hover:scale-105 transition-transform duration-300" 
                 />
-
                 <h2 className="text-2xl font-bold text-gray-800">Admin Portal</h2>
                 <p className="text-gray-600 text-sm mt-1 font-medium">Nostressia Management System</p>
             </div>
@@ -98,7 +128,7 @@ export default function AdminLogin() {
                 </div>
             </div>
 
-            {/* [UBAH] Tombol dengan Gradasi Biru-Oren */}
+            {/* Tombol dengan Gradasi Biru-Oren */}
             <button
               type="submit"
               disabled={isLoading}

@@ -73,7 +73,6 @@ export default function Analytics() {
           md:pt-8: Padding atas untuk Desktop (navbar sticky)
       */}
       <div className="w-full max-w-[1400px] mx-auto p-4 md:p-8 lg:p-10 pt-28 md:pt-8">
-        
         {/* HEADER */}
         <div
           ref={headerRef}
@@ -131,7 +130,6 @@ export default function Analytics() {
         {/* ==== CHARTS ==== */}
         {/* lg:grid-cols-2 agar di tablet chart menumpuk (lebih lebar), di desktop bersebelahan */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 mb-8 md:mb-10">
-          
           {/* Stress Chart */}
           <div
             className="rounded-2xl p-4 md:p-6 border backdrop-blur-xl"
@@ -149,27 +147,31 @@ export default function Analytics() {
             </h2>
 
             <div className="h-[200px] md:h-[260px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={data}>
-                    <CartesianGrid stroke="#e5e7eb" strokeDasharray="5 5" />
-                    <XAxis 
-                        dataKey={mode === "week" ? "day" : "week"} 
-                        tick={{ fontSize: 12 }}
-                    />
-                    <YAxis tick={{ fontSize: 12 }} width={30}/>
-                    <Tooltip 
-                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                    />
-                    <Line
+                  <CartesianGrid stroke="#e5e7eb" strokeDasharray="5 5" />
+                  <XAxis
+                    dataKey={mode === "week" ? "day" : "week"}
+                    tick={{ fontSize: 12 }}
+                  />
+                  <YAxis tick={{ fontSize: 12 }} width={30} />
+                  <Tooltip
+                    contentStyle={{
+                      borderRadius: "12px",
+                      border: "none",
+                      boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                    }}
+                  />
+                  <Line
                     type="monotone"
                     dataKey="stress"
                     stroke="var(--brand-blue)"
                     strokeWidth={3}
                     dot={{ r: 4, strokeWidth: 2 }}
                     activeDot={{ r: 6 }}
-                    />
+                  />
                 </LineChart>
-                </ResponsiveContainer>
+              </ResponsiveContainer>
             </div>
           </div>
 
@@ -190,27 +192,31 @@ export default function Analytics() {
             </h2>
 
             <div className="h-[200px] md:h-[260px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={data}>
-                    <CartesianGrid stroke="#e5e7eb" strokeDasharray="5 5" />
-                    <XAxis 
-                        dataKey={mode === "week" ? "day" : "week"} 
-                        tick={{ fontSize: 12 }}
-                    />
-                    <YAxis tick={{ fontSize: 12 }} width={30}/>
-                    <Tooltip 
-                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                    />
-                    <Line
+                  <CartesianGrid stroke="#e5e7eb" strokeDasharray="5 5" />
+                  <XAxis
+                    dataKey={mode === "week" ? "day" : "week"}
+                    tick={{ fontSize: 12 }}
+                  />
+                  <YAxis tick={{ fontSize: 12 }} width={30} />
+                  <Tooltip
+                    contentStyle={{
+                      borderRadius: "12px",
+                      border: "none",
+                      boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                    }}
+                  />
+                  <Line
                     type="monotone"
                     dataKey="mood"
                     stroke="var(--brand-blue-light)"
                     strokeWidth={3}
                     dot={{ r: 4, strokeWidth: 2 }}
                     activeDot={{ r: 6 }}
-                    />
+                  />
                 </LineChart>
-                </ResponsiveContainer>
+              </ResponsiveContainer>
             </div>
           </div>
         </div>
@@ -246,4 +252,4 @@ export default function Analytics() {
       </div>
     </div>
   );
-} 
+}

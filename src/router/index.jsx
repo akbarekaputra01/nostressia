@@ -15,7 +15,11 @@ import AdminLogin from "../pages/Admin/AdminLogin";
 
 // --- 1. KOMPONEN PENJAGA PINTU (PROTECTED ROUTE) ---
 const AdminRoute = () => {
+<<<<<<< HEAD
   const isAuthenticated = localStorage.getItem("adminAuth") === "true";
+=======
+  const isAuthenticated = !!localStorage.getItem("adminToken");
+>>>>>>> main
   return isAuthenticated ? <Outlet /> : <Navigate to="/admin/login" replace />;
 };
 
