@@ -11,10 +11,11 @@ export default function AdminPage() {
 
   // --- AMBIL DATA ADMIN DARI LOCALSTORAGE ---
   const [currentUser, setCurrentUser] = useState({
-    id: "ADM002",
-    name: "Admin Epin",
-    role: "Super Admin"
+      id: 0,
+      name: "",
+      role: ""
   });
+
 
   useEffect(() => {
     const storedUser = localStorage.getItem("adminData");
@@ -36,20 +37,62 @@ export default function AdminPage() {
   // ==========================================
 
   // 1. MOTIVATION
-  const [quotes, setQuotes] = useState([
-    { id: 1, text: "Success starts with small consistent steps.", author: "Daily Reminder", uploaderName: "System Admin", uploaderId: "SYS001" },
-    { id: 2, text: "Don't fear failure — fear never trying.", author: "Anonymous", uploaderName: "System Admin", uploaderId: "SYS001" },
-  ]);
+  const [quotes, setQuotes] = useState([]);
+  useEffect(() => {
+    fetch("http://127.0.0.1:8000/api/motivations")
+      .then(res => res.json())
+      .then(data => {
+        const formatted = data.map(item => ({
+          id: item.motivationID,
+          text: item.quote,
+          author: item.authorName || "Unknown",
+          uploaderName: "Admin",
+          uploaderId: "ADM" + String(item.uploaderID).padStart(3, "0"),
+        }));
+        setQuotes(formatted);
+      });
+  }, []);
+
   const [quoteForm, setQuoteForm] = useState({ text: "", author: "" });
 
-  const handleAddQuote = (e) => {
+  const handleAddQuote = async (e) => {
     e.preventDefault();
-    if (!quoteForm.text || !quoteForm.author) return alert("Isi Quote dan Author!");
-    const newQuote = { id: Date.now(), ...quoteForm, uploaderName: currentUser.name, uploaderId: currentUser.id };
-    setQuotes([newQuote, ...quotes]);
+
+    const payload = {
+      quote: quoteForm.text,
+      authorName: quoteForm.author,
+      uploaderID: currentUser.id
+    };
+
+    const res = await fetch("http://127.0.0.1:8000/api/motivations", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+
+    setQuotes([{ 
+      id: data.motivationID,
+      text: data.quote,
+      author: data.authorName, 
+      uploaderName: currentUser.name,
+      uploaderId: "ADM" + String(currentUser.id).padStart(3, "0")
+    }, ...quotes]);
+
     setQuoteForm({ text: "", author: "" });
   };
-  const handleDeleteQuote = (id) => { if(confirm("Hapus quote ini?")) setQuotes(quotes.filter(q => q.id !== id)); };
+
+  const handleDeleteQuote = async (id) => {
+    if (!confirm("Hapus quote ini?")) return;
+
+    await fetch(`http://127.0.0.1:8000/api/motivations/${id}`, {
+      method: "DELETE",
+    });
+
+    setQuotes(quotes.filter(q => q.id !== id));
+  };
+
 
   // 2. TIPS
   const [tipCategories, setTipCategories] = useState([
@@ -177,7 +220,7 @@ export default function AdminPage() {
                         <div className="flex items-center justify-between">
                           <div>
                             <p className="text-sm font-bold text-gray-700">— {quote.author}</p>
-                            <p className="text-[10px] text-gray-400 mt-1 flex items-center gap-1"><User size={10} /> {quote.uploaderName} ({quote.uploaderId})</p>
+                            <p className="text-[10px] text-gray-400 mt-1 flex items-center gap-1"><User size={10} />({quote.uploaderId})</p>
                           </div>
                         </div>
                       </div>
