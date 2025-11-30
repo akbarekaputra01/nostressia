@@ -1,3 +1,4 @@
+// src/router/index.jsx
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
 import Dashboard from "../pages/Dashboard/Dashboard";
@@ -13,12 +14,8 @@ import AdminPage from "../pages/Admin/AdminPage";
 import AdminLogin from "../pages/Admin/AdminLogin";
 
 // --- 1. KOMPONEN PENJAGA PINTU (PROTECTED ROUTE) ---
-// Bagian ini WAJIB ADA agar pengecekan terjadi
 const AdminRoute = () => {
-  // Cek apakah ada "tiket" login di localStorage
   const isAuthenticated = localStorage.getItem("adminAuth") === "true";
-
-  // Jika punya tiket, boleh masuk (Outlet). Jika tidak, tendang ke login.
   return isAuthenticated ? <Outlet /> : <Navigate to="/admin/login" replace />;
 };
 
@@ -26,8 +23,10 @@ function AppRouter() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* --- RUTE USER (Bebas Akses) --- */}
+        {/* --- RUTE UTAMA KEMBALI KE DASHBOARD --- */}
         <Route path="/" element={<Dashboard />} />
+        
+        {/* Rute Halaman Lain */}
         <Route path="/tips" element={<Tips />} />
         <Route path="/motivation" element={<Motivation />} />
         <Route path="/diary" element={<Diary />} />
@@ -35,11 +34,8 @@ function AppRouter() {
         <Route path="/profile" element={<Profile />} /> 
         <Route path="/login" element={<Login />} /> 
 
-        {/* --- RUTE ADMIN LOGIN (Bebas Akses) --- */}
+        {/* --- RUTE ADMIN --- */}
         <Route path="/admin/login" element={<AdminLogin />} /> 
-
-        {/* --- RUTE ADMIN DASHBOARD (DIPROTEKSI) --- */}
-        {/* Perhatikan: Rute /admin DIKURUNG di dalam AdminRoute */}
         <Route element={<AdminRoute />}>
             <Route path="/admin" element={<AdminPage />} />
         </Route>

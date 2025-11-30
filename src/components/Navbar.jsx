@@ -1,11 +1,11 @@
 // src/components/Navbar.jsx
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import LogoImage from "../assets/images/Logo-Nostressia.png";
+import LogoImage from "../assets/images/Logo-Nostressia.png"; 
 
 // --- Data Menu Navigasi ---
 const navLinks = [
-  { name: "Dashboard", href: "/" },
+  { name: "Dashboard", href: "/" }, // KEMBALI KE "/"
   { name: "Analytics", href: "/analytics" },
   { name: "Motivation", href: "/motivation" },
   { name: "Tips", href: "/tips" },
@@ -15,6 +15,9 @@ const navLinks = [
 const Navbar = () => {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Fungsi helper untuk mengecek path aktif
+  const isActive = (path) => location.pathname === path;
 
   return (
     <header
@@ -43,7 +46,7 @@ const Navbar = () => {
             />
           </Link>
 
-          {/* Navigasi Desktop (Hanya muncul di Layar Besar/LG) */}
+          {/* Navigasi Desktop */}
           <nav className="hidden lg:flex">
             <ul className="flex gap-6 list-none">
               {navLinks.map((link) => (
@@ -65,8 +68,7 @@ const Navbar = () => {
                                                 absolute left-0 -bottom-1 h-[3px] rounded-full
                                                 transition-all duration-300 
                                                 ${
-                                                  location.pathname ===
-                                                  link.href
+                                                  isActive(link.href)
                                                     ? "w-full bg-[#3664BA]"
                                                     : "w-0 bg-transparent group-hover:w-full group-hover:bg-gray-500"
                                                 }
@@ -81,9 +83,8 @@ const Navbar = () => {
 
         {/* 2. BAGIAN KANAN: Notifikasi & Profil & Hamburger */}
         <div className="flex items-center gap-2 md:gap-4">
-          {/* Tombol Notifikasi (Lonceng) */}
+          {/* Tombol Notifikasi */}
           <button className="relative p-2 rounded-xl text-gray-600 hover:bg-black/5 transition-all cursor-pointer">
-            {/* Ikon Lonceng SVG */}
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
@@ -99,8 +100,7 @@ const Navbar = () => {
             <span className="absolute top-1.5 right-2 w-2 h-2 bg-red-600 border-2 border-white/40 rounded-full"></span>
           </button>
 
-          {/* Foto Profil - HANYA MUNCUL DI DESKTOP (lg:block) */}
-          {/* 👇 BUNGKUS DENGAN LINK KE /PROFILE */}
+          {/* Foto Profil */}
           <Link to="/profile" className="hidden lg:block">
             <img
               src="https://i.pravatar.cc/40?img=12"
@@ -109,43 +109,15 @@ const Navbar = () => {
             />
           </Link>
 
-          {/* 3. TOMBOL HAMBURGER (Hanya muncul di Mobile) */}
+          {/* 3. TOMBOL HAMBURGER */}
           <button
             className="lg:hidden p-2 text-gray-600 hover:bg-black/5 rounded-xl transition-all ml-1 cursor-pointer"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? (
-              // Ikon X (Close) SVG
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="w-7 h-7"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-7 h-7"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
             ) : (
-              // Ikon Hamburger (Menu) SVG
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="w-7 h-7"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-                />
-              </svg>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-7 h-7"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
             )}
           </button>
         </div>
@@ -167,11 +139,11 @@ const Navbar = () => {
           <Link
             key={link.name}
             to={link.href}
-            onClick={() => setIsMobileMenuOpen(false)} // Tutup menu saat diklik
+            onClick={() => setIsMobileMenuOpen(false)}
             className={`
                             text-base font-semibold py-2 px-4 rounded-lg w-full text-center transition-colors
                             ${
-                              location.pathname === link.href
+                              isActive(link.href)
                                 ? "bg-blue-50 text-blue-600"
                                 : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                             }
@@ -181,12 +153,10 @@ const Navbar = () => {
           </Link>
         ))}
 
-        {/* --- BAGIAN PROFILE DI MENU MOBILE --- */}
-        {/* 👇 PROFILE DI MENU BAWAH JUGA DIBUNGKUS LINK */}
         <div className="w-full border-t border-gray-100 mt-2 pt-3 flex flex-col items-center">
           <Link
             to="/profile"
-            onClick={() => setIsMobileMenuOpen(false)} // Tutup menu saat diklik
+            onClick={() => setIsMobileMenuOpen(false)}
             className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer w-full justify-center"
           >
             <img

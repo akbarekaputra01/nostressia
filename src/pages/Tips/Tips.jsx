@@ -2,6 +2,11 @@
 import { useState } from "react";
 import Navbar from "../../components/Navbar";
 
+// --- COLOR CONFIGURATION (MATCHING DASHBOARD) ---
+const bgCream = "#FFF3E0";
+const bgPink = "#eaf2ff";
+const bgLavender = "#e3edff";
+
 const Tips = () => {
   const [selectedCategory, setSelectedCategory] = useState(null);
 
@@ -101,15 +106,30 @@ const Tips = () => {
   };
 
   return (
-    <div className="min-h-screen" style={{ background: 'linear-gradient(135deg, #FFF8F0 0%, #FFF3E0 40%, #FFEFD5 70%, #eaf2ff 95%)' }}>
+    <div 
+      className="min-h-screen relative"
+      style={{
+        backgroundColor: bgCream,
+        backgroundImage: `radial-gradient(at 10% 10%, ${bgCream} 0%, transparent 50%), radial-gradient(at 90% 20%, ${bgPink} 0%, transparent 50%), radial-gradient(at 50% 80%, ${bgLavender} 0%, transparent 50%)`,
+        backgroundSize: "200% 200%",
+        animation: "gradient-bg 20s ease infinite",
+      }}
+    >
+      {/* Definisi Animasi CSS */}
+      <style>{`
+        @keyframes gradient-bg { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
+      `}</style>
+
       {/* Navbar */}
       <Navbar onPredictClick={() => console.log('Predict clicked')} />
       
       {/* Main Content 
-          - pt-24: Jarak atas untuk Mobile (agar pas di bawah navbar fixed)
+          - pt-28: Disamakan dengan Dashboard/Analytics agar konsisten
           - md:pt-8: Jarak atas untuk Desktop
       */}
-      <div className="w-full max-w-[1400px] mx-auto p-4 md:p-8 lg:p-10 pt-26 md:pt-8 pb-20">
+      <div className="w-full max-w-[1400px] mx-auto p-4 md:p-8 lg:p-10 pt-28 md:pt-8 pb-20">
         
         {/* Category Selection View */}
         {!selectedCategory && (
@@ -224,12 +244,6 @@ const Tips = () => {
             </div>
         )}
       </div>
-      
-      {/* Tambahan style animasi sederhana */}
-      <style>{`
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
-      `}</style>
     </div>
   );
 };

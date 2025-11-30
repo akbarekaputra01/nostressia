@@ -12,6 +12,11 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
+// --- BACKGROUND CONFIGURATION (SAME AS DASHBOARD) ---
+const bgCream = "#FFF3E0";
+const bgPink = "#eaf2ff";
+const bgLavender = "#e3edff";
+
 export default function Analytics() {
   const [mode, setMode] = useState("week");
   const headerRef = useRef(null);
@@ -49,25 +54,25 @@ export default function Analytics() {
 
   return (
     <div
-      className="min-h-screen"
+      className="min-h-screen relative"
       style={{
-        background: `
-          linear-gradient(
-            135deg,
-            var(--bg-gradient-cream),
-            var(--bg-gradient-pink),
-            var(--bg-gradient-lavender)
-          )
-        `,
+        backgroundColor: bgCream,
+        backgroundImage: `radial-gradient(at 10% 10%, ${bgCream} 0%, transparent 50%), radial-gradient(at 90% 20%, ${bgPink} 0%, transparent 50%), radial-gradient(at 50% 80%, ${bgLavender} 0%, transparent 50%)`,
+        backgroundSize: "200% 200%",
+        animation: "gradient-bg 20s ease infinite",
       }}
     >
+      <style>{`
+        @keyframes gradient-bg { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+      `}</style>
+
       <Navbar />
 
       {/* --- MAIN CONTAINER --- 
           pt-32: Padding atas untuk Mobile (agar turun jauh dari navbar fixed)
           md:pt-8: Padding atas untuk Desktop (navbar sticky)
       */}
-      <div className="w-full max-w-[1400px] mx-auto p-4 md:p-8 lg:p-10 pt-25 md:pt-8">
+      <div className="w-full max-w-[1400px] mx-auto p-4 md:p-8 lg:p-10 pt-28 md:pt-8">
         
         {/* HEADER */}
         <div
@@ -241,4 +246,4 @@ export default function Analytics() {
       </div>
     </div>
   );
-}
+} 

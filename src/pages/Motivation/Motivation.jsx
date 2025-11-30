@@ -8,15 +8,17 @@ import {
   Sparkles,
   TrendingUp,
   Star,
+  X 
 } from "lucide-react";
 import Navbar from "../../components/Navbar";
 import Logo from "../../assets/images/Logo-Nostressia.png";
 
-// Colors
-const BG_CREAM = "#FFF7ED";
-const BG_PINK = "#FFD1DC";
-const BG_LAVENDER = "#E3D5FF";
+// --- COLOR CONFIGURATION (MATCHING DASHBOARD) ---
+const BG_CREAM = "#FFF3E0";
+const BG_PINK = "#eaf2ff";
+const BG_LAVENDER = "#e3edff";
 
+// Style Background dengan Animasi
 const backgroundStyle = {
   minHeight: "100vh",
   backgroundColor: BG_CREAM,
@@ -26,7 +28,7 @@ const backgroundStyle = {
     radial-gradient(at 50% 80%, ${BG_LAVENDER} 0%, transparent 50%)
   `,
   backgroundSize: "200% 200%",
-  animation: "none",
+  animation: "gradient-bg 20s ease infinite",
 };
 
 const HERO_INDEX = "hero";
@@ -203,6 +205,7 @@ export default function Motivation() {
     document.body.style.overflow = prevBodyOverflow.current || "";
   };
 
+  // --- KODE LOGIKA DOWNLOAD KEMBALI KE ASAL (DIJAMIN BEKERJA) ---
   const downloadShareCard = async () => {
     if (!shareCardRef.current) return;
     try {
@@ -286,16 +289,17 @@ export default function Motivation() {
 
   return (
     <div style={backgroundStyle} className="min-h-screen">
+      <style>{`
+        @keyframes gradient-bg { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+      `}</style>
+
       {toastMessage && (
         <div className="fixed top-6 right-6 z-[9999] bg-orange-500 text-white px-4 py-2 rounded-xl shadow-lg">{toastMessage}</div>
       )}
       <Navbar />
       
-      {/* CONTAINER UTAMA:
-          - pt-24: Padding Mobile (dikurangi dari pt-32 agar lebih dekat/mepet)
-          - md:pt-8: Padding Desktop
-      */}
-      <div className="w-full max-w-[1400px] mx-auto p-4 md:p-8 lg:p-10 pt-27 md:pt-8 pb-20">
+      {/* CONTAINER UTAMA */}
+      <div className="w-full max-w-[1400px] mx-auto p-4 md:p-8 lg:p-10 pt-28 md:pt-8 pb-20">
         
         {/* HEADER */}
         <div ref={headerRef} className="opacity-0 translate-y-6">
@@ -423,7 +427,7 @@ export default function Motivation() {
         )}
       </div>
 
-      {/* SHARE MODAL */}
+      {/* SHARE MODAL - PERBAIKAN RESPONSIVE DI SINI */}
       {shareOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true">
           <div className="absolute inset-0 bg-black/30 backdrop-blur-sm transition-opacity" onClick={closeShare} />
@@ -437,12 +441,26 @@ export default function Motivation() {
                   Close
                 </button>
               </div>
+              
+              {/* Flex Container: flex-col di mobile, flex-row di desktop */}
               <div className="flex flex-col md:flex-row gap-6 items-start">
-                <div className="flex-1 flex items-center justify-center">
+                
+                {/* Bagian Kiri (Preview Card) */}
+                <div className="flex-1 flex items-center justify-center w-full">
                   <div
                     ref={shareCardRef}
+                    // DISINI UBAHANNYA: w-full dan maxWidth, serta aspectRatio agar proporsional
                     className="w-full max-w-[520px] md:max-w-none"
-                    style={{ width: previewDims.w, height: previewDims.h, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 16, transformOrigin: "top center" }}
+                    style={{ 
+                        width: "100%", 
+                        maxWidth: "520px",
+                        // aspectRatio: "520/300", // DIHAPUS agar tinggi menyesuaikan
+                        display: "flex", 
+                        alignItems: "center", 
+                        justifyContent: "center", 
+                        borderRadius: 16, 
+                        transformOrigin: "top center" 
+                    }}
                   >
                     <SharePreview
                       text={shareText}
@@ -450,9 +468,12 @@ export default function Motivation() {
                     />
                   </div>
                 </div>
-                <div style={{ width: 360 }} className="space-y-4">
+
+                {/* Bagian Kanan (Controls) */}
+                {/* UBAHANNYA: w-full di mobile, fixed width di desktop */}
+                <div className="w-full md:w-[360px] space-y-4">
                   <div>
-                    <h4 className="font-semibold mb-2">Choose template</h4>
+                    <h4 className="font-semibold mb-2 text-white md:text-gray-800">Choose template</h4>
                     <div className="grid grid-cols-2 gap-3">
                       {TEMPLATES.map((t) => (
                         <button
@@ -480,6 +501,7 @@ export default function Motivation() {
                     </div>
                   </div>
                 </div>
+
               </div>
             </div>
           </div>
