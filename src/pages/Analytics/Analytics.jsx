@@ -12,6 +12,11 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
+// --- BACKGROUND CONFIGURATION (SAME AS DASHBOARD) ---
+const bgCream = "#FFF3E0";
+const bgPink = "#eaf2ff";
+const bgLavender = "#e3edff";
+
 export default function Analytics() {
   const [mode, setMode] = useState("week");
   const headerRef = useRef(null);
@@ -49,25 +54,25 @@ export default function Analytics() {
 
   return (
     <div
-      className="min-h-screen"
+      className="min-h-screen relative"
       style={{
-        backgroundColor: "#FFF7ED",
-        backgroundImage: `
-      radial-gradient(at 10% 10%, #FFF7ED 0%, transparent 50%),
-      radial-gradient(at 90% 20%, #FFD1DC 0%, transparent 50%),
-      radial-gradient(at 50% 80%, #E3D5FF 0%, transparent 50%)
-    `,
+        backgroundColor: bgCream,
+        backgroundImage: `radial-gradient(at 10% 10%, ${bgCream} 0%, transparent 50%), radial-gradient(at 90% 20%, ${bgPink} 0%, transparent 50%), radial-gradient(at 50% 80%, ${bgLavender} 0%, transparent 50%)`,
         backgroundSize: "200% 200%",
+        animation: "gradient-bg 20s ease infinite",
       }}
     >
+      <style>{`
+        @keyframes gradient-bg { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+      `}</style>
+
       <Navbar />
 
       {/* --- MAIN CONTAINER --- 
           pt-32: Padding atas untuk Mobile (agar turun jauh dari navbar fixed)
           md:pt-8: Padding atas untuk Desktop (navbar sticky)
       */}
-      <div className="w-full max-w-[1400px] mx-auto p-4 md:p-8 lg:p-10 pt-25 md:pt-8">
-        
+      <div className="w-full max-w-[1400px] mx-auto p-4 md:p-8 lg:p-10 pt-28 md:pt-8">
         {/* HEADER */}
         <div
           ref={headerRef}
@@ -125,7 +130,6 @@ export default function Analytics() {
         {/* ==== CHARTS ==== */}
         {/* lg:grid-cols-2 agar di tablet chart menumpuk (lebih lebar), di desktop bersebelahan */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 mb-8 md:mb-10">
-          
           {/* Stress Chart */}
           <div
             className="rounded-2xl p-4 md:p-6 border backdrop-blur-xl"
@@ -143,27 +147,31 @@ export default function Analytics() {
             </h2>
 
             <div className="h-[200px] md:h-[260px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={data}>
-                    <CartesianGrid stroke="#e5e7eb" strokeDasharray="5 5" />
-                    <XAxis 
-                        dataKey={mode === "week" ? "day" : "week"} 
-                        tick={{ fontSize: 12 }}
-                    />
-                    <YAxis tick={{ fontSize: 12 }} width={30}/>
-                    <Tooltip 
-                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                    />
-                    <Line
+                  <CartesianGrid stroke="#e5e7eb" strokeDasharray="5 5" />
+                  <XAxis
+                    dataKey={mode === "week" ? "day" : "week"}
+                    tick={{ fontSize: 12 }}
+                  />
+                  <YAxis tick={{ fontSize: 12 }} width={30} />
+                  <Tooltip
+                    contentStyle={{
+                      borderRadius: "12px",
+                      border: "none",
+                      boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                    }}
+                  />
+                  <Line
                     type="monotone"
                     dataKey="stress"
                     stroke="var(--brand-blue)"
                     strokeWidth={3}
                     dot={{ r: 4, strokeWidth: 2 }}
                     activeDot={{ r: 6 }}
-                    />
+                  />
                 </LineChart>
-                </ResponsiveContainer>
+              </ResponsiveContainer>
             </div>
           </div>
 
@@ -184,27 +192,31 @@ export default function Analytics() {
             </h2>
 
             <div className="h-[200px] md:h-[260px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={data}>
-                    <CartesianGrid stroke="#e5e7eb" strokeDasharray="5 5" />
-                    <XAxis 
-                        dataKey={mode === "week" ? "day" : "week"} 
-                        tick={{ fontSize: 12 }}
-                    />
-                    <YAxis tick={{ fontSize: 12 }} width={30}/>
-                    <Tooltip 
-                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                    />
-                    <Line
+                  <CartesianGrid stroke="#e5e7eb" strokeDasharray="5 5" />
+                  <XAxis
+                    dataKey={mode === "week" ? "day" : "week"}
+                    tick={{ fontSize: 12 }}
+                  />
+                  <YAxis tick={{ fontSize: 12 }} width={30} />
+                  <Tooltip
+                    contentStyle={{
+                      borderRadius: "12px",
+                      border: "none",
+                      boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                    }}
+                  />
+                  <Line
                     type="monotone"
                     dataKey="mood"
                     stroke="var(--brand-blue-light)"
                     strokeWidth={3}
                     dot={{ r: 4, strokeWidth: 2 }}
                     activeDot={{ r: 6 }}
-                    />
+                  />
                 </LineChart>
-                </ResponsiveContainer>
+              </ResponsiveContainer>
             </div>
           </div>
         </div>

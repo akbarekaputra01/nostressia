@@ -5,8 +5,13 @@ import {
   User, Mail, Heart, Settings, LogOut, 
   Edit3, Trophy, BookOpen, 
   ChevronRight, Bell, CheckCircle, X,
-  Cake, Smile, Activity, Lock, Key, Clock, Smartphone // Icon tambahan
+  Cake, Smile, Activity, Lock, Key, Clock, Smartphone 
 } from "lucide-react";
+
+// --- COLOR CONFIGURATION (MATCHING DASHBOARD) ---
+const bgCream = "#FFF3E0";
+const bgPink = "#eaf2ff";
+const bgLavender = "#e3edff";
 
 export default function Profile() {
   const [activeTab, setActiveTab] = useState("personal"); 
@@ -17,7 +22,7 @@ export default function Profile() {
 
   // --- STATE MODAL ---
   const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [showNotifModal, setShowNotifModal] = useState(false); // State baru untuk modal notifikasi
+  const [showNotifModal, setShowNotifModal] = useState(false);
 
   // --- STATE SETTINGS DATA ---
   const [notifSettings, setNotifSettings] = useState({
@@ -142,12 +147,24 @@ export default function Profile() {
 
   return (
     <div 
-      className="min-h-screen pb-24 md:pb-10 font-sans"
+      className="min-h-screen relative pb-24 md:pb-10 font-sans"
       style={{ 
-        background: `linear-gradient(135deg, #FFF3E0 0%, #eaf2ff 50%, #e3edff 100%)`,
-        backgroundAttachment: "fixed" 
+        backgroundColor: bgCream,
+        backgroundImage: `radial-gradient(at 10% 10%, ${bgCream} 0%, transparent 50%), radial-gradient(at 90% 20%, ${bgPink} 0%, transparent 50%), radial-gradient(at 50% 80%, ${bgLavender} 0%, transparent 50%)`,
+        backgroundSize: "200% 200%",
+        animation: "gradient-bg 20s ease infinite",
       }}
     >
+      <style>{`
+        @keyframes gradient-bg { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
+        @keyframes bounceIn { 0% { transform: scale(0.9); opacity: 0; } 60% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(1); } }
+        .animate-bounce-in { animation: bounceIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .animate-fade-in { animation: fadeIn 0.2s ease-out forwards; }
+      `}</style>
+
       <Navbar />
 
       {/* --- NOTIFICATION TOAST --- */}
@@ -320,9 +337,11 @@ export default function Profile() {
         </div>
       )}
 
-      <main className="max-w-4xl mx-auto px-4 pt-24 md:pt-28">
+      {/* Main Content Area */}
+      {/* UPDATE: Menggunakan pt-28 untuk Mobile dan md:pt-8 untuk Desktop */}
+      <main className="w-full max-w-4xl mx-auto p-4 md:p-8 pt-28 md:pt-8">
         
-        {/* ... PROFILE HEADER SAMA SEPERTI SEBELUMNYA ... */}
+        {/* Profile Header */}
         <div className="relative bg-white/60 backdrop-blur-xl border border-white/40 rounded-[30px] p-6 md:p-10 shadow-xl overflow-hidden mb-8">
             <div className="absolute top-0 right-0 w-64 h-64 bg-blue-400/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-orange-400/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
@@ -410,7 +429,8 @@ export default function Profile() {
                                 <button onClick={handleEmailChangeRequest} className="px-4 py-3 rounded-xl border border-blue-200 text-blue-600 font-bold text-sm hover:bg-blue-50 transition-colors cursor-pointer whitespace-nowrap">Change</button>
                             </div>
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
+                        {/* UPDATE: Menggunakan sm:grid-cols-2 agar responsif */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                              <div className="space-y-2">
                                 <label className="text-sm font-bold text-gray-600 ml-1">Birthday</label>
                                 <div className="relative">
@@ -453,7 +473,7 @@ export default function Profile() {
                 <div className="space-y-4">
                      <div className="bg-white/60 backdrop-blur-md border border-white/40 rounded-[24px] overflow-hidden shadow-lg p-2">
                         
-                        {/* Notifications Button (NOW FUNCTIONAL) */}
+                        {/* Notifications Button */}
                         <button 
                             onClick={() => setShowNotifModal(true)}
                             className="w-full flex items-center justify-between p-4 hover:bg-white/50 rounded-xl transition-colors cursor-pointer group"

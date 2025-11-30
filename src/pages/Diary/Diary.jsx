@@ -3,6 +3,11 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "../../components/Navbar";
 
+// --- COLOR CONFIGURATION (MATCHING DASHBOARD) ---
+const bgCream = "#FFF3E0";
+const bgPink = "#eaf2ff";
+const bgLavender = "#e3edff";
+
 export default function Diary() {
   // --- STATE ---
   const [entries, setEntries] = useState([]);
@@ -36,7 +41,7 @@ export default function Diary() {
     { emoji: "😄", label: "Excited" },
   ];
 
-  // --- PALETTE COLORS ---
+  // --- PALETTE COLORS (Tetap digunakan untuk elemen UI) ---
   const colors = {
     brandBlue: "#3664BA",
     brandOrange: "#F2994A",
@@ -69,12 +74,28 @@ export default function Diary() {
   };
 
   return (
-    <div className="h-screen relative overflow-y-auto overflow-x-hidden flex flex-col font-sans transition-colors duration-500 custom-scrollbar"
-         style={{ background: `linear-gradient(135deg, ${colors.bgLavender} 0%, ${colors.bgCream} 100%)` }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Fredoka:wght@400;600&family=Manrope:wght@400;700;800&family=Patrick+Hand&display=swap');`}</style>
+    <div 
+      className="min-h-screen relative overflow-x-hidden flex flex-col font-sans transition-colors duration-500 custom-scrollbar"
+      style={{
+        backgroundColor: bgCream,
+        backgroundImage: `radial-gradient(at 10% 10%, ${bgCream} 0%, transparent 50%), radial-gradient(at 90% 20%, ${bgPink} 0%, transparent 50%), radial-gradient(at 50% 80%, ${bgLavender} 0%, transparent 50%)`,
+        backgroundSize: "200% 200%",
+        animation: "gradient-bg 20s ease infinite",
+      }}
+    >
+      {/* Styles & Animations */}
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Fredoka:wght@400;600&family=Manrope:wght@400;700;800&family=Patrick+Hand&display=swap');
+        @keyframes gradient-bg { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+      `}</style>
+      
       <Navbar />
 
-      <main className="flex-grow flex flex-col items-center w-full max-w-[1400px] mx-auto p-4 md:p-8 lg:p-10 pt-32 md:pt-8 z-10">
+      {/* Main Container Adjusted:
+         - pt-28: Padding top mobile (consistent with other pages)
+         - md:pt-8: Padding top desktop
+      */}
+      <main className="flex-grow flex flex-col items-center w-full max-w-[1400px] mx-auto p-4 md:p-8 lg:p-10 pt-28 md:pt-8 z-10">
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
             <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight" style={{ color: colors.textPrimary }}>Diary <span style={{ color: "rgb(253, 92, 0)" }}>Nostressia</span></h1>
             <p className="font-medium mt-1 opacity-60 text-sm md:text-base" style={{ color: colors.textPrimary }}>Write your story today.</p>
@@ -95,7 +116,7 @@ export default function Diary() {
                             <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                         </button>
 
-                        {/* Mood Selector - Diberi padding bottom agar tidak menabrak baris */}
+                        {/* Mood Selector */}
                         <div className="flex items-center gap-2 mb-2 overflow-x-auto scrollbar-hide py-2 border-b border-slate-200">
                             {moods.map((m) => (
                                 <button key={m.label} onClick={() => setSelectedMood(m.emoji)} className={`text-2xl hover:scale-110 transition-transform p-1 rounded-lg cursor-pointer ${selectedMood === m.emoji ? "bg-blue-50 scale-110" : "opacity-60 grayscale"}`}>{m.emoji}</button>
@@ -103,21 +124,18 @@ export default function Diary() {
                         </div>
 
                         {/* CONTAINER UNTUK TEXT & GARIS */}
-                        {/* Kita bungkus area tulis dengan div relative agar background garis menempel pas disini */}
                         <div className="flex-grow relative w-full h-full flex flex-col">
                             
-                            {/* BACKGROUND GARIS - POSISI DIATUR DISINI */}
-                            {/* marginTop disesuaikan agar garis pertama pas dibawah Title */}
+                            {/* BACKGROUND GARIS */}
                             <div className="absolute inset-0 opacity-50 pointer-events-none" 
                                 style={{ 
                                     backgroundImage: "linear-gradient(#e5e7eb 1px, transparent 1px)", 
                                     backgroundSize: "100% 40px", 
-                                    backgroundPosition: "0px 39px" // Mengatur offset garis agar pas di baseline teks
+                                    backgroundPosition: "0px 39px" 
                                 }}>
                             </div>
 
                             {/* Input Title */}
-                            {/* h-[40px] dan leading-[40px] WAJIB SAMA dengan backgroundSize garis */}
                             <input 
                                 value={title} onChange={(e) => setTitle(e.target.value)}
                                 placeholder="Title..."
@@ -126,7 +144,6 @@ export default function Diary() {
                             />
 
                             {/* Text Area */}
-                            {/* leading-[40px] WAJIB SAMA dengan backgroundSize garis */}
                             <textarea 
                                 value={text} onChange={(e) => setText(e.target.value)}
                                 placeholder="Dear diary..."
