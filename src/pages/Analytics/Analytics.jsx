@@ -51,14 +51,13 @@ export default function Analytics() {
     <div
       className="min-h-screen"
       style={{
-        background: `
-          linear-gradient(
-            135deg,
-            var(--bg-gradient-cream),
-            var(--bg-gradient-pink),
-            var(--bg-gradient-lavender)
-          )
-        `,
+        backgroundColor: "#FFF7ED",
+        backgroundImage: `
+      radial-gradient(at 10% 10%, #FFF7ED 0%, transparent 50%),
+      radial-gradient(at 90% 20%, #FFD1DC 0%, transparent 50%),
+      radial-gradient(at 50% 80%, #E3D5FF 0%, transparent 50%)
+    `,
+        backgroundSize: "200% 200%",
       }}
     >
       <Navbar />
