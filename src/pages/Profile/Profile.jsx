@@ -1,17 +1,13 @@
 // src/pages/Profile/Profile.jsx
 import React, { useState, useRef } from "react";
+import { Link } from "react-router-dom"; // [BARU] Import Link
 import Navbar from "../../components/Navbar";
 import { 
   User, Mail, Heart, Settings, LogOut, 
   Edit3, Trophy, BookOpen, 
   ChevronRight, Bell, CheckCircle, X,
-  Cake, Smile, Activity, Lock, Key, Clock, Smartphone 
+  Cake, Smile, Activity, Lock, Key, Clock, Smartphone, Bookmark, Plus // [BARU] Tambah icon Plus
 } from "lucide-react";
-
-// --- COLOR CONFIGURATION (MATCHING DASHBOARD) ---
-const bgCream = "#FFF3E0";
-const bgPink = "#eaf2ff";
-const bgLavender = "#e3edff";
 
 export default function Profile() {
   const [activeTab, setActiveTab] = useState("personal"); 
@@ -22,7 +18,7 @@ export default function Profile() {
 
   // --- STATE MODAL ---
   const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [showNotifModal, setShowNotifModal] = useState(false);
+  const [showNotifModal, setShowNotifModal] = useState(false); 
 
   // --- STATE SETTINGS DATA ---
   const [notifSettings, setNotifSettings] = useState({
@@ -147,24 +143,12 @@ export default function Profile() {
 
   return (
     <div 
-      className="min-h-screen relative pb-24 md:pb-10 font-sans"
+      className="min-h-screen pb-24 md:pb-10 font-sans"
       style={{ 
-        backgroundColor: bgCream,
-        backgroundImage: `radial-gradient(at 10% 10%, ${bgCream} 0%, transparent 50%), radial-gradient(at 90% 20%, ${bgPink} 0%, transparent 50%), radial-gradient(at 50% 80%, ${bgLavender} 0%, transparent 50%)`,
-        backgroundSize: "200% 200%",
-        animation: "gradient-bg 20s ease infinite",
+        background: `linear-gradient(135deg, #FFF3E0 0%, #eaf2ff 50%, #e3edff 100%)`,
+        backgroundAttachment: "fixed" 
       }}
     >
-      <style>{`
-        @keyframes gradient-bg { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
-        @keyframes bounceIn { 0% { transform: scale(0.9); opacity: 0; } 60% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(1); } }
-        .animate-bounce-in { animation: bounceIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .animate-fade-in { animation: fadeIn 0.2s ease-out forwards; }
-      `}</style>
-
       <Navbar />
 
       {/* --- NOTIFICATION TOAST --- */}
@@ -337,11 +321,9 @@ export default function Profile() {
         </div>
       )}
 
-      {/* Main Content Area */}
-      {/* UPDATE: Menggunakan pt-28 untuk Mobile dan md:pt-8 untuk Desktop */}
-      <main className="w-full max-w-4xl mx-auto p-4 md:p-8 pt-28 md:pt-8">
+      <main className="max-w-4xl mx-auto px-4 pt-24 md:pt-28">
         
-        {/* Profile Header */}
+        {/* PROFILE HEADER */}
         <div className="relative bg-white/60 backdrop-blur-xl border border-white/40 rounded-[30px] p-6 md:p-10 shadow-xl overflow-hidden mb-8">
             <div className="absolute top-0 right-0 w-64 h-64 bg-blue-400/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-orange-400/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
@@ -378,7 +360,7 @@ export default function Profile() {
             <div className="bg-white/40 backdrop-blur-md p-1.5 rounded-2xl flex gap-2 border border-white/30 shadow-sm overflow-x-auto">
                 {[
                     { id: "personal", label: "Personal", icon: <User className="w-4 h-4" /> },
-                    { id: "saved", label: "Saved", icon: <Heart className="w-4 h-4" /> },
+                    { id: "bookmark", label: "Bookmark", icon: <Bookmark className="w-4 h-4" /> }, 
                     { id: "settings", label: "Settings", icon: <Settings className="w-4 h-4" /> }
                 ].map((tab) => (
                     <button
@@ -429,8 +411,7 @@ export default function Profile() {
                                 <button onClick={handleEmailChangeRequest} className="px-4 py-3 rounded-xl border border-blue-200 text-blue-600 font-bold text-sm hover:bg-blue-50 transition-colors cursor-pointer whitespace-nowrap">Change</button>
                             </div>
                         </div>
-                        {/* UPDATE: Menggunakan sm:grid-cols-2 agar responsif */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-2 gap-4">
                              <div className="space-y-2">
                                 <label className="text-sm font-bold text-gray-600 ml-1">Birthday</label>
                                 <div className="relative">
@@ -453,18 +434,34 @@ export default function Profile() {
                 </div>
             )}
 
-            {/* SAVED TAB */}
-            {activeTab === "saved" && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                     {savedItems.map((item) => (
-                        <div key={item.id} className="bg-white/70 backdrop-blur-sm p-6 rounded-[24px] border border-white/50 shadow-sm hover:shadow-md transition-all relative">
-                            <div className="flex justify-between items-start mb-3">
-                                <span className="bg-blue-100 text-blue-600 text-[10px] font-bold px-2 py-1 rounded-lg uppercase tracking-wider">{item.category}</span>
-                                <button onClick={() => handleUnsave(item.id)} className="text-red-500 hover:scale-110 transition-transform cursor-pointer"><Heart className="w-5 h-5 fill-current" /></button>
+            {/* BOOKMARK TAB (Previously SAVED) */}
+            {activeTab === "bookmark" && (
+                <div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                        {savedItems.map((item) => (
+                            <div key={item.id} className="bg-white/70 backdrop-blur-sm p-6 rounded-[24px] border border-white/50 shadow-sm hover:shadow-md transition-all relative">
+                                <div className="flex justify-between items-start mb-3">
+                                    <span className="bg-blue-100 text-blue-600 text-[10px] font-bold px-2 py-1 rounded-lg uppercase tracking-wider">{item.category}</span>
+                                    {/* [UBAH] Ikon hati jadi bookmark & warna oranye */}
+                                    <button onClick={() => handleUnsave(item.id)} className="text-orange-500 hover:scale-110 transition-transform cursor-pointer">
+                                        <Bookmark className="w-5 h-5 fill-current" />
+                                    </button>
+                                </div>
+                                <p className="text-gray-800 font-medium italic text-lg mb-4">"{item.text}"</p>
                             </div>
-                            <p className="text-gray-800 font-medium italic text-lg mb-4">"{item.text}"</p>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
+
+                    {/* [BARU] Tombol Add More Bookmarks */}
+                    <div className="flex justify-center">
+                        <Link 
+                            to="/motivation" 
+                            className="px-6 py-3 rounded-xl border-2 border-dashed border-orange-300 text-orange-600 font-bold hover:bg-orange-50 hover:border-orange-500 transition-all flex items-center gap-2"
+                        >
+                            <Plus className="w-5 h-5" />
+                            Add More Bookmarks
+                        </Link>
+                    </div>
                 </div>
             )}
 
