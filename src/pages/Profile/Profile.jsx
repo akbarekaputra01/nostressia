@@ -1,11 +1,12 @@
 // src/pages/Profile/Profile.jsx
 import React, { useState, useRef } from "react";
+import { Link } from "react-router-dom"; // [BARU] Import Link
 import Navbar from "../../components/Navbar";
 import { 
   User, Mail, Heart, Settings, LogOut, 
   Edit3, Trophy, BookOpen, 
   ChevronRight, Bell, CheckCircle, X,
-  Cake, Smile, Activity, Lock, Key, Clock, Smartphone // Icon tambahan
+  Cake, Smile, Activity, Lock, Key, Clock, Smartphone, Bookmark, Plus // [BARU] Tambah icon Plus
 } from "lucide-react";
 
 export default function Profile() {
@@ -17,7 +18,7 @@ export default function Profile() {
 
   // --- STATE MODAL ---
   const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [showNotifModal, setShowNotifModal] = useState(false); // State baru untuk modal notifikasi
+  const [showNotifModal, setShowNotifModal] = useState(false); 
 
   // --- STATE SETTINGS DATA ---
   const [notifSettings, setNotifSettings] = useState({
@@ -322,7 +323,7 @@ export default function Profile() {
 
       <main className="max-w-4xl mx-auto px-4 pt-24 md:pt-28">
         
-        {/* ... PROFILE HEADER SAMA SEPERTI SEBELUMNYA ... */}
+        {/* PROFILE HEADER */}
         <div className="relative bg-white/60 backdrop-blur-xl border border-white/40 rounded-[30px] p-6 md:p-10 shadow-xl overflow-hidden mb-8">
             <div className="absolute top-0 right-0 w-64 h-64 bg-blue-400/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-orange-400/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
@@ -359,7 +360,7 @@ export default function Profile() {
             <div className="bg-white/40 backdrop-blur-md p-1.5 rounded-2xl flex gap-2 border border-white/30 shadow-sm overflow-x-auto">
                 {[
                     { id: "personal", label: "Personal", icon: <User className="w-4 h-4" /> },
-                    { id: "saved", label: "Saved", icon: <Heart className="w-4 h-4" /> },
+                    { id: "bookmark", label: "Bookmark", icon: <Bookmark className="w-4 h-4" /> }, 
                     { id: "settings", label: "Settings", icon: <Settings className="w-4 h-4" /> }
                 ].map((tab) => (
                     <button
@@ -433,18 +434,34 @@ export default function Profile() {
                 </div>
             )}
 
-            {/* SAVED TAB */}
-            {activeTab === "saved" && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                     {savedItems.map((item) => (
-                        <div key={item.id} className="bg-white/70 backdrop-blur-sm p-6 rounded-[24px] border border-white/50 shadow-sm hover:shadow-md transition-all relative">
-                            <div className="flex justify-between items-start mb-3">
-                                <span className="bg-blue-100 text-blue-600 text-[10px] font-bold px-2 py-1 rounded-lg uppercase tracking-wider">{item.category}</span>
-                                <button onClick={() => handleUnsave(item.id)} className="text-red-500 hover:scale-110 transition-transform cursor-pointer"><Heart className="w-5 h-5 fill-current" /></button>
+            {/* BOOKMARK TAB (Previously SAVED) */}
+            {activeTab === "bookmark" && (
+                <div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                        {savedItems.map((item) => (
+                            <div key={item.id} className="bg-white/70 backdrop-blur-sm p-6 rounded-[24px] border border-white/50 shadow-sm hover:shadow-md transition-all relative">
+                                <div className="flex justify-between items-start mb-3">
+                                    <span className="bg-blue-100 text-blue-600 text-[10px] font-bold px-2 py-1 rounded-lg uppercase tracking-wider">{item.category}</span>
+                                    {/* [UBAH] Ikon hati jadi bookmark & warna oranye */}
+                                    <button onClick={() => handleUnsave(item.id)} className="text-orange-500 hover:scale-110 transition-transform cursor-pointer">
+                                        <Bookmark className="w-5 h-5 fill-current" />
+                                    </button>
+                                </div>
+                                <p className="text-gray-800 font-medium italic text-lg mb-4">"{item.text}"</p>
                             </div>
-                            <p className="text-gray-800 font-medium italic text-lg mb-4">"{item.text}"</p>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
+
+                    {/* [BARU] Tombol Add More Bookmarks */}
+                    <div className="flex justify-center">
+                        <Link 
+                            to="/motivation" 
+                            className="px-6 py-3 rounded-xl border-2 border-dashed border-orange-300 text-orange-600 font-bold hover:bg-orange-50 hover:border-orange-500 transition-all flex items-center gap-2"
+                        >
+                            <Plus className="w-5 h-5" />
+                            Add More Bookmarks
+                        </Link>
+                    </div>
                 </div>
             )}
 
@@ -453,7 +470,7 @@ export default function Profile() {
                 <div className="space-y-4">
                      <div className="bg-white/60 backdrop-blur-md border border-white/40 rounded-[24px] overflow-hidden shadow-lg p-2">
                         
-                        {/* Notifications Button (NOW FUNCTIONAL) */}
+                        {/* Notifications Button */}
                         <button 
                             onClick={() => setShowNotifModal(true)}
                             className="w-full flex items-center justify-between p-4 hover:bg-white/50 rounded-xl transition-colors cursor-pointer group"
