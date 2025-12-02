@@ -5,23 +5,39 @@ import {
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 
-export default function AdminPage() {
+// 1. Terima props skipAuth (default false)
+export default function AdminPage({ skipAuth = false }) {
   const navigate = useNavigate();
   const [activeModal, setActiveModal] = useState(null);
 
-  // --- AMBIL DATA ADMIN DARI LOCALSTORAGE ---
+  // --- STATE USER ---
   const [currentUser, setCurrentUser] = useState({
       id: 0,
       name: "",
       role: ""
   });
 
-
+  // 2. USE EFFECT UNTUK CEK LOGIN / BYPASS
   useEffect(() => {
+    // A. Cek apakah Mode Developer (Bypass) aktif?
+    if (skipAuth) {
+      setCurrentUser({
+        id: 999,
+        name: "Developer Mode",
+        role: "admin"
+      });
+      return; // Stop di sini, jangan cek localStorage
+    }
+
+    // B. Logika Login Normal
     const storedUser = localStorage.getItem("adminData");
-    if (storedUser) setCurrentUser(JSON.parse(storedUser));
-    else navigate("/admin/login");
-  }, [navigate]);
+    if (storedUser) {
+      setCurrentUser(JSON.parse(storedUser));
+    } else {
+      // Jika tidak ada data user, tendang ke login
+      navigate("/admin/login");
+    }
+  }, [navigate, skipAuth]);
 
   // --- FUNGSI LOGOUT ---
   const handleLogout = () => {
@@ -29,7 +45,6 @@ export default function AdminPage() {
     localStorage.removeItem("adminData");
     localStorage.removeItem("adminAuth");
     navigate("/admin/login");
- 
   };
 
   // ==========================================
@@ -38,19 +53,25 @@ export default function AdminPage() {
 
   // 1. MOTIVATION
   const [quotes, setQuotes] = useState([]);
+  
+  // Fetch data motivasi dari API
   useEffect(() => {
     fetch("http://127.0.0.1:8000/api/motivations")
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error("Gagal fetch");
+        return res.json();
+      })
       .then(data => {
         const formatted = data.map(item => ({
           id: item.motivationID,
           text: item.quote,
           author: item.authorName || "Unknown",
-          uploaderName: "Admin",
-          uploaderId: "ADM" + String(item.uploaderID).padStart(3, "0"),
+          uploaderName: "Admin", // Bisa disesuaikan jika API mengirim data uploader
+          uploaderId: "ADM" + String(item.uploaderID || 0).padStart(3, "0"),
         }));
         setQuotes(formatted);
-      });
+      })
+      .catch(err => console.log("Mode offline atau API error:", err));
   }, []);
 
   const [quoteForm, setQuoteForm] = useState({ text: "", author: "" });
@@ -64,33 +85,40 @@ export default function AdminPage() {
       uploaderID: currentUser.id
     };
 
-    const res = await fetch("http://127.0.0.1:8000/api/motivations", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
+    try {
+      const res = await fetch("http://127.0.0.1:8000/api/motivations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
 
-    const data = await res.json();
-
-    setQuotes([{ 
-      id: data.motivationID,
-      text: data.quote,
-      author: data.authorName, 
-      uploaderName: currentUser.name,
-      uploaderId: "ADM" + String(currentUser.id).padStart(3, "0")
-    }, ...quotes]);
-
-    setQuoteForm({ text: "", author: "" });
+      if(res.ok) {
+        const data = await res.json();
+        setQuotes([{ 
+          id: data.motivationID,
+          text: data.quote,
+          author: data.authorName, 
+          uploaderName: currentUser.name,
+          uploaderId: "ADM" + String(currentUser.id).padStart(3, "0")
+        }, ...quotes]);
+        setQuoteForm({ text: "", author: "" });
+      }
+    } catch (err) {
+      alert("Gagal menyimpan ke server (API Error)");
+    }
   };
 
   const handleDeleteQuote = async (id) => {
     if (!confirm("Hapus quote ini?")) return;
 
-    await fetch(`http://127.0.0.1:8000/api/motivations/${id}`, {
-      method: "DELETE",
-    });
-
-    setQuotes(quotes.filter(q => q.id !== id));
+    try {
+      await fetch(`http://127.0.0.1:8000/api/motivations/${id}`, {
+        method: "DELETE",
+      });
+      setQuotes(quotes.filter(q => q.id !== id));
+    } catch (err) {
+      console.error("Gagal hapus:", err);
+    }
   };
 
 
@@ -143,11 +171,15 @@ export default function AdminPage() {
           <h1 className="text-xl font-bold text-gray-800">Admin Panel <span className="text-blue-600">Nostressia</span></h1>
         </div>
         <div className="flex items-center gap-6">
+            {/* Tampilkan User Profile */}
             <div className="hidden md:flex items-center gap-3 text-sm font-medium bg-gray-100 px-4 py-2 rounded-full border border-gray-200">
                 <UserCircle size={20} className="text-blue-500"/>
                 <div className="flex flex-col leading-tight">
                     <span className="text-gray-700 font-bold">{currentUser.name}</span>
-                    <span className="text-[10px] text-gray-500 uppercase tracking-wider">adm{String(currentUser.id).padStart(3, "0")}</span>
+                    <span className="text-[10px] text-gray-500 uppercase tracking-wider">
+                      {/* Tampilkan ID, handle jika ID developer (999) */}
+                      {currentUser.id === 999 ? "DEV-MODE" : `adm${String(currentUser.id).padStart(3, "0")}`}
+                    </span>
                 </div>
             </div>
             <button onClick={handleLogout} className="text-red-500 hover:bg-red-50 px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-colors cursor-pointer">
@@ -161,6 +193,12 @@ export default function AdminPage() {
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-gray-900">Dashboard Overview</h2>
           <p className="text-gray-500">Kelola konten Motivasi dan Tips Kesehatan.</p>
+          {/* Info tambahan jika mode bypass */}
+          {skipAuth && (
+            <p className="mt-2 text-xs font-bold text-orange-600 bg-orange-100 inline-block px-2 py-1 rounded">
+              * Anda sedang dalam Mode Developer (Login Bypassed)
+            </p>
+          )}
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Card Motivasi */}
