@@ -14,7 +14,7 @@ export default function Diary() {
   const [title, setTitle] = useState("");
   const [text, setText] = useState("");
   const [selectedMood, setSelectedMood] = useState("😐");
-  const [selectedFont, setSelectedFont] = useState("'Manrope', sans-serif");
+  const [selectedFont, setSelectedFont] = useState("var(--font-base)");
   const [selectedEntry, setSelectedEntry] = useState(null);
   const [isBookOpen, setIsBookOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -28,7 +28,7 @@ export default function Diary() {
 
   // --- CONFIG ---
   const fontOptions = [
-    { name: "Default", value: "'Manrope', sans-serif", label: "Aa" },
+    { name: "Default", value: "var(--font-base)", label: "Aa" },
     { name: "Handwriting", value: "'Patrick Hand', cursive", label: "✍️" },
     { name: "Cute", value: "'Fredoka', sans-serif", label: "🧸" },
   ];
@@ -85,7 +85,6 @@ export default function Diary() {
     >
       {/* Styles & Animations */}
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Fredoka:wght@400;600&family=Manrope:wght@400;700;800&family=Patrick+Hand&display=swap');
         @keyframes gradient-bg { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
       `}</style>
       
