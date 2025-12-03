@@ -1,24 +1,23 @@
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
-/* @tailwind base;
-@tailwind components;
-@tailwind utilities; */
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@theme {
+@layer base {
+  :root {
     /* ===== Primary Brand Colors ===== */
-    --brand-blue: #3664BA;        /* Dari logo */
-    --brand-orange: #F2994A;      /* Aksen oranye */
-    --brand-blue-light: #2F80ED;  /* Biru terang */
+    --brand-blue: #3664ba; /* Dari logo */
+    --brand-orange: #f2994a; /* Aksen oranye */
+    --brand-blue-light: #2f80ed; /* Biru terang */
 
     /* ===== Text Colors ===== */
     --text-primary: #333333;
     --text-secondary: #666666;
 
     /* ===== Accent Colors (Optional) ===== */
-    --accent-yellow: #F2994A;     /* Warna aksen */
+    --accent-yellow: #f2994a; /* Warna aksen */
 
     /* ===== Glassmorphism ===== */
     --glass-bg: rgba(255, 255, 255, 0.4);
@@ -26,7 +25,14 @@
     --glass-shadow: rgba(0, 0, 0, 0.05);
 
     /* ===== Background Gradients ===== */
-    --bg-gradient-cream: #FFF3E0;     /* Cream oranye */
-    --bg-gradient-pink: #eaf2ff;      /* Pink muda */
-    --bg-gradient-lavender: #e3edff;  /* Lavender muda */
+    --bg-gradient-cream: #fff3e0; /* Cream oranye */
+    --bg-gradient-pink: #eaf2ff; /* Pink muda */
+    --bg-gradient-lavender: #e3edff; /* Lavender muda */
+  }
+
+  body {
+    font-family: "Manrope", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    color: var(--text-primary);
+    background-color: #ffffff;
+  }
 }
