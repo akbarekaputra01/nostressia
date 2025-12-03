@@ -85,7 +85,6 @@ export default function Diary() {
     >
       {/* Styles & Animations */}
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Fredoka:wght@400;600&family=Manrope:wght@400;700;800&family=Patrick+Hand&display=swap');
         @keyframes gradient-bg { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
       `}</style>
       
