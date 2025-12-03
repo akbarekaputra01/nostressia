@@ -7,6 +7,9 @@
 
 @layer base {
   :root {
+    /* ===== Typography ===== */
+    --font-base: "Manrope", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
     /* ===== Primary Brand Colors ===== */
     --brand-blue: #3664ba; /* Dari logo */
     --brand-orange: #f2994a; /* Aksen oranye */
@@ -31,7 +34,7 @@
   }
 
   body {
-    font-family: "Manrope", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-family: var(--font-base);
     color: var(--text-primary);
     background-color: #ffffff;
   }
