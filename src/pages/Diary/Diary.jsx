@@ -10,11 +10,12 @@ const bgLavender = "#e3edff";
 
 export default function Diary() {
   // --- STATE ---
+  const baseFont = "var(--font-base), 'Manrope', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif";
   const [entries, setEntries] = useState([]);
   const [title, setTitle] = useState("");
   const [text, setText] = useState("");
   const [selectedMood, setSelectedMood] = useState("😐");
-  const [selectedFont, setSelectedFont] = useState("'Manrope', sans-serif");
+  const [selectedFont, setSelectedFont] = useState(baseFont);
   const [selectedEntry, setSelectedEntry] = useState(null);
   const [isBookOpen, setIsBookOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -28,7 +29,7 @@ export default function Diary() {
 
   // --- CONFIG ---
   const fontOptions = [
-    { name: "Default", value: "'Manrope', sans-serif", label: "Aa" },
+    { name: "Default", value: baseFont, label: "Aa" },
     { name: "Handwriting", value: "'Patrick Hand', cursive", label: "✍️" },
     { name: "Cute", value: "'Fredoka', sans-serif", label: "🧸" },
   ];
@@ -74,18 +75,18 @@ export default function Diary() {
   };
 
   return (
-    <div 
+    <div
       className="min-h-screen relative overflow-x-hidden flex flex-col font-sans transition-colors duration-500 custom-scrollbar"
       style={{
         backgroundColor: bgCream,
         backgroundImage: `radial-gradient(at 10% 10%, ${bgCream} 0%, transparent 50%), radial-gradient(at 90% 20%, ${bgPink} 0%, transparent 50%), radial-gradient(at 50% 80%, ${bgLavender} 0%, transparent 50%)`,
         backgroundSize: "200% 200%",
         animation: "gradient-bg 20s ease infinite",
+        fontFamily: baseFont,
       }}
     >
       {/* Styles & Animations */}
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Fredoka:wght@400;600&family=Manrope:wght@400;700;800&family=Patrick+Hand&display=swap');
         @keyframes gradient-bg { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
       `}</style>
       
@@ -136,19 +137,19 @@ export default function Diary() {
                             </div>
 
                             {/* Input Title */}
-                            <input 
+                            <input
                                 value={title} onChange={(e) => setTitle(e.target.value)}
                                 placeholder="Title..."
                                 className="bg-transparent text-xl md:text-2xl font-bold placeholder:text-slate-300 focus:outline-none w-full h-[40px] leading-[40px] mb-0 relative z-10"
-                                style={{ fontFamily: selectedFont, color: colors.brandBlue }}
+                                style={{ fontFamily: selectedFont || baseFont, color: colors.brandBlue }}
                             />
 
                             {/* Text Area */}
-                            <textarea 
+                            <textarea
                                 value={text} onChange={(e) => setText(e.target.value)}
                                 placeholder="Dear diary..."
                                 className="flex-grow bg-transparent resize-none focus:outline-none text-slate-700 text-base md:text-lg leading-[40px] custom-scrollbar w-full relative z-10 pt-0"
-                                style={{ fontFamily: selectedFont }}
+                                style={{ fontFamily: selectedFont || baseFont }}
                             />
                         </div>
 
@@ -201,8 +202,8 @@ export default function Diary() {
                         <AnimatePresence mode="popLayout">
                             {entries.map(entry => (
                                 <motion.div key={entry.id} layout initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.5 }} className="flex-shrink-0 snap-center relative group/card bg-white rounded-2xl shadow-sm border border-slate-100 cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between p-6 w-[85vw] sm:w-[320px] md:w-[calc(50%-10px)] lg:w-[calc(33.333%-14px)] h-[240px]" onClick={() => setSelectedEntry(entry)}>
-                                    <div><div className="flex justify-between items-start mb-3"><span className="text-3xl filter drop-shadow-sm">{entry.mood}</span><button onClick={(e) => handleDelete(entry.id, e)} className="w-8 h-8 flex items-center justify-center rounded-full bg-red-50 text-red-400 opacity-0 group-hover/card:opacity-100 transition-all hover:bg-red-500 hover:text-white">✕</button></div><h4 className="font-bold text-lg mb-1 truncate leading-tight" style={{ color: colors.textPrimary, fontFamily: entry.font }}>{entry.title}</h4><p className="text-[10px] font-bold uppercase tracking-widest opacity-40 mb-3 text-slate-500">{entry.date}</p></div>
-                                    <div className="relative overflow-hidden h-full"><p className="text-slate-500 text-sm leading-relaxed line-clamp-3" style={{ fontFamily: entry.font }}>{entry.content}</p><div className="absolute bottom-0 left-0 w-full h-8 bg-gradient-to-t from-white to-transparent"></div></div>
+                                    <div><div className="flex justify-between items-start mb-3"><span className="text-3xl filter drop-shadow-sm">{entry.mood}</span><button onClick={(e) => handleDelete(entry.id, e)} className="w-8 h-8 flex items-center justify-center rounded-full bg-red-50 text-red-400 opacity-0 group-hover/card:opacity-100 transition-all hover:bg-red-500 hover:text-white">✕</button></div><h4 className="font-bold text-lg mb-1 truncate leading-tight" style={{ color: colors.textPrimary, fontFamily: entry.font || baseFont }}>{entry.title}</h4><p className="text-[10px] font-bold uppercase tracking-widest opacity-40 mb-3 text-slate-500">{entry.date}</p></div>
+                                    <div className="relative overflow-hidden h-full"><p className="text-slate-500 text-sm leading-relaxed line-clamp-3" style={{ fontFamily: entry.font || baseFont }}>{entry.content}</p><div className="absolute bottom-0 left-0 w-full h-8 bg-gradient-to-t from-white to-transparent"></div></div>
                                     <div className="mt-2 text-right"><span className="text-xs font-semibold text-blue-400 group-hover/card:underline">Read more →</span></div>
                                 </motion.div>
                             ))}
@@ -225,7 +226,7 @@ export default function Diary() {
                     <div className="p-6 md:p-10 flex flex-col h-full">
                         <div className="flex items-center gap-5 mb-6"><div className="w-16 h-16 flex-shrink-0 flex items-center justify-center bg-orange-50 rounded-full text-4xl shadow-sm border border-orange-100">{selectedEntry.mood}</div><div className="flex flex-col"><h2 className="text-2xl md:text-3xl font-extrabold text-slate-800 leading-tight">{selectedEntry.title}</h2><span className="text-xs font-bold tracking-widest uppercase mt-1" style={{ color: colors.brandBlue }}>{selectedEntry.date}</span></div></div>
                         <div className="w-full border-b border-slate-200 mb-6"></div>
-                        <div className="overflow-y-auto custom-scrollbar pr-2 min-h-[200px] max-h-[50vh]"><p className="text-slate-700 text-lg md:text-xl whitespace-pre-wrap leading-loose" style={{ fontFamily: selectedEntry.font, backgroundImage: "repeating-linear-gradient(transparent, transparent 39px, #e5e7eb 40px)", backgroundAttachment: "local", lineHeight: "40px" }}>{selectedEntry.content}</p></div>
+                        <div className="overflow-y-auto custom-scrollbar pr-2 min-h-[200px] max-h-[50vh]"><p className="text-slate-700 text-lg md:text-xl whitespace-pre-wrap leading-loose" style={{ fontFamily: selectedEntry.font || baseFont, backgroundImage: "repeating-linear-gradient(transparent, transparent 39px, #e5e7eb 40px)", backgroundAttachment: "local", lineHeight: "40px" }}>{selectedEntry.content}</p></div>
                         <div className="mt-6 pt-2 flex justify-between items-center text-slate-300 select-none"><div className="text-sm">◄</div><div className="flex-grow mx-4 h-1.5 bg-slate-100 rounded-full overflow-hidden relative"><div className="absolute left-0 top-0 bottom-0 w-1/3 bg-slate-300 rounded-full"></div></div><div className="text-sm">►</div></div>
                     </div>
                 </motion.div>
