@@ -1,25 +1,30 @@
 from functools import lru_cache
 from typing import List
 
-from pydantic import BaseSettings, Field
+from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
     """Application settings pulled from environment variables or `.env` file."""
 
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+
     app_name: str = Field("Nostressia API", description="Application name exposed in OpenAPI")
     api_prefix: str = Field("/api", description="Root API prefix")
     allowed_origins: List[str] = Field(default_factory=lambda: ["*"], description="CORS allow list")
+
+    jwt_secret: str = Field(..., env="JWT_SECRET", description="Secret key for signing JWT tokens")
+    jwt_algorithm: str = Field("HS256", env="JWT_ALGORITHM", description="JWT signing algorithm")
+    access_token_expire_minutes: int = Field(
+        1440, env="ACCESS_TOKEN_EXPIRE_MINUTES", description="JWT access token lifetime in minutes"
+    )
 
     db_user: str = Field(..., env="DB_USER")
     db_password: str = Field(..., env="DB_PASSWORD")
     db_host: str = Field(..., env="DB_HOST")
     db_port: int = Field(3306, env="DB_PORT")
     db_name: str = Field(..., env="DB_NAME")
-
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
 
     @property
     def database_url(self) -> str:
