@@ -17,6 +17,8 @@ FastAPI service that powers Nostressia authentication, motivation, and tips APIs
    pip install --upgrade pip
    pip install -r requirements.txt
    ```
+   > If you installed dependencies before this update, reinstall them to pull in the pinned `bcrypt` version and the new
+   > `pydantic-settings` package required for configuration loading.
 3. **Configure environment variables:** Create a `.env` file in the project root or export variables directly. Example matching the shared credentials:
    ```bash
    DB_USER=Nostressia_nationalas

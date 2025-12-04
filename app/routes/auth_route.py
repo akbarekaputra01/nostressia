@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -9,12 +9,21 @@ from app.utils.jwt_handler import create_access_token
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
-@router.post("/admin/login", response_model=LoginResponse, status_code=status.HTTP_200_OK)
-def admin_login(request: LoginRequest, db: Session = Depends(get_db)) -> LoginResponse:
+@router.post("/admin/login", response_model=LoginResponse)
+def admin_login(request: LoginRequest, db: Session = Depends(get_db)):
     admin = authenticate_admin(db, request.username, request.password)
     if not admin:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Username atau password salah")
+        raise HTTPException(status_code=401, detail="Username atau password salah")
 
     access_token = create_access_token({"sub": admin.username, "role": "admin"})
 
-    return LoginResponse(access_token=access_token, admin=admin)
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "admin": {
+            "id": admin.adminID,
+            "name": admin.name,
+            "username": admin.username,
+            "email": admin.email,
+        },
+    }
