@@ -1,33 +1,23 @@
 from datetime import datetime, timedelta
-from typing import Any, Dict, Optional
+import os
 
-from jose import JWTError, jwt
+from jose import jwt
 
-from app.core.config import settings
+SECRET_KEY = os.getenv("JWT_SECRET", "supersecretkey")
+ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "1440"))
 
 
-def create_access_token(data: Dict[str, Any], expires_delta: Optional[timedelta] = None) -> str:
-    """Create a signed JWT access token.
-
-    Args:
-        data: Claims to encode into the token.
-        expires_delta: Optional expiration delta; defaults to configured minutes.
-
-    Returns:
-        Encoded JWT string.
-    """
-
+def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
     to_encode = data.copy()
-    expire_delta = expires_delta or timedelta(minutes=settings.access_token_expire_minutes)
+    expire_delta = expires_delta if expires_delta else timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     expire = datetime.utcnow() + expire_delta
     to_encode.update({"exp": expire})
-    return jwt.encode(to_encode, settings.jwt_secret, algorithm=settings.jwt_algorithm)
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
-def decode_access_token(token: str) -> Optional[Dict[str, Any]]:
-    """Decode a JWT access token returning its payload or ``None`` on error."""
-
+def decode_access_token(token: str):
     try:
-        return jwt.decode(token, settings.jwt_secret, algorithms=[settings.jwt_algorithm])
-    except JWTError:
+        return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    except Exception:
         return None
