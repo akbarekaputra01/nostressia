@@ -1,20 +1,20 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-from app.core.database import get_db
-from app.models.tips_model import Tips, TipsCategory
 from typing import List
 
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+
+from app.core.database import get_db
+from app.models.tips_model import Tips, TipsCategory
 from app.schemas.tips_schema import (
-    TipsCreate, TipsResponse,
+    TipsCategoryCreate,
+    TipsCategoryResponse,
+    TipsCreate,
+    TipsResponse,
     TipsUpdate,
-    TipsCategoryCreate, TipsCategoryResponse
 )
 
 router = APIRouter(prefix="/tips", tags=["Tips"])
 
-# ==========================
-#   TIPS CATEGORIES CRUD
-# ==========================
 
 @router.post("/categories", response_model=TipsCategoryResponse)
 def create_category(data: TipsCategoryCreate, db: Session = Depends(get_db)):
@@ -41,10 +41,6 @@ def delete_category(id: int, db: Session = Depends(get_db)):
     return {"message": "Category deleted"}
 
 
-# ==========================
-#        TIPS CRUD
-# ==========================
-
 @router.post("/", response_model=TipsResponse)
 def create_tip(data: TipsCreate, db: Session = Depends(get_db)):
     new_tip = Tips(
@@ -63,11 +59,9 @@ def get_all_tips(db: Session = Depends(get_db)):
     return db.query(Tips).all()
 
 
-# ⭐⭐⭐ FIX: GET tips berdasarkan kategori
 @router.get("/by-category/{category_id}", response_model=List[TipsResponse])
 def get_tips_by_category(category_id: int, db: Session = Depends(get_db)):
-    tips = db.query(Tips).filter(Tips.tipCategoryID == category_id).all()
-    return tips
+    return db.query(Tips).filter(Tips.tipCategoryID == category_id).all()
 
 
 @router.get("/{id}", response_model=TipsResponse)
