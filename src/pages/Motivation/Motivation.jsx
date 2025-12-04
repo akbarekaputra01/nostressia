@@ -122,7 +122,7 @@ export default function Motivation() {
       setLoading(true);
       setError("");
       try {
-        const res = await fetch("http://127.0.0.1:8000/api/motivations/");
+        const res = await fetch("https://nostressia-backend2.vercel.app/api/motivations/");
         if (!res.ok) throw new Error(`API error ${res.status}`);
         const data = await res.json();
         if (!mounted) return;
