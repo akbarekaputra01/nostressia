@@ -17,6 +17,7 @@ passlib
 pyasn1
 pycparser
 pydantic
+pydantic-settings
 pydantic_core
 python-dotenv
 python-jose

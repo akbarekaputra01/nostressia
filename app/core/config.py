@@ -1,11 +1,14 @@
 from functools import lru_cache
 from typing import List
 
-from pydantic import BaseSettings, Field
+from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
     """Application settings pulled from environment variables or `.env` file."""
+
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
     app_name: str = Field("Nostressia API", description="Application name exposed in OpenAPI")
     api_prefix: str = Field("/api", description="Root API prefix")
@@ -22,10 +25,6 @@ class Settings(BaseSettings):
     db_host: str = Field(..., env="DB_HOST")
     db_port: int = Field(3306, env="DB_PORT")
     db_name: str = Field(..., env="DB_NAME")
-
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
 
     @property
     def database_url(self) -> str:
