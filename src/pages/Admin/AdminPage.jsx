@@ -55,7 +55,7 @@ export default function AdminPage({ skipAuth = false }) {
   const [quoteForm, setQuoteForm] = useState({ text: "", author: "" });
   
   useEffect(() => {
-    fetch("https://nostressia-backend2.vercel.app/api/motivations")
+    fetch("https://nostressia-backend.vercel.app/api/motivations")
       .then(res => {
         if (!res.ok) throw new Error("Fetch failed");
         return res.json();
@@ -82,7 +82,7 @@ export default function AdminPage({ skipAuth = false }) {
     };
 
     try {
-      const res = await fetch("https://nostressia-backend2.vercel.app/api/motivations", {
+      const res = await fetch("https://nostressia-backend.vercel.app/api/motivations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -107,7 +107,7 @@ export default function AdminPage({ skipAuth = false }) {
   const handleDeleteQuote = async (id) => {
     if (!confirm("Delete this quote?")) return;
     try {
-      await fetch(`https://nostressia-backend2.vercel.app/api/motivations/${id}`, {
+      await fetch(`https://nostressia-backend.vercel.app/api/motivations/${id}`, {
         method: "DELETE",
       });
       setQuotes(quotes.filter(q => q.id !== id));
@@ -146,7 +146,7 @@ export default function AdminPage({ skipAuth = false }) {
 
     for (const cat of categories) {
       try {
-        const res = await fetch(`https://nostressia-backend2.vercel.app/api/tips/by-category/${cat.id}`);
+        const res = await fetch(`https://nostressia-backend.vercel.app/api/tips/by-category/${cat.id}`);
         const data = await res.json();
         counts[cat.id] = data.length;
       } catch {
@@ -164,7 +164,7 @@ export default function AdminPage({ skipAuth = false }) {
     const loadCategories = async () => {
       console.log("🔄 Fetching categories...");
       try {
-        const res = await fetch("https://nostressia-backend2.vercel.app/api/tips/categories");
+        const res = await fetch("https://nostressia-backend.vercel.app/api/tips/categories");
         
         console.log("📡 Response status:", res.status);
         console.log("📡 Response OK:", res.ok);
@@ -217,7 +217,7 @@ export default function AdminPage({ skipAuth = false }) {
         console.log(`📡 Fetching tips for category ${catId}...`);
         
         // backend expects param category_id (you used that already)
-        const res = await fetch(`https://nostressia-backend2.vercel.app/api/tips/by-category/${catId}`)
+        const res = await fetch(`https://nostressia-backend.vercel.app/api/tips/by-category/${catId}`)
         
         console.log("📡 Tips response status:", res.status);
         console.log("📡 Tips response OK:", res.ok);
@@ -283,7 +283,7 @@ export default function AdminPage({ skipAuth = false }) {
     console.log("🔄 Adding tip:", payload);
 
     try {
-      const res = await fetch(`https://nostressia-backend2.vercel.app/api/tips`, {
+      const res = await fetch(`https://nostressia-backend.vercel.app/api/tips`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -329,7 +329,7 @@ export default function AdminPage({ skipAuth = false }) {
     console.log(`🔄 Deleting tip ${tipId} from category ${catId}...`);
 
     try {
-      const res = await fetch(`https://nostressia-backend2.vercel.app/api/tips/${tipId}`, {
+      const res = await fetch(`https://nostressia-backend.vercel.app/api/tips/${tipId}`, {
         method: "DELETE",
       });
 
