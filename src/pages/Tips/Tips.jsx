@@ -6,7 +6,7 @@ const bgCream = "#FFF3E0";
 const bgPink = "#eaf2ff";
 const bgLavender = "#e3edff";
 
-const BASE_URL = "https://nostressia-backend2.vercel.app/api/tips";
+const BASE_URL = "https://nostressia-backend.vercel.app/api/tips";
 
 const Tips = () => {
   const [categories, setCategories] = useState([]);

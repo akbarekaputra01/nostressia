@@ -18,7 +18,7 @@ export default function AdminLogin() {
 
     try {
       // --- coba login via API ---
-      const res = await fetch("https://nostressia-backend2.vercel.app/api/auth/admin/login", {
+      const res = await fetch("https://nostressia-backend.vercel.app/api/auth/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
