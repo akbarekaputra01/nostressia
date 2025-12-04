@@ -19,7 +19,16 @@ DB_NAME = os.getenv("DB_NAME")
 DATABASE_URL = f"mysql+mysqlconnector://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
 # Engine & Session
-engine = create_engine(DATABASE_URL, echo=True, future=True)
+engine = create_engine(
+    DATABASE_URL,
+    echo=False,          # Matikan echo biar lebih ringan
+    pool_size=2,         # Maks 2 koneksi
+    max_overflow=0,      # Tidak boleh buka koneksi tambahan
+    pool_recycle=1800,   # Tutup koneksi idle setelah 30 menit
+    pool_pre_ping=True,  # Cek koneksi sebelum dipakai
+    future=True
+)
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
