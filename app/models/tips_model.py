@@ -1,6 +1,8 @@
-from sqlalchemy import Column, Integer, Text, ForeignKey, String
+from sqlalchemy import Column, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
+
 from app.core.database import Base
+
 
 class TipsCategory(Base):
     __tablename__ = "tipscategories"
