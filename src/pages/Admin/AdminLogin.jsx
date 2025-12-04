@@ -17,20 +17,20 @@ export default function AdminLogin() {
     setIsLoading(true);
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/auth/admin/login", {
+      // --- coba login via API ---
+      const res = await fetch("https://nostressia-backend2.vercel.app/api/auth/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
 
-      // Jika fetch tidak bisa terhubung → otomatis lompat ke catch
       const data = await res.json();
 
       if (!res.ok) {
         throw new Error(data.detail || "Username atau Password salah!");
       }
 
-      // 🔐 Simpan token hasil dari server
+      // Jika berhasil login via API, simpan token & data
       localStorage.setItem("adminToken", data.access_token);
       localStorage.setItem("adminData", JSON.stringify(data.admin));
       localStorage.setItem("adminAuth", "true");
@@ -38,33 +38,38 @@ export default function AdminLogin() {
       navigate("/admin");
     } 
     catch (err) {
+      console.error("Login API error:", err);
 
-      // === Fallback jika API mati ===
+      // ✅ Hanya jika API mati, baru cek username/password offline
       if (
-        formData.username === "admin" &&
-        formData.password === "admin123"
+        err.message.includes("Failed to fetch") ||  // fetch gagal
+        err.message.includes("NetworkError") ||     // network error
+        err.message.includes("timeout")             // atau timeout
       ) {
-        const offlineAdmin = {
-          id: 0,
-          name: "Offline Admin",
-          username: "admin",
-          email: "admin@offline.local"
-        };
+        if (formData.username === "admin" && formData.password === "admin123") {
+          const offlineAdmin = {
+            id: 0,
+            name: "Offline Admin",
+            username: "admin",
+            email: "admin@offline.local"
+          };
 
-        localStorage.setItem("adminToken", "offline-token");
-        localStorage.setItem("adminData", JSON.stringify(offlineAdmin));
-        localStorage.setItem("adminAuth", "true");
+          localStorage.setItem("adminToken", "offline-token");
+          localStorage.setItem("adminData", JSON.stringify(offlineAdmin));
+          localStorage.setItem("adminAuth", "true");
 
-        console.warn("⚠️ API mati — menggunakan mode offline admin.");
-        navigate("/admin");
-        return;
+          console.warn("⚠️ API mati — menggunakan mode offline admin.");
+          navigate("/admin");
+          return;
+        }
       }
 
-      // Jika bukan admin offline → error biasa
+      // Jika bukan login offline, tampilkan error biasa
       setError(err.message || "Gagal login, coba lagi.");
       setIsLoading(false);
     }
   };
+
 
 
   return (
