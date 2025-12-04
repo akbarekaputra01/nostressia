@@ -130,10 +130,12 @@ export default function Motivation() {
         const normalized = data.map((d) => ({
           motivationID: d.motivationID ?? d.id ?? d.motivation_id ?? null,
           quote: d.quote ?? d.quotes ?? d.text ?? "",
-          authorName: d.authorName ?? "Anonymous", // gunakan authorName
+          authorName: d.authorName ?? "Anonymous",
         }));
 
-        setMotivations(normalized);
+        // TAMBAHKAN .reverse() DI SINI UNTUK MEMBALIK URUTAN
+        setMotivations(normalized.reverse());
+        
         if (normalized.length > 0) {
           setHeroQuote({
             text: normalized[0].quote,
