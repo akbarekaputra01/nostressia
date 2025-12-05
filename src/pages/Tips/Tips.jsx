@@ -65,29 +65,49 @@ export default function Tips() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isScrolled, setIsScrolled] = useState(false);
 
-  // --- FETCH DATA ---
+  // --- FETCH DATA (SEQUENTIAL FETCH FIX) ---
   useEffect(() => {
     const loadCategories = async () => {
       try {
+        setLoadingCategories(true);
+        
+        // 1. Ambil daftar kategori
         const res = await fetch(`${BASE_URL}/categories`);
         const data = await res.json();
 
-        const mapped = data.map((item) => {
-          const name = item.categoryName || item.name || "";
-          const emoji = getCategoryEmoji(name);
-          const colorClass = getCategoryColor(name);
+        const processedCategories = [];
 
-          return {
-            id: item.tipCategoryID || item.id,
-            name: name,
-            emoji: emoji,
-            colorClass: colorClass,
-            tipsCount: Math.floor(Math.random() * 8) + 3 
-          };
-        });
-        setCategories(mapped);
+        // 2. Loop satu per satu (Sequential) untuk menghindari server overload/rate limit
+        //    Ini memperbaiki masalah jumlah tips muncul "0"
+        for (const item of data) {
+            const name = item.categoryName || item.name || "";
+            const id = item.tipCategoryID || item.id;
+            let realCount = 0;
+
+            try {
+                const tipsRes = await fetch(`${BASE_URL}/by-category/${id}`);
+                if (tipsRes.ok) {
+                    const tipsData = await tipsRes.json();
+                    if (Array.isArray(tipsData)) {
+                        realCount = tipsData.length; 
+                    }
+                }
+            } catch (error) {
+                console.warn(`Gagal hitung tips kategori ${id}`, error);
+            }
+
+            processedCategories.push({
+                id: id,
+                name: name,
+                emoji: getCategoryEmoji(name),
+                colorClass: getCategoryColor(name),
+                tipsCount: realCount
+            });
+        }
+
+        setCategories(processedCategories);
       } catch (err) {
-        console.error("Error:", err);
+        console.error("Error loading categories:", err);
       } finally {
         setLoadingCategories(false);
       }
@@ -98,7 +118,7 @@ export default function Tips() {
   // --- SCROLL LISTENER ---
   useEffect(() => {
     const handleScroll = () => {
-      // Threshold 100px agar tidak terlalu sensitif di awal
+      // Threshold 100px agar navbar tidak hilang terlalu cepat
       setIsScrolled(window.scrollY > 100);
     };
     window.addEventListener("scroll", handleScroll);
@@ -120,7 +140,7 @@ export default function Tips() {
   const handleBack = () => {
     setSelectedCategory(null);
     setTips([]);
-    setSearchQuery("");
+    setSearchQuery(""); // Reset Search
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -133,8 +153,8 @@ export default function Tips() {
       `}</style>
       
       {/* 1. WRAPPER NAVBAR UTAMA 
-          - duration: 0.8 -> Membuat animasi lebih lambat dan tenang.
-          - ease: "easeInOut" -> Memastikan gerakan halus (slow start, slow end).
+          - pt-4: Memberikan gap konsisten di semua device.
+          - duration: 0.8s & easeInOut: Animasi hilang/muncul yang sangat smooth.
       */}
       <motion.div 
         className="fixed top-0 left-0 right-0 z-40 pt-4"
@@ -144,14 +164,14 @@ export default function Tips() {
           opacity: selectedCategory && isScrolled ? 0 : 1 
         }}
         transition={{ 
-          duration: 0.5,
+          duration: 0.8, 
           ease: "easeInOut" 
         }}
       >
         <Navbar />
       </motion.div>
 
-      {/* Main Container */}
+      {/* Main Container: pt-32 agar konten tidak tertutup navbar yang melayang */}
       <main className="max-w-[1400px] mx-auto px-6 pb-20 pt-28 md:pt-32">
         <AnimatePresence mode="wait">
           
@@ -177,7 +197,7 @@ export default function Tips() {
                 
                 <div className="relative w-full md:w-72">
                   
-                  {/* --- INPUT --- */}
+                  {/* INPUT SEARCH */}
                   <input 
                     type="text" 
                     placeholder="Find topics..." 
@@ -186,7 +206,11 @@ export default function Tips() {
                     className="w-full pl-12 pr-5 py-4 bg-white/60 backdrop-blur-md rounded-2xl shadow-sm border border-white/50 focus:bg-white focus:ring-2 focus:ring-blue-200 outline-none transition-all placeholder-gray-500 font-medium"
                   />
 
-                  {/* SVG ICON (DI BAWAH INPUT DALAM KODE, AGAR RENDER DI ATAS) */}
+                  {/* SVG ICON PHOSPHOR STYLE 
+                      - Posisi absolute di atas input.
+                      - Pointer-events-none agar klik tembus ke input.
+                      - Z-index 10 agar pasti di atas background input.
+                  */}
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none z-10">
                     <svg 
                         xmlns="http://www.w3.org/2000/svg" 
@@ -253,7 +277,7 @@ export default function Tips() {
               initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}
               transition={{ duration: 0.4 }}
             >
-              {/* 2. NAVBAR SEMENTARA (STICKY) */}
+              {/* 2. NAVBAR SEMENTARA (STICKY HEADER) */}
               <div className="sticky top-4 z-50 mb-8 transition-all duration-300">
                   <div className="bg-white/90 backdrop-blur-xl px-6 py-4 rounded-[20px] shadow-xl border border-white/50 flex items-center justify-between">
                     <div className="flex items-center gap-4">
