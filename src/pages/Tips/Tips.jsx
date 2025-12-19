@@ -130,7 +130,7 @@ export default function Tips() {
     setLoadingTips(true);
     window.scrollTo({ top: 0, behavior: 'smooth' }); 
     try {
-      const res = await fetch(`${BASE_URL}/by-category/${cat.id}`);
+      const res = await fetch(`${BASE_URL}/tips/by-category/${cat.id}`);
       const data = await res.json();
       setTips(data.map(item => ({ id: item.tipID, text: item.detail })));
     } catch { setTips([]); } 
