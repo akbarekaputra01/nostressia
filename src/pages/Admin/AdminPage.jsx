@@ -1,46 +1,28 @@
-// /src/pages/AdminPage.jsx  (atau path file kamu)
-// Full component — hanya perubahan pada bagian tips API mapping & handling
+// /src/pages/AdminPage.jsx
 import React, { useState, useEffect } from "react";
 import { 
   LayoutDashboard, Sparkles, Lightbulb, LogOut, 
   Trash2, X, UserCircle, User, ArrowLeft 
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import { BASE_URL } from "../../api/config";
 
 export default function AdminPage({ skipAuth = false }) {
   const navigate = useNavigate();
   const [activeModal, setActiveModal] = useState(null);
-  
-  // --- STATE FOR TIPS NAVIGATION ---
   const [selectedTipCategory, setSelectedTipCategory] = useState(null);
+  const [currentUser, setCurrentUser] = useState({ id: 0, name: "", role: "" });
 
-  // --- USER STATE ---
-  const [currentUser, setCurrentUser] = useState({
-      id: 0,
-      name: "",
-      role: ""
-  });
-
-  // CHECK LOGIN / BYPASS
   useEffect(() => {
     if (skipAuth) {
-      setCurrentUser({
-        id: 999,
-        name: "Developer Mode",
-        role: "admin"
-      });
+      setCurrentUser({ id: 999, name: "Developer Mode", role: "admin" });
       return; 
     }
-
     const storedUser = localStorage.getItem("adminData");
-    if (storedUser) {
-      setCurrentUser(JSON.parse(storedUser));
-    } else {
-      navigate("/admin/login");
-    }
+    if (storedUser) setCurrentUser(JSON.parse(storedUser));
+    else navigate("/admin/login");
   }, [navigate, skipAuth]);
 
-  // --- LOGOUT FUNCTION ---
   const handleLogout = () => {
     localStorage.removeItem("adminToken");
     localStorage.removeItem("adminData");
@@ -48,18 +30,15 @@ export default function AdminPage({ skipAuth = false }) {
     navigate("/admin/login");
   };
 
-  // ==========================================
-  // DATA & LOGIC - MOTIVATION
-  // ==========================================
+  // ==============================
+  // MOTIVATION STATE & LOGIC
+  // ==============================
   const [quotes, setQuotes] = useState([]);
   const [quoteForm, setQuoteForm] = useState({ text: "", author: "" });
-  
+
   useEffect(() => {
-    fetch("https://nostressia-backend.vercel.app/api/motivations")
-      .then(res => {
-        if (!res.ok) throw new Error("Fetch failed");
-        return res.json();
-      })
+    fetch(`${BASE_URL}/motivations`)
+      .then(res => res.ok ? res.json() : Promise.reject("Failed to fetch motivations"))
       .then(data => {
         const formatted = data.map(item => ({
           id: item.motivationID,
@@ -75,19 +54,14 @@ export default function AdminPage({ skipAuth = false }) {
 
   const handleAddQuote = async (e) => {
     e.preventDefault();
-    const payload = {
-      quote: quoteForm.text,
-      authorName: quoteForm.author,
-      uploaderID: currentUser.id
-    };
+    const payload = { quote: quoteForm.text, authorName: quoteForm.author, uploaderID: currentUser.id };
 
     try {
-      const res = await fetch("https://nostressia-backend.vercel.app/api/motivations", {
+      const res = await fetch(`${BASE_URL}/motivations`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
-
       if(res.ok) {
         const data = await res.json();
         setQuotes([{ 
@@ -99,7 +73,7 @@ export default function AdminPage({ skipAuth = false }) {
         }, ...quotes]);
         setQuoteForm({ text: "", author: "" });
       }
-    } catch (err) {
+    } catch {
       alert("Failed to save to server (API Error)");
     }
   };
@@ -107,18 +81,14 @@ export default function AdminPage({ skipAuth = false }) {
   const handleDeleteQuote = async (id) => {
     if (!confirm("Delete this quote?")) return;
     try {
-      await fetch(`https://nostressia-backend.vercel.app/api/motivations/${id}`, {
-        method: "DELETE",
-      });
+      await fetch(`${BASE_URL}/motivations/${id}`, { method: "DELETE" });
       setQuotes(quotes.filter(q => q.id !== id));
-    } catch (err) {
-      console.error("Failed to delete:", err);
-    }
+    } catch (err) { console.error("Failed to delete:", err); }
   };
 
-  // ==========================================
-  // DATA & LOGIC - TIPS (API INTEGRATED WITH DEBUG)
-  // ==========================================
+  // ==============================
+  // TIPS STATE & LOGIC
+  // ==============================
   const [tipCategories, setTipCategories] = useState([]);
   const [tipsByCategory, setTipsByCategory] = useState({});
   const [tipCountByCategory, setTipCountByCategory] = useState({});
@@ -126,179 +96,73 @@ export default function AdminPage({ skipAuth = false }) {
   const [loadingCategories, setLoadingCategories] = useState(true);
   const [loadingTips, setLoadingTips] = useState(false);
 
-  // ---------------------------
-  // Helper: choose icon per id (minimal, to keep UI consistent)
   const iconForCategoryId = (id) => {
-    // keep same emoji mapping you had originally
-    const map = {
-      1: "📚",
-      2: "🥗",
-      3: "😴",
-      4: "🧘",
-      5: "🗣️",
-      6: "🧠"
-    };
+    const map = {1:"📚",2:"🥗",3:"😴",4:"🧘",5:"🗣️",6:"🧠"};
     return map[id] || "💡";
   };
 
   const loadTipCounts = async (categories) => {
     const counts = {};
-
     for (const cat of categories) {
       try {
-        const res = await fetch(`https://nostressia-backend.vercel.app/api/tips/by-category/${cat.id}`);
+        const res = await fetch(`${BASE_URL}/tips/by-category/${cat.id}`);
         const data = await res.json();
         counts[cat.id] = data.length;
-      } catch {
-        counts[cat.id] = 0;   // fallback
-      }
+      } catch { counts[cat.id] = 0; }
     }
-
     setTipCountByCategory(counts);
   };
 
-
-
-  // FETCH CATEGORIES FROM API WITH DEBUGGING
   useEffect(() => {
     const loadCategories = async () => {
-      console.log("🔄 Fetching categories...");
       try {
-        const res = await fetch("https://nostressia-backend.vercel.app/api/tips/categories");
-        
-        console.log("📡 Response status:", res.status);
-        console.log("📡 Response OK:", res.ok);
-        
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
-        
+        const res = await fetch(`${BASE_URL}/tips/categories`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-
-        // --- MAPPING: adapt server fields to component expected shape ---
-        // server sample: [{"categoryName":"Reading & Learning","tipCategoryID":1}, ...]
         const mapped = data.map(item => ({
-          id: item.tipCategoryID,           // NOTE: previous code expects cat.id
+          id: item.tipCategoryID,
           name: item.categoryName || item.name || `Category ${item.tipCategoryID}`,
           icon: item.icon || iconForCategoryId(item.tipCategoryID),
-          // keep uploaderName placeholder so UI that references it won't break
           uploaderName: item.uploaderName || "System",
         }));
-
-        console.log("✅ Categories loaded (mapped):", mapped);
         setTipCategories(mapped);
-        loadTipCounts(mapped);   // <-- tambahkan ini
-
+        loadTipCounts(mapped);
       } catch (err) {
-        console.error("❌ Failed loading categories:", err);
-        console.error("❌ Error details:", err.message);
-        
-        // Fallback: set empty array
+        console.error("Failed loading categories:", err);
         setTipCategories([]);
-      } finally {
-        setLoadingCategories(false);
-        console.log("✅ Loading categories finished");
-      }
+      } finally { setLoadingCategories(false); }
     };
-
     loadCategories();
   }, []);
 
-  // OPEN CATEGORY AND FETCH ITS TIPS WITH DEBUGGING
   const openCategory = async (catId) => {
-    console.log(`🔄 Opening category ${catId}...`);
     setSelectedTipCategory(catId);
-
-    // Only fetch if not already loaded
     if (!tipsByCategory[catId]) {
       setLoadingTips(true);
-      
       try {
-        console.log(`📡 Fetching tips for category ${catId}...`);
-        
-        // backend expects param category_id (you used that already)
-        const res = await fetch(`https://nostressia-backend.vercel.app/api/tips/by-category/${catId}`)
-        
-        console.log("📡 Tips response status:", res.status);
-        console.log("📡 Tips response OK:", res.ok);
-        
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
-        
+        const res = await fetch(`${BASE_URL}/tips/by-category/${catId}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-
-        // --- MAPPING: adapt server tip fields to component expected shape ---
-        // server sample tip: {"detail":"Read for ...","tipCategoryID":1,"uploaderID":1,"tipID":1}
-        // component expects objects with id, tip_text, uploader_name/uploader_id
         const mappedTips = (data || []).map(item => ({
           id: item.tipID || item.id,
           tip_text: item.detail || item.tip_text || item.tipText,
           tipCategoryID: item.tipCategoryID || item.tipCategoryId || item.category_id,
           uploader_id: item.uploaderID || item.uploader_id || item.uploaderId,
-          // uploader_name: item.uploaderName || item.uploader_name || "Admin"
         }));
-
-        console.log(`✅ Tips loaded for category ${catId} (mapped):`, mappedTips);
-        console.log(`✅ Number of tips:`, mappedTips.length);
-        if (mappedTips.length > 0) {
-          console.log(`✅ First tip:`, mappedTips[0]);
-        }
-
-        setTipsByCategory(prev => ({
-          ...prev,
-          [catId]: mappedTips
-        }));
-      } catch (err) {
-        console.error("❌ Failed to fetch tips:", err);
-        console.error("❌ Error details:", err.message);
-        
-        // Set empty array on error
-        setTipsByCategory(prev => ({
-          ...prev,
-          [catId]: []
-        }));
-      } finally {
-        setLoadingTips(false);
-      }
-    } else {
-      console.log(`✅ Tips already loaded for category ${catId}`, tipsByCategory[catId]);
+        setTipsByCategory(prev => ({ ...prev, [catId]: mappedTips }));
+      } catch {
+        setTipsByCategory(prev => ({ ...prev, [catId]: [] }));
+      } finally { setLoadingTips(false); }
     }
   };
 
-  // ADD TIP TO CATEGORY WITH DEBUGGING
   const handleAddTipToCategory = async (catId) => {
-    if (!currentTipInput.trim()) {
-      console.warn("⚠️ Cannot add empty tip");
-      return;
-    }
-
-    const payload = {
-      detail: currentTipInput,
-      tipCategoryID: catId,
-      uploaderID: currentUser.id
-    };
-
-
-    console.log("🔄 Adding tip:", payload);
-
+    if (!currentTipInput.trim()) return;
+    const payload = { detail: currentTipInput, tipCategoryID: catId, uploaderID: currentUser.id };
     try {
-      const res = await fetch(`https://nostressia-backend.vercel.app/api/tips`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      console.log("📡 Add tip response status:", res.status);
-
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
-
+      const res = await fetch(`${BASE_URL}/tips`, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload) });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const rawNewTip = await res.json();
-
-      // --- MAPPING: adapt backend response to internal tip shape ---
-      // backend may return the created row, maybe like {"detail": "...", "tipID": 43, "tipCategoryID": 1, "uploaderID": 1}
       const newTip = {
         id: rawNewTip.tipID || rawNewTip.id,
         tip_text: rawNewTip.detail || rawNewTip.tip_text || rawNewTip.tipText || currentTipInput,
@@ -306,77 +170,23 @@ export default function AdminPage({ skipAuth = false }) {
         uploader_id: rawNewTip.uploaderID || rawNewTip.uploader_id || currentUser.id,
         uploader_name: rawNewTip.uploaderName || rawNewTip.uploader_name || currentUser.name || "Admin"
       };
-      
-      console.log("✅ Tip added successfully (mapped):", newTip);
-
-      setTipsByCategory(prev => ({
-        ...prev,
-        [catId]: [...(prev[catId] || []), newTip]
-      }));
-
+      setTipsByCategory(prev => ({ ...prev, [catId]: [...(prev[catId] || []), newTip] }));
       setCurrentTipInput("");
-    } catch (err) {
-      console.error("❌ Failed to add tip:", err);
-      console.error("❌ Error details:", err.message);
-      alert("Failed to add tip. Please try again.");
-    }
+    } catch { alert("Failed to add tip. Please try again."); }
   };
 
-  // DELETE TIP FROM CATEGORY WITH DEBUGGING
   const handleDeleteTipFromCategory = async (catId, tipId) => {
     if (!confirm("Delete this tip?")) return;
-
-    console.log(`🔄 Deleting tip ${tipId} from category ${catId}...`);
-
     try {
-      const res = await fetch(`https://nostressia-backend.vercel.app/api/tips/${tipId}`, {
-        method: "DELETE",
-      });
-
-      console.log("📡 Delete tip response status:", res.status);
-
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
-
-      console.log(`✅ Tip ${tipId} deleted successfully`);
-
-      setTipsByCategory(prev => ({
-        ...prev,
-        [catId]: (prev[catId] || []).filter(t => (t.id || t.tipID) !== tipId)
-      }));
-    } catch (err) {
-      console.error("❌ Failed to delete tip:", err);
-      console.error("❌ Error details:", err.message);
-      alert("Failed to delete tip. Please try again.");
-    }
+      const res = await fetch(`${BASE_URL}/tips/${tipId}`, { method: "DELETE" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      setTipsByCategory(prev => ({ ...prev, [catId]: (prev[catId] || []).filter(t => (t.id || t.tipID) !== tipId) }));
+    } catch { alert("Failed to delete tip. Please try again."); }
   };
 
-  // Helper to close modal & reset state
-  const closeModal = () => {
-      setActiveModal(null);
-      setSelectedTipCategory(null);
-      setCurrentTipInput("");
-  }
-
-  // Helper to get active category data
+  const closeModal = () => { setActiveModal(null); setSelectedTipCategory(null); setCurrentTipInput(""); };
   const activeCategoryData = tipCategories.find(c => c.id === selectedTipCategory);
-
-  // Get current tips for selected category
   const currentCategoryTips = tipsByCategory[selectedTipCategory] || [];
-
-  // Debug: Log state changes
-  useEffect(() => {
-    console.log("📊 STATE UPDATE - tipCategories:", tipCategories);
-  }, [tipCategories]);
-
-  useEffect(() => {
-    console.log("📊 STATE UPDATE - tipsByCategory:", tipsByCategory);
-  }, [tipsByCategory]);
-
-  useEffect(() => {
-    console.log("📊 STATE UPDATE - selectedTipCategory:", selectedTipCategory);
-  }, [selectedTipCategory]);
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans text-gray-800">

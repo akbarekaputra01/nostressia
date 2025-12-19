@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 import Navbar from "../../components/Navbar";
 import Logo from "../../assets/images/Logo-Nostressia.png";
+import { BASE_URL } from "../../api/config";
+
 
 // --- COLOR CONFIGURATION (MATCHING DASHBOARD) ---
 const BG_CREAM = "#FFF3E0";
@@ -122,7 +124,7 @@ export default function Motivation() {
       setLoading(true);
       setError("");
       try {
-        const res = await fetch("https://nostressia-backend.vercel.app/api/motivations/");
+        const res = await fetch(`${BASE_URL}/motivations/`);
         if (!res.ok) throw new Error(`API error ${res.status}`);
         const data = await res.json();
         if (!mounted) return;

@@ -6,7 +6,7 @@ const bgCream = "#FFF3E0";
 const bgPink = "#eaf2ff";
 const bgLavender = "#e3edff";
 
-const BASE_URL = "https://nostressia-backend.vercel.app/api/tips";
+import { BASE_URL } from "../../api/config";
 
 const Tips = () => {
   const [categories, setCategories] = useState([]);
@@ -21,7 +21,7 @@ const Tips = () => {
   useEffect(() => {
     const loadCategories = async () => {
       try {
-        const res = await fetch(`${BASE_URL}/categories`);
+        const res = await fetch(`${BASE_URL}/tips/categories`);
         const data = await res.json();
 
         // Icon mapping berdasarkan nama kategori
@@ -77,7 +77,7 @@ const Tips = () => {
     setLoadingTips(true);
 
     try {
-      const res = await fetch(`${BASE_URL}/by-category/${cat.id}`);
+      const res = await fetch(`${BASE_URL}/tips/by-category/${cat.id}`);
       const data = await res.json();
 
       const mappedTips = data.map((item) => ({

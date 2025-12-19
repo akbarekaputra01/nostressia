@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Lock, User, ArrowLeft } from "lucide-react";
-
+import { BASE_URL } from "../../api/config";
 // Import Logo Nostressia
 import LogoNostressia from "../../assets/images/Logo-Nostressia.png";
 
@@ -18,11 +18,12 @@ export default function AdminLogin() {
 
     try {
       // --- coba login via API ---
-      const res = await fetch("https://nostressia-backend.vercel.app/api/auth/admin/login", {
+      const res = await fetch(`${BASE_URL}/auth/admin/login`, { // <-- backtick
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
+
 
       const data = await res.json();
 
