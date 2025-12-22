@@ -451,25 +451,27 @@ export default function Motivation() {
                 
                 {/* Bagian Kiri (Preview Card) */}
                 <div className="flex-1 flex items-center justify-center w-full">
-                  <div
-                    ref={shareCardRef}
-                    // DISINI UBAHANNYA: w-full dan maxWidth, serta aspectRatio agar proporsional
-                    className="w-full max-w-[520px] md:max-w-none"
-                    style={{ 
-                        width: "100%", 
-                        maxWidth: "520px",
-                        // aspectRatio: "520/300", // DIHAPUS agar tinggi menyesuaikan
-                        display: "flex", 
-                        alignItems: "center", 
-                        justifyContent: "center", 
-                        borderRadius: 16, 
-                        transformOrigin: "top center" 
-                    }}
-                  >
-                    <SharePreview
-                      text={shareText}
-                      templateBg={TEMPLATES.find((t) => t.id === selectedTemplate)?.color || TEMPLATES[0].color}
-                    />
+                  {/* WRAPPER FOR SCALING to ensure WYSIWYG */}
+                  <div className="transform scale-[0.75] sm:scale-[0.9] md:scale-100 transition-transform origin-center">
+                      <div
+                        ref={shareCardRef}
+                        // UBAHAN: Hardcode width/height to match EXPORT_SIZES (464x264)
+                        style={{ 
+                            width: "464px", 
+                            height: "264px",
+                            flexShrink: 0,
+                            display: "flex", 
+                            alignItems: "center", 
+                            justifyContent: "center", 
+                            borderRadius: 16, 
+                            boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)"
+                        }}
+                      >
+                        <SharePreview
+                          text={shareText}
+                          templateBg={TEMPLATES.find((t) => t.id === selectedTemplate)?.color || TEMPLATES[0].color}
+                        />
+                      </div>
                   </div>
                 </div>
 
