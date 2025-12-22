@@ -7,8 +7,7 @@ import {
 import Navbar from "../../components/Navbar";
 
 // --- API URL ---
-const BASE_URL = "https://nostressia-backend.vercel.app/api/tips";
-
+import { BASE_URL } from "../../api/config";
 // --- COLOR CONFIGURATION ---
 const bgCream = "#FFF3E0";
 const bgPink = "#eaf2ff";
@@ -72,7 +71,7 @@ export default function Tips() {
         setLoadingCategories(true);
         
         // 1. Ambil daftar kategori
-        const res = await fetch(`${BASE_URL}/categories`);
+        const res = await fetch(`${BASE_URL}/tips/categories`);
         const data = await res.json();
 
         const processedCategories = [];
@@ -85,7 +84,7 @@ export default function Tips() {
             let realCount = 0;
 
             try {
-                const tipsRes = await fetch(`${BASE_URL}/by-category/${id}`);
+                const tipsRes = await fetch(`${BASE_URL}/tips/by-category/${id}`);
                 if (tipsRes.ok) {
                     const tipsData = await tipsRes.json();
                     if (Array.isArray(tipsData)) {
@@ -286,7 +285,7 @@ export default function Tips() {
                       </button>
                       <div className="flex flex-col">
                         <span className="text-xs font-bold text-gray-400 uppercase tracking-wider hidden sm:block">Category</span>
-                        <h2 className="text-lg md:text-xl font-bold text-gray-800 leading-none truncate max-w-[200px] md:max-w-none">{selectedCategory.name}</h2>
+                        <h2 className="text-lg md:text-xl font-bold text-gray-800 leading-tight whitespace-nowrap overflow-hidden text-ellipsis max-w-[240px] md:max-w-none">{selectedCategory.name}</h2>
                       </div>
                     </div>
                     <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl flex items-center justify-center text-2xl md:text-3xl bg-white border border-gray-100 shadow-sm">
