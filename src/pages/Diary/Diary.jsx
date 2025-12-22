@@ -90,13 +90,21 @@ export default function Diary() {
         @keyframes gradient-bg { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
       `}</style>
       
-      <Navbar />
+      {/* --- NAVBAR FIX --- 
+          Dibungkus div fixed agar sticky di atas dan tidak terpengaruh overflow parent 
+      */}
+      <div className="fixed top-0 left-0 right-0 z-50 pt-4">
+        <Navbar />
+      </div>
+      {/* Spacer pengganti tinggi navbar */}
+      <div className="h-[120px] md:h-[140px]" />
+
 
       {/* Main Container Adjusted:
-         - pt-28: Padding top mobile (consistent with other pages)
-         - md:pt-8: Padding top desktop
+         - pt-28: Padding top mobile
+         - md:pt-32: Padding top desktop (Diubah dari md:pt-8 menjadi md:pt-32 agar tidak tertutup navbar)
       */}
-      <main className="flex-grow flex flex-col items-center w-full max-w-[1400px] mx-auto p-4 md:p-8 lg:p-10 pt-28 md:pt-8 z-10">
+      <main className="flex-grow flex flex-col items-center w-full max-w-[1400px] mx-auto p-4 md:p-8 lg:p-10 z-10">
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
             <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight" style={{ color: colors.textPrimary }}>Diary <span style={{ color: "rgb(253, 92, 0)" }}>Nostressia</span></h1>
             <p className="font-medium mt-1 opacity-60 text-sm md:text-base" style={{ color: colors.textPrimary }}>Write your story today.</p>
