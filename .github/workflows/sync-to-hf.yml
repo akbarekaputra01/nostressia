@@ -8,6 +8,11 @@ on:
 jobs:
   sync-to-hub:
     runs-on: ubuntu-latest
+
+    environment:
+      name: Production
+      url: https://akbarekaputra01-nostressia-backend.hf.space
+    
     steps:
       - uses: actions/checkout@v4
         with:
