@@ -8,12 +8,11 @@ import {
   Sparkles,
   TrendingUp,
   Star,
-  X 
+  X,
 } from "lucide-react";
 import Navbar from "../../components/Navbar";
 import Logo from "../../assets/images/Logo-Nostressia.png";
 import { BASE_URL } from "../../api/config";
-
 
 // --- COLOR CONFIGURATION (MATCHING DASHBOARD) ---
 const BG_CREAM = "#FFF3E0";
@@ -36,28 +35,54 @@ const backgroundStyle = {
 const HERO_INDEX = "hero";
 
 const heroQuoteList = [
-  { text: "Every day is a new opportunity to improve yourself.", category: "Self-Development" },
-  { text: "Small steps today can lead to big changes tomorrow.", category: "Progress" },
-  { text: "Focus on the process, not the result — results will follow.", category: "Mindset" },
-  { text: "Motivation starts you, but discipline keeps you going.", category: "Discipline" },
-  { text: "Life isn't about waiting for the storm to pass — learn to dance in the rain.", category: "Resilience" },
-  { text: "If you want change, start with yourself.", category: "Transformation" },
-  { text: "Don't compare your journey to others. Walk your own path.", category: "Confidence" },
+  {
+    text: "Every day is a new opportunity to improve yourself.",
+    category: "Self-Development",
+  },
+  {
+    text: "Small steps today can lead to big changes tomorrow.",
+    category: "Progress",
+  },
+  {
+    text: "Focus on the process, not the result — results will follow.",
+    category: "Mindset",
+  },
+  {
+    text: "Motivation starts you, but discipline keeps you going.",
+    category: "Discipline",
+  },
+  {
+    text: "Life isn't about waiting for the storm to pass — learn to dance in the rain.",
+    category: "Resilience",
+  },
+  {
+    text: "If you want change, start with yourself.",
+    category: "Transformation",
+  },
+  {
+    text: "Don't compare your journey to others. Walk your own path.",
+    category: "Confidence",
+  },
   { text: "When you're tired, rest — don't quit.", category: "Sustainability" },
   { text: "Miracles happen when you refuse to give up.", category: "Hope" },
-  { text: "Small consistent actions every day beat occasional bursts of motivation.", category: "Consistency" },
+  {
+    text: "Small consistent actions every day beat occasional bursts of motivation.",
+    category: "Consistency",
+  },
 ];
 
 const TEMPLATES = [
-  { id: "pastel-cream", name: "Cream", color: BG_CREAM},
+  { id: "pastel-cream", name: "Cream", color: BG_CREAM },
   { id: "pastel-pink", name: "Pink", color: BG_PINK },
   { id: "pastel-lavender", name: "Lavender", color: BG_LAVENDER },
-  { id: "pastel-gradient", name: "Peach", color: "linear-gradient(135deg,#FFE2D1,#FFD1C8)"},
+  {
+    id: "pastel-gradient",
+    name: "Peach",
+    color: "linear-gradient(135deg,#FFE2D1,#FFD1C8)",
+  },
 ];
 
-const EXPORT_SIZES = [
-  { id: "original", name: "Original", w: 464, h: 264 },
-];
+const EXPORT_SIZES = [{ id: "original", name: "Original", w: 464, h: 264 }];
 
 export default function Motivation() {
   const [likedIndex, setLikedIndex] = useState([]);
@@ -92,11 +117,15 @@ export default function Motivation() {
 
   useEffect(() => {
     if ("scrollRestoration" in window.history) {
-      try { window.history.scrollRestoration = "manual"; } catch (e) {}
+      try {
+        window.history.scrollRestoration = "manual";
+      } catch (e) {}
     }
     if (!initialScrollResetDone.current) {
       initialScrollResetDone.current = true;
-      setTimeout(() => { window.scrollTo && window.scrollTo(0,0); }, 50);
+      setTimeout(() => {
+        window.scrollTo && window.scrollTo(0, 0);
+      }, 50);
     }
 
     const io = new IntersectionObserver(
@@ -124,20 +153,26 @@ export default function Motivation() {
       setLoading(true);
       setError("");
       try {
-        const res = await fetch(`${BASE_URL}/motivations/`);
+        // Membersihkan BASE_URL dari tanda miring di akhir jika ada
+        const cleanBaseUrl = BASE_URL.replace(/\/$/, "");
+
+        // Memanggil endpoint tanpa tanda miring di akhir
+        const res = await fetch(`${cleanBaseUrl}/motivations`);
+
         if (!res.ok) throw new Error(`API error ${res.status}`);
         const data = await res.json();
+
         if (!mounted) return;
-        
+
         const normalized = data.map((d) => ({
           motivationID: d.motivationID ?? d.id ?? d.motivation_id ?? null,
           quote: d.quote ?? d.quotes ?? d.text ?? "",
           authorName: d.authorName ?? "Anonymous",
         }));
 
-        // TAMBAHKAN .reverse() DI SINI UNTUK MEMBALIK URUTAN
+        // Membalik urutan agar yang terbaru muncul di atas
         setMotivations(normalized.reverse());
-        
+
         if (normalized.length > 0) {
           setHeroQuote({
             text: normalized[0].quote,
@@ -153,7 +188,9 @@ export default function Motivation() {
       }
     };
     fetchMotivations();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const fallbackMotivationalQuotes = [
@@ -190,7 +227,11 @@ export default function Motivation() {
     if (motivations && motivations.length > 0) {
       const randomIndex = Math.floor(Math.random() * motivations.length);
       const m = motivations[randomIndex];
-      return { text: m.quote, motivationID: m.motivationID, authorName: m.authorName };
+      return {
+        text: m.quote,
+        motivationID: m.motivationID,
+        authorName: m.authorName,
+      };
     } else {
       const randomIndex = Math.floor(Math.random() * heroQuoteList.length);
       return { text: heroQuoteList[randomIndex].text };
@@ -226,7 +267,11 @@ export default function Motivation() {
       clone.style.left = "-9999px";
       document.body.appendChild(clone);
 
-      const canvas = await html2canvas(clone, { scale: 2, useCORS: true, backgroundColor: null });
+      const canvas = await html2canvas(clone, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: null,
+      });
       document.body.removeChild(clone);
 
       const dataUrl = canvas.toDataURL("image/png");
@@ -262,19 +307,63 @@ export default function Motivation() {
           position: "relative",
         }}
       >
-        <div style={{
-          width: "82%", maxWidth: 900, background: "#fff", padding: 20,
-          borderRadius: 12, textAlign: "center", boxShadow: "0 6px 18px rgba(0,0,0,0.06)", zIndex:2
-        }}>
-          <div style={{ display:"flex", alignItems:"center", gap:12, justifyContent:"center", marginBottom:8}}>
-            <img src={Logo} alt="logo" style={{ width:40, height:40, borderRadius:8, objectFit:"cover"}}/>
-            <div style={{ textAlign:"left" }}>
-              <div style={{ fontSize:13, color:"#ff7a59", fontWeight:700}}>Motivation</div>
-              <div style={{ fontSize:11, color:"#7b7b7b"}}>Share Card</div>
+        <div
+          style={{
+            width: "82%",
+            maxWidth: 900,
+            background: "#fff",
+            padding: 20,
+            borderRadius: 12,
+            textAlign: "center",
+            boxShadow: "0 6px 18px rgba(0,0,0,0.06)",
+            zIndex: 2,
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              justifyContent: "center",
+              marginBottom: 8,
+            }}
+          >
+            <img
+              src={Logo}
+              alt="logo"
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 8,
+                objectFit: "cover",
+              }}
+            />
+            <div style={{ textAlign: "left" }}>
+              <div style={{ fontSize: 13, color: "#ff7a59", fontWeight: 700 }}>
+                Motivation
+              </div>
+              <div style={{ fontSize: 11, color: "#7b7b7b" }}>Share Card</div>
             </div>
           </div>
-          <p style={{ fontSize:18, color:"#333", fontStyle:"italic", margin:"6px 0 12px"}}>"{text}"</p>
-          <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, color:"#777", marginTop:8}}>
+          <p
+            style={{
+              fontSize: 18,
+              color: "#333",
+              fontStyle: "italic",
+              margin: "6px 0 12px",
+            }}
+          >
+            "{text}"
+          </p>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              fontSize: 12,
+              color: "#777",
+              marginTop: 8,
+            }}
+          >
             <span>— Nostressia</span>
             <span>{new Date().toLocaleDateString()}</span>
           </div>
@@ -283,12 +372,15 @@ export default function Motivation() {
     );
   };
 
-  const itemsToRender = motivations && motivations.length > 0 ? motivations : fallbackMotivationalQuotes;
+  const itemsToRender =
+    motivations && motivations.length > 0
+      ? motivations
+      : fallbackMotivationalQuotes;
   const currentItems = itemsToRender.slice(0, visibleCount);
   const hasMore = visibleCount < itemsToRender.length;
 
   const loadMore = () => {
-    setVisibleCount(prev => prev + ITEMS_PER_PAGE);
+    setVisibleCount((prev) => prev + ITEMS_PER_PAGE);
   };
 
   return (
@@ -298,13 +390,14 @@ export default function Motivation() {
       `}</style>
 
       {toastMessage && (
-        <div className="fixed top-6 right-6 z-[9999] bg-orange-500 text-white px-4 py-2 rounded-xl shadow-lg">{toastMessage}</div>
+        <div className="fixed top-6 right-6 z-[9999] bg-orange-500 text-white px-4 py-2 rounded-xl shadow-lg">
+          {toastMessage}
+        </div>
       )}
       <Navbar />
-      
+
       {/* CONTAINER UTAMA */}
       <div className="w-full max-w-[1400px] mx-auto p-4 md:p-8 lg:p-10 pt-28 md:pt-8 pb-20">
-        
         {/* HEADER */}
         <div ref={headerRef} className="opacity-0 translate-y-6">
           <div className="mb-10 text-center">
@@ -335,8 +428,12 @@ export default function Motivation() {
             <div className="inline-flex rounded-full bg-white border text-orange-700 text-sm font-medium shadow-sm px-3 py-1 mb-4 cursor-default">
               ✨ Today's Quote
             </div>
-            <h2 className="text-2xl md:text-3xl font-bold mb-3 text-gray-800">Featured Motivation</h2>
-            <p className="text-lg md:text-xl italic text-gray-700 max-w-3xl">"{heroQuote.text}"</p>
+            <h2 className="text-2xl md:text-3xl font-bold mb-3 text-gray-800">
+              Featured Motivation
+            </h2>
+            <p className="text-lg md:text-xl italic text-gray-700 max-w-3xl">
+              "{heroQuote.text}"
+            </p>
             <div className="flex gap-3 mt-6 flex-wrap justify-end">
               <button
                 onClick={() => setHeroQuote(getRandomHeroQuote())}
@@ -351,9 +448,15 @@ export default function Motivation() {
                 aria-label="bookmark-hero"
               >
                 <Bookmark
-                  className={`w-4 h-4 ${likedIndex.includes(HERO_INDEX) ? "fill-orange-500 text-orange-600" : "text-gray-500"}`}
+                  className={`w-4 h-4 ${
+                    likedIndex.includes(HERO_INDEX)
+                      ? "fill-orange-500 text-orange-600"
+                      : "text-gray-500"
+                  }`}
                 />
-                <span className="hidden sm:inline">{likedIndex.includes(HERO_INDEX) ? "Saved" : "Save"}</span>
+                <span className="hidden sm:inline">
+                  {likedIndex.includes(HERO_INDEX) ? "Saved" : "Save"}
+                </span>
               </button>
               <button
                 onClick={() => openShare(heroQuote.text)}
@@ -373,7 +476,11 @@ export default function Motivation() {
             Motivation Collection
           </h3>
           <p className="text-gray-600 text-sm">
-            {loading ? "Loading..." : error ? error : "Inspiration for every moment"}
+            {loading
+              ? "Loading..."
+              : error
+              ? error
+              : "Inspiration for every moment"}
           </p>
         </div>
 
@@ -393,8 +500,12 @@ export default function Motivation() {
                   boxShadow: "0 4px 18px rgba(0,0,0,0.04)",
                 }}
               >
-                <p className="text-md md:text-lg italic text-gray-700 min-h-[72px] md:min-h-[90px]">"{quoteObj.quote}"</p>
-                <div className="text-xs text-gray-500 mt-2">Author: {quoteObj.authorName ?? "-"}</div>
+                <p className="text-md md:text-lg italic text-gray-700 min-h-[72px] md:min-h-[90px]">
+                  "{quoteObj.quote}"
+                </p>
+                <div className="text-xs text-gray-500 mt-2">
+                  Author: {quoteObj.authorName ?? "-"}
+                </div>
                 <div className="mt-4 pt-4 border-t border-black/5 flex justify-end gap-3 items-center">
                   <button
                     onClick={() => toggleLike(id)}
@@ -402,7 +513,11 @@ export default function Motivation() {
                     className="cursor-pointer"
                   >
                     <Bookmark
-                      className={`w-6 h-6 ${likedIndex.includes(id) ? "fill-orange-500 text-orange-600" : "text-gray-400 hover:text-orange-400"}`}
+                      className={`w-6 h-6 ${
+                        likedIndex.includes(id)
+                          ? "fill-orange-500 text-orange-600"
+                          : "text-gray-400 hover:text-orange-400"
+                      }`}
                     />
                   </button>
                   <button
@@ -410,7 +525,8 @@ export default function Motivation() {
                     className="text-xs sm:text-sm text-orange-500 hover:text-orange-600 font-medium flex items-center gap-1 cursor-pointer"
                     aria-label={`share-${id}`}
                   >
-                    <Share2 className="w-4 h-4" /> <span className="hidden sm:inline">Share</span>
+                    <Share2 className="w-4 h-4" />{" "}
+                    <span className="hidden sm:inline">Share</span>
                   </button>
                 </div>
               </div>
@@ -433,9 +549,19 @@ export default function Motivation() {
 
       {/* SHARE MODAL - PERBAIKAN RESPONSIVE DI SINI */}
       {shareOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true">
-          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm transition-opacity" onClick={closeShare} />
-          <div className="relative z-60 max-w-4xl w-full mx-auto" style={{ animation: "fade-in 240ms ease" }}>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div
+            className="absolute inset-0 bg-black/30 backdrop-blur-sm transition-opacity"
+            onClick={closeShare}
+          />
+          <div
+            className="relative z-60 max-w-4xl w-full mx-auto"
+            style={{ animation: "fade-in 240ms ease" }}
+          >
             <div className="bg-transparent p-4 rounded-xl">
               <div className="flex justify-end mb-2">
                 <button
@@ -445,33 +571,35 @@ export default function Motivation() {
                   Close
                 </button>
               </div>
-              
+
               {/* Flex Container: flex-col di mobile, flex-row di desktop */}
               <div className="flex flex-col md:flex-row gap-6 items-start">
-                
                 {/* Bagian Kiri (Preview Card) */}
                 <div className="flex-1 flex items-center justify-center w-full">
                   {/* WRAPPER FOR SCALING to ensure WYSIWYG */}
                   <div className="transform scale-[0.75] sm:scale-[0.9] md:scale-100 transition-transform origin-center">
-                      <div
-                        ref={shareCardRef}
-                        // UBAHAN: Hardcode width/height to match EXPORT_SIZES (464x264)
-                        style={{ 
-                            width: "464px", 
-                            height: "264px",
-                            flexShrink: 0,
-                            display: "flex", 
-                            alignItems: "center", 
-                            justifyContent: "center", 
-                            borderRadius: 16, 
-                            boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)"
-                        }}
-                      >
-                        <SharePreview
-                          text={shareText}
-                          templateBg={TEMPLATES.find((t) => t.id === selectedTemplate)?.color || TEMPLATES[0].color}
-                        />
-                      </div>
+                    <div
+                      ref={shareCardRef}
+                      // UBAHAN: Hardcode width/height to match EXPORT_SIZES (464x264)
+                      style={{
+                        width: "464px",
+                        height: "264px",
+                        flexShrink: 0,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        borderRadius: 16,
+                        boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                      }}
+                    >
+                      <SharePreview
+                        text={shareText}
+                        templateBg={
+                          TEMPLATES.find((t) => t.id === selectedTemplate)
+                            ?.color || TEMPLATES[0].color
+                        }
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -479,35 +607,61 @@ export default function Motivation() {
                 {/* UBAHANNYA: w-full di mobile, fixed width di desktop */}
                 <div className="w-full md:w-[360px] space-y-4">
                   <div>
-                    <h4 className="font-semibold mb-2 text-white md:text-gray-800">Choose template</h4>
+                    <h4 className="font-semibold mb-2 text-white md:text-gray-800">
+                      Choose template
+                    </h4>
                     <div className="grid grid-cols-2 gap-3">
                       {TEMPLATES.map((t) => (
                         <button
                           key={t.id}
                           onClick={() => setSelectedTemplate(t.id)}
-                          className={`p-2 rounded-lg border ${selectedTemplate === t.id ? "ring-2 ring-orange-400" : "border-black/5"} cursor-pointer`}
+                          className={`p-2 rounded-lg border ${
+                            selectedTemplate === t.id
+                              ? "ring-2 ring-orange-400"
+                              : "border-black/5"
+                          } cursor-pointer`}
                           style={{ background: t.color }}
                         >
-                          <div style={{ background: "#fff", padding: 6, borderRadius: 8 }}>
-                            <div style={{ fontSize: 12, fontWeight: 700, color: "#ff7a59" }}>{t.name}</div>
+                          <div
+                            style={{
+                              background: "#fff",
+                              padding: 6,
+                              borderRadius: 8,
+                            }}
+                          >
+                            <div
+                              style={{
+                                fontSize: 12,
+                                fontWeight: 700,
+                                color: "#ff7a59",
+                              }}
+                            >
+                              {t.name}
+                            </div>
                           </div>
                         </button>
                       ))}
                     </div>
                   </div>
                   <div className="mt-4 flex flex-col gap-3">
-                    <button onClick={downloadShareCard} className="px-4 py-3 bg-orange-500 text-white rounded-xl cursor-pointer shadow">
+                    <button
+                      onClick={downloadShareCard}
+                      className="px-4 py-3 bg-orange-500 text-white rounded-xl cursor-pointer shadow"
+                    >
                       Download PNG
                     </button>
-                    <button onClick={copyText} className="px-4 py-3 bg-white border rounded-xl cursor-pointer">
+                    <button
+                      onClick={copyText}
+                      className="px-4 py-3 bg-white border rounded-xl cursor-pointer"
+                    >
                       Copy Text
                     </button>
                     <div className="text-xs text-black mt-2">
-                      Tip: center white card keeps text readable while outer background
+                      Tip: center white card keeps text readable while outer
+                      background
                     </div>
                   </div>
                 </div>
-
               </div>
             </div>
           </div>
@@ -518,7 +672,8 @@ export default function Motivation() {
         .animate-slide-up {
           opacity: 1 !important;
           transform: translateY(0) !important;
-          transition: transform 900ms cubic-bezier(0.16, 1, 0.3, 1), opacity 600ms ease;
+          transition: transform 900ms cubic-bezier(0.16, 1, 0.3, 1),
+            opacity 600ms ease;
         }
         .translate-y-6 {
           transform: translateY(1.5rem);
