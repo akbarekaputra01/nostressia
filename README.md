@@ -10,6 +10,8 @@ app_port: 7860
 
 # 🚀 Nostressia Backend API
 
+[![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-blue)](https://huggingface.co/spaces/akbarekaputra01/Nostressia-Backend)
+
 FastAPI service that powers the **Nostressia** application. This backend handles authentication, motivation/tips management, and features an **AI-driven Stress Detection System** using Machine Learning.
 
 The project follows strict architectural patterns with a clear separation between configuration, database, routers, and ML services.
