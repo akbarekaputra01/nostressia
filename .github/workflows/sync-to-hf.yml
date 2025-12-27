@@ -1,0 +1,26 @@
+name: Sync to Hugging Face hub
+
+on:
+  push:
+    branches: [main] # Trigger on pushes to the main branch
+  workflow_dispatch: # Allows manual trigger from the GitHub Actions tab
+
+jobs:
+  sync-to-hub:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: true # Essential for large files (Git LFS)
+
+      - name: Push to hub
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          # Configure git LFS
+          git lfs install
+          # Add the Hugging Face remote URL
+          git remote add space https://akbarekaputra01:$HF_TOKEN@huggingface.co/spaces/akbarekaputra01/ghhf
+          # Force push the current branch to the 'main' branch on Hugging Face
+          git push --force space main
