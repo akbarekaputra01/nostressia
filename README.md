@@ -1,5 +1,5 @@
 ---
-title: Nostressia Backend API
+title: Nostressia-Backend
 emoji: 🧠
 colorFrom: indigo
 colorTo: pink
@@ -17,7 +17,7 @@ The project follows strict architectural patterns with a clear separation betwee
 ## 🔗 Live Documentation
 
 Explore the API endpoints via Swagger UI:
-👉 **[Open Live API Docs](https://akbarekaputra01-nsbe2.hf.space/docs)**
+👉 **[Open Live API Docs](https://akbarekaputra01-nostressia-backend.hf.space/docs)**
 
 ---
 
