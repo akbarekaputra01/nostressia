@@ -1,5 +1,6 @@
 // src/pages/Login/Login.jsx
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom"; // 1. Import useNavigate
 import { Mail, Lock, ArrowRight, Loader2, CheckCircle, User, Calendar, AtSign, Users, Check, Eye, EyeOff } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -16,6 +17,7 @@ const AVATAR_OPTIONS = [
 ];
 
 export default function Login() {
+  const navigate = useNavigate(); // 2. Inisialisasi hook
   const [formData, setFormData] = useState({ 
     name: "", 
     username: "", 
@@ -55,7 +57,8 @@ export default function Login() {
     setTimeout(() => {
         setIsLoading(false);
         setIsSuccess(true);
-        setTimeout(() => window.location.href = "/", 1000); 
+        // 3. Ubah redirect ke dashboard
+        setTimeout(() => navigate("/dashboard"), 1000); 
     }, 2000);
   };
 
@@ -333,6 +336,15 @@ export default function Login() {
 
          </motion.div>
       </div>
+      {/* --- TOMBOL TEMPORARY: DEV BYPASS LOGIN --- */}
+      {/* Hapus bagian ini nanti saat sudah production/deploy */}
+      <a
+        href="/dashboard"
+        className="fixed bottom-4 right-4 z-[9999] bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-full text-xs font-bold shadow-2xl transition-all opacity-60 hover:opacity-100 hover:scale-105 no-underline flex items-center gap-2 cursor-pointer"
+        title="Klik untuk langsung masuk ke Dashboard (Mode Developer)"
+      >
+        <span>🔓</span> Skip Login
+      </a>
 
       <style>{`
         @keyframes pulse-slow { 0%, 100% { opacity: 0.4; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.1); } }
@@ -346,5 +358,7 @@ export default function Login() {
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #d1d5db; }
       `}</style>
     </div>
+
+    
   );
 }
