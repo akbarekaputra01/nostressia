@@ -1,11 +1,11 @@
 // src/components/Navbar.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import LogoImage from "../assets/images/Logo-Nostressia.png"; 
 
 // --- Data Menu Navigasi ---
 const navLinks = [
-  { name: "Dashboard", href: "/" }, // KEMBALI KE "/"
+  { name: "Dashboard", href: "/dashboard" }, // Updated: Mengarah ke /dashboard
   { name: "Analytics", href: "/analytics" },
   { name: "Motivation", href: "/motivation" },
   { name: "Tips", href: "/tips" },
@@ -15,12 +15,35 @@ const navLinks = [
 const Navbar = () => {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
+  // 1. Buat referensi untuk elemen navbar
+  const navbarRef = useRef(null);
 
   // Fungsi helper untuk mengecek path aktif
   const isActive = (path) => location.pathname === path;
 
+  // 2. Tambahkan Event Listener untuk mendeteksi klik di luar navbar
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      // Jika navbarRef ada DAN klik terjadi di luar elemen navbar
+      if (navbarRef.current && !navbarRef.current.contains(event.target)) {
+        setIsMobileMenuOpen(false); // Tutup dropdown
+      }
+    };
+
+    // Pasang event listener saat komponen dipasang
+    document.addEventListener("mousedown", handleClickOutside);
+
+    // Bersihkan event listener saat komponen dilepas
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   return (
     <header
+      // 3. Pasang ref ke elemen utama header
+      ref={navbarRef}
       className="
                 fixed md:sticky top-4 
                 mx-4 lg:mx-6 p-4 
@@ -37,8 +60,8 @@ const Navbar = () => {
       <div className="flex justify-between items-center w-full">
         {/* 1. BAGIAN KIRI: Logo + Menu Desktop */}
         <div className="flex items-center gap-8">
-          {/* Logo */}
-          <Link to="/" className="flex items-center cursor-pointer">
+          {/* Logo - Updated: Link ke /dashboard */}
+          <Link to="/dashboard" className="flex items-center cursor-pointer">
             <img
               src={LogoImage}
               alt="Nostressia Logo"
@@ -130,7 +153,7 @@ const Navbar = () => {
                     overflow-hidden transition-all duration-300 ease-in-out
                     ${
                       isMobileMenuOpen
-                        ? "max-h-[400px] mt-4 pt-4 border-t border-gray-200"
+                        ? "max-h-[400px] mt-4 pt-4 border-t border-gray-200 opacity-100"
                         : "max-h-0 opacity-0"
                     }
                 `}

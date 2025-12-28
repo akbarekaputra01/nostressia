@@ -1,19 +1,20 @@
 // src/pages/Tips/Tips.jsx
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  ArrowLeft, Zap, Sparkles 
-} from "lucide-react"; 
+import { ArrowLeft, Zap, Sparkles } from "lucide-react"; 
 import Navbar from "../../components/Navbar";
+
+// --- IMPORT LOGO DARI ASSETS ---
+import LogoNostressia from "../../assets/images/Logo-Nostressia.png";
 
 // --- API URL ---
 import { BASE_URL } from "../../api/config";
+
 // --- COLOR CONFIGURATION ---
 const bgCream = "#FFF3E0";
 const bgPink = "#eaf2ff";
 const bgLavender = "#e3edff";
 
-// --- BACKGROUND STYLE ---
 const bgStyle = {
   minHeight: "100vh",
   backgroundColor: bgCream,
@@ -27,7 +28,7 @@ const bgStyle = {
   fontFamily: "'Manrope', sans-serif"
 };
 
-// --- HELPER: EMOJI MAPPING ---
+// --- HELPER FUNCTIONS ---
 const getCategoryEmoji = (name) => {
   const n = name.toLowerCase();
   if (n.includes("sleep") || n.includes("tidur")) return "😴";
@@ -42,7 +43,6 @@ const getCategoryEmoji = (name) => {
   return "💡"; 
 };
 
-// --- HELPER: WARNA KATEGORI ---
 const getCategoryColor = (name) => {
   const n = name.toLowerCase();
   if (n.includes("sleep") || n.includes("tidur")) return "from-indigo-50 to-indigo-100 text-indigo-600 border-indigo-100";
@@ -64,82 +64,90 @@ export default function Tips() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isScrolled, setIsScrolled] = useState(false);
 
-  // --- FETCH DATA (SEQUENTIAL FETCH FIX) ---
+  // --- OPTIMIZED LOAD CATEGORIES ---
   useEffect(() => {
     const loadCategories = async () => {
       try {
         setLoadingCategories(true);
-        
-        // 1. Ambil daftar kategori
         const res = await fetch(`${BASE_URL}/tips/categories`);
         const data = await res.json();
 
-        const processedCategories = [];
-
-        // 2. Loop satu per satu (Sequential) untuk menghindari server overload/rate limit
-        //    Ini memperbaiki masalah jumlah tips muncul "0"
-        for (const item of data) {
+        // Menggunakan Promise.all agar fetch detail berjalan PARALEL (Bersamaan)
+        // Tidak antre satu per satu seperti "for...of"
+        const categoryPromises = data.map(async (item) => {
             const name = item.categoryName || item.name || "";
             const id = item.tipCategoryID || item.id;
             let realCount = 0;
+            let preloadedData = [];
 
             try {
                 const tipsRes = await fetch(`${BASE_URL}/tips/by-category/${id}`);
                 if (tipsRes.ok) {
                     const tipsData = await tipsRes.json();
                     if (Array.isArray(tipsData)) {
-                        realCount = tipsData.length; 
+                        realCount = tipsData.length;
+                        // OPTIMISASI: Kita simpan datanya sekarang, jadi nanti tidak perlu fetch lagi
+                        preloadedData = tipsData; 
                     }
                 }
-            } catch (error) {
-                console.warn(`Gagal hitung tips kategori ${id}`, error);
+            } catch (error) { 
+                console.warn(`Gagal hitung tips kategori ${id}`, error); 
             }
 
-            processedCategories.push({
-                id: id,
-                name: name,
+            return {
+                id: id, 
+                name: name, 
                 emoji: getCategoryEmoji(name),
-                colorClass: getCategoryColor(name),
-                tipsCount: realCount
-            });
-        }
+                colorClass: getCategoryColor(name), 
+                tipsCount: realCount,
+                preloadedTips: preloadedData // Simpan data di sini
+            };
+        });
 
+        const processedCategories = await Promise.all(categoryPromises);
         setCategories(processedCategories);
-      } catch (err) {
-        console.error("Error loading categories:", err);
-      } finally {
-        setLoadingCategories(false);
+
+      } catch (err) { 
+        console.error("Error loading categories:", err); 
+      } finally { 
+        setLoadingCategories(false); 
       }
     };
     loadCategories();
   }, []);
 
-  // --- SCROLL LISTENER ---
   useEffect(() => {
-    const handleScroll = () => {
-      // Threshold 100px agar navbar tidak hilang terlalu cepat
-      setIsScrolled(window.scrollY > 100);
-    };
+    const handleScroll = () => { setIsScrolled(window.scrollY > 100); };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // --- OPTIMIZED OPEN CATEGORY ---
   const openCategory = async (cat) => {
     setSelectedCategory(cat);
-    setLoadingTips(true);
-    window.scrollTo({ top: 0, behavior: 'smooth' }); 
-    try {
-      const res = await fetch(`${BASE_URL}/tips/by-category/${cat.id}`);
-      const data = await res.json();
-      setTips(data.map(item => ({ id: item.tipID, text: item.detail })));
-    } catch { setTips([]); } 
-    finally { setLoadingTips(false); }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Cek apakah data sudah ada dari hasil pre-loading di awal
+    if (cat.preloadedTips && cat.preloadedTips.length > 0) {
+        // INSTAN: Pakai data yang sudah disimpan
+        setTips(cat.preloadedTips.map(item => ({ id: item.tipID, text: item.detail })));
+    } else {
+        // Fallback: Fetch manual jika entah kenapa kosong
+        setLoadingTips(true);
+        try {
+            const res = await fetch(`${BASE_URL}/tips/by-category/${cat.id}`);
+            const data = await res.json();
+            setTips(data.map(item => ({ id: item.tipID, text: item.detail })));
+        } catch { 
+            setTips([]); 
+        } finally { 
+            setLoadingTips(false); 
+        }
+    }
   };
 
   const handleBack = () => {
-    setSelectedCategory(null);
-    setTips([]);
-    setSearchQuery(""); // Reset Search
+    setSelectedCategory(null); setTips([]); setSearchQuery(""); 
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -151,10 +159,6 @@ export default function Tips() {
         @keyframes gradient-bg { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
       `}</style>
       
-      {/* 1. WRAPPER NAVBAR UTAMA 
-          - pt-4: Memberikan gap konsisten di semua device.
-          - duration: 0.8s & easeInOut: Animasi hilang/muncul yang sangat smooth.
-      */}
       <motion.div 
         className="fixed top-0 left-0 right-0 z-40 pt-4"
         initial={{ y: 0, opacity: 1 }}
@@ -162,19 +166,14 @@ export default function Tips() {
           y: selectedCategory && isScrolled ? "-150%" : "0%", 
           opacity: selectedCategory && isScrolled ? 0 : 1 
         }}
-        transition={{ 
-          duration: 0.8, 
-          ease: "easeInOut" 
-        }}
+        transition={{ duration: 0.8, ease: "easeInOut" }}
       >
         <Navbar />
       </motion.div>
 
-      {/* Main Container: pt-32 agar konten tidak tertutup navbar yang melayang */}
       <main className="max-w-[1400px] mx-auto px-6 pb-20 pt-28 md:pt-32">
         <AnimatePresence mode="wait">
           
-          {/* === VIEW 1: HOME (HEADER + KATEGORI) === */}
           {!selectedCategory && (
             <motion.div 
               key="categories"
@@ -182,7 +181,6 @@ export default function Tips() {
               transition={{ duration: 0.3 }}
             >
               
-              {/* HEADER */}
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
                 <div>
                   <div className="inline-flex items-center gap-2 mb-4 text-orange-600 font-bold text-sm tracking-wider uppercase bg-white/40 backdrop-blur-sm px-3 py-1 rounded-full border border-white/50">
@@ -195,88 +193,102 @@ export default function Tips() {
                 </div>
                 
                 <div className="relative w-full md:w-72">
-                  
-                  {/* INPUT SEARCH */}
-                  <input 
-                    type="text" 
-                    placeholder="Find topics..." 
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-12 pr-5 py-4 bg-white/60 backdrop-blur-md rounded-2xl shadow-sm border border-white/50 focus:bg-white focus:ring-2 focus:ring-blue-200 outline-none transition-all placeholder-gray-500 font-medium"
-                  />
-
-                  {/* SVG ICON PHOSPHOR STYLE 
-                      - Posisi absolute di atas input.
-                      - Pointer-events-none agar klik tembus ke input.
-                      - Z-index 10 agar pasti di atas background input.
-                  */}
+                  <input type="text" placeholder="Find topics..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-12 pr-5 py-4 bg-white/60 backdrop-blur-md rounded-2xl shadow-sm border border-white/50 focus:bg-white focus:ring-2 focus:ring-blue-200 outline-none transition-all placeholder-gray-500 font-medium"/>
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none z-10">
-                    <svg 
-                        xmlns="http://www.w3.org/2000/svg" 
-                        width="20" 
-                        height="20" 
-                        fill="currentColor" 
-                        viewBox="0 0 256 256"
-                    >
-                        <path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z" />
-                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 256 256"><path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z" /></svg>
                   </div>
-                  
                 </div>
               </div>
 
-              {/* GRID KATEGORI */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {loadingCategories ? (
-                   [...Array(6)].map((_, i) => <div key={i} className="h-40 bg-white/40 rounded-3xl animate-pulse"/>)
-                ) : filteredCategories.length > 0 ? (
-                  filteredCategories.map((cat, i) => (
+              {loadingCategories ? (
+                // ================== ANIMASI LOGO FLOATING ==================
+                <div className="flex flex-col items-center justify-center py-24 min-h-[50vh]">
+                    
+                    {/* 1. Floating Element */}
                     <motion.div
-                      key={cat.id}
-                      layoutId={`cat-${cat.id}`}
-                      onClick={() => openCategory(cat)}
-                      whileHover={{ scale: 1.02, y: -5 }}
-                      className={`
-                        group relative p-6 rounded-[32px] cursor-pointer bg-white/80 backdrop-blur-sm border 
-                        shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.1)] hover:bg-white
-                        transition-all duration-300 flex flex-col justify-between h-52 overflow-hidden
-                        ${cat.colorClass.split(" ").pop()}
-                      `}
+                        animate={{ y: [0, -12, 0] }} 
+                        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                        className="relative z-10 mb-8"
                     >
-                      <div className={`absolute inset-0 bg-gradient-to-br ${cat.colorClass} opacity-0 group-hover:opacity-10 transition-opacity duration-500`} />
-                      
-                      <div className="flex justify-between items-start z-10">
-                        <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-4xl bg-white/60 border border-white/50 shadow-sm group-hover:scale-110 transition-transform duration-300">
-                          {cat.emoji}
-                        </div>
-                        <span className="bg-white/60 text-gray-600 text-xs font-bold px-3 py-1 rounded-full border border-white/50 backdrop-blur-sm">
-                          {cat.tipsCount} Tips
-                        </span>
-                      </div>
-
-                      <div className="z-10 mt-4">
-                        <h3 className="text-xl font-bold text-gray-800 group-hover:text-blue-600 transition-colors">
-                          {cat.name}
-                        </h3>
-                        <p className="text-sm text-gray-500 mt-1 font-medium">Click to explore</p>
-                      </div>
+                          {/* Container Utama */}
+                          <div className="bg-gradient-to-tr from-blue-50 to-indigo-50 p-4 rounded-3xl shadow-sm border border-white/60 backdrop-blur-sm">
+                             <img 
+                                src={LogoNostressia} 
+                                alt="Nostressia Logo" 
+                                className="w-20 h-20 object-contain opacity-90" 
+                             />
+                          </div>
                     </motion.div>
-                  ))
-                ) : (
-                  <div className="col-span-full py-20 text-center text-gray-400">No categories found.</div>
-                )}
-              </div>
+
+                    {/* 2. Simpel 3 Titik */}
+                    <div className="flex items-center gap-2 mb-6">
+                        {[0, 1, 2].map((index) => (
+                        <motion.div
+                            key={index}
+                            className="w-1.5 h-1.5 bg-blue-300 rounded-full"
+                            animate={{
+                                y: ["0%", "-50%", "0%"],
+                                opacity: [0.4, 1, 0.4]
+                            }}
+                            transition={{
+                                duration: 0.6,
+                                repeat: Infinity,
+                                ease: "easeInOut",
+                                delay: index * 0.15,
+                            }}
+                        />
+                        ))}
+                    </div>
+
+                    {/* 3. Teks Penjelas */}
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.5, duration: 0.8 }}
+                        className="text-center"
+                    >
+                        <h3 className="text-lg font-bold text-gray-700 tracking-tight">
+                            Preparing best tips for you...
+                        </h3>
+                        <p className="text-sm text-gray-400 mt-1 font-medium">
+                            Curating daily advice
+                        </p>
+                    </motion.div>
+
+                </div>
+                // ==========================================================
+
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredCategories.length > 0 ? (
+                    filteredCategories.map((cat, i) => (
+                      <motion.div
+                        key={cat.id} layoutId={`cat-${cat.id}`} onClick={() => openCategory(cat)} whileHover={{ scale: 1.02, y: -5 }}
+                        className={`group relative p-6 rounded-[32px] cursor-pointer bg-white/80 backdrop-blur-sm border shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.1)] hover:bg-white transition-all duration-300 flex flex-col justify-between h-52 overflow-hidden ${cat.colorClass.split(" ").pop()}`}
+                      >
+                        <div className={`absolute inset-0 bg-gradient-to-br ${cat.colorClass} opacity-0 group-hover:opacity-10 transition-opacity duration-500`} />
+                        <div className="flex justify-between items-start z-10">
+                          <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-4xl bg-white/60 border border-white/50 shadow-sm group-hover:scale-110 transition-transform duration-300">{cat.emoji}</div>
+                          <span className="bg-white/60 text-gray-600 text-xs font-bold px-3 py-1 rounded-full border border-white/50 backdrop-blur-sm">{cat.tipsCount} Tips</span>
+                        </div>
+                        <div className="z-10 mt-4">
+                          <h3 className="text-xl font-bold text-gray-800 group-hover:text-blue-600 transition-colors">{cat.name}</h3>
+                          <p className="text-sm text-gray-500 mt-1 font-medium">Click to explore</p>
+                        </div>
+                      </motion.div>
+                    ))
+                  ) : (
+                    <div className="col-span-full py-20 text-center text-gray-400">No categories found.</div>
+                  )}
+                </div>
+              )}
             </motion.div>
           )}
 
-          {/* === VIEW 2: DETAIL TIPS === */}
           {selectedCategory && (
             <motion.div
-              key="details"
-              initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}
-              transition={{ duration: 0.4 }}
+              key="details" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ duration: 0.4 }}
             >
-              {/* 2. NAVBAR SEMENTARA (STICKY HEADER) */}
               <div className="sticky top-4 z-50 mb-8 transition-all duration-300">
                   <div className="bg-white/90 backdrop-blur-xl px-6 py-4 rounded-[20px] shadow-xl border border-white/50 flex items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -288,36 +300,21 @@ export default function Tips() {
                         <h2 className="text-lg md:text-xl font-bold text-gray-800 leading-tight whitespace-nowrap overflow-hidden text-ellipsis max-w-[240px] md:max-w-none">{selectedCategory.name}</h2>
                       </div>
                     </div>
-                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl flex items-center justify-center text-2xl md:text-3xl bg-white border border-gray-100 shadow-sm">
-                        {selectedCategory.emoji}
-                    </div>
+                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl flex items-center justify-center text-2xl md:text-3xl bg-white border border-gray-100 shadow-sm">{selectedCategory.emoji}</div>
                   </div>
               </div>
-
-              {/* Tips Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {loadingTips ? (
-                   [...Array(4)].map((_,i) => <div key={i} className="h-32 bg-white/40 rounded-3xl animate-pulse"/>)
+                  [...Array(4)].map((_,i) => <div key={i} className="h-32 bg-white/40 rounded-3xl animate-pulse"/>)
                 ) : tips.length > 0 ? (
                   tips.map((tip, idx) => (
                     <motion.div
-                      key={tip.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: idx * 0.05 }}
+                      key={tip.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.05 }}
                       className="bg-white/80 backdrop-blur-sm p-6 md:p-8 rounded-[32px] border border-white/60 shadow-sm hover:shadow-lg hover:bg-white transition-all duration-300 group relative overflow-hidden"
                     >
-                      {/* --- POSISI ANGKA: KANAN, TIPIS & HALUS --- */}
-                      <span className="absolute -right-4 -top-4 text-9xl font-extrabold text-gray-200 opacity-50 select-none pointer-events-none group-hover:scale-110 transition-transform duration-500">
-                        {idx + 1}
-                      </span>
-
+                      <span className="absolute -right-4 -top-4 text-9xl font-extrabold text-gray-200 opacity-50 select-none pointer-events-none group-hover:scale-110 transition-transform duration-500">{idx + 1}</span>
                       <div className="relative z-10 flex items-start gap-4">
-                        <div className="flex-1">
-                          <p className="text-lg md:text-xl font-medium text-gray-700 leading-relaxed group-hover:text-gray-900">
-                            {tip.text}
-                          </p>
-                        </div>
+                        <div className="flex-1"><p className="text-lg md:text-xl font-medium text-gray-700 leading-relaxed group-hover:text-gray-900">{tip.text}</p></div>
                       </div>
                     </motion.div>
                   ))
