@@ -1,14 +1,16 @@
 // src/pages/Tips/Tips.jsx
 import { useState, useEffect } from "react";
+import { useOutletContext } from "react-router-dom"; 
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Zap, Sparkles } from "lucide-react"; 
 import Navbar from "../../components/Navbar";
-
-// --- IMPORT LOGO DARI ASSETS ---
-import LogoNostressia from "../../assets/images/Logo-Nostressia.png";
+import Footer from "../../components/Footer"; 
 
 // --- API URL ---
 import { BASE_URL } from "../../api/config";
+
+// --- IMPORT LOGO ---
+import LogoNostressia from "../../assets/images/Logo-Nostressia.png";
 
 // --- COLOR CONFIGURATION ---
 const bgCream = "#FFF3E0";
@@ -64,7 +66,10 @@ export default function Tips() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isScrolled, setIsScrolled] = useState(false);
 
-  // --- OPTIMIZED LOAD CATEGORIES ---
+  // 1. AMBIL DATA USER DARI WRAPPER (MAINLAYOUT)
+  const { user } = useOutletContext() || { user: {} };
+
+  // --- LOAD CATEGORIES ---
   useEffect(() => {
     const loadCategories = async () => {
       try {
@@ -72,8 +77,6 @@ export default function Tips() {
         const res = await fetch(`${BASE_URL}/tips/categories`);
         const data = await res.json();
 
-        // Menggunakan Promise.all agar fetch detail berjalan PARALEL (Bersamaan)
-        // Tidak antre satu per satu seperti "for...of"
         const categoryPromises = data.map(async (item) => {
             const name = item.categoryName || item.name || "";
             const id = item.tipCategoryID || item.id;
@@ -86,7 +89,6 @@ export default function Tips() {
                     const tipsData = await tipsRes.json();
                     if (Array.isArray(tipsData)) {
                         realCount = tipsData.length;
-                        // OPTIMISASI: Kita simpan datanya sekarang, jadi nanti tidak perlu fetch lagi
                         preloadedData = tipsData; 
                     }
                 }
@@ -100,7 +102,7 @@ export default function Tips() {
                 emoji: getCategoryEmoji(name),
                 colorClass: getCategoryColor(name), 
                 tipsCount: realCount,
-                preloadedTips: preloadedData // Simpan data di sini
+                preloadedTips: preloadedData 
             };
         });
 
@@ -122,17 +124,14 @@ export default function Tips() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // --- OPTIMIZED OPEN CATEGORY ---
+  // --- OPEN CATEGORY ---
   const openCategory = async (cat) => {
     setSelectedCategory(cat);
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
-    // Cek apakah data sudah ada dari hasil pre-loading di awal
     if (cat.preloadedTips && cat.preloadedTips.length > 0) {
-        // INSTAN: Pakai data yang sudah disimpan
         setTips(cat.preloadedTips.map(item => ({ id: item.tipID, text: item.detail })));
     } else {
-        // Fallback: Fetch manual jika entah kenapa kosong
         setLoadingTips(true);
         try {
             const res = await fetch(`${BASE_URL}/tips/by-category/${cat.id}`);
@@ -154,7 +153,7 @@ export default function Tips() {
   const filteredCategories = categories.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
   return (
-    <div className="min-h-screen text-gray-800" style={bgStyle}>
+    <div className="min-h-screen text-gray-800 flex flex-col" style={bgStyle}>
       <style>{`
         @keyframes gradient-bg { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
       `}</style>
@@ -168,10 +167,14 @@ export default function Tips() {
         }}
         transition={{ duration: 0.8, ease: "easeInOut" }}
       >
-        <Navbar />
+        <Navbar activeLink="Tips" user={user} />
       </motion.div>
 
-      <main className="max-w-[1400px] mx-auto px-6 pb-20 pt-28 md:pt-32">
+      {/* --- MODIFIKASI LAYOUT DI SINI --- */}
+      {/* 1. max-w-[1400px] -> max-w-[1600px] (Supaya lebih lebar di layar besar)
+          2. px-6 -> px-4 (Supaya jarak pinggir lebih tipis/rapat)
+      */}
+      <main className="w-full max-w-[1600px] mx-auto px-4 pb-20 pt-28 md:pt-32 flex-grow">
         <AnimatePresence mode="wait">
           
           {!selectedCategory && (
@@ -203,14 +206,11 @@ export default function Tips() {
               {loadingCategories ? (
                 // ================== ANIMASI LOGO FLOATING ==================
                 <div className="flex flex-col items-center justify-center py-24 min-h-[50vh]">
-                    
-                    {/* 1. Floating Element */}
                     <motion.div
                         animate={{ y: [0, -12, 0] }} 
                         transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                         className="relative z-10 mb-8"
                     >
-                          {/* Container Utama */}
                           <div className="bg-gradient-to-tr from-blue-50 to-indigo-50 p-4 rounded-3xl shadow-sm border border-white/60 backdrop-blur-sm">
                              <img 
                                 src={LogoNostressia} 
@@ -219,47 +219,26 @@ export default function Tips() {
                              />
                           </div>
                     </motion.div>
-
-                    {/* 2. Simpel 3 Titik */}
                     <div className="flex items-center gap-2 mb-6">
                         {[0, 1, 2].map((index) => (
                         <motion.div
                             key={index}
                             className="w-1.5 h-1.5 bg-blue-300 rounded-full"
-                            animate={{
-                                y: ["0%", "-50%", "0%"],
-                                opacity: [0.4, 1, 0.4]
-                            }}
-                            transition={{
-                                duration: 0.6,
-                                repeat: Infinity,
-                                ease: "easeInOut",
-                                delay: index * 0.15,
-                            }}
+                            animate={{ y: ["0%", "-50%", "0%"], opacity: [0.4, 1, 0.4] }}
+                            transition={{ duration: 0.6, repeat: Infinity, ease: "easeInOut", delay: index * 0.15 }}
                         />
                         ))}
                     </div>
-
-                    {/* 3. Teks Penjelas */}
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 0.5, duration: 0.8 }}
-                        className="text-center"
-                    >
-                        <h3 className="text-lg font-bold text-gray-700 tracking-tight">
-                            Preparing best tips for you...
-                        </h3>
-                        <p className="text-sm text-gray-400 mt-1 font-medium">
-                            Curating daily advice
-                        </p>
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5, duration: 0.8 }} className="text-center">
+                        <h3 className="text-lg font-bold text-gray-700 tracking-tight">Preparing best tips for you...</h3>
+                        <p className="text-sm text-gray-400 mt-1 font-medium">Curating daily advice</p>
                     </motion.div>
-
                 </div>
-                // ==========================================================
-
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                /* --- GRID LAYOUT LEBIH RAPAT --- 
+                   gap-6 -> gap-4 (Jarak antar kotak diperkecil)
+                */
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {filteredCategories.length > 0 ? (
                     filteredCategories.map((cat, i) => (
                       <motion.div
@@ -303,7 +282,7 @@ export default function Tips() {
                     <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl flex items-center justify-center text-2xl md:text-3xl bg-white border border-gray-100 shadow-sm">{selectedCategory.emoji}</div>
                   </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {loadingTips ? (
                   [...Array(4)].map((_,i) => <div key={i} className="h-32 bg-white/40 rounded-3xl animate-pulse"/>)
                 ) : tips.length > 0 ? (
@@ -330,6 +309,8 @@ export default function Tips() {
 
         </AnimatePresence>
       </main>
+      
+      <Footer />
     </div>
   );
 }

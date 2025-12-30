@@ -1,7 +1,9 @@
+// src/pages/Dashboard/Dashboard.jsx
 import React, { useState, useEffect, useRef } from "react";
-import Navbar from "../../components/Navbar";
+import { useOutletContext } from "react-router-dom"; // Import Context
 import { BASE_URL } from "../../api/config";
 import Footer from "../../components/Footer";
+import Navbar from "../../components/Navbar";
 
 // --- COLOR CONFIGURATION ---
 const brandBlue = "#3664BA";
@@ -30,7 +32,7 @@ const quotesList = [
   { text: "Flowers don't bloom simultaneously. Be patient with your process.", author: "Nature's Law" },
 ];
 
-// --- UPDATED: DATA TIPS (BENTO STYLE) - WITH GLASSMOPRHISM BG ---
+// --- BENTO WIDGET TIPS ---
 const resourcesList = [
   {
     id: 1,
@@ -39,9 +41,8 @@ const resourcesList = [
     title: "Digital Sunset",
     desc: "Turn off gadgets 1 hour before sleep.",
     fullDetail: "The blue light from screens tricks your brain into thinking it's still daytime. Set a 'Digital Sunset' alarm for 9 PM. Replace scrolling with reading a physical book for better sleep.",
-    // Styling Themes - UPDATED BG TO BE TRANSPARENT
     theme: {
-      bg: "bg-blue-50/40", // Diubah jadi transparan
+      bg: "bg-blue-50/40", 
       text: "text-blue-900",
       subtext: "text-blue-700",
       accent: "bg-blue-200",
@@ -56,7 +57,7 @@ const resourcesList = [
     desc: "25 minutes focus, 5 minutes break.",
     fullDetail: "Your brain has a focus limit. Use a timer. When the bell rings, stand up and stretch. This method prevents burnout and keeps energy stable all day.",
     theme: {
-      bg: "bg-orange-50/40", // Diubah jadi transparan
+      bg: "bg-orange-50/40",
       text: "text-orange-900",
       subtext: "text-orange-700",
       accent: "bg-orange-200",
@@ -71,7 +72,7 @@ const resourcesList = [
     desc: "Anxious? Use your 5 senses.",
     fullDetail: "Name: 5 things you see, 4 you feel, 3 you hear, 2 you smell, 1 you taste. This technique forces your brain to switch from 'panic mode' to 'conscious mode' instantly.",
     theme: {
-      bg: "bg-teal-50/40", // Diubah jadi transparan
+      bg: "bg-teal-50/40",
       text: "text-teal-900",
       subtext: "text-teal-700",
       accent: "bg-teal-200",
@@ -158,17 +159,20 @@ function generateTrendData() {
 }
 
 export default function Dashboard() {
+  // AMBIL DATA USER DARI MAINLAYOUT
+  const { user } = useOutletContext() || { user: {} };
+  const userName = user?.name || "Friend";
+
   const [loading, setLoading] = useState(true);
   const [isFlipped, setIsFlipped] = useState(false);
 
-  // State Data
+  // State Data Dashboard
   const [stressData, setStressData] = useState(generateMockData());
   const [trendData, setTrendData] = useState(generateTrendData());
   const [hasSubmittedToday, setHasSubmittedToday] = useState(false);
   const [stressScore, setStressScore] = useState(0);
-  const [userName, setUserName] = useState("Epin");
 
-  // Success Modal (Internal Card State)
+  // Success Modal
   const [successModal, setSuccessModal] = useState({
     visible: false,
     title: "",
@@ -205,11 +209,13 @@ export default function Dashboard() {
   const TODAY_KEY = formatDate(today);
   const progressRef = useRef(null);
 
+  // Effect Loading Awal (Animasi)
   useEffect(() => {
     const t = setTimeout(() => setLoading(false), 600);
     return () => clearTimeout(t);
   }, []);
 
+  // Effect Animasi Progress Bar
   useEffect(() => {
     if (!progressRef.current) return;
     progressRef.current.style.width = "0%";
@@ -264,7 +270,7 @@ export default function Dashboard() {
     setIsFlipped(true);
   }
 
-  // --- HANDLE SAVE (UPDATED: SUCCESS INSIDE CARD) ---
+  // --- HANDLE SAVE (API PREDICTION) ---
   async function handleSaveForm(e) {
     e.preventDefault();
 
@@ -298,7 +304,6 @@ export default function Dashboard() {
       const { score, color } = mapPredictionToUI(apiData.result);
       const successTitleText = hasSubmittedToday ? "Data Updated!" : "Analysis Complete!";
       
-      // TRIGGER INTERNAL SUCCESS STATE
       setSuccessModal({
         visible: true,
         title: successTitleText,
@@ -399,20 +404,22 @@ export default function Dashboard() {
         .animate-slide-down { animation: slideDownFade 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
         .animate-success-icon { animation: success-pop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
         .animate-card-enter { animation: card-enter 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
-        
-        /* Animasi Baru Modal Tips */
         @keyframes modalSlideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .animate-modal-slide { animation: modalSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        
         .custom-scroll::-webkit-scrollbar { width: 6px; }
         .custom-scroll::-webkit-scrollbar-track { background: transparent; }
         .custom-scroll::-webkit-scrollbar-thumb { background-color: rgba(0,0,0,0.1); border-radius: 20px; }
       `}</style>
 
-      <Navbar activeLink="Dashboard" onPredictClick={handleOpenForm} />
+      {/* NAVBAR: Gunakan user dari context */}
+      <Navbar 
+         activeLink="Dashboard" 
+         onPredictClick={handleOpenForm} 
+         user={user} 
+      />
 
       <main className="max-w-[1400px] mx-auto p-6 md:p-8 lg:p-10 pt-28">
-        {/* --- USER GREETING --- */}
+        {/* --- USER GREETING (DINAMIS) --- */}
         <div className="mb-8 animate-slide-down">
           <h1 className="text-3xl md:text-4xl font-extrabold text-gray-800 flex items-center gap-2">
             Hello, <span style={{ color: brandBlue }}>{userName}!</span> 👋
@@ -491,7 +498,7 @@ export default function Dashboard() {
                   </button>
                 </div>
 
-                {/* BACK CARD (FORM) - SUKSES POPUP ADA DI SINI */}
+                {/* BACK CARD (FORM) */}
                 <div
                   className="absolute inset-0 rounded-[20px] p-6 md:p-8 rotate-y-180 backface-hidden flex flex-col shadow-xl border border-white/20 overflow-hidden"
                   style={{ backgroundColor: "rgba(255,255,255,0.45)", zIndex: isFlipped ? 10 : 0, pointerEvents: isFlipped ? "auto" : "none" }}
@@ -555,7 +562,7 @@ export default function Dashboard() {
                     </button>
                   </form>
 
-                  {/* INTERNAL SUCCESS OVERLAY (Tidak Global) */}
+                  {/* INTERNAL SUCCESS OVERLAY */}
                   {successModal.visible && (
                     <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-white/60 backdrop-blur-md rounded-[20px]" style={{ animation: "fadeIn 0.3s ease-out" }}>
                       <div className="w-24 h-24 rounded-full flex items-center justify-center shadow-lg mb-4 animate-success-icon" style={{ backgroundColor: "#fff", border: `4px solid ${brandGreen}` }}>
@@ -611,7 +618,6 @@ export default function Dashboard() {
                     <div><h4 className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">Daily Recap</h4><h2 className="text-2xl font-extrabold text-gray-800">{dayDetail.dateStr}</h2></div>
                     <button onClick={() => setDayDetail(null)} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5 text-gray-600"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button>
                   </div>
-                  {/* ... (DETAIL STATS LAMA) ... */}
                   <div className="flex items-center gap-4 mb-6">
                     <div className="relative w-20 h-20 rounded-full flex items-center justify-center border-4" style={{ borderColor: dayDetail.color }}>
                       <div className="text-center"><div className="text-xs text-gray-500 font-bold">LEVEL</div><div className="text-xl font-black" style={{ color: dayDetail.color }}>{dayDetail.level}</div></div>
@@ -647,13 +653,12 @@ export default function Dashboard() {
             </div>
           </section>
 
-          {/* --- NEW DESIGN: BENTO WIDGET TIPS (Warna-Warni + Glassmorphism) --- */}
+          {/* BENTO WIDGET TIPS */}
           <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
             {resourcesList.map((item) => (
               <div
                 key={item.id}
                 onClick={() => setActiveTip(item)}
-                // UPDATE: Added backdrop-blur, border, and shadow for glass effect
                 className={`relative overflow-hidden rounded-[30px] p-6 h-64 transition-all duration-300 cursor-pointer hover:shadow-2xl hover:scale-[1.02] backdrop-blur-xl border border-white/40 shadow-lg ${item.theme.bg}`}
               >
                 <div className={`absolute -right-6 -top-6 w-32 h-32 rounded-full opacity-50 blur-2xl ${item.theme.accent}`} />
@@ -661,7 +666,6 @@ export default function Dashboard() {
                 <div className="relative z-10 h-full flex flex-col justify-between">
                   <div className="flex justify-between items-start">
                     <span className="text-4xl filter drop-shadow-sm">{item.emoji}</span>
-                    {/* BAGIAN LINGKARAN POJOK KANAN ATAS SUDAH DIHAPUS DI SINI */}
                   </div>
                   <div>
                     <h3 className={`text-2xl font-bold mb-1 ${item.theme.text}`}>{item.title}</h3>
@@ -675,21 +679,17 @@ export default function Dashboard() {
       </main>
       <Footer />
       
-
-      {/* --- MODAL TIPS CANTIK (SHEET STYLE) --- */}
+      {/* MODAL TIPS */}
       {activeTip && (
         <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fadeIn">
-          {/* Area gelap bisa diklik untuk menutup modal */}
           <div 
             className="absolute inset-0 cursor-pointer" 
             onClick={() => setActiveTip(null)} 
           />
           
           <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden animate-modal-slide">
-             {/* Header dengan Warna & Emoji */}
              <div className={`h-32 w-full ${activeTip.theme.bg} relative flex items-center justify-center`}>
                 <div className="text-6xl animate-bounce">{activeTip.emoji}</div>
-                {/* --- BAGIAN BULATAN (TOMBOL CLOSE) SUDAH DIHAPUS DI SINI --- */}
              </div>
 
              <div className="p-8 pt-10 relative">
@@ -705,7 +705,6 @@ export default function Dashboard() {
                  {activeTip.fullDetail}
                </div>
 
-               {/* Tombol Got It! (Cursor sudah jadi tangan) */}
                <button 
                  onClick={() => setActiveTip(null)} 
                  className={`w-full mt-6 py-3 rounded-xl font-bold shadow-lg shadow-gray-200 transition-transform active:scale-95 cursor-pointer ${activeTip.theme.btn}`}
