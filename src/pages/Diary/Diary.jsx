@@ -1,7 +1,9 @@
 // src/pages/Diary/Diary.jsx
 import { useState, useRef, useEffect } from "react";
+import { useOutletContext } from "react-router-dom"; // 1. IMPORT CONTEXT
 import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "../../components/Navbar";
+import Footer from "../../components/Footer"; // 2. IMPORT FOOTER
 
 // --- COLOR CONFIGURATION (MATCHING DASHBOARD) ---
 const bgCream = "#FFF3E0";
@@ -20,6 +22,10 @@ export default function Diary() {
   const [isBookOpen, setIsBookOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const scrollRef = useRef(null);
+
+  // 3. AMBIL DATA USER DARI WRAPPER (MAINLAYOUT)
+  // Default object kosong {} jika context belum siap (safety)
+  const { user } = useOutletContext() || { user: {} }; 
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -42,7 +48,7 @@ export default function Diary() {
     { emoji: "😄", label: "Excited" },
   ];
 
-  // --- PALETTE COLORS (Tetap digunakan untuk elemen UI) ---
+  // --- PALETTE COLORS ---
   const colors = {
     brandBlue: "#3664BA",
     brandOrange: "#F2994A",
@@ -90,20 +96,13 @@ export default function Diary() {
         @keyframes gradient-bg { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
       `}</style>
       
-      {/* --- NAVBAR FIX --- 
-          Dibungkus div fixed agar sticky di atas dan tidak terpengaruh overflow parent 
-      */}
+      {/* --- NAVBAR FIX --- */}
       <div className="fixed top-0 left-0 right-0 z-50 pt-4">
-        <Navbar />
+        {/* 4. PASS DATA USER KE NAVBAR */}
+        <Navbar activeLink="Diary" user={user} />
       </div>
-      {/* Spacer pengganti tinggi navbar */}
       <div className="h-[120px] md:h-[140px]" />
 
-
-      {/* Main Container Adjusted:
-         - pt-28: Padding top mobile
-         - md:pt-32: Padding top desktop (Diubah dari md:pt-8 menjadi md:pt-32 agar tidak tertutup navbar)
-      */}
       <main className="flex-grow flex flex-col items-center w-full max-w-[1400px] mx-auto p-4 md:p-8 lg:p-10 z-10">
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
             <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight" style={{ color: colors.textPrimary }}>Diary <span style={{ color: "rgb(253, 92, 0)" }}>Nostressia</span></h1>
@@ -118,7 +117,6 @@ export default function Diary() {
             >
                 {/* --- LAYER 1: HALAMAN KANAN (KERTAS PUTIH / INPUT) --- */}
                 <div className="absolute inset-0 w-full h-full bg-[#fcf9f5] rounded-[16px] md:rounded-l-[4px] md:rounded-r-[16px] shadow-[10px_10px_30px_rgba(0,0,0,0.15)] z-0 flex flex-col overflow-hidden border border-slate-200">
-                    
                     <div className="flex-grow p-5 md:p-8 flex flex-col relative z-10">
                          {/* Close Button */}
                          <button onClick={() => setIsBookOpen(false)} className="absolute top-3 right-3 z-30 w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all cursor-pointer">
@@ -134,7 +132,6 @@ export default function Diary() {
 
                         {/* CONTAINER UNTUK TEXT & GARIS */}
                         <div className="flex-grow relative w-full h-full flex flex-col">
-                            
                             {/* BACKGROUND GARIS */}
                             <div className="absolute inset-0 opacity-50 pointer-events-none" 
                                 style={{ 
@@ -189,8 +186,12 @@ export default function Diary() {
                     </div>
                     <div className="absolute inset-0 w-full h-full backface-hidden rounded-l-[16px] rounded-r-[4px] shadow-inner bg-[#fcf9f5] border-r border-slate-200" style={{ transform: "rotateY(180deg)" }}>
                          <div className="w-full h-full flex flex-col items-center justify-center p-10 opacity-60">
-                            <div className="w-24 h-24 rounded-full bg-slate-200 mb-4 flex items-center justify-center border-4 border-white shadow-sm overflow-hidden"><img src={`https://ui-avatars.com/api/?name=User&background=${colors.brandOrange.replace('#','')}&color=fff`} alt="User" /></div>
+                            <div className="w-24 h-24 rounded-full bg-slate-200 mb-4 flex items-center justify-center border-4 border-white shadow-sm overflow-hidden">
+                                {/* 5. GUNAKAN DATA USER UNTUK FOTO DI BUKU DIARY */}
+                                <img src={user?.avatar || `https://ui-avatars.com/api/?name=${user?.name || "User"}&background=${colors.brandOrange.replace('#','')}&color=fff`} alt="User" className="w-full h-full object-cover" />
+                            </div>
                             <h3 className="font-serif italic text-slate-500 text-base md:text-lg">This diary belongs to:</h3>
+                            <h2 className="text-xl font-bold text-slate-700 mt-1">{user?.name || "User"}</h2>
                             <div className="border-b-2 border-slate-300 w-full mt-2 mb-6"></div>
                             <p className="text-center text-xs text-slate-400 leading-loose italic font-serif">"Keep your face always toward the sunshine—and shadows will fall behind you."</p>
                          </div>
@@ -223,8 +224,11 @@ export default function Diary() {
              ) : ( <div className="flex flex-col items-center justify-center py-16 opacity-50 border-2 border-dashed border-slate-200 rounded-3xl mx-4"><span className="text-4xl mb-2">📝</span><p className="text-sm font-bold uppercase tracking-widest text-slate-400">No stories recorded yet</p></div> )}
         </div>
       </main>
+      
+      {/* 5. FOOTER */}
+      <Footer />
 
-      {/* --- 4. MODAL DETAIL --- */}
+      {/* --- 6. MODAL DETAIL --- */}
       <AnimatePresence>
         {selectedEntry && (
              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm" onClick={() => setSelectedEntry(null)}>

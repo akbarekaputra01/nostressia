@@ -1,6 +1,11 @@
 // src/router/index.jsx
 import React from "react";
-import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom"; // Tambah Navigate
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
+
+// 1. IMPORT LAYOUT (Pastikan path-nya sesuai dengan lokasi file MainLayout Anda)
+import MainLayout from "../layouts/MainLayout"; 
+
+// Import User Pages
 import Dashboard from "../pages/Dashboard/Dashboard";
 import Tips from "../pages/Tips/Tips";
 import Motivation from "../pages/Motivation/Motivation";
@@ -13,7 +18,7 @@ import Login from "../pages/Login/Login";
 import AdminPage from "../pages/Admin/AdminPage";
 import AdminLogin from "../pages/Admin/AdminLogin";
 
-// ... (Kode AdminRoute tetap sama) ...
+// Kode AdminRoute (Biarkan tetap seperti ini)
 const AdminRoute = () => {
   const isAuthenticated = localStorage.getItem("adminAuth") === "true";
   return isAuthenticated ? <Outlet /> : <Navigate to="/admin/login" replace />;
@@ -23,23 +28,22 @@ function AppRouter() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* --- PENGATURAN UTAMA --- */}
-        {/* 1. Jika buka link utama '/', otomatis lempar ke '/login' */}
+        {/* --- 1. ROUTE PUBLIK (Tanpa Navbar User) --- */}
         <Route path="/" element={<Navigate to="/login" replace />} />
-        
-        {/* 2. Halaman Login di '/login' */}
         <Route path="/login" element={<Login />} /> 
 
-        {/* 3. Dashboard dipindah ke '/dashboard' */}
-        <Route path="/dashboard" element={<Dashboard />} />
+        {/* --- 2. ROUTE USER (DILINDUNGI MAINLAYOUT) --- */}
+        {/* Semua halaman di dalam sini akan punya Navbar & Data User otomatis */}
+        <Route element={<MainLayout />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/tips" element={<Tips />} />
+            <Route path="/motivation" element={<Motivation />} />
+            <Route path="/diary" element={<Diary />} />
+            <Route path="/analytics" element={<Analytics />} />
+            <Route path="/profile" element={<Profile />} /> 
+        </Route>
 
-        {/* --- RUTE USER LAINNYA --- */}
-        <Route path="/tips" element={<Tips />} />
-        <Route path="/motivation" element={<Motivation />} />
-        <Route path="/diary" element={<Diary />} />
-        <Route path="/analytics" element={<Analytics />} />
-        <Route path="/profile" element={<Profile />} /> 
-        
+        {/* --- 3. ROUTE ADMIN (Terpisah) --- */}
         <Route path="/adm1n" element={<AdminPage skipAuth={true} />} /> 
         <Route path="/admin/login" element={<AdminLogin />} /> 
 

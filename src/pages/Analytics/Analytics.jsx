@@ -1,6 +1,8 @@
 // src/pages/Analytics/Analytics.jsx
 import { useState, useRef, useEffect } from "react";
+import { useOutletContext } from "react-router-dom"; // 1. Import Context
 import Navbar from "../../components/Navbar";
+import Footer from "../../components/Footer"; // 2. Import Footer
 import { BarChart3 } from "lucide-react";
 import {
   LineChart,
@@ -21,6 +23,10 @@ export default function Analytics() {
   const [mode, setMode] = useState("week");
   const headerRef = useRef(null);
 
+  // 3. AMBIL DATA USER DARI LAYOUT (WRAPPER)
+  // Ini otomatis berisi data user yang sudah di-fetch di MainLayout.jsx
+  // Ambil context, tapi jika null (error), pakai object kosong default
+  const { user } = useOutletContext() || { user: { name: "User", avatar: null } };
   // Animation for header
   useEffect(() => {
     if (!headerRef.current) return;
@@ -54,7 +60,7 @@ export default function Analytics() {
 
   return (
     <div
-      className="min-h-screen relative"
+      className="min-h-screen relative flex flex-col" // Tambahkan flex-col agar footer turun ke bawah
       style={{
         backgroundColor: bgCream,
         backgroundImage: `radial-gradient(at 10% 10%, ${bgCream} 0%, transparent 50%), radial-gradient(at 90% 20%, ${bgPink} 0%, transparent 50%), radial-gradient(at 50% 80%, ${bgLavender} 0%, transparent 50%)`,
@@ -66,13 +72,13 @@ export default function Analytics() {
         @keyframes gradient-bg { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
       `}</style>
 
-      <Navbar />
+      {/* 4. PASS DATA USER KE NAVBAR */}
+      <Navbar activeLink="Analytics" user={user} />
 
       {/* --- MAIN CONTAINER --- 
-          pt-32: Padding atas untuk Mobile (agar turun jauh dari navbar fixed)
-          md:pt-8: Padding atas untuk Desktop (navbar sticky)
+          Tambahkan flex-grow agar konten mengisi ruang kosong sebelum footer
       */}
-      <div className="w-full max-w-[1400px] mx-auto p-4 md:p-8 lg:p-10 pt-28 md:pt-8">
+      <div className="w-full max-w-[1400px] mx-auto p-4 md:p-8 lg:p-10 pt-28 md:pt-8 flex-grow">
         {/* HEADER */}
         <div
           ref={headerRef}
@@ -128,7 +134,6 @@ export default function Analytics() {
         </div>
 
         {/* ==== CHARTS ==== */}
-        {/* lg:grid-cols-2 agar di tablet chart menumpuk (lebih lebar), di desktop bersebelahan */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 mb-8 md:mb-10">
           {/* Stress Chart */}
           <div
@@ -250,6 +255,9 @@ export default function Analytics() {
           ))}
         </div>
       </div>
+
+      {/* 5. FOOTER */}
+      <Footer />
     </div>
   );
 }

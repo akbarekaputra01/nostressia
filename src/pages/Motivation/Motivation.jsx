@@ -1,5 +1,6 @@
 // src/pages/Motivation/Motivation.jsx
 import { useState, useEffect, useRef } from "react";
+import { useOutletContext } from "react-router-dom"; // 1. IMPORT CONTEXT
 import html2canvas from "html2canvas";
 import {
   RefreshCw,
@@ -11,6 +12,7 @@ import {
   X,
 } from "lucide-react";
 import Navbar from "../../components/Navbar";
+import Footer from "../../components/Footer"; // 2. IMPORT FOOTER
 import Logo from "../../assets/images/Logo-Nostressia.png";
 import { BASE_URL } from "../../api/config";
 
@@ -87,6 +89,11 @@ const EXPORT_SIZES = [{ id: "original", name: "Original", w: 464, h: 264 }];
 export default function Motivation() {
   const [likedIndex, setLikedIndex] = useState([]);
   const [toastMessage, setToastMessage] = useState("");
+  
+  // 3. AMBIL DATA USER DARI WRAPPER (MAINLAYOUT)
+  // Default object kosong {} jika context belum siap (safety)
+  const { user } = useOutletContext() || { user: {} }; 
+
   const showToast = (msg) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(""), 2000);
@@ -153,10 +160,7 @@ export default function Motivation() {
       setLoading(true);
       setError("");
       try {
-        // Membersihkan BASE_URL dari tanda miring di akhir jika ada
         const cleanBaseUrl = BASE_URL.replace(/\/$/, "");
-
-        // Memanggil endpoint tanpa tanda miring di akhir
         const res = await fetch(`${cleanBaseUrl}/motivations`);
 
         if (!res.ok) throw new Error(`API error ${res.status}`);
@@ -170,7 +174,6 @@ export default function Motivation() {
           authorName: d.authorName ?? "Anonymous",
         }));
 
-        // Membalik urutan agar yang terbaru muncul di atas
         setMotivations(normalized.reverse());
 
         if (normalized.length > 0) {
@@ -250,7 +253,6 @@ export default function Motivation() {
     document.body.style.overflow = prevBodyOverflow.current || "";
   };
 
-  // --- KODE LOGIKA DOWNLOAD KEMBALI KE ASAL (DIJAMIN BEKERJA) ---
   const downloadShareCard = async () => {
     if (!shareCardRef.current) return;
     try {
@@ -384,7 +386,8 @@ export default function Motivation() {
   };
 
   return (
-    <div style={backgroundStyle} className="min-h-screen">
+    // Tambahkan flex-col agar footer turun ke bawah
+    <div style={backgroundStyle} className="min-h-screen flex flex-col">
       <style>{`
         @keyframes gradient-bg { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
       `}</style>
@@ -394,10 +397,12 @@ export default function Motivation() {
           {toastMessage}
         </div>
       )}
-      <Navbar />
+      
+      {/* 4. PASS USER KE NAVBAR */}
+      <Navbar activeLink="Motivation" user={user} />
 
-      {/* CONTAINER UTAMA */}
-      <div className="w-full max-w-[1400px] mx-auto p-4 md:p-8 lg:p-10 pt-28 md:pt-8 pb-20">
+      {/* CONTAINER UTAMA (Tambahkan flex-grow) */}
+      <div className="w-full max-w-[1400px] mx-auto p-4 md:p-8 lg:p-10 pt-28 md:pt-8 pb-20 flex-grow">
         {/* HEADER */}
         <div ref={headerRef} className="opacity-0 translate-y-6">
           <div className="mb-10 text-center">
@@ -693,6 +698,9 @@ export default function Motivation() {
           }
         }
       `}</style>
+      
+      {/* 5. FOOTER */}
+      <Footer />
     </div>
   );
 }

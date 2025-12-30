@@ -1,6 +1,9 @@
 // src/pages/Login/Login.jsx
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; // 1. Import useNavigate
+import { useNavigate } from "react-router-dom"; 
+import axios from "axios"; 
+// 1. UBAH IMPORT: Panggil BASE_URL, bukan API_BASE_URL
+import { BASE_URL } from "../../api/config"; 
 import { Mail, Lock, ArrowRight, Loader2, CheckCircle, User, Calendar, AtSign, Users, Check, Eye, EyeOff } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -17,7 +20,7 @@ const AVATAR_OPTIONS = [
 ];
 
 export default function Login() {
-  const navigate = useNavigate(); // 2. Inisialisasi hook
+  const navigate = useNavigate(); 
   const [formData, setFormData] = useState({ 
     name: "", 
     username: "", 
@@ -32,10 +35,7 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   
-  // State Password Visibility
-  // showLoginPassword: Untuk Side A (Login) - Single Toggle
   const [showLoginPassword, setShowLoginPassword] = useState(false);
-  // showSignUpPassword: Untuk Side B (Sign Up) - Checkbox Global
   const [showSignUpPassword, setShowSignUpPassword] = useState(false);
   
   const [isFlipped, setIsFlipped] = useState(false);
@@ -50,19 +50,35 @@ export default function Login() {
     return () => clearInterval(blinkInterval);
   }, []);
 
-  const handleLogin = (e) => {
+  // --- LOGIKA LOGIN ---
+  const handleLogin = async (e) => {
     e.preventDefault();
     if (!formData.email || !formData.password) return;
+    
     setIsLoading(true);
-    setTimeout(() => {
-        setIsLoading(false);
+    try {
+        // 2. GUNAKAN BASE_URL DI SINI
+        const response = await axios.post(`${BASE_URL}/user/login`, {
+            email: formData.email,
+            password: formData.password
+        });
+
+        localStorage.setItem("token", response.data.access_token);
+        
         setIsSuccess(true);
-        // 3. Ubah redirect ke dashboard
         setTimeout(() => navigate("/dashboard"), 1000); 
-    }, 2000);
+
+    } catch (error) {
+        console.error("Login Error:", error);
+        const errorMsg = error.response?.data?.detail || "Login Gagal. Cek Email/Password.";
+        alert(errorMsg);
+    } finally {
+        setIsLoading(false);
+    }
   };
 
-  const handleSignUp = (e) => {
+  // --- LOGIKA REGISTER ---
+  const handleSignUp = async (e) => {
     e.preventDefault();
     if (!formData.name || !formData.username || !formData.email || !formData.password || !formData.confirmPassword || !formData.gender || !formData.dob) {
         alert("Mohon lengkapi semua data!"); 
@@ -72,11 +88,23 @@ export default function Login() {
         alert("Password dan Konfirmasi Password tidak cocok!");
         return;
     }
+    
     setIsLoading(true);
-    setTimeout(() => {
-        setIsLoading(false);
+    try {
+        // 3. GUNAKAN BASE_URL DI SINI
+        await axios.post(`${BASE_URL}/user/register`, {
+            name: formData.name,
+            username: formData.username,
+            email: formData.email,
+            password: formData.password,
+            gender: formData.gender,
+            dob: formData.dob,
+            avatar: formData.avatar
+        });
+
         setIsSuccess(true);
-        console.log("User Registered:", formData); 
+        console.log("User Registered Successfully"); 
+        
         setTimeout(() => {
             setIsSuccess(false);
             setIsFlipped(false);
@@ -86,8 +114,15 @@ export default function Login() {
             }); 
             setShowLoginPassword(false);
             setShowSignUpPassword(false);
-        }, 1000); 
-    }, 2000);
+        }, 1500); 
+
+    } catch (error) {
+        console.error("Register Error:", error);
+        const errorMsg = error.response?.data?.detail || "Registrasi Gagal.";
+        alert(errorMsg);
+    } finally {
+        setIsLoading(false);
+    }
   };
 
   const toggleFlip = () => {
@@ -163,7 +198,6 @@ export default function Login() {
                                 onChange={(e) => setFormData({...formData, password: e.target.value})} 
                                 className="w-full pl-12 pr-12 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-gray-900 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-medium" 
                             />
-                            {/* SISI LOGIN TETAP PAKAI ICON MATA (LEBIH COMPACT UNTUK 1 FIELD) */}
                             <button type="button" onClick={() => setShowLoginPassword(!showLoginPassword)} className="absolute inset-y-0 right-0 pr-4 flex items-center cursor-pointer text-gray-400 hover:text-blue-600 transition-colors">
                                 {showLoginPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                             </button>
@@ -182,7 +216,7 @@ export default function Login() {
 
 
             {/* ========================================================= */}
-            {/* SIDE B: SIGN UP FORM (BELAKANG) - DENGAN SCROLL & CHECKBOX */}
+            {/* SIDE B: SIGN UP FORM (BELAKANG) */}
             {/* ========================================================= */}
             <div 
                 className="absolute inset-0 w-full h-full backface-hidden bg-white flex flex-col rounded-2xl"
@@ -191,13 +225,11 @@ export default function Login() {
                     transform: "rotateY(180deg)" 
                 }} 
             >
-                {/* Header (Statis) */}
                 <div className="flex-none pt-2 pb-4 text-center lg:text-left border-b border-gray-50 mb-2">
                     <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Create Account</h1>
                     <p className="mt-1 text-sm text-gray-500">Join Nostressia for a better life.</p>
                 </div>
 
-                {/* Form Container (Scrollable) */}
                 <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
                     <form onSubmit={handleSignUp} className="space-y-4 pb-2">
                         
@@ -272,9 +304,8 @@ export default function Login() {
                             </div>
                         </div>
 
-                        {/* Password & Confirm (Tanpa Eye Button Individu) */}
+                        {/* Password & Confirm */}
                         <div className="space-y-3">
-                            {/* Password */}
                             <div className="space-y-1">
                                 <label className="text-xs font-bold text-gray-700 ml-1">Password</label>
                                 <div className="relative group">
@@ -289,7 +320,6 @@ export default function Login() {
                                 </div>
                             </div>
 
-                            {/* Confirm Password */}
                             <div className="space-y-1">
                                 <label className="text-xs font-bold text-gray-700 ml-1">Confirm Password</label>
                                 <div className="relative group">
@@ -304,7 +334,6 @@ export default function Login() {
                                 </div>
                             </div>
 
-                            {/* SINGLE CHECKBOX UNTUK SHOW PASSWORD */}
                             <div className="flex items-center gap-2 pl-1">
                                 <div className="relative flex items-center">
                                     <input 
@@ -323,7 +352,6 @@ export default function Login() {
                     </form>
                 </div>
 
-                {/* Footer (Statis) */}
                 <div className="flex-none pt-4 pb-2 text-center bg-white border-t border-gray-50">
                     <button onClick={handleSignUp} disabled={isLoading || isSuccess} className={`w-full py-3.5 rounded-xl font-bold text-white text-base shadow-lg shadow-orange-500/20 transition-all duration-300 transform flex items-center justify-center gap-2 cursor-pointer ${isSuccess ? "bg-green-500 scale-95" : "bg-orange-500 hover:bg-orange-600 hover:scale-[1.02] active:scale-95"}`}>
                         {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : isSuccess ? <CheckCircle className="w-5 h-5 animate-bounce" /> : <>Sign Up Free <ArrowRight className="w-4 h-4" /></>}
@@ -337,7 +365,6 @@ export default function Login() {
          </motion.div>
       </div>
       {/* --- TOMBOL TEMPORARY: DEV BYPASS LOGIN --- */}
-      {/* Hapus bagian ini nanti saat sudah production/deploy */}
       <a
         href="/dashboard"
         className="fixed bottom-4 right-4 z-[9999] bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-full text-xs font-bold shadow-2xl transition-all opacity-60 hover:opacity-100 hover:scale-105 no-underline flex items-center gap-2 cursor-pointer"
@@ -358,7 +385,5 @@ export default function Login() {
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #d1d5db; }
       `}</style>
     </div>
-
-    
   );
 }

@@ -5,36 +5,28 @@ import LogoImage from "../assets/images/Logo-Nostressia.png";
 
 // --- Data Menu Navigasi ---
 const navLinks = [
-  { name: "Dashboard", href: "/dashboard" }, // Updated: Mengarah ke /dashboard
+  { name: "Dashboard", href: "/dashboard" },
   { name: "Analytics", href: "/analytics" },
   { name: "Motivation", href: "/motivation" },
   { name: "Tips", href: "/tips" },
   { name: "Diary", href: "/diary" },
 ];
 
-const Navbar = () => {
+// --- TERIMA PROPS 'user' DI SINI ---
+const Navbar = ({ activeLink, onPredictClick, user }) => {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
-  // 1. Buat referensi untuk elemen navbar
   const navbarRef = useRef(null);
-
-  // Fungsi helper untuk mengecek path aktif
   const isActive = (path) => location.pathname === path;
 
-  // 2. Tambahkan Event Listener untuk mendeteksi klik di luar navbar
   useEffect(() => {
     const handleClickOutside = (event) => {
-      // Jika navbarRef ada DAN klik terjadi di luar elemen navbar
       if (navbarRef.current && !navbarRef.current.contains(event.target)) {
-        setIsMobileMenuOpen(false); // Tutup dropdown
+        setIsMobileMenuOpen(false);
       }
     };
-
-    // Pasang event listener saat komponen dipasang
     document.addEventListener("mousedown", handleClickOutside);
-
-    // Bersihkan event listener saat komponen dilepas
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
@@ -42,7 +34,6 @@ const Navbar = () => {
 
   return (
     <header
-      // 3. Pasang ref ke elemen utama header
       ref={navbarRef}
       className="
                 fixed md:sticky top-4 
@@ -56,11 +47,9 @@ const Navbar = () => {
                 transition-all duration-300 
             "
     >
-      {/* BAGIAN ATAS: Logo + Nav Desktop + Tombol Kanan */}
       <div className="flex justify-between items-center w-full">
-        {/* 1. BAGIAN KIRI: Logo + Menu Desktop */}
+        {/* LOGO */}
         <div className="flex items-center gap-8">
-          {/* Logo - Updated: Link ke /dashboard */}
           <Link to="/dashboard" className="flex items-center cursor-pointer">
             <img
               src={LogoImage}
@@ -69,7 +58,7 @@ const Navbar = () => {
             />
           </Link>
 
-          {/* Navigasi Desktop */}
+          {/* DESKTOP NAV */}
           <nav className="hidden lg:flex">
             <ul className="flex gap-6 list-none">
               {navLinks.map((link) => (
@@ -77,25 +66,24 @@ const Navbar = () => {
                   <Link
                     to={link.href}
                     className="
-                                            group relative 
-                                            text-gray-600 font-semibold text-[0.95rem]
-                                            py-2 px-1 
-                                            transition-all duration-200 
-                                            hover:text-gray-900
-                                        "
+                                group relative 
+                                text-gray-600 font-semibold text-[0.95rem]
+                                py-2 px-1 
+                                transition-all duration-200 
+                                hover:text-gray-900
+                            "
                   >
                     {link.name}
-                    {/* Garis Bawah Animasi */}
                     <span
                       className={`
-                                                absolute left-0 -bottom-1 h-[3px] rounded-full
-                                                transition-all duration-300 
-                                                ${
-                                                  isActive(link.href)
-                                                    ? "w-full bg-[#3664BA]"
-                                                    : "w-0 bg-transparent group-hover:w-full group-hover:bg-gray-500"
-                                                }
-                                            `}
+                                        absolute left-0 -bottom-1 h-[3px] rounded-full
+                                        transition-all duration-300 
+                                        ${
+                                          isActive(link.href)
+                                            ? "w-full bg-[#3664BA]"
+                                            : "w-0 bg-transparent group-hover:w-full group-hover:bg-gray-500"
+                                        }
+                                    `}
                     ></span>
                   </Link>
                 </li>
@@ -104,35 +92,26 @@ const Navbar = () => {
           </nav>
         </div>
 
-        {/* 2. BAGIAN KANAN: Notifikasi & Profil & Hamburger */}
+        {/* KANAN: NOTIF & PROFIL */}
         <div className="flex items-center gap-2 md:gap-4">
-          {/* Tombol Notifikasi */}
           <button className="relative p-2 rounded-xl text-gray-600 hover:bg-black/5 transition-all cursor-pointer">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              className="w-6 h-6"
-            >
-              <path
-                fillRule="evenodd"
-                d="M5.25 9a6.75 6.75 0 0113.5 0v.75c0 2.123.8 4.057 2.118 5.52a.75.75 0 01-.297 1.206c-1.544.57-3.16.99-4.831 1.243a3.75 3.75 0 11-7.48 0 24.585 24.585 0 01-4.831-1.244.75.75 0 01-.298-1.205A8.217 8.217 0 005.25 9.75V9zm4.502 8.9a2.25 2.25 0 104.496 0 25.057 25.057 0 01-4.496 0z"
-                clipRule="evenodd"
-              />
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+              <path fillRule="evenodd" d="M5.25 9a6.75 6.75 0 0113.5 0v.75c0 2.123.8 4.057 2.118 5.52a.75.75 0 01-.297 1.206c-1.544.57-3.16.99-4.831 1.243a3.75 3.75 0 11-7.48 0 24.585 24.585 0 01-4.831-1.244.75.75 0 01-.298-1.205A8.217 8.217 0 005.25 9.75V9zm4.502 8.9a2.25 2.25 0 104.496 0 25.057 25.057 0 01-4.496 0z" clipRule="evenodd" />
             </svg>
             <span className="absolute top-1.5 right-2 w-2 h-2 bg-red-600 border-2 border-white/40 rounded-full"></span>
           </button>
 
-          {/* Foto Profil */}
+          {/* FOTO PROFIL (DESKTOP) */}
           <Link to="/profile" className="hidden lg:block">
             <img
-              src="https://i.pravatar.cc/40?img=12"
+              // LOGIKA: Jika user punya avatar, pakai itu. Jika tidak, pakai placeholder default.
+              src={user?.avatar || "https://i.pravatar.cc/40?img=12"}
               alt="Profile"
               className="w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-white/20 object-cover cursor-pointer hover:border-blue-400 transition-colors"
             />
           </Link>
 
-          {/* 3. TOMBOL HAMBURGER */}
+          {/* HAMBURGER MENU */}
           <button
             className="lg:hidden p-2 text-gray-600 hover:bg-black/5 rounded-xl transition-all ml-1 cursor-pointer"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -146,7 +125,7 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* 4. MOBILE MENU DROPDOWN */}
+      {/* MOBILE MENU */}
       <div
         className={`
                     w-full lg:hidden flex flex-col items-center gap-4 
@@ -164,13 +143,13 @@ const Navbar = () => {
             to={link.href}
             onClick={() => setIsMobileMenuOpen(false)}
             className={`
-                            text-base font-semibold py-2 px-4 rounded-lg w-full text-center transition-colors
-                            ${
-                              isActive(link.href)
-                                ? "bg-blue-50 text-blue-600"
-                                : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                            }
-                        `}
+                        text-base font-semibold py-2 px-4 rounded-lg w-full text-center transition-colors
+                        ${
+                          isActive(link.href)
+                            ? "bg-blue-50 text-blue-600"
+                            : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                        }
+                    `}
           >
             {link.name}
           </Link>
@@ -182,8 +161,9 @@ const Navbar = () => {
             onClick={() => setIsMobileMenuOpen(false)}
             className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer w-full justify-center"
           >
+            {/* FOTO PROFIL (MOBILE) */}
             <img
-              src="https://i.pravatar.cc/40?img=12"
+              src={user?.avatar || "https://i.pravatar.cc/40?img=12"}
               alt="Profile"
               className="w-9 h-9 rounded-full border border-gray-300 object-cover"
             />
