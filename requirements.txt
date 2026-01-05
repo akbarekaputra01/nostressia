@@ -7,7 +7,7 @@ pydantic-settings
 python-multipart
 python-jose
 passlib
-bcrypt
+bcrypt==3.2.0
 cryptography
 joblib
 scikit-learn

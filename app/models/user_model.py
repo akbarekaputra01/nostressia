@@ -7,7 +7,10 @@ class User(Base):
     __tablename__ = "users"
 
     userID = Column(Integer, primary_key=True, index=True)
+    
+    # ✅ KONSISTEN: Pakai userName (N besar)
     userName = Column(String(255), unique=True, nullable=False)
+    
     name = Column(String(255), nullable=False)
     email = Column(String(255), unique=True, nullable=False)
     password = Column(String(255), nullable=False)
@@ -17,6 +20,9 @@ class User(Base):
     userGPA = Column(Float)
     streak = Column(Integer, default=0)
     userDOB = Column(Date)
+    
+    # Fitur Baru
+    avatar = Column(String(255), nullable=True)
     
     createdAt = Column(TIMESTAMP, server_default=func.now())
 
