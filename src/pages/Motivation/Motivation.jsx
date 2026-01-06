@@ -1,7 +1,8 @@
 // src/pages/Motivation/Motivation.jsx
 import { useState, useEffect, useRef } from "react";
-import { useOutletContext } from "react-router-dom"; // 1. IMPORT CONTEXT
+import { useOutletContext } from "react-router-dom";
 import html2canvas from "html2canvas";
+import axios from "axios"; // TAMBAHAN: Import Axios
 import {
   RefreshCw,
   Bookmark,
@@ -12,7 +13,7 @@ import {
   X,
 } from "lucide-react";
 import Navbar from "../../components/Navbar";
-import Footer from "../../components/Footer"; // 2. IMPORT FOOTER
+import Footer from "../../components/Footer";
 import Logo from "../../assets/images/Logo-Nostressia.png";
 import { BASE_URL } from "../../api/config";
 
@@ -91,7 +92,6 @@ export default function Motivation() {
   const [toastMessage, setToastMessage] = useState("");
   
   // 3. AMBIL DATA USER DARI WRAPPER (MAINLAYOUT)
-  // Default object kosong {} jika context belum siap (safety)
   const { user } = useOutletContext() || { user: {} }; 
 
   const showToast = (msg) => {
@@ -105,9 +105,10 @@ export default function Motivation() {
   const [visibleCount, setVisibleCount] = useState(6);
   const ITEMS_PER_PAGE = 6;
 
+  // MODIFIKASI: Hero Quote harus punya ID null agar konsisten
   const [heroQuote, setHeroQuote] = useState(() => {
     const i = Math.floor(Math.random() * heroQuoteList.length);
-    return { text: heroQuoteList[i].text };
+    return { text: heroQuoteList[i].text, motivationID: null };
   });
 
   const [shareOpen, setShareOpen] = useState(false);
@@ -121,6 +122,26 @@ export default function Motivation() {
   const shareCardRef = useRef(null);
   const prevBodyOverflow = useRef(null);
   const initialScrollResetDone = useRef(false);
+
+  // --- TAMBAHAN: FETCH DATA BOOKMARK DARI API SAAT LOAD ---
+  useEffect(() => {
+    const fetchBookmarks = async () => {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+        try {
+            const res = await axios.get(`${BASE_URL}/bookmarks/me`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            // Simpan ID yang sudah di-bookmark
+            const ids = res.data.map(item => item.motivationID);
+            setLikedIndex(ids);
+        } catch (e) {
+            console.error("Bookmark sync error:", e);
+        }
+    };
+    fetchBookmarks();
+  }, []);
+  // -------------------------------------------------------
 
   useEffect(() => {
     if ("scrollRestoration" in window.history) {
@@ -220,11 +241,49 @@ export default function Motivation() {
     },
   ];
 
-  const toggleLike = (id) => {
+  // --- MODIFIKASI: FUNGSI TOGGLE LIKE TERHUBUNG API ---
+  const toggleLike = async (id) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+        showToast("Please login first! 🔒");
+        return;
+    }
+    
+    // Jangan proses bookmark untuk Hero Quote yang belum punya ID (statis)
+    if (!id || id === HERO_INDEX) {
+        showToast("Cannot bookmark this yet.");
+        return;
+    }
+
+    const isLiked = likedIndex.includes(id);
+
+    // Optimistic Update (Update UI dulu)
     setLikedIndex((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+      isLiked ? prev.filter((i) => i !== id) : [...prev, id]
     );
+
+    try {
+        if (isLiked) {
+            // Hapus Bookmark
+            await axios.delete(`${BASE_URL}/bookmarks/${id}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            showToast("Bookmark removed 🗑️");
+        } else {
+            // Tambah Bookmark
+            await axios.post(`${BASE_URL}/bookmarks/${id}`, {}, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            showToast("Saved to profile ❤️");
+        }
+    } catch (err) {
+        console.error("Bookmark API Error:", err);
+        showToast("Failed to bookmark.");
+        // Rollback state jika gagal
+        setLikedIndex((prev) => isLiked ? [...prev, id] : prev.filter((i) => i !== id));
+    }
   };
+  // ----------------------------------------------------
 
   const getRandomHeroQuote = () => {
     if (motivations && motivations.length > 0) {
@@ -237,7 +296,7 @@ export default function Motivation() {
       };
     } else {
       const randomIndex = Math.floor(Math.random() * heroQuoteList.length);
-      return { text: heroQuoteList[randomIndex].text };
+      return { text: heroQuoteList[randomIndex].text, motivationID: null };
     }
   };
 
@@ -447,22 +506,25 @@ export default function Motivation() {
                 <RefreshCw className="w-4 h-4" />
                 New Quote
               </button>
+              
+              {/* MODIFIKASI: Passing ID yang benar ke toggleLike */}
               <button
-                onClick={() => toggleLike(HERO_INDEX)}
+                onClick={() => toggleLike(heroQuote.motivationID)}
                 className="px-4 py-2 rounded-lg bg-white border font-medium flex items-center gap-2 shadow hover:scale-105 transition cursor-pointer"
                 aria-label="bookmark-hero"
               >
                 <Bookmark
                   className={`w-4 h-4 ${
-                    likedIndex.includes(HERO_INDEX)
+                    likedIndex.includes(heroQuote.motivationID)
                       ? "fill-orange-500 text-orange-600"
                       : "text-gray-500"
                   }`}
                 />
                 <span className="hidden sm:inline">
-                  {likedIndex.includes(HERO_INDEX) ? "Saved" : "Save"}
+                  {likedIndex.includes(heroQuote.motivationID) ? "Saved" : "Save"}
                 </span>
               </button>
+
               <button
                 onClick={() => openShare(heroQuote.text)}
                 className="px-4 py-2 rounded-lg bg-white border flex items-center gap-2 text-gray-700 shadow hover:scale-105 transition cursor-pointer"
@@ -512,6 +574,8 @@ export default function Motivation() {
                   Author: {quoteObj.authorName ?? "-"}
                 </div>
                 <div className="mt-4 pt-4 border-t border-black/5 flex justify-end gap-3 items-center">
+                  
+                  {/* MODIFIKASI: Tombol Bookmark pada List */}
                   <button
                     onClick={() => toggleLike(id)}
                     aria-label={`bookmark-${id}`}
@@ -525,6 +589,7 @@ export default function Motivation() {
                       }`}
                     />
                   </button>
+
                   <button
                     onClick={() => openShare(quoteObj.quote)}
                     className="text-xs sm:text-sm text-orange-500 hover:text-orange-600 font-medium flex items-center gap-1 cursor-pointer"
