@@ -94,7 +94,7 @@ export default function Login() {
         // 3. GUNAKAN BASE_URL DI SINI
         await axios.post(`${BASE_URL}/user/register`, {
             name: formData.name,
-            username: formData.username,
+            userName: formData.username,
             email: formData.email,
             password: formData.password,
             gender: formData.gender,
@@ -247,7 +247,7 @@ export default function Login() {
                             <label className="text-xs font-bold text-gray-700 ml-1">Username</label>
                             <div className="relative group">
                                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><AtSign className="h-4 w-4 text-gray-400 group-focus-within:text-orange-500 transition-colors" /></div>
-                                <input type="text" placeholder="username_keren" value={formData.username} onChange={(e) => setFormData({...formData, username: e.target.value})} className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:bg-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 outline-none transition-all font-medium" />
+                                <input type="text" placeholder="your_username" value={formData.username} onChange={(e) => setFormData({...formData, username: e.target.value})} className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:bg-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 outline-none transition-all font-medium" />
                             </div>
                         </div>
 
@@ -256,51 +256,7 @@ export default function Login() {
                             <label className="text-xs font-bold text-gray-700 ml-1">Email</label>
                             <div className="relative group">
                                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><Mail className="h-4 w-4 text-gray-400 group-focus-within:text-orange-500 transition-colors" /></div>
-                                <input type="email" placeholder="name@email.com" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:bg-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 outline-none transition-all font-medium" />
-                            </div>
-                        </div>
-
-                        {/* Gender */}
-                        <div className="space-y-1">
-                            <label className="text-xs font-bold text-gray-700 ml-1">Gender</label>
-                            <div className="relative group">
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><Users className="h-4 w-4 text-gray-400 group-focus-within:text-orange-500 transition-colors" /></div>
-                                <select value={formData.gender} onChange={(e) => setFormData({...formData, gender: e.target.value})} className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:bg-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 outline-none transition-all font-medium appearance-none cursor-pointer">
-                                    <option value="" disabled>Select Gender</option>
-                                    <option value="Male">Male</option>
-                                    <option value="Female">Female</option>
-                                    <option value="Other">Other</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        {/* DOB */}
-                        <div className="space-y-1">
-                            <label className="text-xs font-bold text-gray-700 ml-1">Date of Birth</label>
-                            <div className="relative group">
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><Calendar className="h-4 w-4 text-gray-400 group-focus-within:text-orange-500 transition-colors" /></div>
-                                <input type="date" value={formData.dob} onChange={(e) => setFormData({...formData, dob: e.target.value})} className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:bg-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 outline-none transition-all font-medium cursor-pointer" />
-                            </div>
-                        </div>
-
-                        {/* Avatar */}
-                        <div className="space-y-1">
-                            <label className="text-xs font-bold text-gray-700 ml-1">Pick Your Avatar</label>
-                            <div className="flex justify-between items-center bg-gray-50 border border-gray-200 rounded-xl p-2">
-                                {AVATAR_OPTIONS.map((avatarUrl, index) => (
-                                    <div 
-                                    key={index}
-                                    onClick={() => setFormData({ ...formData, avatar: avatarUrl })}
-                                    className={`relative cursor-pointer transition-all duration-300 rounded-full p-0.5 ${formData.avatar === avatarUrl ? 'ring-2 ring-orange-500 scale-110 shadow-sm' : 'hover:scale-105 opacity-70 hover:opacity-100'}`}
-                                    >
-                                    <img src={avatarUrl} alt={`Avatar ${index + 1}`} className="w-10 h-10 rounded-full object-cover bg-white" />
-                                    {formData.avatar === avatarUrl && (
-                                        <div className="absolute -bottom-1 -right-1 bg-orange-500 text-white rounded-full p-0.5 border border-white">
-                                            <Check size={8} strokeWidth={4} />
-                                        </div>
-                                    )}
-                                    </div>
-                                ))}
+                                <input type="email" placeholder="name@gmail.com" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:bg-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 outline-none transition-all font-medium" />
                             </div>
                         </div>
 
@@ -345,9 +301,57 @@ export default function Login() {
                                     />
                                     <Check className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white opacity-0 peer-checked:opacity-100" size={12} strokeWidth={4} />
                                 </div>
-                                <label htmlFor="showPw" className="text-xs font-bold text-gray-600 cursor-pointer select-none">Tampilkan Sandi</label>
+                                <label htmlFor="showPw" className="text-xs font-bold text-gray-600 cursor-pointer select-none">Show Password</label>
                             </div>
                         </div>
+
+                        {/* Avatar */}
+                        <div className="space-y-1">
+                            <label className="text-xs font-bold text-gray-700 ml-1">Pick Your Avatar</label>
+                            <div className="flex justify-between items-center bg-gray-50 border border-gray-200 rounded-xl p-2">
+                                {AVATAR_OPTIONS.map((avatarUrl, index) => (
+                                    <div 
+                                    key={index}
+                                    onClick={() => setFormData({ ...formData, avatar: avatarUrl })}
+                                    className={`relative cursor-pointer transition-all duration-300 rounded-full p-0.5 ${formData.avatar === avatarUrl ? 'ring-2 ring-orange-500 scale-110 shadow-sm' : 'hover:scale-105 opacity-70 hover:opacity-100'}`}
+                                    >
+                                    <img src={avatarUrl} alt={`Avatar ${index + 1}`} className="w-10 h-10 rounded-full object-cover bg-white" />
+                                    {formData.avatar === avatarUrl && (
+                                        <div className="absolute -bottom-1 -right-1 bg-orange-500 text-white rounded-full p-0.5 border border-white">
+                                            <Check size={8} strokeWidth={4} />
+                                        </div>
+                                    )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Gender */}
+                        <div className="space-y-1">
+                            <label className="text-xs font-bold text-gray-700 ml-1">Gender</label>
+                            <div className="relative group">
+                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><Users className="h-4 w-4 text-gray-400 group-focus-within:text-orange-500 transition-colors" /></div>
+                                <select value={formData.gender} onChange={(e) => setFormData({...formData, gender: e.target.value})} className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:bg-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 outline-none transition-all font-medium appearance-none cursor-pointer">
+                                    <option value="" disabled>Select Gender</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Prefer not say</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        {/* DOB */}
+                        <div className="space-y-1">
+                            <label className="text-xs font-bold text-gray-700 ml-1">Date of Birth</label>
+                            <div className="relative group">
+                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><Calendar className="h-4 w-4 text-gray-400 group-focus-within:text-orange-500 transition-colors" /></div>
+                                <input type="date" value={formData.dob} onChange={(e) => setFormData({...formData, dob: e.target.value})} className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:bg-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 outline-none transition-all font-medium cursor-pointer" />
+                            </div>
+                        </div>
+
+                       
+
+                      
 
                     </form>
                 </div>
