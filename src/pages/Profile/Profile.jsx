@@ -8,10 +8,10 @@ import {
   User, Mail, Heart, Settings, LogOut, 
   Edit3, Trophy, BookOpen, 
   ChevronRight, Bell, CheckCircle, X,
-  Cake, Smile, Activity, Lock, Key, Clock, Smartphone, Bookmark, Plus
+  Cake, Smile, Activity, Lock, Key, Clock, Smartphone, Bookmark, Plus, Loader2
 } from "lucide-react";
 
-// --- GAME COMPONENT (TETAP SAMA) ---
+// --- GAME COMPONENT (FULL ORIGINAL - TIDAK DIUBAH) ---
 const FishGameModal = ({ onClose }) => {
   const canvasRef = useRef(null);
   useEffect(() => {
@@ -157,53 +157,72 @@ export default function Profile() {
   const [showGameModal, setShowGameModal] = useState(false); 
   const [isLoadingSave, setIsLoadingSave] = useState(false);
 
-  // 1. AMBIL DATA DARI CONTEXT
+  // STATE UNTUK BOOKMARK (BARU)
+  const [bookmarks, setBookmarks] = useState([]);
+  const [loadingBookmarks, setLoadingBookmarks] = useState(false);
+
   const { user: contextUser } = useOutletContext() || { user: {} };
 
-  // Helper untuk mendapatkan username dari email jika backend tidak mengirim username
   const getDisplayUsername = (u) => {
-    if (u?.userName) return u.userName; // Perbaikan: Gunakan 'userName'
+    if (u?.userName) return u.userName;
     if (u?.username && u.username !== "user") return u.username;
     if (u?.email) return u.email.split('@')[0];
     return ""; 
   };
 
-  // 2. STATE LOKAL FORM
-  // Fix Warning: Avatar di-init dengan null agar tidak error src=""
   const [formData, setFormData] = useState({
-    username: "",
-    fullName: "",
-    email: "",
-    avatar: null, // Jangan "" untuk menghindari warning
-    birthday: "",
-    gender: "",
+    username: "", fullName: "", email: "",
+    avatar: null, birthday: "", gender: "",
   });
 
-  // 3. SINKRONISASI DATA (FIXED MAPPING)
+  // --- LOGIC SYNC USER ---
   useEffect(() => {
-    // Debugging
-    console.log("DEBUG PROFILE: Data dari Context:", contextUser);
-
     if (contextUser) {
       setFormData({
-        // Fix Mapping: Ambil dari userName (sesuai log Anda)
         username: contextUser.userName || getDisplayUsername(contextUser),
-        
-        // Fix Mapping: Ambil dari name
         fullName: contextUser.name || contextUser.fullName || "",
-        
         email: contextUser.email || "",
-        
         avatar: contextUser.avatar || `https://ui-avatars.com/api/?name=${contextUser.name || "User"}&background=F2994A&color=fff`,
-        
-        // Fix Mapping: Ambil dari userDOB (sesuai log Anda)
         birthday: contextUser.userDOB || contextUser.birthday || "", 
-        
         gender: contextUser.gender || "",
       });
     }
   }, [contextUser]);
 
+  // --- LOGIC FETCH BOOKMARK (BARU) ---
+  useEffect(() => {
+    if (activeTab === "bookmark") {
+      fetchBookmarks();
+    }
+  }, [activeTab]);
+
+  const fetchBookmarks = async () => {
+    setLoadingBookmarks(true);
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    try {
+      const res = await axios.get(`${BASE_URL}/bookmarks/me`, { headers: { Authorization: `Bearer ${token}` } });
+      setBookmarks(res.data);
+    } catch (err) {
+      console.error("Failed to load bookmarks", err);
+      showNotification("Failed to load bookmarks", "error");
+    } finally {
+      setLoadingBookmarks(false);
+    }
+  };
+
+  const handleUnsave = async (motivationID) => {
+    const token = localStorage.getItem("token");
+    try {
+        await axios.delete(`${BASE_URL}/bookmarks/${motivationID}`, { headers: { Authorization: `Bearer ${token}` } });
+        setBookmarks(prev => prev.filter(b => b.motivationID !== motivationID));
+        showNotification("Bookmark removed", "info");
+    } catch (err) {
+        showNotification("Failed to remove bookmark", "error");
+    }
+  };
+
+  // --- ORIGINAL STATE FOR SETTINGS ---
   const [notifSettings, setNotifSettings] = useState({ dailyReminder: true, reminderTime: "08:00", emailUpdates: false });
   const [passwordForm, setPasswordForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
 
@@ -212,57 +231,29 @@ export default function Profile() {
     { label: "Entries", value: "45 Notes", icon: <BookOpen className="w-5 h-5 text-blue-500" />, bg: "bg-blue-100" },
     { label: "Stress", value: "Low", icon: <Activity className="w-5 h-5 text-green-500" />, bg: "bg-green-100" },
   ];
-  const [savedItems, setSavedItems] = useState([
-    { id: 1, text: "Every small step counts towards peace.", category: "Mindfulness", date: "2 mins ago" },
-    { id: 2, text: "You don't have to be productive all the time. Just breathe.", category: "Self Care", date: "1 day ago" },
-  ]);
 
   const showNotification = (message, type = "success") => { setNotification({ message, type }); setTimeout(() => setNotification(null), 3000); };
   
-  // --- REAL HANDLE SAVE PROFILE (UPDATE KE DB) ---
   const handleInputChange = (e) => { const { name, value } = e.target; setFormData({ ...formData, [name]: value }); };
 
   const handleSaveProfile = async () => {
     setIsLoadingSave(true);
     try {
       const token = localStorage.getItem("token");
-      if (!token) {
-        showNotification("You are logged out", "error");
-        return;
-      }
-
-      // Payload (Disesuaikan dengan field backend Anda)
+      if (!token) { showNotification("You are logged out", "error"); return; }
       const payload = {
-        userName: formData.username, // Kirim sbg 'userName'
-        name: formData.fullName,     // Kirim sbg 'name'
-        email: formData.email,
-        userDOB: formData.birthday,  // Kirim sbg 'userDOB'
-        gender: formData.gender,
-        avatar: formData.avatar
+        userName: formData.username, name: formData.fullName, email: formData.email,
+        userDOB: formData.birthday, gender: formData.gender, avatar: formData.avatar
       };
-
-      console.log("Mengirim data ke backend:", payload);
-
-      const response = await axios.put(`${BASE_URL}/user/me`, payload, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      console.log("Update Success:", response.data);
+      await axios.put(`${BASE_URL}/user/me`, payload, { headers: { Authorization: `Bearer ${token}` } });
       showNotification("Profile updated successfully!");
-      
-      // Reload halaman untuk memastikan semua komponen (Navbar dll) terupdate
       setTimeout(() => window.location.reload(), 1000);
-
     } catch (error) {
-      console.error("Save Failed:", error);
       showNotification(error.response?.data?.detail || "Failed to update profile", "error");
-    } finally {
-      setIsLoadingSave(false);
-    }
+    } finally { setIsLoadingSave(false); }
   };
   
   const handleImageClick = () => fileInputRef.current.click();
-  
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -272,10 +263,10 @@ export default function Profile() {
     }
   };
 
-  const handleUnsave = (id) => { setSavedItems(savedItems.filter(item => item.id !== id)); showNotification("Item removed", "info"); };
   const handleEmailChangeRequest = () => { if (window.confirm("Changing email requires verification. Do you want to proceed?")) alert("Redirecting to email verification..."); };
   const handleLogout = () => { if (window.confirm("Are you sure you want to log out?")) { localStorage.removeItem("token"); localStorage.removeItem("cache_userData"); window.location.href = "/login"; } };
 
+  // --- SETTINGS LOGIC (RESTORED) ---
   const handleNotifChange = (e) => {
     const { name, value, type, checked } = e.target;
     setNotifSettings(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
@@ -292,13 +283,15 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen pb-24 md:pb-10 font-sans" style={{ background: `linear-gradient(135deg, #FFF3E0 0%, #eaf2ff 50%, #e3edff 100%)`, backgroundAttachment: "fixed" }}>
-      
-      {/* NAVBAR DENGAN DATA USER */}
       <Navbar user={contextUser} />
-
       {showGameModal && <FishGameModal onClose={() => setShowGameModal(false)} />}
+      
+      {/* NOTIFICATIONS */}
       {notification && (<div className="fixed top-24 right-4 z-[100] animate-bounce-in"><div className={`flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl border ${notification.type === "success" ? "bg-white text-green-600 border-green-100" : notification.type === "error" ? "bg-white text-red-600 border-red-100" : "bg-white text-blue-600 border-blue-100"}`}>{notification.type === "success" ? <CheckCircle className="w-5 h-5"/> : notification.type === "error" ? <X className="w-5 h-5"/> : <Heart className="w-5 h-5"/>}<span className="font-bold">{notification.message}</span></div></div>)}
+      
+      {/* SETTINGS MODAL (RESTORED) */}
       {showNotifModal && (<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in"><div className="bg-white rounded-[24px] p-8 w-full max-w-md shadow-2xl border border-white/50"><div className="flex justify-between items-center mb-6"><h3 className="text-xl font-bold text-gray-800 flex items-center gap-2"><Bell className="w-5 h-5 text-orange-500" /> Notifications</h3><button onClick={() => setShowNotifModal(false)} className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"><X className="w-6 h-6" /></button></div><div className="space-y-6"><div className="flex items-center justify-between"><div className="flex items-center gap-3"><div className="bg-blue-100 p-2 rounded-full text-blue-600"><Smartphone className="w-5 h-5" /></div><div><p className="font-bold text-gray-800">Daily Reminder</p><p className="text-xs text-gray-500">Remind me to check-in</p></div></div><label className="relative inline-flex items-center cursor-pointer"><input type="checkbox" name="dailyReminder" checked={notifSettings.dailyReminder} onChange={handleNotifChange} className="sr-only peer" /><div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div></label></div>{notifSettings.dailyReminder && (<div className="bg-gray-50 p-4 rounded-xl flex items-center justify-between border border-gray-100"><div className="flex items-center gap-2 text-gray-600"><Clock className="w-4 h-4" /><span className="text-sm font-semibold">Time</span></div><input type="time" name="reminderTime" value={notifSettings.reminderTime} onChange={handleNotifChange} className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2"/></div>)}<div className="h-px bg-gray-100"></div><div className="flex items-center justify-between"><div className="flex items-center gap-3"><div className="bg-purple-100 p-2 rounded-full text-purple-600"><Mail className="w-5 h-5" /></div><div><p className="font-bold text-gray-800">Weekly Report</p><p className="text-xs text-gray-500">Receive summary via email</p></div></div><label className="relative inline-flex items-center cursor-pointer"><input type="checkbox" name="emailUpdates" checked={notifSettings.emailUpdates} onChange={handleNotifChange} className="sr-only peer" /><div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div></label></div><button onClick={saveNotifSettings} className="w-full mt-4 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl shadow-lg shadow-orange-200 transition-all cursor-pointer transform active:scale-95">Save Preferences</button></div></div></div>)}
+      {/* PASSWORD MODAL (RESTORED) */}
       {showPasswordModal && (<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in"><div className="bg-white rounded-[24px] p-8 w-full max-w-md shadow-2xl border border-white/50"><div className="flex justify-between items-center mb-6"><h3 className="text-xl font-bold text-gray-800 flex items-center gap-2"><Lock className="w-5 h-5 text-blue-500" /> Change Password</h3><button onClick={() => setShowPasswordModal(false)} className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"><X className="w-6 h-6" /></button></div><form onSubmit={handleSubmitPasswordChange} className="space-y-4"><div className="space-y-2"><label className="text-sm font-bold text-gray-600 ml-1">Current Password</label><div className="relative"><Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" /><input type="password" name="currentPassword" value={passwordForm.currentPassword} onChange={handlePasswordChangeInput} placeholder="Enter current password" className="w-full pl-12 pr-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-blue-400 focus:outline-none transition-all"/></div></div><div className="h-px bg-gray-100 my-2"></div><div className="space-y-2"><label className="text-sm font-bold text-gray-600 ml-1">New Password</label><div className="relative"><Key className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" /><input type="password" name="newPassword" value={passwordForm.newPassword} onChange={handlePasswordChangeInput} placeholder="Enter new password" className="w-full pl-12 pr-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-blue-400 focus:outline-none transition-all"/></div></div><div className="space-y-2"><label className="text-sm font-bold text-gray-600 ml-1">Confirm New Password</label><div className="relative"><Key className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" /><input type="password" name="confirmPassword" value={passwordForm.confirmPassword} onChange={handlePasswordChangeInput} placeholder="Re-enter new password" className="w-full pl-12 pr-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-blue-400 focus:outline-none transition-all"/></div></div><button type="submit" className="w-full mt-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-200 transition-all cursor-pointer transform active:scale-95">Update Password</button></form></div></div>)}
 
       <main className="max-w-4xl mx-auto px-4 pt-24 md:pt-28">
@@ -308,17 +301,11 @@ export default function Profile() {
             <div className="relative z-10 flex flex-col md:flex-row items-center gap-6 md:gap-8">
                 <div className="relative group">
                     <div className="w-28 h-28 md:w-32 md:h-32 rounded-full border-4 border-white shadow-lg overflow-hidden">
-                        {/* PASTIKAN AVATAR DARI STATE LOKAL */}
-                        {formData.avatar ? (
-                            <img src={formData.avatar} alt="Profile" className="w-full h-full object-cover" />
-                        ) : (
-                            <div className="w-full h-full bg-gray-200 animate-pulse"></div>
-                        )}
+                        {formData.avatar ? <img src={formData.avatar} alt="Profile" className="w-full h-full object-cover" /> : <div className="w-full h-full bg-gray-200 animate-pulse"></div>}
                     </div>
                     <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*"/><button onClick={handleImageClick} className="absolute bottom-1 right-1 bg-blue-600 text-white p-2 rounded-full shadow-md hover:bg-blue-700 transition-all cursor-pointer"><Edit3 className="w-4 h-4" /></button>
                 </div>
                 <div className="text-center md:text-left flex-1">
-                    {/* Tampilkan Placeholder jika nama kosong */}
                     <h1 className="text-3xl font-extrabold text-gray-800">{formData.fullName || "Your Name"}</h1>
                     <p className="text-gray-500 font-medium mb-1">@{formData.username || "username"}</p>
                 </div>
@@ -354,23 +341,44 @@ export default function Profile() {
                              <div className="space-y-2"><label className="text-sm font-bold text-gray-600 ml-1">Gender</label><div className="relative"><Smile className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" /><select name="gender" value={formData.gender} onChange={handleInputChange} className="w-full pl-12 pr-4 py-3 rounded-xl bg-white border border-gray-200 focus:ring-2 focus:ring-blue-400 focus:outline-none transition-all appearance-none cursor-pointer"><option value="">Select Gender</option><option value="Male">Male</option><option value="Female">Female</option><option value="Other">Other</option></select></div></div>
                         </div>
                         <div className="pt-4 flex justify-end">
-                            <button 
-                                onClick={handleSaveProfile} 
-                                disabled={isLoadingSave}
-                                className={`px-8 py-3 bg-[#F2994A] hover:bg-[#e08a3e] text-white font-bold rounded-xl shadow-lg hover:shadow-orange-200 transition-all cursor-pointer transform active:scale-95 ${isLoadingSave ? "opacity-50 cursor-not-allowed" : ""}`}
-                            >
-                                {isLoadingSave ? "Saving..." : "Save Changes"}
-                            </button>
+                            <button onClick={handleSaveProfile} disabled={isLoadingSave} className={`px-8 py-3 bg-[#F2994A] hover:bg-[#e08a3e] text-white font-bold rounded-xl shadow-lg hover:shadow-orange-200 transition-all cursor-pointer transform active:scale-95 ${isLoadingSave ? "opacity-50 cursor-not-allowed" : ""}`}>{isLoadingSave ? "Saving..." : "Save Changes"}</button>
                         </div>
                     </form>
                 </div>
             )}
+            
+            {/* BOOKMARK TAB (NEW INTEGRATION) */}
             {activeTab === "bookmark" && (
                 <div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">{savedItems.map((item) => (<div key={item.id} className="bg-white/70 backdrop-blur-sm p-6 rounded-[24px] border border-white/50 shadow-sm hover:shadow-md transition-all relative"><div className="flex justify-between items-start mb-3"><span className="bg-blue-100 text-blue-600 text-[10px] font-bold px-2 py-1 rounded-lg uppercase tracking-wider">{item.category}</span><button onClick={() => handleUnsave(item.id)} className="text-orange-500 hover:scale-110 transition-transform cursor-pointer"><Bookmark className="w-5 h-5 fill-current" /></button></div><p className="text-gray-800 font-medium italic text-lg mb-4">"{item.text}"</p></div>))}</div>
-                    <div className="flex justify-center"><Link to="/motivation" className="px-6 py-3 rounded-xl border-2 border-dashed border-orange-300 text-orange-600 font-bold hover:bg-orange-50 hover:border-orange-500 transition-all flex items-center gap-2"><Plus className="w-5 h-5" />Add More Bookmarks</Link></div>
+                    {loadingBookmarks ? (
+                        <div className="flex justify-center py-10"><Loader2 className="w-8 h-8 text-orange-500 animate-spin" /></div>
+                    ) : bookmarks.length === 0 ? (
+                        <div className="text-center py-10 text-gray-500">
+                           <p>No bookmarks yet.</p>
+                           <Link to="/motivation" className="text-orange-500 font-bold hover:underline">Go to Motivation Page</Link>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                           {bookmarks.map((bm) => (
+                             <div key={bm.bookmarkID} className="bg-white/70 backdrop-blur-sm p-6 rounded-[24px] border border-white/50 shadow-sm hover:shadow-md transition-all relative group">
+                                <div className="flex justify-between items-start mb-3">
+                                   <span className="bg-blue-100 text-blue-600 text-[10px] font-bold px-2 py-1 rounded-lg uppercase tracking-wider">Motivation</span>
+                                   <button onClick={() => handleUnsave(bm.motivationID)} className="text-orange-500 hover:scale-110 transition-transform cursor-pointer bg-white rounded-full p-1 shadow-sm" title="Remove Bookmark">
+                                      <Bookmark className="w-4 h-4 fill-current" />
+                                   </button>
+                                </div>
+                                <p className="text-gray-800 font-medium italic text-lg mb-2">"{bm.motivation?.quote}"</p>
+                                <p className="text-xs text-gray-500 text-right">- {bm.motivation?.authorName || "Anonymous"}</p>
+                             </div>
+                           ))}
+                        </div>
+                    )}
+                    <div className="flex justify-center">
+                        <Link to="/motivation" className="px-6 py-3 rounded-xl border-2 border-dashed border-orange-300 text-orange-600 font-bold hover:bg-orange-50 transition-all flex items-center gap-2"><Plus className="w-5 h-5" />Add More</Link>
+                    </div>
                 </div>
             )}
+
             {activeTab === "settings" && (
                 <div className="space-y-4">
                       <div className="bg-white/60 backdrop-blur-md border border-white/40 rounded-[24px] overflow-hidden shadow-lg p-2">
