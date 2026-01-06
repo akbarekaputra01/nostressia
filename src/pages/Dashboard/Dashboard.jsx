@@ -1,5 +1,5 @@
 // src/pages/Dashboard/Dashboard.jsx
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom"; 
 import { BASE_URL } from "../../api/config";
 import Footer from "../../components/Footer";
@@ -13,6 +13,7 @@ const brandRed = "#E53E3E";
 const bgCream = "#FFF3E0";
 const bgPink = "#eaf2ff";
 const bgLavender = "#e3edff";
+const colorGray = "#D1D5DB";
 
 // TRANSLATED: Month Names
 const monthNames = [
@@ -68,10 +69,18 @@ function formatDate(date) {
   return `${y}-${m}-${d}`;
 }
 
+// Helper status: 2 = High, 1 = Moderate, 0 = Low
+function getStatusFromLevel(level) {
+  if (level > 60) return 2;
+  if (level > 30) return 1;
+  return 0;
+}
+
+// Helper mapping API Result (0, 1, 2) ke UI
 function mapPredictionToUI(label) {
-  if (label === "High") return { score: 85, color: brandRed };
-  if (label === "Moderate") return { score: 50, color: brandOrange };
-  return { score: 20, color: brandGreen };
+  if (label === "High" || label === 2) return { score: 85, color: brandRed, status: 2 };
+  if (label === "Moderate" || label === 1) return { score: 50, color: brandOrange, status: 1 };
+  return { score: 20, color: brandGreen, status: 0 };
 }
 
 function generateMockData() {
@@ -84,6 +93,7 @@ function generateMockData() {
   for (let i = 1; i < date; i++) {
     const currentDate = new Date(year, month, i);
     const dateStr = formatDate(currentDate);
+    
     const level = Math.floor(Math.random() * (80 - 20 + 1)) + 20;
     const moodIdx = Math.floor(Math.random() * moods.length);
     const color = level > 60 ? brandRed : level > 30 ? brandOrange : brandGreen;
@@ -121,41 +131,31 @@ function generateMockData() {
   return data;
 }
 
-function generateTrendData() {
-  const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  const trend = [];
-  const today = new Date();
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date(today);
-    d.setDate(today.getDate() - i);
-    trend.push({
-      day: days[d.getDay()],
-      level: i === 0 ? 0 : Math.floor(Math.random() * 60) + 20,
-      active: i === 0,
-    });
-  }
-  return trend;
-}
-
 export default function Dashboard() {
   const { user } = useOutletContext() || { user: {} };
   const userName = user?.name || "Friend";
 
   const [loading, setLoading] = useState(true);
   const [isFlipped, setIsFlipped] = useState(false);
+   
+  // State Data Utama
   const [stressData, setStressData] = useState(generateMockData());
-  const [trendData, setTrendData] = useState(generateTrendData());
   const [hasSubmittedToday, setHasSubmittedToday] = useState(false);
   const [stressScore, setStressScore] = useState(0);
 
-  // Success Modal
+  // Success Modal & Detail
   const [successModal, setSuccessModal] = useState({ visible: false, title: "", text: "" });
   const [dayDetail, setDayDetail] = useState(null);
   const [activeTip, setActiveTip] = useState(null);
 
-  // Form State
-  const [gpa, setGpa] = useState(3.5);
+  // --- FORM STATE ---
+  // LOGIKA BARU: Cek LocalStorage dulu, kalau tidak ada set kosong string ""
+  const [gpa, setGpa] = useState(() => {
+    const saved = localStorage.getItem("user_gpa");
+    return saved ? Number(saved) : "";
+  });
   const [isEditingGpa, setIsEditingGpa] = useState(false);
+
   const [studyHours, setStudyHours] = useState("");
   const [extraHours, setExtraHours] = useState("");
   const [sleepHours, setSleepHours] = useState("");
@@ -171,9 +171,7 @@ export default function Dashboard() {
   const today = new Date();
   const [calendarDate, setCalendarDate] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
   const [selectedDate, setSelectedDate] = useState(today);
-
   const TODAY_KEY = formatDate(today);
-  const progressRef = useRef(null);
 
   useEffect(() => {
     const t = setTimeout(() => setLoading(false), 600);
@@ -187,18 +185,36 @@ export default function Dashboard() {
 
   // --- LOGIKA GRADIEN BACKGROUND ---
   let gradientBg = 'radial-gradient(circle at 50% 30%, rgba(156, 163, 175, 0.15), transparent 70%)'; 
-
   if (hasSubmittedToday) {
-    if (stressScore > 60) {
-      // High (Red) - Opacity 30
-      gradientBg = `radial-gradient(circle at 50% 30%, ${brandRed}30, transparent 70%)`;
-    } else if (stressScore > 30) {
-      // Moderate (Orange)
-      gradientBg = `radial-gradient(circle at 50% 30%, ${brandOrange}30, transparent 70%)`;
-    } else {
-      // Low (Green)
-      gradientBg = `radial-gradient(circle at 50% 30%, ${brandGreen}30, transparent 70%)`;
+    if (stressScore > 60) gradientBg = `radial-gradient(circle at 50% 30%, ${brandRed}30, transparent 70%)`;
+    else if (stressScore > 30) gradientBg = `radial-gradient(circle at 50% 30%, ${brandOrange}30, transparent 70%)`;
+    else gradientBg = `radial-gradient(circle at 50% 30%, ${brandGreen}30, transparent 70%)`;
+  }
+
+  // --- MENGHITUNG TREND DOTS ---
+  const trendDots = [];
+  const daysShort = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    const dateKey = formatDate(d);
+    
+    const dataOnDate = stressData[dateKey];
+    let status = null; 
+
+    if (dataOnDate && !dataOnDate.isEmpty) {
+        status = getStatusFromLevel(dataOnDate.level);
     }
+    
+    if (i === 0 && hasSubmittedToday) {
+        status = getStatusFromLevel(stressScore);
+    }
+
+    trendDots.push({
+        day: daysShort[d.getDay()],
+        status: status, 
+        isToday: i === 0
+    });
   }
 
   function handleNewQuote() {
@@ -231,8 +247,26 @@ export default function Dashboard() {
     setIsFlipped(true);
   }
 
+  // LOGIKA SIMPAN GPA (LOKAL)
+  function handleGpaSave(val) {
+    if (val === "") return alert("GPA cannot be empty");
+    const num = parseFloat(val);
+    if (Number.isNaN(num) || num < 0 || num > 4) return alert("GPA must be between 0 - 4");
+    
+    setGpa(num);
+    localStorage.setItem("user_gpa", num); // Simpan ke browser
+    setIsEditingGpa(false);
+  }
+
   async function handleSaveForm(e) {
     e.preventDefault();
+    
+    // VALIDASI: GPA WAJIB DIISI SEBELUM SUBMIT
+    if (gpa === "" || gpa === null) {
+      setIsEditingGpa(true); // Otomatis buka mode edit
+      return alert("⚠️ Please set your GPA first before submitting data.");
+    }
+
     if (sleepHours === "" || sleepHours < 0 || sleepHours > 24) return alert("Please enter valid sleep hours (0-24).");
 
     try {
@@ -249,7 +283,12 @@ export default function Dashboard() {
       if (!response.ok) throw new Error(apiData.detail || "Error connecting to server.");
 
       const { score, color } = mapPredictionToUI(apiData.result);
-      setSuccessModal({ visible: true, title: hasSubmittedToday ? "Data Updated!" : "Analysis Complete!", text: apiData.message });
+      
+      setSuccessModal({ 
+        visible: true, 
+        title: hasSubmittedToday ? "Data Updated!" : "Analysis Complete!", 
+        text: apiData.message // Menggunakan pesan dari Backend
+      });
 
       setStressScore(score);
       setHasSubmittedToday(true);
@@ -257,30 +296,22 @@ export default function Dashboard() {
       setStressData((prev) => ({
         ...prev,
         [TODAY_KEY]: {
-          level: score, label: apiData.result, sleep: Number(sleepHours), study: Number(studyHours),
+          level: score, label: apiData.result, 
+          sleep: Number(sleepHours), study: Number(studyHours),
           extra: Number(extraHours), social: Number(socialHours), physical: Number(physicalHours),
           mood: moods[moodIndex], color: color, isToday: true, isEmpty: false,
         },
       }));
 
-      setTrendData((prev) => {
-        const newData = [...prev]; newData[6].level = score; return newData;
-      });
-
       setTimeout(() => {
         setSuccessModal((prev) => ({ ...prev, visible: false }));
         setIsFlipped(false);
-      }, 2200);
+      }, 2500);
+
     } catch (error) {
       console.error("❌ Gagal Konek:", error);
       alert("Gagal menghubungi server.");
     }
-  }
-
-  function handleGpaSave(val) {
-    const num = parseFloat(val);
-    if (Number.isNaN(num) || num < 0 || num > 4) return alert("GPA must be between 0 - 4");
-    setGpa(num); setIsEditingGpa(false);
   }
 
   function changeMonth(delta) { setCalendarDate(new Date(year, month + delta, 1)); }
@@ -311,38 +342,28 @@ export default function Dashboard() {
         .rotate-y-180 { transform: rotateY(180deg); }
         .transform-style-preserve-3d { transform-style: preserve-3d; }
         .pressable:active { transform: translateY(1px) scale(0.995); }
-        @keyframes success-pop { 0% { transform: scale(0.5); opacity: 0; } 50% { transform: scale(1.15); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
-        @keyframes card-enter { 0% { transform: translateY(20px) scale(0.9); opacity: 0; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
-        @keyframes circle-draw { 0% { stroke-dasharray: 0, 100; } 100% { stroke-dasharray: 100, 100; } }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes slideDownFade { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes blob { 0% { transform: translate(0px, 0px) scale(1); } 33% { transform: translate(30px, -50px) scale(1.1); } 66% { transform: translate(-20px, 20px) scale(0.9); } 100% { transform: translate(0px, 0px) scale(1); } }
-        .animate-blob { animation: blob 7s infinite; }
-        .animation-delay-2000 { animation-delay: 2s; }
-        .animate-slide-down { animation: slideDownFade 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
         .animate-success-icon { animation: success-pop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
         .animate-card-enter { animation: card-enter 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
-        @keyframes modalSlideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .animate-modal-slide { animation: modalSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        .custom-scroll::-webkit-scrollbar { width: 6px; }
-        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
-        .custom-scroll::-webkit-scrollbar-thumb { background-color: rgba(0,0,0,0.1); border-radius: 20px; }
-
-        /* --- ANIMATIONS FOR ICONS --- */
+        .animate-slide-down { animation: slideDownFade 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
         @keyframes float-gentle { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
         @keyframes heartbeat { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
         @keyframes glow-pulse { 0%, 100% { filter: drop-shadow(0 0 5px rgba(242, 153, 74, 0.3)); } 50% { filter: drop-shadow(0 0 15px rgba(242, 153, 74, 0.6)); } }
         .anim-float { animation: float-gentle 4s ease-in-out infinite; }
         .anim-heartbeat { animation: heartbeat 2s ease-in-out infinite; }
         .anim-glow { animation: glow-pulse 3s infinite; }
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+        .custom-scroll::-webkit-scrollbar-thumb { background-color: rgba(0,0,0,0.1); border-radius: 20px; }
+        @keyframes circle-draw { 0% { stroke-dasharray: 0, 100; } 100% { stroke-dasharray: 100, 100; } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
       `}</style>
 
       {/* NAVBAR */}
       <Navbar activeLink="Dashboard" onPredictClick={handleOpenForm} user={user} />
 
       <main className="max-w-[1400px] mx-auto p-6 md:p-8 lg:p-10 pt-28">
-        {/* --- USER GREETING --- */}
         <div className="mb-8 animate-slide-down">
           <h1 className="text-3xl md:text-4xl font-extrabold text-gray-800 flex items-center gap-2">
             Hello, <span style={{ color: brandBlue }}>{userName}!</span> 👋
@@ -356,20 +377,12 @@ export default function Dashboard() {
             <div style={{ perspective: 1500 }} className="w-full h-full">
               <div className={`absolute inset-0 transition-transform duration-700 transform-style-preserve-3d ${isFlipped ? "rotate-y-180" : ""}`}>
                 
-                {/* --- FRONT CARD (PREDICTION - UPDATED TO SHOW CLASSIFICATION + GRADIENT) --- */}
+                {/* FRONT CARD (PREDICTION) */}
                 <div
                   className="absolute inset-0 rounded-[20px] p-6 md:p-8 backface-hidden flex flex-col shadow-xl border border-white/20 overflow-hidden"
                   style={{ backgroundColor: "rgba(255,255,255,0.45)", zIndex: isFlipped ? 0 : 10, pointerEvents: isFlipped ? "none" : "auto" }}
                 >
-                  {/* --- GRADIENT LAYER BACKGROUND --- */}
-                  <div
-                      className="absolute inset-0 transition-all duration-1000 ease-in-out"
-                      style={{
-                          background: gradientBg,
-                          zIndex: -1, 
-                          opacity: 0.8 
-                      }}
-                  />
+                  <div className="absolute inset-0 transition-all duration-1000 ease-in-out" style={{ background: gradientBg, zIndex: -1, opacity: 0.8 }} />
 
                   {hasSubmittedToday && (
                     <div className="absolute -top-[4.5rem] -right-[4.5rem] text-[11rem] opacity-[0.08] pointer-events-none select-none grayscale filter" style={{ zIndex: 0 }}>
@@ -382,58 +395,46 @@ export default function Dashboard() {
                     <div className="text-2xl text-gray-500"><i className="ph ph-cloud-sun mr-2" /> <i className="ph ph-smiley" /></div>
                   </header>
 
-                  {/* --- BAGIAN UTAMA: DIGANTI MENJADI KLASIFIKASI IKON + TEKS --- */}
                   <div className="flex-grow flex flex-col items-center justify-center text-center relative z-10">
                     {(() => {
-                      let ui = {
-                        label: "NO DATA",
-                        sub: "Let's check your status",
-                        color: "#9ca3af",
-                        icon: "ph-question",
-                        anim: ""
-                      };
-
+                      let ui = { label: "NO DATA", sub: "Let's check your status", color: "#9ca3af", icon: "ph-question", anim: "" };
                       if (hasSubmittedToday) {
-                        if (stressScore > 60) {
-                          ui = { label: "HIGH LEVEL", sub: "Please take a break!", color: brandRed, icon: "ph-warning-octagon", anim: "anim-heartbeat" };
-                        } else if (stressScore > 30) {
-                          ui = { label: "MODERATE", sub: "Keep it balanced.", color: brandOrange, icon: "ph-scales", anim: "anim-glow" };
-                        } else {
-                          ui = { label: "LOW STRESS", sub: "You are doing great!", color: brandGreen, icon: "ph-plant", anim: "anim-float" };
-                        }
+                        if (stressScore > 60) ui = { label: "HIGH LEVEL", sub: "Please take a break!", color: brandRed, icon: "ph-warning-octagon", anim: "anim-heartbeat" };
+                        else if (stressScore > 30) ui = { label: "MODERATE", sub: "Keep it balanced.", color: brandOrange, icon: "ph-scales", anim: "anim-glow" };
+                        else ui = { label: "LOW STRESS", sub: "You are doing great!", color: brandGreen, icon: "ph-plant", anim: "anim-float" };
                       }
-
                       return (
                         <div className="flex flex-col items-center gap-4">
-                          {/* ICON BESAR ANIMATIF */}
-                          <div className={`text-[8rem] leading-none ${ui.anim} drop-shadow-lg`} style={{ color: ui.color, transition: "color 0.5s" }}>
-                            <i className={`ph ${ui.icon}`}></i>
-                          </div>
-                          
-                          {/* TEKS LABEL BERSIH */}
-                          <div>
-                            <h2 className="text-4xl font-black tracking-wider uppercase mb-1" style={{ color: ui.color }}>
-                              {ui.label}
-                            </h2>
-                            <p className="text-lg font-semibold text-gray-600">{ui.sub}</p>
-                          </div>
+                          <div className={`text-[8rem] leading-none ${ui.anim} drop-shadow-lg`} style={{ color: ui.color, transition: "color 0.5s" }}><i className={`ph ${ui.icon}`}></i></div>
+                          <div><h2 className="text-4xl font-black tracking-wider uppercase mb-1" style={{ color: ui.color }}>{ui.label}</h2><p className="text-lg font-semibold text-gray-600">{ui.sub}</p></div>
                         </div>
                       );
                     })()}
                   </div>
 
                   <hr className="border-t border-white/30 my-6 relative z-10" />
+                  
+                  {/* TREND DOTS */}
                   <h4 className="text-base font-bold text-gray-800 mb-3 relative z-10">Last 7 Days Trend</h4>
-                  <div className="flex justify-between items-end h-24 relative z-10">
-                    {trendData.map((d, i) => {
-                      const dotColor = d.active ? brandOrange : "#8b5cf6";
-                      const bottom = `${(d.level / 100) * 56}px`;
+                  <div className="flex justify-between items-end w-full relative z-10 h-16 px-2">
+                    {trendDots.map((d, i) => {
+                      const isToday = d.isToday;
+                      let dotColor = colorGray; 
+                      if (d.status === 0) dotColor = brandGreen;
+                      if (d.status === 1) dotColor = brandOrange;
+                      if (d.status === 2) dotColor = brandRed;
+                      
+                      const sizeClass = isToday ? "w-5 h-5" : "w-3 h-3";
                       return (
-                        <div key={i} className="flex flex-col items-center w-1/7">
-                          <div className="relative h-20 w-full flex justify-center">
-                            <div className="absolute w-3 h-3 rounded-full border-2 border-white shadow-md" style={{ background: dotColor, bottom }} />
-                          </div>
-                          <span className="text-sm font-semibold text-gray-500 mt-1">{d.day}</span>
+                        <div key={i} className="flex flex-col items-center gap-2 flex-1">
+                           <div 
+                              className={`rounded-full transition-all duration-500 shadow-sm ${sizeClass} border-2 border-white/60`}
+                              style={{ 
+                                backgroundColor: dotColor,
+                                boxShadow: (isToday && d.status !== null) ? `0 0 6px ${dotColor}` : 'none' 
+                              }}
+                           />
+                           <span className="text-xs font-bold text-gray-500 opacity-80">{d.day}</span>
                         </div>
                       );
                     })}
@@ -449,7 +450,7 @@ export default function Dashboard() {
                   </button>
                 </div>
 
-                {/* BACK CARD (FORM - TIDAK DIUBAH) */}
+                {/* BACK CARD (FORM) */}
                 <div
                   className="absolute inset-0 rounded-[20px] p-6 md:p-8 rotate-y-180 backface-hidden flex flex-col shadow-xl border border-white/20 overflow-hidden"
                   style={{ backgroundColor: "rgba(255,255,255,0.45)", zIndex: isFlipped ? 10 : 0, pointerEvents: isFlipped ? "auto" : "none" }}
@@ -466,19 +467,34 @@ export default function Dashboard() {
                     className="flex-grow overflow-y-auto pr-2 flex flex-col gap-3 transition-all duration-500 custom-scroll"
                     style={{ opacity: successModal.visible ? 0 : 1, transform: successModal.visible ? "scale(0.95)" : "scale(1)", pointerEvents: successModal.visible ? "none" : "auto" }}
                   >
-                    {/* GPA */}
+                    {/* GPA SECTION (UPDATED LOGIC) */}
                     <div>
-                      <label className="block text-sm font-semibold text-gray-800 mb-2">GPA</label>
+                      <label className="block text-sm font-semibold text-gray-800 mb-2">GPA <span className="text-red-500">*</span></label>
                       {!isEditingGpa ? (
                         <div className="flex items-center gap-3">
-                          <span className="text-2xl font-bold" style={{ color: brandOrange }}>{gpa.toFixed(2)}</span>
-                          <button type="button" className="w-9 h-9 rounded-xl flex items-center justify-center bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors cursor-pointer" onClick={() => setIsEditingGpa(true)}>
+                          {/* Tampilan jika GPA kosong vs ada isinya */}
+                          {gpa !== "" ? (
+                             <span className="text-2xl font-bold" style={{ color: brandOrange }}>{Number(gpa).toFixed(2)}</span>
+                          ) : (
+                             <span className="text-lg font-bold text-gray-400 italic border-b-2 border-dashed border-gray-300">Set GPA</span>
+                          )}
+                          
+                          <button type="button" className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors cursor-pointer ${gpa === "" ? "bg-red-100 text-red-600 animate-pulse" : "bg-blue-100 text-blue-600 hover:bg-blue-200"}`} onClick={() => setIsEditingGpa(true)}>
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125"/></svg>
                           </button>
                         </div>
                       ) : (
                         <div className="flex items-center gap-3">
-                          <input type="number" defaultValue={gpa.toFixed(2)} step="0.01" min="0" max="4" className="w-24 p-2 border border-gray-300 rounded-lg text-center font-bold focus:outline-none focus:ring-2 focus:ring-blue-500" id="gpaInput" style={{ color: "#333" }} />
+                          <input 
+                            type="number" 
+                            defaultValue={gpa === "" ? "" : gpa} 
+                            placeholder="0.00"
+                            step="0.01" min="0" max="4" 
+                            className="w-24 p-2 border border-gray-300 rounded-lg text-center font-bold focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                            id="gpaInput" 
+                            style={{ color: "#333" }} 
+                            autoFocus
+                          />
                           <button type="button" className="w-9 h-9 rounded-xl flex items-center justify-center bg-green-100 text-green-600 hover:bg-green-200 transition-colors cursor-pointer" onClick={() => handleGpaSave(document.getElementById("gpaInput").value)}>
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
                           </button>
@@ -515,14 +531,28 @@ export default function Dashboard() {
 
                   {/* INTERNAL SUCCESS OVERLAY */}
                   {successModal.visible && (
-                    <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-white/60 backdrop-blur-md rounded-[20px]" style={{ animation: "fadeIn 0.3s ease-out" }}>
+                    <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-white/90 backdrop-blur-md rounded-[20px]" style={{ animation: "fadeIn 0.3s ease-out" }}>
+                      
                       <div className="w-24 h-24 rounded-full flex items-center justify-center shadow-lg mb-4 animate-success-icon" style={{ backgroundColor: "#fff", border: `4px solid ${brandGreen}` }}>
                         <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke={brandGreen} strokeWidth="3">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" style={{ animation: "circle-draw 0.8s ease-out forwards 0.3s" }} />
                         </svg>
                       </div>
-                      <h2 className="text-2xl font-bold text-gray-800 mb-2" style={{ opacity: 0, animation: "fadeInUp 0.5s ease-out forwards 0.5s" }}>{successModal.title}</h2>
-                      <p className="text-gray-600 text-center px-8" style={{ opacity: 0, animation: "fadeInUp 0.5s ease-out forwards 0.7s" }}>{successModal.text}</p>
+
+                      <h2 className="text-2xl font-bold text-gray-800 mb-2" style={{ opacity: 0, animation: "fadeInUp 0.5s ease-out forwards 0.5s" }}>
+                        {successModal.title}
+                      </h2>
+
+                      <p className="text-gray-600 text-center px-8 mb-4" style={{ opacity: 0, animation: "fadeInUp 0.5s ease-out forwards 0.7s" }}>
+                        {successModal.text}
+                      </p>
+
+                      <div className="px-6 border-t border-gray-200 pt-3 mt-1" style={{ opacity: 0, animation: "fadeInUp 0.5s ease-out forwards 0.9s" }}>
+                        <p className="text-[10px] text-gray-400 font-medium text-center">
+                           🤖 AI prediction only. Not a medical diagnosis.
+                        </p>
+                      </div>
+
                     </div>
                   )}
                 </div>
@@ -573,9 +603,14 @@ export default function Dashboard() {
                     <div className="relative w-24 h-24 rounded-full flex items-center justify-center border-[5px]" style={{ borderColor: dayDetail.color }}>
                       <div className="text-center">
                         <div className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Status</div>
-                        <div className="text-lg font-black uppercase leading-none" style={{ color: dayDetail.color }}>
-                          {dayDetail.level > 60 ? "High" : dayDetail.level > 30 ? "Moderate" : "Low"}
-                        </div>
+                        {(() => {
+                            const status = getStatusFromLevel(dayDetail.level);
+                            return (
+                              <div className="text-lg font-black uppercase leading-none" style={{ color: dayDetail.color }}>
+                                {status === 2 ? "High" : status === 1 ? "Mod" : "Low"}
+                              </div>
+                            );
+                        })()}
                       </div>
                     </div>
                     <div className="flex-1"><p className="text-sm font-semibold text-gray-600 italic">"{dayDetail.level > 60 ? "Take a break, you need it." : "Keep it up and maintain balance!"}"</p></div>
@@ -594,7 +629,7 @@ export default function Dashboard() {
           </section>
         </div>
 
-        {/* MOTIVATION */}
+        {/* MOTIVATION & TIPS SECTIONS (SAME AS BEFORE) */}
         <div className="mt-8 grid grid-cols-1">
           <section className="col-span-4 relative overflow-hidden rounded-[24px] shadow-2xl group transition-all duration-500 hover:shadow-orange-100">
             <div className="absolute inset-0 bg-white/60 backdrop-blur-xl border border-white/40 z-0"></div>
@@ -609,7 +644,6 @@ export default function Dashboard() {
             </div>
           </section>
 
-          {/* BENTO WIDGET TIPS */}
           <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
             {resourcesList.map((item) => (
               <div
@@ -634,15 +668,12 @@ export default function Dashboard() {
         </div>
       </main>
       <Footer />
-      
+       
       {/* MODAL TIPS */}
       {activeTip && (
         <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fadeIn">
-          <div 
-            className="absolute inset-0 cursor-pointer" 
-            onClick={() => setActiveTip(null)} 
-          />
-          
+          <div className="absolute inset-0 cursor-pointer" onClick={() => setActiveTip(null)} />
+           
           <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden animate-modal-slide">
              <div className={`h-32 w-full ${activeTip.theme.bg} relative flex items-center justify-center`}>
                 <div className="text-6xl animate-bounce">{activeTip.emoji}</div>
