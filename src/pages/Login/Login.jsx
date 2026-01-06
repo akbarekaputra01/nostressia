@@ -94,7 +94,7 @@ export default function Login() {
         // 3. GUNAKAN BASE_URL DI SINI
         await axios.post(`${BASE_URL}/user/register`, {
             name: formData.name,
-            username: formData.username,
+            userName: formData.username,
             email: formData.email,
             password: formData.password,
             gender: formData.gender,
