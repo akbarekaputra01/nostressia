@@ -1,6 +1,6 @@
 // src/pages/Dashboard/Dashboard.jsx
 import React, { useState, useEffect, useRef } from "react";
-import { useOutletContext } from "react-router-dom"; // Import Context
+import { useOutletContext } from "react-router-dom"; 
 import { BASE_URL } from "../../api/config";
 import Footer from "../../components/Footer";
 import Navbar from "../../components/Navbar";
@@ -27,9 +27,6 @@ const quotesList = [
   { text: "Resting doesn't mean stopping, it means recharging.", author: "Mindfulness" },
   { text: "You don't have to be productive all the time. Just breathe.", author: "Self Care" },
   { text: "Focus on what you can control, let go of what you can't.", author: "Stoic Wisdom" },
-  { text: "A bad day doesn't mean a bad life.", author: "Anonymous" },
-  { text: "Peace begins when you stop expecting others to understand you.", author: "Inner Peace" },
-  { text: "Flowers don't bloom simultaneously. Be patient with your process.", author: "Nature's Law" },
 ];
 
 // --- BENTO WIDGET TIPS ---
@@ -41,13 +38,7 @@ const resourcesList = [
     title: "Digital Sunset",
     desc: "Turn off gadgets 1 hour before sleep.",
     fullDetail: "The blue light from screens tricks your brain into thinking it's still daytime. Set a 'Digital Sunset' alarm for 9 PM. Replace scrolling with reading a physical book for better sleep.",
-    theme: {
-      bg: "bg-blue-50/40", 
-      text: "text-blue-900",
-      subtext: "text-blue-700",
-      accent: "bg-blue-200",
-      btn: "bg-blue-600 hover:bg-blue-700 text-white"
-    }
+    theme: { bg: "bg-blue-50/40", text: "text-blue-900", subtext: "text-blue-700", accent: "bg-blue-200", btn: "bg-blue-600 hover:bg-blue-700 text-white" }
   },
   {
     id: 2,
@@ -56,13 +47,7 @@ const resourcesList = [
     title: "Pomodoro",
     desc: "25 minutes focus, 5 minutes break.",
     fullDetail: "Your brain has a focus limit. Use a timer. When the bell rings, stand up and stretch. This method prevents burnout and keeps energy stable all day.",
-    theme: {
-      bg: "bg-orange-50/40",
-      text: "text-orange-900",
-      subtext: "text-orange-700",
-      accent: "bg-orange-200",
-      btn: "bg-orange-500 hover:bg-orange-600 text-white"
-    }
+    theme: { bg: "bg-orange-50/40", text: "text-orange-900", subtext: "text-orange-700", accent: "bg-orange-200", btn: "bg-orange-500 hover:bg-orange-600 text-white" }
   },
   {
     id: 3,
@@ -71,13 +56,7 @@ const resourcesList = [
     title: "Grounding 5-4-3-2-1",
     desc: "Anxious? Use your 5 senses.",
     fullDetail: "Name: 5 things you see, 4 you feel, 3 you hear, 2 you smell, 1 you taste. This technique forces your brain to switch from 'panic mode' to 'conscious mode' instantly.",
-    theme: {
-      bg: "bg-teal-50/40",
-      text: "text-teal-900",
-      subtext: "text-teal-700",
-      accent: "bg-teal-200",
-      btn: "bg-teal-600 hover:bg-teal-700 text-white"
-    }
+    theme: { bg: "bg-teal-50/40", text: "text-teal-900", subtext: "text-teal-700", accent: "bg-teal-200", btn: "bg-teal-600 hover:bg-teal-700 text-white" }
   },
 ];
 
@@ -159,33 +138,22 @@ function generateTrendData() {
 }
 
 export default function Dashboard() {
-  // AMBIL DATA USER DARI MAINLAYOUT
   const { user } = useOutletContext() || { user: {} };
   const userName = user?.name || "Friend";
 
   const [loading, setLoading] = useState(true);
   const [isFlipped, setIsFlipped] = useState(false);
-
-  // State Data Dashboard
   const [stressData, setStressData] = useState(generateMockData());
   const [trendData, setTrendData] = useState(generateTrendData());
   const [hasSubmittedToday, setHasSubmittedToday] = useState(false);
   const [stressScore, setStressScore] = useState(0);
 
   // Success Modal
-  const [successModal, setSuccessModal] = useState({
-    visible: false,
-    title: "",
-    text: "",
-  });
-  
-  // Detail Hari Kalender
+  const [successModal, setSuccessModal] = useState({ visible: false, title: "", text: "" });
   const [dayDetail, setDayDetail] = useState(null);
-
-  // Active Tip Modal
   const [activeTip, setActiveTip] = useState(null);
 
-  // --- FORM STATE ---
+  // Form State
   const [gpa, setGpa] = useState(3.5);
   const [isEditingGpa, setIsEditingGpa] = useState(false);
   const [studyHours, setStudyHours] = useState("");
@@ -201,57 +169,50 @@ export default function Dashboard() {
 
   // Calendar State
   const today = new Date();
-  const [calendarDate, setCalendarDate] = useState(
-    new Date(today.getFullYear(), today.getMonth(), 1)
-  );
+  const [calendarDate, setCalendarDate] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
   const [selectedDate, setSelectedDate] = useState(today);
 
   const TODAY_KEY = formatDate(today);
   const progressRef = useRef(null);
 
-  // Effect Loading Awal (Animasi)
   useEffect(() => {
     const t = setTimeout(() => setLoading(false), 600);
     return () => clearTimeout(t);
   }, []);
-
-  // Effect Animasi Progress Bar
-  useEffect(() => {
-    if (!progressRef.current) return;
-    progressRef.current.style.width = "0%";
-    requestAnimationFrame(() => {
-      if (progressRef.current) {
-        progressRef.current.style.transition = "width 900ms ease-in-out";
-        progressRef.current.style.width =
-          stressScore > 0 ? `${stressScore}%` : "0%";
-      }
-    });
-  }, [stressScore, isFlipped]);
 
   const month = calendarDate.getMonth();
   const year = calendarDate.getFullYear();
   const firstDayOfMonth = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
+  // --- LOGIKA GRADIEN BACKGROUND ---
+  let gradientBg = 'radial-gradient(circle at 50% 30%, rgba(156, 163, 175, 0.15), transparent 70%)'; 
+
+  if (hasSubmittedToday) {
+    if (stressScore > 60) {
+      // High (Red) - Opacity 30
+      gradientBg = `radial-gradient(circle at 50% 30%, ${brandRed}30, transparent 70%)`;
+    } else if (stressScore > 30) {
+      // Moderate (Orange)
+      gradientBg = `radial-gradient(circle at 50% 30%, ${brandOrange}30, transparent 70%)`;
+    } else {
+      // Low (Green)
+      gradientBg = `radial-gradient(circle at 50% 30%, ${brandGreen}30, transparent 70%)`;
+    }
+  }
+
   function handleNewQuote() {
     setIsQuoteAnimating(true);
     setTimeout(() => {
       let newQuote;
-      do {
-        newQuote = quotesList[Math.floor(Math.random() * quotesList.length)];
-      } while (newQuote.text === quoteData.text);
+      do { newQuote = quotesList[Math.floor(Math.random() * quotesList.length)]; } while (newQuote.text === quoteData.text);
       setQuoteData(newQuote);
       setIsQuoteAnimating(false);
     }, 400);
   }
 
   function resetFormToEmpty() {
-    setSleepHours("");
-    setStudyHours("");
-    setSocialHours("");
-    setExtraHours("");
-    setPhysicalHours("");
-    setMoodIndex(2);
+    setSleepHours(""); setStudyHours(""); setSocialHours(""); setExtraHours(""); setPhysicalHours(""); setMoodIndex(2);
   }
 
   function handleOpenForm() {
@@ -270,45 +231,25 @@ export default function Dashboard() {
     setIsFlipped(true);
   }
 
-  // --- HANDLE SAVE (API PREDICTION) ---
   async function handleSaveForm(e) {
     e.preventDefault();
-
     if (sleepHours === "" || sleepHours < 0 || sleepHours > 24) return alert("Please enter valid sleep hours (0-24).");
-    if (studyHours === "" || studyHours < 0 || studyHours > 24) return alert("Please enter valid study hours (0-24).");
-    if (extraHours === "" || extraHours < 0 || extraHours > 24) return alert("Please enter valid extra hours (0-24).");
-    if (socialHours === "" || socialHours < 0 || socialHours > 24) return alert("Please enter valid social hours (0-24).");
-    if (physicalHours === "" || physicalHours < 0 || physicalHours > 24) return alert("Please enter valid physical activity hours (0-24).");
 
     try {
       const payload = {
-        study_hours: Number(studyHours),
-        extracurricular_hours: Number(extraHours),
-        sleep_hours: Number(sleepHours),
-        social_hours: Number(socialHours),
-        physical_hours: Number(physicalHours),
-        gpa: Number(gpa),
+        study_hours: Number(studyHours), extracurricular_hours: Number(extraHours),
+        sleep_hours: Number(sleepHours), social_hours: Number(socialHours),
+        physical_hours: Number(physicalHours), gpa: Number(gpa),
       };
 
       const response = await fetch(`${BASE_URL}/predict/current-stress`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload),
       });
-
       const apiData = await response.json();
       if (!response.ok) throw new Error(apiData.detail || "Error connecting to server.");
 
-      console.log("🔥 AI Prediction Result:", apiData);
-
       const { score, color } = mapPredictionToUI(apiData.result);
-      const successTitleText = hasSubmittedToday ? "Data Updated!" : "Analysis Complete!";
-      
-      setSuccessModal({
-        visible: true,
-        title: successTitleText,
-        text: apiData.message,
-      });
+      setSuccessModal({ visible: true, title: hasSubmittedToday ? "Data Updated!" : "Analysis Complete!", text: apiData.message });
 
       setStressScore(score);
       setHasSubmittedToday(true);
@@ -316,24 +257,14 @@ export default function Dashboard() {
       setStressData((prev) => ({
         ...prev,
         [TODAY_KEY]: {
-          level: score,
-          label: apiData.result,
-          sleep: Number(sleepHours),
-          study: Number(studyHours),
-          extra: Number(extraHours),
-          social: Number(socialHours),
-          physical: Number(physicalHours),
-          mood: moods[moodIndex],
-          color: color,
-          isToday: true,
-          isEmpty: false,
+          level: score, label: apiData.result, sleep: Number(sleepHours), study: Number(studyHours),
+          extra: Number(extraHours), social: Number(socialHours), physical: Number(physicalHours),
+          mood: moods[moodIndex], color: color, isToday: true, isEmpty: false,
         },
       }));
 
       setTrendData((prev) => {
-        const newData = [...prev];
-        newData[6].level = score;
-        return newData;
+        const newData = [...prev]; newData[6].level = score; return newData;
       });
 
       setTimeout(() => {
@@ -342,37 +273,25 @@ export default function Dashboard() {
       }, 2200);
     } catch (error) {
       console.error("❌ Gagal Konek:", error);
-      let pesanError = `Gagal menghubungi server di: ${BASE_URL}\n`;
-      if (BASE_URL.includes("localhost") || BASE_URL.includes("127.0.0.1")) {
-        pesanError += "👉 Cek terminal Backend, pastikan 'uvicorn' sudah jalan.";
-      } else {
-        pesanError += "👉 Kemungkinan server deploy belum update atau mati.";
-      }
-      alert(pesanError);
+      alert("Gagal menghubungi server.");
     }
   }
 
   function handleGpaSave(val) {
     const num = parseFloat(val);
     if (Number.isNaN(num) || num < 0 || num > 4) return alert("GPA must be between 0 - 4");
-    setGpa(num);
-    setIsEditingGpa(false);
+    setGpa(num); setIsEditingGpa(false);
   }
 
-  function changeMonth(delta) {
-    setCalendarDate(new Date(year, month + delta, 1));
-  }
+  function changeMonth(delta) { setCalendarDate(new Date(year, month + delta, 1)); }
 
   function handleDateClick(day) {
     const dateObj = new Date(year, month, day);
     setSelectedDate(dateObj);
     const ds = formatDate(dateObj);
     const data = stressData[ds];
-    if (data && !data.isEmpty) {
-      setDayDetail({ dateStr: `${day} ${monthNames[month]} ${year}`, ...data });
-    } else {
-      setDayDetail(null);
-    }
+    if (data && !data.isEmpty) setDayDetail({ dateStr: `${day} ${monthNames[month]} ${year}`, ...data });
+    else setDayDetail(null);
   }
 
   return (
@@ -409,24 +328,26 @@ export default function Dashboard() {
         .custom-scroll::-webkit-scrollbar { width: 6px; }
         .custom-scroll::-webkit-scrollbar-track { background: transparent; }
         .custom-scroll::-webkit-scrollbar-thumb { background-color: rgba(0,0,0,0.1); border-radius: 20px; }
+
+        /* --- ANIMATIONS FOR ICONS --- */
+        @keyframes float-gentle { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        @keyframes heartbeat { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        @keyframes glow-pulse { 0%, 100% { filter: drop-shadow(0 0 5px rgba(242, 153, 74, 0.3)); } 50% { filter: drop-shadow(0 0 15px rgba(242, 153, 74, 0.6)); } }
+        .anim-float { animation: float-gentle 4s ease-in-out infinite; }
+        .anim-heartbeat { animation: heartbeat 2s ease-in-out infinite; }
+        .anim-glow { animation: glow-pulse 3s infinite; }
       `}</style>
 
-      {/* NAVBAR: Gunakan user dari context */}
-      <Navbar 
-         activeLink="Dashboard" 
-         onPredictClick={handleOpenForm} 
-         user={user} 
-      />
+      {/* NAVBAR */}
+      <Navbar activeLink="Dashboard" onPredictClick={handleOpenForm} user={user} />
 
       <main className="max-w-[1400px] mx-auto p-6 md:p-8 lg:p-10 pt-28">
-        {/* --- USER GREETING (DINAMIS) --- */}
+        {/* --- USER GREETING --- */}
         <div className="mb-8 animate-slide-down">
           <h1 className="text-3xl md:text-4xl font-extrabold text-gray-800 flex items-center gap-2">
             Hello, <span style={{ color: brandBlue }}>{userName}!</span> 👋
           </h1>
-          <p className="text-gray-600 mt-2 text-lg font-medium">
-            Ready to navigate the day with more calm?
-          </p>
+          <p className="text-gray-600 mt-2 text-lg font-medium">Ready to navigate the day with more calm?</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -435,11 +356,21 @@ export default function Dashboard() {
             <div style={{ perspective: 1500 }} className="w-full h-full">
               <div className={`absolute inset-0 transition-transform duration-700 transform-style-preserve-3d ${isFlipped ? "rotate-y-180" : ""}`}>
                 
-                {/* FRONT CARD (PREDICTION) */}
+                {/* --- FRONT CARD (PREDICTION - UPDATED TO SHOW CLASSIFICATION + GRADIENT) --- */}
                 <div
                   className="absolute inset-0 rounded-[20px] p-6 md:p-8 backface-hidden flex flex-col shadow-xl border border-white/20 overflow-hidden"
                   style={{ backgroundColor: "rgba(255,255,255,0.45)", zIndex: isFlipped ? 0 : 10, pointerEvents: isFlipped ? "none" : "auto" }}
                 >
+                  {/* --- GRADIENT LAYER BACKGROUND --- */}
+                  <div
+                      className="absolute inset-0 transition-all duration-1000 ease-in-out"
+                      style={{
+                          background: gradientBg,
+                          zIndex: -1, 
+                          opacity: 0.8 
+                      }}
+                  />
+
                   {hasSubmittedToday && (
                     <div className="absolute -top-[4.5rem] -right-[4.5rem] text-[11rem] opacity-[0.08] pointer-events-none select-none grayscale filter" style={{ zIndex: 0 }}>
                       {moods[moodIndex]}
@@ -451,24 +382,44 @@ export default function Dashboard() {
                     <div className="text-2xl text-gray-500"><i className="ph ph-cloud-sun mr-2" /> <i className="ph ph-smiley" /></div>
                   </header>
 
-                  <div className="text-center my-4 flex-grow relative z-10">
-                    {hasSubmittedToday ? (
-                      <div style={{ display: "inline-block", backgroundColor: stressScore > 60 ? brandRed : stressScore > 30 ? brandOrange : brandGreen, padding: "6px 10px", borderRadius: 999 }} className="font-semibold text-sm text-white">
-                        {stressScore > 60 ? "High" : stressScore > 30 ? "Moderate" : "Low"}
-                      </div>
-                    ) : (
-                      <div style={{ display: "inline-block", backgroundColor: "#9ca3af", padding: "6px 10px", borderRadius: 999 }} className="font-semibold text-sm text-white">No Data Yet</div>
-                    )}
+                  {/* --- BAGIAN UTAMA: DIGANTI MENJADI KLASIFIKASI IKON + TEKS --- */}
+                  <div className="flex-grow flex flex-col items-center justify-center text-center relative z-10">
+                    {(() => {
+                      let ui = {
+                        label: "NO DATA",
+                        sub: "Let's check your status",
+                        color: "#9ca3af",
+                        icon: "ph-question",
+                        anim: ""
+                      };
 
-                    <h1 className="text-6xl md:text-7xl font-extrabold my-4" style={{ color: hasSubmittedToday ? brandBlue : "#9ca3af" }}>{stressScore}%</h1>
-                    {hasSubmittedToday ? <p className="text-green-600 font-semibold">Based on AI Analysis</p> : <p className="text-gray-400 font-semibold">Please fill in data to see prediction</p>}
+                      if (hasSubmittedToday) {
+                        if (stressScore > 60) {
+                          ui = { label: "HIGH LEVEL", sub: "Please take a break!", color: brandRed, icon: "ph-warning-octagon", anim: "anim-heartbeat" };
+                        } else if (stressScore > 30) {
+                          ui = { label: "MODERATE", sub: "Keep it balanced.", color: brandOrange, icon: "ph-scales", anim: "anim-glow" };
+                        } else {
+                          ui = { label: "LOW STRESS", sub: "You are doing great!", color: brandGreen, icon: "ph-plant", anim: "anim-float" };
+                        }
+                      }
 
-                    <div className="mt-8 px-4">
-                      <div className="flex justify-between mb-2 text-sm font-semibold text-gray-600"><span>Stress Level</span><span style={{ color: brandOrange }}>{stressScore}%</span></div>
-                      <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
-                        <div ref={progressRef} className="h-full rounded-full" style={{ width: "0%", background: hasSubmittedToday ? brandOrange : "#d1d5db" }} />
-                      </div>
-                    </div>
+                      return (
+                        <div className="flex flex-col items-center gap-4">
+                          {/* ICON BESAR ANIMATIF */}
+                          <div className={`text-[8rem] leading-none ${ui.anim} drop-shadow-lg`} style={{ color: ui.color, transition: "color 0.5s" }}>
+                            <i className={`ph ${ui.icon}`}></i>
+                          </div>
+                          
+                          {/* TEKS LABEL BERSIH */}
+                          <div>
+                            <h2 className="text-4xl font-black tracking-wider uppercase mb-1" style={{ color: ui.color }}>
+                              {ui.label}
+                            </h2>
+                            <p className="text-lg font-semibold text-gray-600">{ui.sub}</p>
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
 
                   <hr className="border-t border-white/30 my-6 relative z-10" />
@@ -498,7 +449,7 @@ export default function Dashboard() {
                   </button>
                 </div>
 
-                {/* BACK CARD (FORM) */}
+                {/* BACK CARD (FORM - TIDAK DIUBAH) */}
                 <div
                   className="absolute inset-0 rounded-[20px] p-6 md:p-8 rotate-y-180 backface-hidden flex flex-col shadow-xl border border-white/20 overflow-hidden"
                   style={{ backgroundColor: "rgba(255,255,255,0.45)", zIndex: isFlipped ? 10 : 0, pointerEvents: isFlipped ? "auto" : "none" }}
@@ -586,11 +537,11 @@ export default function Dashboard() {
               <h3 className="text-xl font-bold text-gray-800">{monthNames[month]} {year}</h3>
               <button className="icon-btn text-gray-600 hover:text-gray-900 transition-colors cursor-pointer" onClick={() => changeMonth(1)}><i className="ph ph-arrow-right text-xl" /></button>
             </header>
-            <div className="grid grid-cols-7 gap-2 mb-4 text-center">
+            <div className="grid grid-cols-7 gap-1 mb-2 text-center">
               {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (<div key={d} className="text-sm font-bold text-gray-500">{d}</div>))}
             </div>
-            <div className="grid grid-cols-7 gap-2">
-              {[...Array(firstDayOfMonth)].map((_, i) => (<div key={`e-${i}`} className="h-12" />))}
+            <div className="grid grid-cols-7 gap-1">
+              {[...Array(firstDayOfMonth)].map((_, i) => (<div key={`e-${i}`} className="aspect-square" />))}
               {[...Array(daysInMonth)].map((_, i) => {
                 const day = i + 1;
                 const d = new Date(year, month, day);
@@ -599,7 +550,7 @@ export default function Dashboard() {
                 const hasData = has && !has.isEmpty;
                 const isSel = selectedDate.getDate() === day && selectedDate.getMonth() === month;
                 return (
-                  <div key={day} className={`flex items-center justify-center h-12 rounded-xl font-semibold text-sm cursor-pointer transition-all duration-200 ${isSel ? "scale-105 shadow-md" : "hover:bg-white/50"}`} onClick={() => handleDateClick(day)} style={{ background: isSel ? brandBlue : "transparent", color: isSel ? "white" : "#333", border: hasData ? `2px solid ${has.color}40` : "none" }}>
+                  <div key={day} className={`aspect-square flex flex-col items-center justify-center rounded-xl font-semibold text-sm cursor-pointer transition-all duration-200 ${isSel ? "scale-105 shadow-md" : "hover:bg-white/50"}`} onClick={() => handleDateClick(day)} style={{ background: isSel ? brandBlue : "transparent", color: isSel ? "white" : "#333", border: hasData ? `2px solid ${has.color}40` : "none" }}>
                     <div style={{ width: "100%", textAlign: "center" }}>
                       <div>{day}</div>
                       {hasData && !isSel && (<div style={{ height: 6, width: 6, background: has.color, borderRadius: 999, margin: "6px auto 0" }} />)}
@@ -619,8 +570,13 @@ export default function Dashboard() {
                     <button onClick={() => setDayDetail(null)} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5 text-gray-600"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button>
                   </div>
                   <div className="flex items-center gap-4 mb-6">
-                    <div className="relative w-20 h-20 rounded-full flex items-center justify-center border-4" style={{ borderColor: dayDetail.color }}>
-                      <div className="text-center"><div className="text-xs text-gray-500 font-bold">LEVEL</div><div className="text-xl font-black" style={{ color: dayDetail.color }}>{dayDetail.level}</div></div>
+                    <div className="relative w-24 h-24 rounded-full flex items-center justify-center border-[5px]" style={{ borderColor: dayDetail.color }}>
+                      <div className="text-center">
+                        <div className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Status</div>
+                        <div className="text-lg font-black uppercase leading-none" style={{ color: dayDetail.color }}>
+                          {dayDetail.level > 60 ? "High" : dayDetail.level > 30 ? "Moderate" : "Low"}
+                        </div>
+                      </div>
                     </div>
                     <div className="flex-1"><p className="text-sm font-semibold text-gray-600 italic">"{dayDetail.level > 60 ? "Take a break, you need it." : "Keep it up and maintain balance!"}"</p></div>
                   </div>
