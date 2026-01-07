@@ -1,16 +1,13 @@
 // src/pages/Tips/Tips.jsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useOutletContext } from "react-router-dom"; 
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Zap, Sparkles } from "lucide-react"; 
+import { ArrowLeft, Lightbulb, Loader2 } from "lucide-react"; 
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer"; 
 
 // --- API URL ---
 import { BASE_URL } from "../../api/config";
-
-// --- IMPORT LOGO ---
-import LogoNostressia from "../../assets/images/Logo-Nostressia.png";
 
 // --- COLOR CONFIGURATION ---
 const bgCream = "#FFF3E0";
@@ -30,286 +27,255 @@ const bgStyle = {
   fontFamily: "'Manrope', sans-serif"
 };
 
-// --- HELPER FUNCTIONS ---
+const INITIAL_CATEGORIES = [
+  { id: 1, name: "Reading & Learning", emoji: "📚", colorClass: "from-blue-50 to-blue-100 text-blue-600 border-blue-100" },
+  { id: 2, name: "Healthy Nutrition", emoji: "🥗", colorClass: "from-emerald-50 to-emerald-100 text-emerald-600 border-emerald-100" },
+  { id: 3, name: "Quality Sleep", emoji: "😴", colorClass: "from-indigo-50 to-indigo-100 text-indigo-600 border-indigo-100" },
+  { id: 4, name: "Meditation & Mindfulness", emoji: "🧘", colorClass: "from-teal-50 to-teal-100 text-teal-600 border-teal-100" },
+  { id: 5, name: "Social Connection", emoji: "🗣️", colorClass: "from-orange-50 to-orange-100 text-orange-600 border-orange-100" },
+  { id: 6, name: "Positive Mindset", emoji: "🧠", colorClass: "from-gray-50 to-gray-100 text-gray-600 border-gray-200" },
+];
+
+// --- ANIMATION VARIANTS FOR SMOOTH ENTRANCE ---
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.2
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: { duration: 0.5, ease: "easeOut" }
+  }
+};
+
 const getCategoryEmoji = (name) => {
-  const n = name.toLowerCase();
-  if (n.includes("sleep") || n.includes("tidur")) return "😴";
-  if (n.includes("nutrition") || n.includes("makan") || n.includes("sehat")) return "🥗";
-  if (n.includes("meditation") || n.includes("mind")) return "🧘";
-  if (n.includes("social") || n.includes("teman")) return "🗣️";
-  if (n.includes("physical") || n.includes("exercise") || n.includes("lari")) return "🏃";
-  if (n.includes("creative") || n.includes("art")) return "🎨";
-  if (n.includes("read") || n.includes("learn") || n.includes("study")) return "📚";
-  if (n.includes("time")) return "⏰";
+  const n = name?.toLowerCase() || "";
+  if (n.includes("read")) return "📚";
+  if (n.includes("nutrition")) return "🥗";
+  if (n.includes("sleep")) return "😴";
+  if (n.includes("meditation")) return "🧘";
+  if (n.includes("social")) return "🗣️";
   if (n.includes("mindset")) return "🧠";
   return "💡"; 
 };
 
 const getCategoryColor = (name) => {
-  const n = name.toLowerCase();
-  if (n.includes("sleep") || n.includes("tidur")) return "from-indigo-50 to-indigo-100 text-indigo-600 border-indigo-100";
-  if (n.includes("nutrition") || n.includes("makan")) return "from-emerald-50 to-emerald-100 text-emerald-600 border-emerald-100";
-  if (n.includes("meditation") || n.includes("mind")) return "from-teal-50 to-teal-100 text-teal-600 border-teal-100";
+  const n = name?.toLowerCase() || "";
+  if (n.includes("read")) return "from-blue-50 to-blue-100 text-blue-600 border-blue-100";
+  if (n.includes("nutrition")) return "from-emerald-50 to-emerald-100 text-emerald-600 border-emerald-100";
+  if (n.includes("sleep")) return "from-indigo-50 to-indigo-100 text-indigo-600 border-indigo-100";
+  if (n.includes("meditation")) return "from-teal-50 to-teal-100 text-teal-600 border-teal-100";
   if (n.includes("social")) return "from-orange-50 to-orange-100 text-orange-600 border-orange-100";
-  if (n.includes("physical") || n.includes("exercise")) return "from-rose-50 to-rose-100 text-rose-600 border-rose-100";
-  if (n.includes("creative")) return "from-pink-50 to-pink-100 text-pink-600 border-pink-100";
-  if (n.includes("read") || n.includes("learn")) return "from-blue-50 to-blue-100 text-blue-600 border-blue-100";
   return "from-gray-50 to-gray-100 text-gray-600 border-gray-200";
 };
 
 export default function Tips() {
-  const [categories, setCategories] = useState([]);
+  const [categories, setCategories] = useState(() => 
+    INITIAL_CATEGORIES.map(c => ({ ...c, tipsCount: null, preloadedTips: [] }))
+  );
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [tips, setTips] = useState([]);
-  const [loadingCategories, setLoadingCategories] = useState(true);
   const [loadingTips, setLoadingTips] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isScrolled, setIsScrolled] = useState(false);
-
-  // 1. AMBIL DATA USER DARI WRAPPER (MAINLAYOUT)
+  
+  const headerRef = useRef(null);
   const { user } = useOutletContext() || { user: {} };
 
-  // --- LOAD CATEGORIES ---
-  useEffect(() => {
-    const loadCategories = async () => {
-      try {
-        setLoadingCategories(true);
-        const res = await fetch(`${BASE_URL}/tips/categories`);
-        const data = await res.json();
-
-        const categoryPromises = data.map(async (item) => {
-            const name = item.categoryName || item.name || "";
-            const id = item.tipCategoryID || item.id;
-            let realCount = 0;
-            let preloadedData = [];
-
-            try {
-                const tipsRes = await fetch(`${BASE_URL}/tips/by-category/${id}`);
-                if (tipsRes.ok) {
-                    const tipsData = await tipsRes.json();
-                    if (Array.isArray(tipsData)) {
-                        realCount = tipsData.length;
-                        preloadedData = tipsData; 
-                    }
-                }
-            } catch (error) { 
-                console.warn(`Gagal hitung tips kategori ${id}`, error); 
-            }
-
-            return {
-                id: id, 
-                name: name, 
-                emoji: getCategoryEmoji(name),
-                colorClass: getCategoryColor(name), 
-                tipsCount: realCount,
-                preloadedTips: preloadedData 
-            };
-        });
-
-        const processedCategories = await Promise.all(categoryPromises);
-        setCategories(processedCategories);
-
-      } catch (err) { 
-        console.error("Error loading categories:", err); 
-      } finally { 
-        setLoadingCategories(false); 
-      }
-    };
-    loadCategories();
+  const syncData = useCallback(async () => {
+    try {
+      const res = await fetch(`${BASE_URL}/tips/categories`);
+      if (!res.ok) return;
+      const serverData = await res.json();
+      const updatedCategories = serverData.map(item => ({
+        id: item.tipCategoryID || item.id,
+        name: item.categoryName || item.name || "",
+        emoji: getCategoryEmoji(item.categoryName || item.name),
+        colorClass: getCategoryColor(item.categoryName || item.name),
+        tipsCount: null,
+        preloadedTips: []
+      }));
+      setCategories(updatedCategories);
+      updatedCategories.forEach(async (cat) => {
+        try {
+          const tipsRes = await fetch(`${BASE_URL}/tips/by-category/${cat.id}`);
+          if (tipsRes.ok) {
+            const tipsData = await tipsRes.json();
+            setCategories(prev => prev.map(c => 
+              c.id === cat.id ? { ...c, tipsCount: tipsData.length, preloadedTips: tipsData } : c
+            ));
+          }
+        } catch (e) { console.warn(e); }
+      });
+    } catch (err) { console.error("Sync Error:", err); }
   }, []);
 
   useEffect(() => {
-    const handleScroll = () => { setIsScrolled(window.scrollY > 100); };
+    syncData();
+    const handleScroll = () => setIsScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [syncData]);
 
-  // --- OPEN CATEGORY ---
   const openCategory = async (cat) => {
     setSelectedCategory(cat);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-
-    if (cat.preloadedTips && cat.preloadedTips.length > 0) {
-        setTips(cat.preloadedTips.map(item => ({ id: item.tipID, text: item.detail })));
+    if (cat.preloadedTips?.length > 0) {
+      setTips(cat.preloadedTips.map(item => ({ id: item.tipID, text: item.detail })));
     } else {
-        setLoadingTips(true);
-        try {
-            const res = await fetch(`${BASE_URL}/tips/by-category/${cat.id}`);
-            const data = await res.json();
-            setTips(data.map(item => ({ id: item.tipID, text: item.detail })));
-        } catch { 
-            setTips([]); 
-        } finally { 
-            setLoadingTips(false); 
-        }
+      setLoadingTips(true);
+      try {
+        const res = await fetch(`${BASE_URL}/tips/by-category/${cat.id}`);
+        const data = await res.json();
+        setTips(data.map(item => ({ id: item.tipID, text: item.detail })));
+      } catch { setTips([]); } finally { setLoadingTips(false); }
     }
   };
 
-  const handleBack = () => {
-    setSelectedCategory(null); setTips([]); setSearchQuery(""); 
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  const getVerticalOrderedTips = (items) => {
+    if (items.length === 0) return [];
+    const half = Math.ceil(items.length / 2);
+    const leftColumn = items.slice(0, half);
+    const rightColumn = items.slice(half);
+    const ordered = [];
+    for (let i = 0; i < half; i++) {
+      if (leftColumn[i]) ordered.push({ ...leftColumn[i], displayIndex: i + 1 });
+      if (rightColumn[i]) ordered.push({ ...rightColumn[i], displayIndex: half + i + 1 });
+    }
+    return ordered;
   };
 
-  const filteredCategories = categories.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()));
+  const filteredCategories = useMemo(() => {
+    return categories.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()));
+  }, [categories, searchQuery]);
 
   return (
     <div className="min-h-screen text-gray-800 flex flex-col" style={bgStyle}>
-      <style>{`
-        @keyframes gradient-bg { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-      `}</style>
+      <style>{`@keyframes gradient-bg { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }`}</style>
       
-      <motion.div 
-        className="fixed top-0 left-0 right-0 z-40 pt-4"
-        initial={{ y: 0, opacity: 1 }}
-        animate={{ 
-          y: selectedCategory && isScrolled ? "-150%" : "0%", 
-          opacity: selectedCategory && isScrolled ? 0 : 1 
-        }}
-        transition={{ duration: 0.8, ease: "easeInOut" }}
-      >
+      <div className="fixed top-0 left-0 right-0 z-50 pt-4">
         <Navbar activeLink="Tips" user={user} />
-      </motion.div>
+      </div>
 
-      {/* --- MODIFIKASI LAYOUT DI SINI --- */}
-      {/* 1. max-w-[1400px] -> max-w-[1600px] (Supaya lebih lebar di layar besar)
-          2. px-6 -> px-4 (Supaya jarak pinggir lebih tipis/rapat)
-      */}
-      <main className="w-full max-w-[1600px] mx-auto px-4 pb-20 pt-28 md:pt-32 flex-grow">
+      <main className="w-full max-w-[1600px] mx-auto px-4 pb-20 pt-32 md:pt-40 flex-grow relative z-10">
         <AnimatePresence mode="wait">
-          
-          {!selectedCategory && (
+          {!selectedCategory ? (
             <motion.div 
-              key="categories"
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
+              key="list" 
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              exit="hidden"
             >
-              
-              <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
-                <div>
-                  <div className="inline-flex items-center gap-2 mb-4 text-orange-600 font-bold text-sm tracking-wider uppercase bg-white/40 backdrop-blur-sm px-3 py-1 rounded-full border border-white/50">
-                    <Zap size={16} fill="currentColor" /> Daily Growth
-                  </div>
-                  <h1 className="text-3xl md:text-5xl font-extrabold text-gray-900 leading-tight drop-shadow-sm">
-                    Curated <span className="text-blue-600">Tips</span> <br className="hidden md:block"/>
-                    for Better Life.
+              {/* --- HEADER TIPS --- */}
+              <motion.div variants={itemVariants} className="mb-10 md:mb-14 text-center">
+                <div className="flex items-center gap-3 mb-3 justify-center">
+                  <Lightbulb className="w-8 h-8 md:w-10 md:h-10 text-[var(--brand-blue)] drop-shadow-lg" />
+                  <h1 className="text-3xl md:text-5xl font-extrabold bg-gradient-to-r from-[var(--brand-blue)] to-[var(--brand-blue-light)] bg-clip-text text-transparent drop-shadow-md">
+                    Tips
                   </h1>
                 </div>
-                
-                <div className="relative w-full md:w-72">
-                  <input type="text" placeholder="Find topics..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-12 pr-5 py-4 bg-white/60 backdrop-blur-md rounded-2xl shadow-sm border border-white/50 focus:bg-white focus:ring-2 focus:ring-blue-200 outline-none transition-all placeholder-gray-500 font-medium"/>
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none z-10">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 256 256"><path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z" /></svg>
+                <p className="text-sm md:text-lg font-medium drop-shadow-sm px-4 text-[var(--text-secondary)]">
+                  Choose a category to explore helpful tips for managing stress
+                </p>
+              </motion.div>
+
+              {/* --- SEARCH BAR --- */}
+              <motion.div variants={itemVariants} className="w-full mb-12">
+                <div className="relative w-full">
+                  <input 
+                    type="text" 
+                    placeholder="Find topics..." 
+                    value={searchQuery} 
+                    onChange={(e) => setSearchQuery(e.target.value)} 
+                    className="w-full pl-14 pr-6 py-5 bg-white/60 backdrop-blur-md rounded-2xl shadow-sm border border-white/50 focus:bg-white outline-none font-medium text-lg transition-all"
+                  />
+                  <div className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none z-10">
+                    <svg width="24" height="24" fill="currentColor" viewBox="0 0 256 256"><path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z" /></svg>
                   </div>
                 </div>
-              </div>
+              </motion.div>
 
-              {loadingCategories ? (
-                // ================== ANIMASI LOGO FLOATING ==================
-                <div className="flex flex-col items-center justify-center py-24 min-h-[50vh]">
-                    <motion.div
-                        animate={{ y: [0, -12, 0] }} 
-                        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                        className="relative z-10 mb-8"
+              <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredCategories.length > 0 ? (
+                  filteredCategories.map((cat) => (
+                    <motion.div 
+                      key={cat.id} 
+                      whileHover={{ y: -5, scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => openCategory(cat)} 
+                      className={`group relative p-8 rounded-[32px] cursor-pointer bg-white/80 backdrop-blur-sm border shadow-sm hover:shadow-md hover:bg-white transition-all h-56 overflow-hidden ${cat.colorClass.split(" ").pop()}`}
                     >
-                          <div className="bg-gradient-to-tr from-blue-50 to-indigo-50 p-4 rounded-3xl shadow-sm border border-white/60 backdrop-blur-sm">
-                             <img 
-                                src={LogoNostressia} 
-                                alt="Nostressia Logo" 
-                                className="w-20 h-20 object-contain opacity-90" 
-                             />
-                          </div>
-                    </motion.div>
-                    <div className="flex items-center gap-2 mb-6">
-                        {[0, 1, 2].map((index) => (
-                        <motion.div
-                            key={index}
-                            className="w-1.5 h-1.5 bg-blue-300 rounded-full"
-                            animate={{ y: ["0%", "-50%", "0%"], opacity: [0.4, 1, 0.4] }}
-                            transition={{ duration: 0.6, repeat: Infinity, ease: "easeInOut", delay: index * 0.15 }}
-                        />
-                        ))}
-                    </div>
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5, duration: 0.8 }} className="text-center">
-                        <h3 className="text-lg font-bold text-gray-700 tracking-tight">Preparing best tips for you...</h3>
-                        <p className="text-sm text-gray-400 mt-1 font-medium">Curating daily advice</p>
-                    </motion.div>
-                </div>
-              ) : (
-                /* --- GRID LAYOUT LEBIH RAPAT --- 
-                   gap-6 -> gap-4 (Jarak antar kotak diperkecil)
-                */
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {filteredCategories.length > 0 ? (
-                    filteredCategories.map((cat, i) => (
-                      <motion.div
-                        key={cat.id} layoutId={`cat-${cat.id}`} onClick={() => openCategory(cat)} whileHover={{ scale: 1.02, y: -5 }}
-                        className={`group relative p-6 rounded-[32px] cursor-pointer bg-white/80 backdrop-blur-sm border shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.1)] hover:bg-white transition-all duration-300 flex flex-col justify-between h-52 overflow-hidden ${cat.colorClass.split(" ").pop()}`}
-                      >
-                        <div className={`absolute inset-0 bg-gradient-to-br ${cat.colorClass} opacity-0 group-hover:opacity-10 transition-opacity duration-500`} />
-                        <div className="flex justify-between items-start z-10">
-                          <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-4xl bg-white/60 border border-white/50 shadow-sm group-hover:scale-110 transition-transform duration-300">{cat.emoji}</div>
-                          <span className="bg-white/60 text-gray-600 text-xs font-bold px-3 py-1 rounded-full border border-white/50 backdrop-blur-sm">{cat.tipsCount} Tips</span>
+                      <div className="flex justify-between items-start z-10 relative">
+                        <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-4xl bg-white/60 border border-white/50">{cat.emoji}</div>
+                        <div className="bg-white/60 text-gray-600 text-[10px] font-bold px-3 py-1.5 rounded-full border border-white/50 flex items-center gap-1.5 min-w-[75px] justify-center">
+                          {cat.tipsCount !== null ? `${cat.tipsCount} Tips` : <><Loader2 size={10} className="animate-spin text-blue-500" /><span>Loading...</span></>}
                         </div>
-                        <div className="z-10 mt-4">
-                          <h3 className="text-xl font-bold text-gray-800 group-hover:text-blue-600 transition-colors">{cat.name}</h3>
-                          <p className="text-sm text-gray-500 mt-1 font-medium">Click to explore</p>
-                        </div>
-                      </motion.div>
-                    ))
-                  ) : (
-                    <div className="col-span-full py-20 text-center text-gray-400">No categories found.</div>
-                  )}
-                </div>
-              )}
-            </motion.div>
-          )}
-
-          {selectedCategory && (
-            <motion.div
-              key="details" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ duration: 0.4 }}
-            >
-              <div className="sticky top-4 z-50 mb-8 transition-all duration-300">
-                  <div className="bg-white/90 backdrop-blur-xl px-6 py-4 rounded-[20px] shadow-xl border border-white/50 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <button onClick={handleBack} className="w-10 h-10 flex items-center justify-center rounded-full bg-white hover:bg-gray-50 text-gray-600 transition-colors shadow-sm border border-gray-100 cursor-pointer group">
-                        <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform"/>
-                      </button>
-                      <div className="flex flex-col">
-                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider hidden sm:block">Category</span>
-                        <h2 className="text-lg md:text-xl font-bold text-gray-800 leading-tight whitespace-nowrap overflow-hidden text-ellipsis max-w-[240px] md:max-w-none">{selectedCategory.name}</h2>
                       </div>
-                    </div>
-                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl flex items-center justify-center text-2xl md:text-3xl bg-white border border-gray-100 shadow-sm">{selectedCategory.emoji}</div>
-                  </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {loadingTips ? (
-                  [...Array(4)].map((_,i) => <div key={i} className="h-32 bg-white/40 rounded-3xl animate-pulse"/>)
-                ) : tips.length > 0 ? (
-                  tips.map((tip, idx) => (
-                    <motion.div
-                      key={tip.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.05 }}
-                      className="bg-white/80 backdrop-blur-sm p-6 md:p-8 rounded-[32px] border border-white/60 shadow-sm hover:shadow-lg hover:bg-white transition-all duration-300 group relative overflow-hidden"
-                    >
-                      <span className="absolute -right-4 -top-4 text-9xl font-extrabold text-gray-200 opacity-50 select-none pointer-events-none group-hover:scale-110 transition-transform duration-500">{idx + 1}</span>
-                      <div className="relative z-10 flex items-start gap-4">
-                        <div className="flex-1"><p className="text-lg md:text-xl font-medium text-gray-700 leading-relaxed group-hover:text-gray-900">{tip.text}</p></div>
+                      <div className="mt-8 relative z-10">
+                        <h3 className="text-2xl font-bold text-gray-800">{cat.name}</h3>
+                        <p className="text-sm text-gray-500 mt-1">Click to explore</p>
                       </div>
                     </motion.div>
                   ))
                 ) : (
-                  <div className="col-span-full py-20 text-center">
-                    <Sparkles className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                    <p className="text-gray-500 font-medium">No tips yet for this category.</p>
-                  </div>
+                  <div className="col-span-full py-20 text-center text-gray-400 font-medium">No categories found.</div>
+                )}
+              </motion.div>
+            </motion.div>
+          ) : (
+            <motion.div 
+              key="details" 
+              initial={{ opacity: 0, x: 20 }} 
+              animate={{ opacity: 1, x: 0 }} 
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.4 }}
+            >
+              <div className="mb-8 bg-white/90 backdrop-blur-xl px-6 py-5 rounded-[24px] shadow-lg border border-white/50 flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <button onClick={() => setSelectedCategory(null)} className="w-11 h-11 flex items-center justify-center rounded-full bg-white hover:bg-gray-50 border border-gray-100 shadow-sm transition-transform active:scale-90">
+                    <ArrowLeft size={22}/>
+                  </button>
+                  <h2 className="text-2xl font-bold text-gray-800">{selectedCategory.name}</h2>
+                </div>
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl bg-white border border-gray-100 shadow-sm">{selectedCategory.emoji}</div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {loadingTips ? (
+                  [...Array(4)].map((_, i) => <div key={i} className="h-24 bg-white/40 rounded-3xl animate-pulse"/>)
+                ) : (
+                  getVerticalOrderedTips(tips).map((tip, idx) => (
+                    <motion.div 
+                      key={tip.id}
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: idx * 0.05 }}
+                      className="bg-white/80 px-8 py-5 rounded-[28px] border border-white/60 shadow-sm relative group hover:bg-white transition-colors overflow-hidden flex items-center min-h-[90px]"
+                    >
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-7xl md:text-8xl font-extrabold text-gray-200/40 select-none pointer-events-none group-hover:text-blue-100/50 transition-colors z-0">
+                        {tip.displayIndex}
+                      </span>
+                      <p className="text-lg md:text-xl font-medium text-gray-700 relative z-10 leading-relaxed pr-10">
+                        {tip.text}
+                      </p>
+                    </motion.div>
+                  ))
                 )}
               </div>
             </motion.div>
           )}
-
         </AnimatePresence>
       </main>
-      
       <Footer />
     </div>
   );
