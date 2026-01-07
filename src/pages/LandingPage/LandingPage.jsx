@@ -4,7 +4,8 @@ import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { 
   ArrowRight, Star, Lock, Smile, CheckCircle, 
-  BarChart3, Zap, Quote, Bookmark, Share2, Search, Zap as ZapIcon
+  BarChart3, Zap, Quote, Bookmark, Share2, Search, 
+  Book, PenTool, Image as ImageIcon, Zap as ZapIcon
 } from "lucide-react";
 
 // --- Assets ---
@@ -130,47 +131,38 @@ const MotivationCard = () => (
     </div>
 );
 
-// 5. Mockup Tips Page (UPDATED: Smaller Font Size)
+// 5. Mockup Tips Page
 const TipsPagePreview = () => (
     <div className="w-full max-w-sm bg-white rounded-[32px] shadow-2xl border border-gray-200 overflow-hidden relative group rotate-2 hover:rotate-0 transition-transform duration-500">
-        {/* Fake Navbar/Header Area */}
         <div className="bg-gradient-to-br from-[#FFF3E0] via-[#eaf2ff] to-[#e3edff] p-6 pb-4">
              <div className="flex justify-between items-center mb-6 opacity-50">
                  <div className="w-6 h-6 rounded-full bg-gray-900/10"></div>
                  <div className="w-20 h-2 rounded-full bg-gray-900/10"></div>
              </div>
              
-             {/* Header Text - RESIZED SMALLER (text-2xl) */}
              <div className="mb-6">
                  <h3 className="text-2xl font-extrabold text-[#3664BA] tracking-wide">
                      TIPS
                  </h3>
              </div>
 
-             {/* Fake Search Bar */}
              <div className="bg-white/80 rounded-xl p-3 flex items-center gap-2 shadow-sm mb-2 border border-white/60">
                  <Search size={14} className="text-gray-400" />
                  <div className="h-2 w-24 bg-gray-200 rounded-full"></div>
              </div>
         </div>
 
-        {/* Categories Grid Preview */}
         <div className="p-4 grid grid-cols-2 gap-3 bg-white">
-             {/* Card 1: Sleep */}
              <div className="bg-indigo-50/50 p-4 rounded-2xl border border-indigo-100 hover:scale-105 transition-transform">
                  <div className="w-8 h-8 rounded-lg bg-white/80 flex items-center justify-center text-lg shadow-sm mb-2">😴</div>
                  <div className="h-2 w-12 bg-indigo-200 rounded-full mb-1"></div>
                  <div className="h-1.5 w-8 bg-indigo-100 rounded-full"></div>
              </div>
-             
-             {/* Card 2: Nutrition */}
              <div className="bg-emerald-50/50 p-4 rounded-2xl border border-emerald-100 hover:scale-105 transition-transform">
                  <div className="w-8 h-8 rounded-lg bg-white/80 flex items-center justify-center text-lg shadow-sm mb-2">🥗</div>
                  <div className="h-2 w-12 bg-emerald-200 rounded-full mb-1"></div>
                  <div className="h-1.5 w-8 bg-emerald-100 rounded-full"></div>
              </div>
-
-              {/* Card 3: Mindfulness */}
              <div className="col-span-2 bg-teal-50/50 p-3 rounded-2xl border border-teal-100 flex items-center gap-3 hover:scale-102 transition-transform">
                  <div className="w-8 h-8 rounded-lg bg-white/80 flex items-center justify-center text-lg shadow-sm">🧘</div>
                  <div className="flex-1">
@@ -178,6 +170,64 @@ const TipsPagePreview = () => (
                     <div className="h-1.5 w-32 bg-teal-100 rounded-full"></div>
                  </div>
              </div>
+        </div>
+    </div>
+);
+
+// 6. Mockup Diary (OPEN BOOK STYLE - BARU!)
+const DiaryBookPreview = () => (
+    <div className="relative w-full max-w-sm aspect-[4/3] bg-[#fffdf5] rounded-l-2xl rounded-r-2xl shadow-2xl border-l-4 border-r-4 border-gray-300 flex overflow-hidden rotate-[-2deg] hover:rotate-0 transition-transform duration-500 group z-10">
+        {/* Cover Effect */}
+        <div className="absolute top-0 bottom-0 left-0 w-2 bg-gradient-to-r from-gray-400 to-transparent z-20"></div>
+        
+        {/* Spine Shadow */}
+        <div className="absolute top-0 bottom-0 left-1/2 w-8 -ml-4 bg-gradient-to-r from-transparent via-black/5 to-transparent z-10 pointer-events-none"></div>
+
+        {/* Left Page */}
+        <div className="flex-1 border-r border-gray-200 p-4 relative flex flex-col">
+            <h4 className="text-sm font-serif font-bold text-gray-700 mb-4 opacity-70">My Journal</h4>
+            <div className="space-y-4">
+                <div className="flex gap-2 items-start">
+                    <div className="w-8 text-[10px] text-gray-400 font-bold text-right pt-1">OCT 12</div>
+                    <div className="flex-1 bg-blue-50/50 p-2 rounded-lg border border-blue-100/50">
+                        <div className="h-1.5 w-3/4 bg-gray-300 rounded-full mb-1"></div>
+                        <div className="h-1.5 w-1/2 bg-gray-200 rounded-full"></div>
+                    </div>
+                </div>
+                <div className="flex gap-2 items-start">
+                    <div className="w-8 text-[10px] text-gray-400 font-bold text-right pt-1">OCT 11</div>
+                    <div className="flex-1 p-2">
+                        <div className="h-1.5 w-full bg-gray-200 rounded-full mb-1"></div>
+                        <div className="h-1.5 w-2/3 bg-gray-200 rounded-full"></div>
+                    </div>
+                </div>
+            </div>
+            {/* Sticker */}
+            <div className="absolute bottom-4 left-4 rotate-12 opacity-80">
+                <div className="bg-yellow-200 text-xs px-2 py-1 rounded-sm shadow-sm border border-yellow-300">Memories ✏️</div>
+            </div>
+        </div>
+
+        {/* Right Page */}
+        <div className="flex-1 p-4 relative bg-[#fffdf5]">
+            <div className="flex justify-between items-center mb-3">
+                <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Today</span>
+                <div className="text-xl">😌</div>
+            </div>
+            
+            <div className="space-y-3 pt-1">
+                <div className="w-full h-[1px] bg-blue-100 relative">
+                    <p className="absolute -top-3 text-[10px] text-gray-600 font-serif italic">I felt really productive today!</p>
+                </div>
+                <div className="w-full h-[1px] bg-blue-100"></div>
+                <div className="w-full h-[1px] bg-blue-100"></div>
+                <div className="w-full h-[1px] bg-blue-100"></div>
+            </div>
+
+            <div className="mt-4 flex gap-2 justify-end opacity-50">
+                <ImageIcon size={12} />
+                <PenTool size={12} />
+            </div>
         </div>
     </div>
 );
@@ -348,7 +398,7 @@ export default function LandingPage() {
             </div>
          </div>
 
-         {/* 4. TIPS (Right - NEW PREVIEW) */}
+         {/* 4. TIPS (Right) */}
          <div className="flex flex-col md:flex-row-reverse items-center gap-16">
             <motion.div 
                initial={{ opacity: 0, x: 50 }}
@@ -357,8 +407,6 @@ export default function LandingPage() {
                className="flex-1 relative flex justify-center w-full"
             >
                <div className="absolute inset-0 bg-green-200 rounded-full blur-[80px] opacity-40"></div>
-               
-               {/* New Tips Page Preview */}
                <TipsPagePreview />
             </motion.div>
             
@@ -371,7 +419,33 @@ export default function LandingPage() {
                   Recharge your mind with daily curated tips. Simple actions for a calmer you, from breathing techniques to sleep hygiene.
                </p>
                <Link to="/login" className="inline-flex items-center gap-2 text-[#3664BA] font-bold border-b-2 border-[#3664BA] pb-1 hover:text-[#2a4e94] transition-colors">
-                  Login to Access Tips Library <ArrowRight size={16} />
+                  Login to Access Library <ArrowRight size={16} />
+               </Link>
+            </div>
+         </div>
+
+         {/* 5. DIARY (Left - NEW!) */}
+         <div className="flex flex-col md:flex-row items-center gap-16">
+            <motion.div 
+               initial={{ opacity: 0, x: -50 }}
+               whileInView={{ opacity: 1, x: 0 }}
+               viewport={{ once: true }}
+               className="flex-1 relative flex justify-center w-full"
+            >
+               <div className="absolute inset-0 bg-pink-200 rounded-full blur-[80px] opacity-40"></div>
+               <DiaryBookPreview />
+            </motion.div>
+            
+            <div className="flex-1 space-y-6 text-center md:text-left">
+               <div className="w-12 h-12 bg-pink-100 rounded-xl flex items-center justify-center text-pink-600 mb-4 mx-auto md:mx-0">
+                  <Book size={24} />
+               </div>
+               <h2 className="text-4xl md:text-5xl font-bold text-[#1A1A1A]">Dear Diary.</h2>
+               <p className="text-lg text-gray-500 leading-relaxed">
+                  Clear your mind by writing it down. A safe, private space to reflect on your day, gratitude, or anything that's on your mind.
+               </p>
+               <Link to="/login" className="inline-flex items-center gap-2 text-[#3664BA] font-bold border-b-2 border-[#3664BA] pb-1 hover:text-[#2a4e94] transition-colors">
+                  Start Journaling <ArrowRight size={16} />
                </Link>
             </div>
          </div>
