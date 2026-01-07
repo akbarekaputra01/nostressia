@@ -13,6 +13,7 @@ import Diary from "../pages/Diary/Diary";
 import Analytics from "../pages/Analytics/Analytics";
 import Profile from "../pages/Profile/Profile"; 
 import Login from "../pages/Login/Login"; 
+import LandingPage from "../pages/LandingPage/LandingPage";
 
 // Import Admin Pages
 import AdminPage from "../pages/Admin/AdminPage";
@@ -41,6 +42,7 @@ function AppRouter() {
             <Route path="/diary" element={<Diary />} />
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/profile" element={<Profile />} /> 
+            <Route path="/landing" element={<LandingPage />} /> 
         </Route>
 
         {/* --- 3. ROUTE ADMIN (Terpisah) --- */}
