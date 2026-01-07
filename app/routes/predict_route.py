@@ -32,5 +32,5 @@ def predict_stress_level(
     # 3. Balikin hasil
     return {
         "result": result,
-        "message": f"Tingkat stres kamu terdeteksi: {result}"
+        "message": f"Your stress level is detected as: {result}"
     }
