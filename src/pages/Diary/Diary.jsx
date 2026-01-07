@@ -1,11 +1,12 @@
 // src/pages/Diary/Diary.jsx
 import { useState, useRef, useEffect } from "react";
-import { useOutletContext } from "react-router-dom"; // 1. IMPORT CONTEXT
+import { useOutletContext } from "react-router-dom"; 
 import { motion, AnimatePresence } from "framer-motion";
+import { Heart } from "lucide-react"; 
 import Navbar from "../../components/Navbar";
-import Footer from "../../components/Footer"; // 2. IMPORT FOOTER
+import Footer from "../../components/Footer"; 
 
-// --- COLOR CONFIGURATION (MATCHING DASHBOARD) ---
+// --- COLOR CONFIGURATION ---
 const bgCream = "#FFF3E0";
 const bgPink = "#eaf2ff";
 const bgLavender = "#e3edff";
@@ -23,8 +24,6 @@ export default function Diary() {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const scrollRef = useRef(null);
 
-  // 3. AMBIL DATA USER DARI WRAPPER (MAINLAYOUT)
-  // Default object kosong {} jika context belum siap (safety)
   const { user } = useOutletContext() || { user: {} }; 
 
   useEffect(() => {
@@ -48,7 +47,6 @@ export default function Diary() {
     { emoji: "😄", label: "Excited" },
   ];
 
-  // --- PALETTE COLORS ---
   const colors = {
     brandBlue: "#3664BA",
     brandOrange: "#F2994A",
@@ -58,7 +56,6 @@ export default function Diary() {
     bgLavender: "#e3edff"
   };
 
-  // --- HANDLERS ---
   const handleSubmit = () => {
     if (!text.trim() || !title.trim()) return;
     const newEntry = {
@@ -91,48 +88,61 @@ export default function Diary() {
         fontFamily: baseFont,
       }}
     >
-      {/* Styles & Animations */}
       <style>{`
         @keyframes gradient-bg { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
       `}</style>
       
-      {/* --- NAVBAR FIX --- */}
+      {/* NAVBAR */}
       <div className="fixed top-0 left-0 right-0 z-50 pt-4">
-        {/* 4. PASS DATA USER KE NAVBAR */}
         <Navbar activeLink="Diary" user={user} />
       </div>
-      <div className="h-[120px] md:h-[140px]" />
 
-      <main className="flex-grow flex flex-col items-center w-full max-w-[1400px] mx-auto p-4 md:p-8 lg:p-10 z-10">
-        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
-            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight" style={{ color: colors.textPrimary }}>Diary <span style={{ color: "rgb(253, 92, 0)" }}>Nostressia</span></h1>
-            <p className="font-medium mt-1 opacity-60 text-sm md:text-base" style={{ color: colors.textPrimary }}>Write your story today.</p>
+      <div className="h-[100px] md:h-[110px]" />
+
+      <main className="flex-grow flex flex-col items-center w-full max-w-[1400px] mx-auto p-4 md:p-8 lg:p-10 z-10 pt-0">
+        
+        {/* --- HEADER SECTION --- */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }} 
+          animate={{ opacity: 1, y: 0 }} 
+          transition={{ duration: 0.6 }} 
+          className="mb-3 w-full flex flex-col items-center text-center" // JARAK DIUBAH DARI mb-8 MENJADI mb-3
+        >
+            <div className="flex items-center gap-3 mb-2 justify-center">
+              <Heart className="w-9 h-9 text-yellow-400 drop-shadow-lg" strokeWidth={2.5} />
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent drop-shadow-md">
+                Diary Nostressia
+              </h1>
+            </div>
+            <p className="text-gray-600 mt-2 text-base md:text-lg font-medium w-full text-center">
+              Write your story today.
+            </p>
         </motion.div>
 
         {/* 3D BOOK ENGINE */}
-        <div className="relative w-full max-w-[1000px] h-[520px] md:h-[600px] flex items-center justify-center perspective-[2000px]">
+        {/* mt-0 memastikan tidak ada jarak tambahan di atas kontainer buku */}
+        <div className="relative w-full max-w-[1000px] h-[520px] md:h-[600px] flex items-center justify-center perspective-[2000px] mt-0">
             <motion.div className="relative w-[310px] sm:w-[360px] md:w-[380px] h-[480px] md:h-[520px] preserve-3d"
                 animate={{ x: (isBookOpen && !isMobile) ? 190 : 0 }} 
                 transition={{ duration: 0.8, type: "spring", stiffness: 40, damping: 15 }}
             >
-                {/* --- LAYER 1: HALAMAN KANAN (KERTAS PUTIH / INPUT) --- */}
+                {/* --- LAYER 1: HALAMAN KANAN --- */}
                 <div className="absolute inset-0 w-full h-full bg-[#fcf9f5] rounded-[16px] md:rounded-l-[4px] md:rounded-r-[16px] shadow-[10px_10px_30px_rgba(0,0,0,0.15)] z-0 flex flex-col overflow-hidden border border-slate-200">
                     <div className="flex-grow p-5 md:p-8 flex flex-col relative z-10">
-                         {/* Close Button */}
                          <button onClick={() => setIsBookOpen(false)} className="absolute top-3 right-3 z-30 w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all cursor-pointer">
                             <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                         </button>
 
-                        {/* Mood Selector */}
-                        <div className="flex items-center gap-2 mb-2 overflow-x-auto scrollbar-hide py-2 border-b border-slate-200">
+                        <div className="flex items-center gap-2 mb-2 overflow-x-auto overflow-y-hidden no-scrollbar py-2 border-b border-slate-200">
                             {moods.map((m) => (
                                 <button key={m.label} onClick={() => setSelectedMood(m.emoji)} className={`text-2xl hover:scale-110 transition-transform p-1 rounded-lg cursor-pointer ${selectedMood === m.emoji ? "bg-blue-50 scale-110" : "opacity-60 grayscale"}`}>{m.emoji}</button>
                             ))}
                         </div>
 
-                        {/* CONTAINER UNTUK TEXT & GARIS */}
-                        <div className="flex-grow relative w-full h-full flex flex-col">
-                            {/* BACKGROUND GARIS */}
+                        <div className="flex-grow relative w-full h-full flex flex-col overflow-hidden">
                             <div className="absolute inset-0 opacity-50 pointer-events-none" 
                                 style={{ 
                                     backgroundImage: "linear-gradient(#e5e7eb 1px, transparent 1px)", 
@@ -141,15 +151,14 @@ export default function Diary() {
                                 }}>
                             </div>
 
-                            {/* Input Title */}
                             <input
+                                type="text"
                                 value={title} onChange={(e) => setTitle(e.target.value)}
                                 placeholder="Title..."
-                                className="bg-transparent text-xl md:text-2xl font-bold placeholder:text-slate-300 focus:outline-none w-full h-[40px] leading-[40px] mb-0 relative z-10"
+                                className="bg-transparent text-xl md:text-2xl font-bold placeholder:text-slate-300 focus:outline-none w-full h-[40px] leading-[40px] mb-0 relative z-10 overflow-hidden"
                                 style={{ fontFamily: selectedFont || baseFont, color: colors.brandBlue }}
                             />
 
-                            {/* Text Area */}
                             <textarea
                                 value={text} onChange={(e) => setText(e.target.value)}
                                 placeholder="Dear diary..."
@@ -158,7 +167,6 @@ export default function Diary() {
                             />
                         </div>
 
-                        {/* Footer Actions */}
                         <div className="mt-2 flex justify-between items-center pt-2 border-t border-slate-100">
                              <div className="flex gap-1">{fontOptions.map(f => (<button key={f.name} onClick={() => setSelectedFont(f.value)} className={`w-6 h-6 rounded-full border text-[10px] flex items-center justify-center transition-all cursor-pointer ${selectedFont === f.value ? "bg-slate-800 text-white" : "bg-white text-slate-500 hover:bg-slate-100"}`}>{f.label}</button>))}</div>
                              <button onClick={handleSubmit} className="px-5 py-2 rounded-lg font-bold text-white shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer" style={{ backgroundColor: colors.brandBlue }}>Save</button>
@@ -166,7 +174,7 @@ export default function Diary() {
                     </div>
                 </div>
 
-                {/* --- LAYER 2: COVER DEPAN (FLIP) --- */}
+                {/* --- LAYER 2: COVER DEPAN --- */}
                 <motion.div className="absolute inset-0 w-full h-full cursor-pointer preserve-3d origin-left z-20"
                     animate={{ rotateY: isBookOpen ? -180 : 0, opacity: (isBookOpen && isMobile) ? 0 : 1 }}
                     transition={{ duration: 0.8, type: "spring", stiffness: 40, damping: 15 }} 
@@ -187,7 +195,6 @@ export default function Diary() {
                     <div className="absolute inset-0 w-full h-full backface-hidden rounded-l-[16px] rounded-r-[4px] shadow-inner bg-[#fcf9f5] border-r border-slate-200" style={{ transform: "rotateY(180deg)" }}>
                          <div className="w-full h-full flex flex-col items-center justify-center p-10 opacity-60">
                             <div className="w-24 h-24 rounded-full bg-slate-200 mb-4 flex items-center justify-center border-4 border-white shadow-sm overflow-hidden">
-                                {/* 5. GUNAKAN DATA USER UNTUK FOTO DI BUKU DIARY */}
                                 <img src={user?.avatar || `https://ui-avatars.com/api/?name=${user?.name || "User"}&background=${colors.brandOrange.replace('#','')}&color=fff`} alt="User" className="w-full h-full object-cover" />
                             </div>
                             <h3 className="font-serif italic text-slate-500 text-base md:text-lg">This diary belongs to:</h3>
@@ -207,7 +214,7 @@ export default function Diary() {
                 <div className="flex items-center gap-2 mb-6 px-4 md:px-0"><div className="h-8 w-1 rounded-full" style={{ backgroundColor: colors.brandOrange }}></div><h3 className="font-bold text-xl" style={{ color: colors.textPrimary }}>Your Memories</h3></div>
                 <div className="relative group px-4 md:px-0">
                     <button onClick={() => scroll("left")} className="absolute -left-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-white shadow-lg rounded-full flex items-center justify-center text-slate-600 hover:text-blue-600 border border-slate-100 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden md:flex cursor-pointer">←</button>
-                    <div ref={scrollRef} className="flex gap-5 overflow-x-auto pb-8 pt-2 scrollbar-hide snap-x snap-mandatory" style={{ scrollBehavior: 'smooth' }}>
+                    <div ref={scrollRef} className="flex gap-5 overflow-x-auto pb-8 pt-2 no-scrollbar snap-x snap-mandatory" style={{ scrollBehavior: 'smooth' }}>
                         <AnimatePresence mode="popLayout">
                             {entries.map(entry => (
                                 <motion.div key={entry.id} layout initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.5 }} className="flex-shrink-0 snap-center relative group/card bg-white rounded-2xl shadow-sm border border-slate-100 cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between p-6 w-[85vw] sm:w-[320px] md:w-[calc(50%-10px)] lg:w-[calc(33.333%-14px)] h-[240px]" onClick={() => setSelectedEntry(entry)}>
@@ -225,26 +232,7 @@ export default function Diary() {
         </div>
       </main>
       
-      {/* 5. FOOTER */}
       <Footer />
-
-      {/* --- 6. MODAL DETAIL --- */}
-      <AnimatePresence>
-        {selectedEntry && (
-             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm" onClick={() => setSelectedEntry(null)}>
-                <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }} transition={{ type: "spring", duration: 0.5, bounce: 0.3 }} className="bg-[#fffbf7] w-full max-w-4xl rounded-[24px] shadow-2xl overflow-hidden relative flex flex-col" onClick={(e) => e.stopPropagation()}>
-                    <div className="h-3 w-full" style={{ backgroundColor: colors.brandBlue }}></div>
-                    <button onClick={() => setSelectedEntry(null)} className="absolute top-5 right-5 text-slate-400 hover:text-red-500 transition-colors z-10 cursor-pointer"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
-                    <div className="p-6 md:p-10 flex flex-col h-full">
-                        <div className="flex items-center gap-5 mb-6"><div className="w-16 h-16 flex-shrink-0 flex items-center justify-center bg-orange-50 rounded-full text-4xl shadow-sm border border-orange-100">{selectedEntry.mood}</div><div className="flex flex-col"><h2 className="text-2xl md:text-3xl font-extrabold text-slate-800 leading-tight">{selectedEntry.title}</h2><span className="text-xs font-bold tracking-widest uppercase mt-1" style={{ color: colors.brandBlue }}>{selectedEntry.date}</span></div></div>
-                        <div className="w-full border-b border-slate-200 mb-6"></div>
-                        <div className="overflow-y-auto custom-scrollbar pr-2 min-h-[200px] max-h-[50vh]"><p className="text-slate-700 text-lg md:text-xl whitespace-pre-wrap leading-loose" style={{ fontFamily: selectedEntry.font || baseFont, backgroundImage: "repeating-linear-gradient(transparent, transparent 39px, #e5e7eb 40px)", backgroundAttachment: "local", lineHeight: "40px" }}>{selectedEntry.content}</p></div>
-                        <div className="mt-6 pt-2 flex justify-between items-center text-slate-300 select-none"><div className="text-sm">◄</div><div className="flex-grow mx-4 h-1.5 bg-slate-100 rounded-full overflow-hidden relative"><div className="absolute left-0 top-0 bottom-0 w-1/3 bg-slate-300 rounded-full"></div></div><div className="text-sm">►</div></div>
-                    </div>
-                </motion.div>
-             </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }
