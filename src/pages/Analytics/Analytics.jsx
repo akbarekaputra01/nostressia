@@ -119,9 +119,18 @@ export default function Analytics() {
       try {
         const token = localStorage.getItem("token");
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
-        let response = await fetch(`${BASE_URL}/stresslevels/me`, { headers });
-        if (!response.ok) {
-          response = await fetch(`${BASE_URL}/stresslevels`, { headers });
+        const endpoints = [
+          `${BASE_URL}/stresslevels/me`,
+          `${BASE_URL}/stress-levels/me`,
+          `${BASE_URL}/stresslevel/me`,
+          `${BASE_URL}/stress-level/me`,
+          `${BASE_URL}/stresslevels`,
+          `${BASE_URL}/stress-levels`,
+        ];
+        let response;
+        for (const endpoint of endpoints) {
+          response = await fetch(endpoint, { headers });
+          if (response.ok) break;
         }
         if (!response.ok) {
           throw new Error("Gagal mengambil data analytics.");
