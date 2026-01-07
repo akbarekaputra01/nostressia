@@ -1,9 +1,10 @@
 // src/pages/Analytics/Analytics.jsx
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useOutletContext } from "react-router-dom"; // 1. Import Context
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer"; // 2. Import Footer
 import { BarChart3 } from "lucide-react";
+import { BASE_URL } from "../../api/config";
 import {
   LineChart,
   Line,
@@ -34,29 +35,118 @@ export default function Analytics() {
     headerRef.current.style.transform = "translateY(0)";
   }, []);
 
-  // Dummy data
-  const weekData = [
-    { day: "Mon", stress: 2, mood: 4 },
-    { day: "Tue", stress: 3, mood: 3 },
-    { day: "Wed", stress: 1, mood: 5 },
-    { day: "Thu", stress: 2, mood: 4 },
-    { day: "Fri", stress: 3, mood: 3 },
-    { day: "Sat", stress: 1, mood: 4 },
-    { day: "Sun", stress: 2, mood: 5 },
+  const [stressEntries, setStressEntries] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const monthNames = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
   ];
 
-  const monthData = [
-    { week: "W1", stress: 6, mood: 14 },
-    { week: "W2", stress: 9, mood: 12 },
-    { week: "W3", stress: 5, mood: 16 },
-    { week: "W4", stress: 7, mood: 15 },
-  ];
+  const formatDayLabel = (date) => {
+    if (!date) return "-";
+    const [year, month, day] = date.split("-");
+    return `${monthNames[Number(month) - 1]} ${day}`;
+  };
+
+  const averageByKey = (items, key) => {
+    if (!items.length) return 0;
+    const total = items.reduce((sum, item) => sum + item[key], 0);
+    return Number((total / items.length).toFixed(1));
+  };
+
+  const normalizedEntries = useMemo(() => {
+    return [...stressEntries]
+      .map((entry) => ({
+        ...entry,
+        stressLevel: Number(entry.stressLevel ?? 0),
+        emoji: Number(entry.emoji ?? 0),
+        sleepHourPerDay: Number(entry.sleepHourPerDay ?? 0),
+      }))
+      .sort((a, b) => new Date(a.date) - new Date(b.date));
+  }, [stressEntries]);
+
+  const weekData = normalizedEntries.map((entry) => ({
+    day: formatDayLabel(entry.date),
+    stress: entry.stressLevel,
+    mood: entry.emoji,
+  }));
+
+  const monthlyBuckets = normalizedEntries.reduce((acc, entry, index) => {
+    const bucketIndex = Math.floor(index / 7);
+    const bucketKey = `W${bucketIndex + 1}`;
+    if (!acc[bucketKey]) {
+      acc[bucketKey] = [];
+    }
+    acc[bucketKey].push(entry);
+    return acc;
+  }, {});
+
+  const monthData = Object.entries(monthlyBuckets).map(([week, entries]) => ({
+    week,
+    stress: averageByKey(entries, "stressLevel"),
+    mood: averageByKey(entries, "emoji"),
+  }));
 
   const data = mode === "week" ? weekData : monthData;
 
-  const avgStress = mode === "week" ? 2 : 7;
-  const avgMood = mode === "week" ? 4 : 14;
-  const highestStress = mode === "week" ? 3 : 9;
+  const avgStress = averageByKey(normalizedEntries, "stressLevel");
+  const avgMood = averageByKey(normalizedEntries, "emoji");
+  const avgSleep = averageByKey(normalizedEntries, "sleepHourPerDay");
+  const peakStressEntry = normalizedEntries.reduce(
+    (peak, entry) => (entry.stressLevel > peak.stressLevel ? entry : peak),
+    normalizedEntries[0] || { date: null, stressLevel: 0 }
+  );
+  const peakStressLabel = normalizedEntries.length
+    ? formatDayLabel(peakStressEntry.date)
+    : "-";
+
+  useEffect(() => {
+    const fetchStressLevels = async () => {
+      setIsLoading(true);
+      setErrorMessage("");
+      try {
+        const token = localStorage.getItem("token");
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const endpoints = [
+          `${BASE_URL}/stresslevels/me`,
+          `${BASE_URL}/stress-levels/me`,
+          `${BASE_URL}/stresslevel/me`,
+          `${BASE_URL}/stress-level/me`,
+          `${BASE_URL}/stresslevels`,
+          `${BASE_URL}/stress-levels`,
+        ];
+        let response;
+        for (const endpoint of endpoints) {
+          response = await fetch(endpoint, { headers });
+          if (response.ok) break;
+        }
+        if (!response.ok) {
+          throw new Error("Gagal mengambil data analytics.");
+        }
+        const payload = await response.json();
+        const entries = Array.isArray(payload) ? payload : payload.data || [];
+        setStressEntries(entries);
+      } catch (error) {
+        setErrorMessage(error.message || "Gagal memuat analytics.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchStressLevels();
+  }, []);
 
   return (
     <div
@@ -132,6 +222,16 @@ export default function Analytics() {
             </button>
           </div>
         </div>
+
+        {(isLoading || errorMessage) && (
+          <div className="mb-6 flex justify-center">
+            <div className="rounded-2xl border border-white/40 bg-white/60 px-4 py-3 text-sm text-[var(--text-secondary)] shadow-md">
+              {isLoading
+                ? "Memuat data analytics..."
+                : errorMessage || "Belum ada data analytics."}
+            </div>
+          </div>
+        )}
 
         {/* ==== CHARTS ==== */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 mb-8 md:mb-10">
@@ -227,11 +327,12 @@ export default function Analytics() {
         </div>
 
         {/* ==== SUMMARY CARDS ==== */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
           {[
             { title: "Average Stress", value: avgStress },
             { title: "Average Mood", value: avgMood },
-            { title: "Highest Stress", value: highestStress },
+            { title: "Average Sleep (hrs)", value: avgSleep },
+            { title: "Peak Stress Day", value: peakStressLabel },
           ].map((item, i) => (
             <div
               key={i}
