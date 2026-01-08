@@ -13,7 +13,7 @@ const navLinks = [
 ];
 
 // --- TERIMA PROPS 'user' DI SINI ---
-const Navbar = ({ activeLink, onPredictClick, user }) => {
+const Navbar = ({ user }) => {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
