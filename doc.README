@@ -1,0 +1,362 @@
+# Nostressia Backend API - Frontend Integration Guide
+
+Dokumen ini ditujukan untuk tim frontend agar mudah mengintegrasikan aplikasi dengan layanan **Nostressia Backend**.
+
+## 1) Base URL
+Gunakan environment yang sesuai:
+
+- **Local**: `http://127.0.0.1:8000`
+- **Production (Hugging Face)**: `https://akbarekaputra01-nostressia-backend.hf.space`
+
+Semua endpoint berada di bawah prefix:
+
+```
+/api
+```
+
+Contoh full URL:
+```
+https://akbarekaputra01-nostressia-backend.hf.space/api/user/login
+```
+
+---
+
+## 2) Format Request Umum
+
+### Headers
+```
+Content-Type: application/json
+Authorization: Bearer <access_token>
+```
+
+`Authorization` hanya diperlukan pada endpoint yang **membutuhkan autentikasi** (lihat bagian endpoint di bawah).
+
+### Format Error
+Jika terjadi error, API akan mengembalikan JSON seperti berikut:
+
+```json
+{
+  "detail": "Pesan error"
+}
+```
+
+---
+
+## 3) Autentikasi User
+
+### 3.1 Register User
+**POST** `/api/user/register`
+
+Request body:
+```json
+{
+  "name": "Nama Lengkap",
+  "userName": "username",
+  "email": "user@email.com",
+  "password": "password",
+  "gender": "male",
+  "dob": "2000-01-01",
+  "avatar": "https://example.com/avatar.png"
+}
+```
+
+Response:
+```json
+{
+  "userID": 1,
+  "name": "Nama Lengkap",
+  "userName": "username",
+  "email": "user@email.com",
+  "gender": "male",
+  "avatar": "https://example.com/avatar.png"
+}
+```
+
+---
+
+### 3.2 Login User
+**POST** `/api/user/login`
+
+Request body:
+```json
+{
+  "email": "user@email.com",
+  "password": "password"
+}
+```
+
+Response:
+```json
+{
+  "access_token": "<jwt_token>",
+  "token_type": "bearer"
+}
+```
+
+Simpan `access_token` di client, lalu kirim via header:
+```
+Authorization: Bearer <jwt_token>
+```
+
+---
+
+### 3.3 Get Current User
+**GET** `/api/user/me`
+
+Headers:
+```
+Authorization: Bearer <jwt_token>
+```
+
+Response:
+```json
+{
+  "userID": 1,
+  "name": "Nama Lengkap",
+  "userName": "username",
+  "email": "user@email.com",
+  "gender": "male",
+  "avatar": "https://example.com/avatar.png"
+}
+```
+
+---
+
+## 4) Autentikasi Admin
+
+### Login Admin
+**POST** `/api/auth/admin/login`
+
+Request body:
+```json
+{
+  "username": "admin",
+  "password": "admin_password"
+}
+```
+
+Response:
+```json
+{
+  "access_token": "<jwt_token>",
+  "token_type": "bearer",
+  "admin": {
+    "id": 1,
+    "name": "Admin Name",
+    "username": "admin",
+    "email": "admin@email.com"
+  }
+}
+```
+
+---
+
+## 5) Motivations
+
+### 5.1 Get All Motivations
+**GET** `/api/motivations`
+
+Response:
+```json
+[
+  {
+    "motivationID": 1,
+    "quote": "Stay strong",
+    "uploaderID": 1,
+    "authorName": "Nostressia"
+  }
+]
+```
+
+### 5.2 Create Motivation
+**POST** `/api/motivations`
+
+Request body:
+```json
+{
+  "quote": "Stay strong",
+  "uploaderID": 1,
+  "authorName": "Nostressia"
+}
+```
+
+### 5.3 Delete Motivation
+**DELETE** `/api/motivations/{motivationID}`
+
+---
+
+## 6) Tips
+
+### 6.1 Categories
+- **POST** `/api/tips/categories`
+- **GET** `/api/tips/categories`
+- **DELETE** `/api/tips/categories/{id}`
+
+Request body (create):
+```json
+{ "categoryName": "Relaksasi" }
+```
+
+### 6.2 Tips CRUD
+- **POST** `/api/tips/`
+- **GET** `/api/tips/`
+- **GET** `/api/tips/by-category/{category_id}`
+- **GET** `/api/tips/{id}`
+- **PUT** `/api/tips/{id}`
+- **DELETE** `/api/tips/{id}`
+
+Request body (create):
+```json
+{
+  "detail": "Ambil napas dalam",
+  "tipCategoryID": 1,
+  "uploaderID": 1
+}
+```
+
+Request body (update):
+```json
+{
+  "detail": "Ambil napas 3x",
+  "tipCategoryID": 1
+}
+```
+
+---
+
+## 7) Machine Learning - Prediksi Stres
+
+### Predict Stress Level
+**POST** `/api/predict/current-stress`
+
+Request body:
+```json
+{
+  "study_hours": 2,
+  "extracurricular_hours": 1,
+  "sleep_hours": 7,
+  "social_hours": 2,
+  "physical_hours": 1,
+  "gpa": 3.5
+}
+```
+
+Response:
+```json
+{
+  "result": "Low",
+  "message": "Your stress level is detected as: Low"
+}
+```
+
+---
+
+## 8) Stress Log (Butuh Token)
+
+### 8.1 Add Stress Log
+**POST** `/api/stress/`
+
+Headers:
+```
+Authorization: Bearer <jwt_token>
+```
+
+Request body:
+```json
+{
+  "date": "2024-01-01",
+  "stressLevel": 2,
+  "GPA": 3.5,
+  "extracurricularHourPerDay": 1,
+  "physicalActivityHourPerDay": 1,
+  "sleepHourPerDay": 7,
+  "studyHourPerDay": 2,
+  "socialHourPerDay": 2,
+  "emoji": 1
+}
+```
+
+Response:
+```json
+{
+  "stressLevelID": 1,
+  "userID": 1,
+  "date": "2024-01-01",
+  "stressLevel": 2,
+  "GPA": 3.5,
+  "extracurricularHourPerDay": 1,
+  "physicalActivityHourPerDay": 1,
+  "sleepHourPerDay": 7,
+  "studyHourPerDay": 2,
+  "socialHourPerDay": 2,
+  "emoji": 1
+}
+```
+
+### 8.2 Get My Stress Logs
+**GET** `/api/stress/my-logs`
+
+Headers:
+```
+Authorization: Bearer <jwt_token>
+```
+
+---
+
+## 9) Bookmarks (Butuh Token)
+
+### 9.1 Add Bookmark
+**POST** `/api/bookmarks/{motivation_id}`
+
+Headers:
+```
+Authorization: Bearer <jwt_token>
+```
+
+Response:
+```json
+{ "message": "Bookmark added successfully" }
+```
+
+### 9.2 Get My Bookmarks
+**GET** `/api/bookmarks/me`
+
+Headers:
+```
+Authorization: Bearer <jwt_token>
+```
+
+Response:
+```json
+[
+  {
+    "bookmarkID": 1,
+    "userID": 1,
+    "motivationID": 10,
+    "createdAt": "2024-01-01T10:00:00",
+    "motivation": {
+      "motivationID": 10,
+      "quote": "Stay strong",
+      "authorName": "Nostressia"
+    }
+  }
+]
+```
+
+### 9.3 Remove Bookmark
+**DELETE** `/api/bookmarks/{motivation_id}`
+
+Headers:
+```
+Authorization: Bearer <jwt_token>
+```
+
+---
+
+## 10) Catatan Penting untuk Frontend
+
+- Format tanggal memakai **ISO-8601** (`YYYY-MM-DD`).
+- Semua endpoint **terbuka** kecuali yang disebutkan perlu token.
+- Gunakan `Bearer` token dari login user untuk akses `/bookmarks` dan `/stress`.
+- Untuk debugging cepat, Swagger UI tersedia di `/docs`.
+
