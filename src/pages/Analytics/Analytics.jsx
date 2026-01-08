@@ -1,10 +1,8 @@
-// src/pages/Analytics/Analytics.jsx
 import { useState, useRef, useEffect, useMemo } from "react";
-import { useOutletContext } from "react-router-dom"; // 1. Import Context
+import { useOutletContext } from "react-router-dom";
 import Navbar from "../../components/Navbar";
-import Footer from "../../components/Footer"; // 2. Import Footer
+import Footer from "../../components/Footer";
 import { BarChart3 } from "lucide-react";
-import { BASE_URL } from "../../api/config";
 import {
   LineChart,
   Line,
@@ -20,137 +18,202 @@ const bgCream = "#FFF3E0";
 const bgPink = "#eaf2ff";
 const bgLavender = "#e3edff";
 
+// ===== Helpers =====
+const clampNumber = (v, fallback = 0) => {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : fallback;
+};
+
+const startOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+
+const toISODate = (d) => {
+  // YYYY-MM-DD in local time (safe for grouping)
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+};
+
+const weekdayShort = (d) =>
+  new Intl.DateTimeFormat("en-US", { weekday: "short" }).format(d);
+
+// Build 7-day series ending today
+const buildWeekSeries = (logs) => {
+  const today = startOfDay(new Date());
+  const days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(today);
+    d.setDate(today.getDate() - (6 - i));
+    return d;
+  });
+
+  // Map logs by YYYY-MM-DD (take latest log of that day if multiple)
+  const byDate = new Map();
+  (logs || []).forEach((it) => {
+    const dt = it?.date ? new Date(it.date) : null;
+    if (!dt || Number.isNaN(dt.getTime())) return;
+    const key = toISODate(startOfDay(dt));
+    const prev = byDate.get(key);
+    if (!prev) byDate.set(key, it);
+    else {
+      const prevTs = prev?.createdAt ? new Date(prev.createdAt).getTime() : 0;
+      const curTs = it?.createdAt ? new Date(it.createdAt).getTime() : 0;
+      if (curTs >= prevTs) byDate.set(key, it);
+    }
+  });
+
+  return days.map((d) => {
+    const key = toISODate(d);
+    const row = byDate.get(key);
+    return {
+      day: weekdayShort(d),
+      // stress: 1..3
+      stress: row ? clampNumber(row.stressLevel, 0) : 0,
+      // mood: from emoji (integer). If you store 1..5 this will work directly.
+      mood: row ? clampNumber(row.emoji, 0) : 0,
+      _date: key,
+    };
+  });
+};
+
+// Build 4-week series (last 28 days), grouped into W1..W4 (oldest -> newest)
+const buildMonthSeries = (logs) => {
+  const today = startOfDay(new Date());
+  const start = new Date(today);
+  start.setDate(today.getDate() - 27);
+
+  const buckets = Array.from({ length: 4 }, () => ({
+    stressSum: 0,
+    moodSum: 0,
+    count: 0,
+  }));
+
+  (logs || []).forEach((it) => {
+    const dt = it?.date ? startOfDay(new Date(it.date)) : null;
+    if (!dt || Number.isNaN(dt.getTime())) return;
+    if (dt < start || dt > today) return;
+
+    const diffDays = Math.floor((dt.getTime() - start.getTime()) / 86400000);
+    const idx = Math.min(3, Math.max(0, Math.floor(diffDays / 7)));
+    buckets[idx].stressSum += clampNumber(it.stressLevel, 0);
+    buckets[idx].moodSum += clampNumber(it.emoji, 0);
+    buckets[idx].count += 1;
+  });
+
+  return buckets.map((b, i) => ({
+    week: `W${i + 1}`,
+    // Use average so chart scale stays consistent with weekly view.
+    stress: b.count ? Number((b.stressSum / b.count).toFixed(2)) : 0,
+    mood: b.count ? Number((b.moodSum / b.count).toFixed(2)) : 0,
+  }));
+};
+
+const calcSummary = (series) => {
+  const vals = (series || []).map((d) => clampNumber(d.stress, 0));
+  const moods = (series || []).map((d) => clampNumber(d.mood, 0));
+
+  // Ignore zeros (missing days)
+  const nonZeroStress = vals.filter((x) => x > 0);
+  const nonZeroMood = moods.filter((x) => x > 0);
+
+  const avg = (arr) =>
+    arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
+
+  return {
+    avgStress: Number(avg(nonZeroStress).toFixed(2)),
+    avgMood: Number(avg(nonZeroMood).toFixed(2)),
+    highestStress: nonZeroStress.length ? Math.max(...nonZeroStress) : 0,
+  };
+};
+
 export default function Analytics() {
   const [mode, setMode] = useState("week");
   const headerRef = useRef(null);
 
-  // 3. AMBIL DATA USER DARI LAYOUT (WRAPPER)
-  // Ini otomatis berisi data user yang sudah di-fetch di MainLayout.jsx
-  // Ambil context, tapi jika null (error), pakai object kosong default
-  const { user } = useOutletContext() || { user: { name: "User", avatar: null } };
-  // Animation for header
+  // Ambil user dari layout
+  const { user } = useOutletContext() || {
+    user: { name: "User", avatar: null },
+  };
+
+  // ===== API state =====
+  const [logs, setLogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState("");
+
   useEffect(() => {
     if (!headerRef.current) return;
     headerRef.current.style.opacity = 1;
     headerRef.current.style.transform = "translateY(0)";
   }, []);
 
-  const [stressEntries, setStressEntries] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState("");
-
-  const monthNames = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
-  ];
-
-  const formatDayLabel = (date) => {
-    if (!date) return "-";
-    const [year, month, day] = date.split("-");
-    return `${monthNames[Number(month) - 1]} ${day}`;
-  };
-
-  const averageByKey = (items, key) => {
-    if (!items.length) return 0;
-    const total = items.reduce((sum, item) => sum + item[key], 0);
-    return Number((total / items.length).toFixed(1));
-  };
-
-  const normalizedEntries = useMemo(() => {
-    return [...stressEntries]
-      .map((entry) => ({
-        ...entry,
-        stressLevel: Number(entry.stressLevel ?? 0),
-        emoji: Number(entry.emoji ?? 0),
-        sleepHourPerDay: Number(entry.sleepHourPerDay ?? 0),
-      }))
-      .sort((a, b) => new Date(a.date) - new Date(b.date));
-  }, [stressEntries]);
-
-  const weekData = normalizedEntries.map((entry) => ({
-    day: formatDayLabel(entry.date),
-    stress: entry.stressLevel,
-    mood: entry.emoji,
-  }));
-
-  const monthlyBuckets = normalizedEntries.reduce((acc, entry, index) => {
-    const bucketIndex = Math.floor(index / 7);
-    const bucketKey = `W${bucketIndex + 1}`;
-    if (!acc[bucketKey]) {
-      acc[bucketKey] = [];
-    }
-    acc[bucketKey].push(entry);
-    return acc;
-  }, {});
-
-  const monthData = Object.entries(monthlyBuckets).map(([week, entries]) => ({
-    week,
-    stress: averageByKey(entries, "stressLevel"),
-    mood: averageByKey(entries, "emoji"),
-  }));
-
-  const data = mode === "week" ? weekData : monthData;
-
-  const avgStress = averageByKey(normalizedEntries, "stressLevel");
-  const avgMood = averageByKey(normalizedEntries, "emoji");
-  const avgSleep = averageByKey(normalizedEntries, "sleepHourPerDay");
-  const peakStressEntry = normalizedEntries.reduce(
-    (peak, entry) => (entry.stressLevel > peak.stressLevel ? entry : peak),
-    normalizedEntries[0] || { date: null, stressLevel: 0 }
-  );
-  const peakStressLabel = normalizedEntries.length
-    ? formatDayLabel(peakStressEntry.date)
-    : "-";
-
+  // Fetch logs (protected endpoint)
   useEffect(() => {
-    const fetchStressLevels = async () => {
-      setIsLoading(true);
-      setErrorMessage("");
+    const controller = new AbortController();
+
+    const fetchLogs = async () => {
       try {
-        const token = localStorage.getItem("token");
-        const headers = token ? { Authorization: `Bearer ${token}` } : {};
-        const endpoints = [
-          `${BASE_URL}/stresslevels/me`,
-          `${BASE_URL}/stress-levels/me`,
-          `${BASE_URL}/stresslevel/me`,
-          `${BASE_URL}/stress-level/me`,
-          `${BASE_URL}/stresslevels`,
-          `${BASE_URL}/stress-levels`,
-        ];
-        let response;
-        for (const endpoint of endpoints) {
-          response = await fetch(endpoint, { headers });
-          if (response.ok) break;
+        setLoading(true);
+        setErrorMsg("");
+
+        const API_BASE = "https://akbarekaputra01-nostressia-backend.hf.space";
+        const token =
+          localStorage.getItem("token") ||
+          localStorage.getItem("access_token") ||
+          localStorage.getItem("accessToken") ||
+          localStorage.getItem("jwt");
+
+        const res = await fetch(`${API_BASE}/api/stress/my-logs`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          signal: controller.signal,
+        });
+
+        if (!res.ok) {
+          let detail = "";
+          try {
+            const j = await res.json();
+            detail = j?.detail ? String(j.detail) : "";
+          } catch {
+            /* ignore */
+          }
+
+          if (res.status === 401) {
+            throw new Error(
+              detail || "Unauthorized (401). Pastikan token login tersimpan."
+            );
+          }
+          throw new Error(detail || `Request gagal (HTTP ${res.status}).`);
         }
-        if (!response.ok) {
-          throw new Error("Gagal mengambil data analytics.");
-        }
-        const payload = await response.json();
-        const entries = Array.isArray(payload) ? payload : payload.data || [];
-        setStressEntries(entries);
-      } catch (error) {
-        setErrorMessage(error.message || "Gagal memuat analytics.");
+
+        const data = await res.json();
+        setLogs(Array.isArray(data) ? data : []);
+      } catch (err) {
+        if (err?.name === "AbortError") return;
+        setErrorMsg(err?.message || "Gagal mengambil data stress logs.");
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
 
-    fetchStressLevels();
+    fetchLogs();
+    return () => controller.abort();
   }, []);
+
+  // ===== Derived chart data =====
+  const weekData = useMemo(() => buildWeekSeries(logs), [logs]);
+  const monthData = useMemo(() => buildMonthSeries(logs), [logs]);
+  const data = mode === "week" ? weekData : monthData;
+
+  const { avgStress, avgMood, highestStress } = useMemo(
+    () => calcSummary(data),
+    [data]
+  );
 
   return (
     <div
-      className="min-h-screen relative flex flex-col" // Tambahkan flex-col agar footer turun ke bawah
+      className="min-h-screen relative flex flex-col"
       style={{
         backgroundColor: bgCream,
         backgroundImage: `radial-gradient(at 10% 10%, ${bgCream} 0%, transparent 50%), radial-gradient(at 90% 20%, ${bgPink} 0%, transparent 50%), radial-gradient(at 50% 80%, ${bgLavender} 0%, transparent 50%)`,
@@ -162,12 +225,8 @@ export default function Analytics() {
         @keyframes gradient-bg { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
       `}</style>
 
-      {/* 4. PASS DATA USER KE NAVBAR */}
       <Navbar activeLink="Analytics" user={user} />
 
-      {/* --- MAIN CONTAINER --- 
-          Tambahkan flex-grow agar konten mengisi ruang kosong sebelum footer
-      */}
       <div className="w-full max-w-[1400px] mx-auto p-4 md:p-8 lg:p-10 pt-28 md:pt-8 flex-grow">
         {/* HEADER */}
         <div
@@ -197,6 +256,46 @@ export default function Analytics() {
           </div>
         </div>
 
+        {/* INFO STATE */}
+        <div className="max-w-3xl mx-auto mb-6">
+          {loading && (
+            <div className="bg-white/50 border border-white/30 rounded-2xl p-4 text-center shadow-sm backdrop-blur">
+              <p
+                className="text-sm md:text-base"
+                style={{ color: "var(--text-secondary)" }}
+              >
+                Mengambil data dari server...
+              </p>
+            </div>
+          )}
+
+          {!loading && errorMsg && (
+            <div className="bg-white/60 border border-white/30 rounded-2xl p-4 text-center shadow-sm backdrop-blur">
+              <p className="text-sm md:text-base font-medium text-red-600">
+                {errorMsg}
+              </p>
+              <p
+                className="text-xs md:text-sm mt-1"
+                style={{ color: "var(--text-secondary)" }}
+              >
+                Endpoint: <span className="font-mono">/api/stress/my-logs</span>
+              </p>
+            </div>
+          )}
+
+          {!loading && !errorMsg && logs?.length === 0 && (
+            <div className="bg-white/50 border border-white/30 rounded-2xl p-4 text-center shadow-sm backdrop-blur">
+              <p
+                className="text-sm md:text-base"
+                style={{ color: "var(--text-secondary)" }}
+              >
+                Belum ada data stress log. Coba lakukan prediksi / simpan log
+                dulu ya 🙂
+              </p>
+            </div>
+          )}
+        </div>
+
         {/* TOGGLE BUTTONS */}
         <div className="flex justify-center mb-8 md:mb-10">
           <div className="bg-white/40 backdrop-blur-lg p-1.5 md:p-2 rounded-full shadow-lg border border-white/30 flex gap-2">
@@ -222,16 +321,6 @@ export default function Analytics() {
             </button>
           </div>
         </div>
-
-        {(isLoading || errorMessage) && (
-          <div className="mb-6 flex justify-center">
-            <div className="rounded-2xl border border-white/40 bg-white/60 px-4 py-3 text-sm text-[var(--text-secondary)] shadow-md">
-              {isLoading
-                ? "Memuat data analytics..."
-                : errorMessage || "Belum ada data analytics."}
-            </div>
-          </div>
-        )}
 
         {/* ==== CHARTS ==== */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 mb-8 md:mb-10">
@@ -259,7 +348,7 @@ export default function Analytics() {
                     dataKey={mode === "week" ? "day" : "week"}
                     tick={{ fontSize: 12 }}
                   />
-                  <YAxis tick={{ fontSize: 12 }} width={30} />
+                  <YAxis tick={{ fontSize: 12 }} width={30} domain={[0, 3]} />
                   <Tooltip
                     contentStyle={{
                       borderRadius: "12px",
@@ -327,12 +416,11 @@ export default function Analytics() {
         </div>
 
         {/* ==== SUMMARY CARDS ==== */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
           {[
             { title: "Average Stress", value: avgStress },
             { title: "Average Mood", value: avgMood },
-            { title: "Average Sleep (hrs)", value: avgSleep },
-            { title: "Peak Stress Day", value: peakStressLabel },
+            { title: "Highest Stress", value: highestStress },
           ].map((item, i) => (
             <div
               key={i}
@@ -357,7 +445,6 @@ export default function Analytics() {
         </div>
       </div>
 
-      {/* 5. FOOTER */}
       <Footer />
     </div>
   );
