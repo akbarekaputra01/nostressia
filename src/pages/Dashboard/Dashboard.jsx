@@ -1,13 +1,5 @@
 // src/pages/Dashboard/Dashboard.jsx
 import React, { useState } from "react";
-import {
-  BarChart,
-  Bar,
-  ResponsiveContainer,
-  XAxis,
-  YAxis,
-  Tooltip,
-} from "recharts";
 import { useOutletContext } from "react-router-dom"; 
 import { BASE_URL } from "../../api/config";
 import Footer from "../../components/Footer";
