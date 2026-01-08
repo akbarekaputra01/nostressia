@@ -114,7 +114,6 @@ export default function Motivation() {
   const [shareOpen, setShareOpen] = useState(false);
   const [shareText, setShareText] = useState("");
   const [selectedTemplate, setSelectedTemplate] = useState(TEMPLATES[0].id);
-  const [previewDims, setPreviewDims] = useState({ w: 520, h: 300 });
 
   const cardsRef = useRef([]);
   const heroRef = useRef(null);
@@ -147,7 +146,9 @@ export default function Motivation() {
     if ("scrollRestoration" in window.history) {
       try {
         window.history.scrollRestoration = "manual";
-      } catch (e) {}
+      } catch (error) {
+        console.warn("Scroll restoration update failed", error);
+      }
     }
     if (!initialScrollResetDone.current) {
       initialScrollResetDone.current = true;
