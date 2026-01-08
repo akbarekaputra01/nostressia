@@ -264,7 +264,14 @@ export default function Profile() {
   };
 
   const handleEmailChangeRequest = () => { if (window.confirm("Changing email requires verification. Do you want to proceed?")) alert("Redirecting to email verification..."); };
-  const handleLogout = () => { if (window.confirm("Are you sure you want to log out?")) { localStorage.removeItem("token"); localStorage.removeItem("cache_userData"); window.location.href = "/login"; } };
+  const handleLogout = () => { 
+    if (window.confirm("Are you sure you want to log out?")) { 
+        localStorage.removeItem("token"); 
+        localStorage.removeItem("cache_userData"); 
+        // Redirect to Landing Page ("/") instead of "/login"
+        window.location.href = "/"; 
+    } 
+  };
 
   // --- SETTINGS LOGIC (RESTORED) ---
   const handleNotifChange = (e) => {

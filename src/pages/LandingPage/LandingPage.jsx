@@ -24,7 +24,6 @@ const MoodCard = () => (
          <span className="font-bold text-gray-700 text-sm md:text-base">How's your mood?</span>
          <span className="text-[10px] md:text-xs text-gray-400">Today</span>
       </div>
-      {/* EMOJI SUDAH CURSOR POINTER */}
       <div className="flex justify-between gap-2 px-2">
          <div className="text-4xl grayscale-0 cursor-pointer transition-all scale-110 shadow-sm">😫</div>
          <div className="text-4xl grayscale hover:grayscale-0 cursor-pointer transition-all hover:scale-125">😐</div>
@@ -95,20 +94,19 @@ const MotivationCard = () => (
 // 4. Mockup Tips Page
 const TipsPagePreview = () => (
     <div className="w-full max-w-[320px] md:max-w-sm bg-white rounded-[24px] md:rounded-[32px] shadow-2xl border border-gray-200 overflow-hidden relative group rotate-1 hover:rotate-0 transition-transform duration-500 mx-auto">
-        <div className="bg-gradient-to-br from-[#FFF3E0] via-[#eaf2ff] to-[#e3edff] p-5 md:p-6 pb-3 md:pb-4">
+       <div className="bg-gradient-to-br from-[#FFF3E0] via-[#eaf2ff] to-[#e3edff] p-5 md:p-6 pb-3 md:pb-4">
              <div className="mb-4 md:mb-6">
                  <h3 className="text-xl md:text-2xl font-extrabold text-[#3664BA] tracking-wide">
                      TIPS
                  </h3>
              </div>
-             {/* SEARCH BAR ADDED POINTER */}
              <div className="bg-white/80 rounded-xl p-2.5 md:p-3 flex items-center gap-2 shadow-sm mb-2 border border-white/60 cursor-pointer">
                  <Search size={14} className="text-gray-400 md:w-4 md:h-4" />
                  <div className="h-2 w-20 md:w-24 bg-gray-200 rounded-full"></div>
              </div>
-        </div>
+       </div>
 
-        <div className="p-4 grid grid-cols-2 gap-3 bg-white">
+       <div className="p-4 grid grid-cols-2 gap-3 bg-white">
              <div className="bg-indigo-50/50 p-3 md:p-4 rounded-2xl border border-indigo-100">
                  <div className="text-base md:text-lg shadow-sm mb-2">😴</div>
                  <div className="h-2 w-10 md:w-12 bg-indigo-200 rounded-full mb-1"></div>
@@ -117,34 +115,34 @@ const TipsPagePreview = () => (
                  <div className="text-base md:text-lg shadow-sm mb-2">🥗</div>
                  <div className="h-2 w-10 md:w-12 bg-emerald-200 rounded-full mb-1"></div>
              </div>
-        </div>
+       </div>
     </div>
 );
 
 // 5. Mockup Diary
 const DiaryBookPreview = () => (
     <div className="relative w-full max-w-[320px] md:max-w-sm aspect-[4/3] bg-[#fffdf5] rounded-l-2xl rounded-r-2xl shadow-2xl border-l-4 border-r-4 border-gray-300 flex overflow-hidden rotate-[-1deg] hover:rotate-0 transition-transform duration-500 group z-10 mx-auto">
-        <div className="flex-1 border-r border-gray-200 p-4 relative flex flex-col">
-            <h4 className="text-xs md:text-sm font-serif font-bold text-gray-700 mb-3 md:mb-4 opacity-70">Journal</h4>
-            <div className="space-y-3 md:space-y-4">
-                <div className="flex gap-2 items-start">
-                    <div className="w-6 md:w-8 text-[8px] md:text-[10px] text-gray-400 font-bold text-right pt-1">OCT 12</div>
-                    <div className="flex-1 bg-blue-50/50 p-1.5 md:p-2 rounded-lg">
-                        <div className="h-1.5 w-3/4 bg-gray-300 rounded-full mb-1"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div className="flex-1 p-4 relative bg-[#fffdf5]">
-            <div className="flex justify-between items-center mb-2 md:mb-3">
-                <span className="text-[8px] md:text-[10px] text-gray-400 font-bold uppercase tracking-widest">Today</span>
-                <div className="text-lg md:text-xl">😌</div>
-            </div>
-            <div className="space-y-2 md:space-y-3 pt-1">
-                <div className="w-full h-[1px] bg-blue-100"></div>
-                <div className="w-full h-[1px] bg-blue-100"></div>
-            </div>
-        </div>
+       <div className="flex-1 border-r border-gray-200 p-4 relative flex flex-col">
+           <h4 className="text-xs md:text-sm font-serif font-bold text-gray-700 mb-3 md:mb-4 opacity-70">Journal</h4>
+           <div className="space-y-3 md:space-y-4">
+               <div className="flex gap-2 items-start">
+                   <div className="w-6 md:w-8 text-[8px] md:text-[10px] text-gray-400 font-bold text-right pt-1">OCT 12</div>
+                   <div className="flex-1 bg-blue-50/50 p-1.5 md:p-2 rounded-lg">
+                       <div className="h-1.5 w-3/4 bg-gray-300 rounded-full mb-1"></div>
+                   </div>
+               </div>
+           </div>
+       </div>
+       <div className="flex-1 p-4 relative bg-[#fffdf5]">
+           <div className="flex justify-between items-center mb-2 md:mb-3">
+               <span className="text-[8px] md:text-[10px] text-gray-400 font-bold uppercase tracking-widest">Today</span>
+               <div className="text-lg md:text-xl">😌</div>
+           </div>
+           <div className="space-y-2 md:space-y-3 pt-1">
+               <div className="w-full h-[1px] bg-blue-100"></div>
+               <div className="w-full h-[1px] bg-blue-100"></div>
+           </div>
+       </div>
     </div>
 );
 
@@ -174,7 +172,6 @@ const HeroAppPreview = () => {
          {/* Fake Status Bar */}
          <motion.div variants={itemVariants} className="flex justify-between items-center mb-6 px-1">
             <div className="flex items-center gap-3">
-               {/* AVATAR ADDED CURSOR POINTER */}
                <motion.img 
                   initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.5, type: "spring" }}
                   src={Avatar1} alt="User" className="w-10 h-10 rounded-full border-2 border-[#3664BA] object-cover cursor-pointer" 
@@ -184,7 +181,6 @@ const HeroAppPreview = () => {
                   <p className="text-sm font-bold text-[#1A1A1A]">PPTI Student</p>
                </div>
             </div>
-            {/* BELL ADDED CURSOR POINTER */}
             <motion.div 
                animate={{ rotate: [0, 15, -15, 0] }}
                transition={{ repeat: Infinity, repeatDelay: 4, duration: 1 }}
@@ -205,7 +201,6 @@ const HeroAppPreview = () => {
                      key={i}
                      whileHover={{ scale: 1.4, rotate: [0, -10, 10, 0] }}
                      whileTap={{ scale: 0.9 }}
-                     // EMOJI SUDAH CURSOR POINTER
                      className={`text-2xl cursor-pointer transition-all ${i === 2 ? 'scale-125 drop-shadow-md' : 'opacity-80 hover:opacity-100'}`}
                   >
                      {emoji}
@@ -216,7 +211,6 @@ const HeroAppPreview = () => {
 
          {/* Shortcuts */}
          <div className="grid grid-cols-2 gap-3">
-            {/* SHORTCUTS ADDED CURSOR POINTER */}
             <motion.div variants={itemVariants} className="bg-orange-50 p-4 rounded-[1.5rem] border border-orange-100 hover:shadow-md transition-shadow cursor-pointer">
                <div className="flex justify-between items-start mb-2">
                   <div className="p-1.5 bg-white rounded-lg text-[#F2994A] shadow-sm">
@@ -245,7 +239,6 @@ const HeroAppPreview = () => {
 
          {/* Bottom Nav Simulation */}
          <motion.div variants={itemVariants} className="mt-6 flex justify-around text-gray-300 border-t border-gray-100 pt-4">
-            {/* NAV ICONS ADDED CURSOR POINTER */}
             <div className="text-[#3664BA] cursor-pointer hover:scale-110 transition-transform">
                <div className="w-5 h-5 bg-current rounded-full opacity-20 mx-auto mb-1"></div>
             </div>
@@ -260,15 +253,15 @@ const HeroAppPreview = () => {
          transition={{ repeat: Infinity, duration: 5, ease: "easeInOut", delay: 0.5 }}
          className="absolute top-20 -right-8 z-[-1] bg-white p-3 rounded-2xl shadow-xl border border-gray-50 hidden md:block"
       >
-          <div className="flex items-center gap-2">
-             <div className="bg-pink-100 p-2 rounded-full text-pink-500">
-                <Book size={18} />
-             </div>
-             <div>
-                <div className="h-2 w-12 bg-gray-200 rounded-full mb-1"></div>
-                <div className="h-2 w-8 bg-gray-100 rounded-full"></div>
-             </div>
-          </div>
+         <div className="flex items-center gap-2">
+            <div className="bg-pink-100 p-2 rounded-full text-pink-500">
+               <Book size={18} />
+            </div>
+            <div>
+               <div className="h-2 w-12 bg-gray-200 rounded-full mb-1"></div>
+               <div className="h-2 w-8 bg-gray-100 rounded-full"></div>
+            </div>
+         </div>
       </motion.div>
 
       <motion.div 
@@ -276,12 +269,12 @@ const HeroAppPreview = () => {
          transition={{ repeat: Infinity, duration: 7, ease: "easeInOut" }}
          className="absolute bottom-32 -left-8 z-[-1] bg-white p-3 rounded-2xl shadow-xl border border-gray-50 hidden md:block"
       >
-          <div className="flex items-center gap-2">
-             <div className="bg-green-100 p-2 rounded-full text-green-600">
-                <CheckCircle size={18} />
-             </div>
-             <span className="text-xs font-bold text-gray-600">All Clear!</span>
-          </div>
+         <div className="flex items-center gap-2">
+            <div className="bg-green-100 p-2 rounded-full text-green-600">
+               <CheckCircle size={18} />
+            </div>
+            <span className="text-xs font-bold text-gray-600">All Clear!</span>
+         </div>
       </motion.div>
 
    </motion.div>
@@ -291,7 +284,11 @@ const HeroAppPreview = () => {
 // --- COMPONENT: HERO SIMPLE ---
 const HeroSimple = () => {
   return (
-    <header className="relative z-10 pt-24 pb-12 md:pt-32 md:pb-20 px-6 overflow-hidden">
+    // UPDATE: 
+    // - Desktop Padding: dikurangi drastis jadi md:pt-28 (sebelumnya 40)
+    // - Desktop Min-Height: dikurangi jadi md:min-h-[80vh] (agar titik tengahnya naik)
+    // - Mobile: pt-20 (agar pas)
+    <header className="relative z-10 pt-20 pb-10 md:pt-28 md:pb-16 px-6 overflow-hidden flex flex-col md:justify-center md:min-h-[80vh]">
       
       {/* Background Blobs */}
       <motion.div 
@@ -301,21 +298,21 @@ const HeroSimple = () => {
       ></motion.div>
       <div className="absolute top-20 right-0 w-[400px] h-[400px] bg-[#F2994A] opacity-10 blur-[100px] rounded-full pointer-events-none -z-10"></div>
 
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
         
         {/* KOLOM KIRI */}
         <motion.div
           initial={{ opacity: 0, x: -30 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
-          className="text-center lg:text-left z-20 md:pl-10 lg:pl-16"
+          className="text-center lg:text-left z-20 md:pl-10 lg:pl-16 flex flex-col items-center lg:items-start"
         >
           {/* Badge */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-orange-50 border border-orange-100 text-[#F2994A] text-[10px] md:text-xs font-bold uppercase tracking-wider mb-6 shadow-sm mx-auto lg:mx-0"
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-orange-50 border border-orange-100 text-[#F2994A] text-[10px] md:text-xs font-bold uppercase tracking-wider mb-6 shadow-sm"
           >
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
@@ -324,7 +321,7 @@ const HeroSimple = () => {
             Available for PPTI Students
           </motion.div>
 
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter text-[#1A1A1A] leading-[0.95] mb-6">
+          <h1 className="text-6xl md:text-7xl lg:text-8xl font-black tracking-tighter text-[#1A1A1A] leading-[0.95] mb-6">
             NO STRESS<br/>
             {/* Gradient Text */}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#3664BA] via-[#F2994A] to-[#3664BA] animate-gradient-x bg-[length:200%_auto] pr-2 pb-2">
@@ -336,7 +333,7 @@ const HeroSimple = () => {
              initial={{ opacity: 0 }}
              animate={{ opacity: 1 }}
              transition={{ delay: 0.4 }}
-             className="text-lg text-gray-500 max-w-xl mx-auto lg:mx-0 font-medium leading-relaxed mb-8"
+             className="text-lg md:text-xl text-gray-500 max-w-xl font-medium leading-relaxed mb-8"
           >
             Your personal academic companion. Track mood, manage stress, and survive college without losing your mind.
           </motion.p>
@@ -345,27 +342,27 @@ const HeroSimple = () => {
              initial={{ opacity: 0, y: 20 }}
              animate={{ opacity: 1, y: 0 }}
              transition={{ delay: 0.6 }}
-             className="flex flex-col sm:flex-row justify-center lg:justify-start gap-4"
+             className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto"
           >
-            {/* LINK GET STARTED ADDED CURSOR POINTER */}
+            {/* LINK GET STARTED */}
             <Link to="/login" className="px-8 py-4 bg-[#1A1A1A] text-white rounded-full font-bold text-base shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 group hover:bg-[#F2994A] hover:border-[#F2994A] cursor-pointer">
               Get Started Free <ArrowRight className="group-hover:translate-x-1 transition-transform" size={20} />
             </Link>
-             {/* BUTTON EXPLORE ADDED CURSOR POINTER */}
+             {/* BUTTON EXPLORE */}
              <button onClick={() => document.getElementById('prediction').scrollIntoView({ behavior: 'smooth'})} className="px-8 py-4 bg-white text-[#1A1A1A] border border-gray-200 rounded-full font-bold text-base shadow-sm hover:bg-gray-50 transition-all flex items-center justify-center cursor-pointer">
               Explore Features
             </button>
           </motion.div>
         </motion.div>
 
-        {/* KOLOM KANAN */}
+        {/* KOLOM KANAN (Desktop) */}
         <div className="relative h-auto md:h-[500px] flex items-center justify-center hidden lg:flex">
             <HeroAppPreview />
         </div>
 
-        {/* Mobile View Placeholder */}
-        <div className="lg:hidden w-full flex justify-center mt-8">
-            <div className="scale-90">
+        {/* KOLOM KANAN (Mobile - Large Preview) */}
+        <div className="lg:hidden w-full flex justify-center mt-12 pb-8">
+            <div className="w-full max-w-[380px]">
                <HeroAppPreview />
             </div>
         </div>
@@ -393,12 +390,18 @@ export default function LandingPage() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const scrollToSection = (id) => {
+    // 1. Tutup menu terlebih dahulu
     setIsMobileMenuOpen(false);
-    const element = document.getElementById(id);
-    if (element) {
-      const y = element.getBoundingClientRect().top + window.scrollY - 100; 
-      window.scrollTo({ top: y, behavior: 'smooth' });
-    }
+
+    // 2. Beri jeda sedikit (misal 100ms) agar React selesai memproses penutupan menu
+    // baru kemudian lakukan scroll. Ini mencegah konflik event di mobile.
+    setTimeout(() => {
+      const element = document.getElementById(id);
+      if (element) {
+        const y = element.getBoundingClientRect().top + window.scrollY - 100; 
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      }
+    }, 100);
   };
   
   return (
@@ -412,7 +415,6 @@ export default function LandingPage() {
       {/* Navbar */}
       <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-gray-200 transition-all">
          <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center relative">
-            {/* LOGO ADDED CURSOR POINTER */}
             <Link to="/" className="flex items-center gap-2 shrink-0 cursor-pointer">
                 <img src={LogoNostressia} alt="Logo" className="h-7 md:h-8 w-auto" />
                 <span className="font-bold text-[#3664BA] text-lg">Nostressia</span>
@@ -431,7 +433,6 @@ export default function LandingPage() {
                      <button
                         key={item}
                         onClick={() => scrollToSection(item.toLowerCase())}
-                        // NAV LINKS ADDED CURSOR POINTER
                         className="text-sm font-medium text-gray-600 hover:text-[#F2994A] transition-colors relative group cursor-pointer"
                      >
                         {item}
@@ -439,7 +440,6 @@ export default function LandingPage() {
                      </button>
                   ))}
                </div>
-               {/* LOGIN BUTTON ADDED CURSOR POINTER */}
                <Link to="/login" className="shrink-0 px-6 py-2 bg-[#1A1A1A] hover:bg-[#3664BA] text-white rounded-full font-medium text-sm transition-colors shadow-lg cursor-pointer">
                   Login
                </Link>
@@ -506,69 +506,69 @@ export default function LandingPage() {
          
          {/* ITEM 1: MOOD TRACKER */}
          <div id="prediction" className="scroll-mt-32">
-            
-            {/* === MOBILE LAYOUT === */}
-            <div className="md:hidden space-y-8">
-               <div className="text-center space-y-3">
-                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-[#3664BA] text-xs font-bold mb-2">
-                        <Smile size={14} /> Mood Tracker
-                     </div>
-                     <h2 className="text-3xl font-bold text-[#1A1A1A]">Don't bottle it up.<br/>Track it.</h2>
-                     <p className="text-base text-gray-500 leading-relaxed px-2">
-                        Understand your emotional patterns. Our intuitive mood tracker helps you identify what makes you tick.
-                     </p>
-               </div>
-               <div className="flex flex-col items-center gap-6">
-                   <div className="w-full max-w-[340px] mx-auto px-2">
-                       <MoodCard />
-                   </div>
-                   <div className="w-full px-4 text-center">
-                       <ul className="grid grid-cols-2 gap-3 mb-4 w-full px-2">
-                           {['Daily Check-in', 'Visual Charts', 'Trigger Analysis'].map((item, i) => (
-                              <li key={i} className={`flex items-center gap-2 text-sm text-gray-700 font-medium bg-white px-3 py-2 rounded-lg shadow-sm border border-gray-100 justify-center ${i === 0 ? 'col-span-2' : ''}`}>
-                                  <CheckCircle size={16} className="text-[#3664BA] shrink-0" /> 
-                                  <span>{item}</span>
-                              </li>
-                           ))}
-                       </ul>
-                   </div>
-               </div>
-            </div>
-
-            {/* === DESKTOP LAYOUT === */}
-            <div className="hidden md:flex flex-row items-center gap-24">
-               <motion.div 
-                  initial={{ opacity: 0, x: -50 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  className="flex-1 relative flex justify-center"
-               >
-                  <div className="absolute inset-0 bg-blue-200 rounded-full blur-[80px] opacity-40"></div>
-                  <MoodCard />
-               </motion.div>
-               <div className="flex-1 space-y-6 text-left">
-                  <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center text-[#F2994A] mb-4">
-                     <Smile size={24} />
+           
+           {/* === MOBILE LAYOUT (1 ATAS 2 BAWAH) === */}
+           <div className="md:hidden space-y-8">
+              <div className="text-center space-y-3">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 text-[#F2994A] text-xs font-bold mb-2">
+                       <Smile size={14} /> Mood Tracker
+                    </div>
+                    <h2 className="text-3xl font-bold text-[#1A1A1A]">Don't bottle it up.<br/>Track it.</h2>
+                    <p className="text-base text-gray-500 leading-relaxed px-2">
+                       Understand your emotional patterns. Our intuitive mood tracker helps you identify what makes you tick.
+                    </p>
+              </div>
+              <div className="flex flex-col items-center gap-6">
+                  <div className="w-full max-w-[340px] mx-auto px-2">
+                      <MoodCard />
                   </div>
-                  <h2 className="text-5xl font-bold text-[#1A1A1A]">Don't bottle it up. <br/>Track it.</h2>
-                  <p className="text-lg text-gray-500 leading-relaxed">
-                     Understand your emotional patterns. Our intuitive mood tracker helps you identify what makes you tick (or ticked off).
-                  </p>
-                  <ul className="space-y-3 mt-4 inline-block text-left">
-                     {['Daily Check-in', 'Visual Charts', 'Trigger Analysis'].map((item, i) => (
-                        <li key={i} className="flex items-center gap-3 text-gray-700 font-medium">
-                           <CheckCircle size={18} className="text-[#3664BA]" /> {item}
-                        </li>
-                     ))}
-                  </ul>
-               </div>
-            </div>
+                  <div className="w-full px-4 text-center">
+                      <ul className="grid grid-cols-2 gap-3 mb-4 w-full px-2">
+                          {['Daily Check-in', 'Visual Charts', 'Trigger Analysis'].map((item, i) => (
+                             <li key={i} className={`flex items-center gap-2 text-sm text-gray-700 font-medium bg-white px-3 py-2 rounded-lg shadow-sm border border-gray-100 justify-center ${i === 0 ? 'col-span-2' : ''}`}>
+                                 <CheckCircle size={16} className="text-[#3664BA] shrink-0" /> 
+                                 <span>{item}</span>
+                             </li>
+                          ))}
+                      </ul>
+                  </div>
+              </div>
+           </div>
+
+           {/* === DESKTOP LAYOUT (Side by Side) === */}
+           <div className="hidden md:flex flex-row items-center gap-24">
+              <motion.div 
+                 initial={{ opacity: 0, x: -50 }}
+                 whileInView={{ opacity: 1, x: 0 }}
+                 viewport={{ once: true }}
+                 className="flex-1 relative flex justify-center"
+              >
+                 <div className="absolute inset-0 bg-blue-200 rounded-full blur-[80px] opacity-40"></div>
+                 <MoodCard />
+              </motion.div>
+              <div className="flex-1 space-y-6 text-left">
+                 <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center text-[#F2994A] mb-4">
+                    <Smile size={24} />
+                 </div>
+                 <h2 className="text-5xl font-bold text-[#1A1A1A]">Don't bottle it up. <br/>Track it.</h2>
+                 <p className="text-lg text-gray-500 leading-relaxed">
+                    Understand your emotional patterns. Our intuitive mood tracker helps you identify what makes you tick (or ticked off).
+                 </p>
+                 <ul className="space-y-3 mt-4 inline-block text-left">
+                    {['Daily Check-in', 'Visual Charts', 'Trigger Analysis'].map((item, i) => (
+                       <li key={i} className="flex items-center gap-3 text-gray-700 font-medium">
+                          <CheckCircle size={18} className="text-[#3664BA]" /> {item}
+                       </li>
+                    ))}
+                 </ul>
+              </div>
+           </div>
          </div>
 
          {/* ITEM 2: ANALYTICS */}
          <div id="analytics" className="scroll-mt-32">
              
-             {/* === MOBILE LAYOUT === */}
+             {/* === MOBILE LAYOUT (UPDATED GRID: 1 ATAS 2 BAWAH) === */}
              <div className="md:hidden space-y-8">
                 <div className="text-center space-y-3">
                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-[#3664BA] text-xs font-bold mb-2">
@@ -596,7 +596,7 @@ export default function LandingPage() {
                 </div>
              </div>
 
-             {/* === DESKTOP LAYOUT === */}
+             {/* === DESKTOP LAYOUT (Reverse) === */}
              <div className="hidden md:flex flex-row-reverse items-center gap-24">
                 <motion.div 
                    initial={{ opacity: 0, x: 50 }}
@@ -604,7 +604,7 @@ export default function LandingPage() {
                    viewport={{ once: true }}
                    className="flex-1 relative flex justify-center"
                 >
-                   <div className="absolute inset-0 bg-blue-200 rounded-full blur-[80px] opacity-30"></div>
+                   <div className="absolute inset-0 bg-purple-200 rounded-full blur-[80px] opacity-40"></div>
                    <AnalyticsCard />
                 </motion.div>
                 <div className="flex-1 space-y-6 text-left">
@@ -629,10 +629,10 @@ export default function LandingPage() {
          {/* ITEM 3: MOTIVATION */}
          <div id="motivation" className="scroll-mt-32">
              
-             {/* === MOBILE LAYOUT === */}
+             {/* === MOBILE LAYOUT (UPDATED GRID: 1 ATAS 2 BAWAH) === */}
              <div className="md:hidden space-y-8">
                 <div className="text-center space-y-3">
-                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 text-[#F2994A] text-xs font-bold mb-2">
+                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-50 text-yellow-600 text-xs font-bold mb-2">
                         <Zap size={14} /> Motivation
                      </div>
                      <h2 className="text-3xl font-bold text-[#1A1A1A]">Find your spark.</h2>
@@ -665,11 +665,11 @@ export default function LandingPage() {
                    viewport={{ once: true }}
                    className="flex-1 relative flex justify-center"
                 >
-                   <div className="absolute inset-0 bg-[#F2994A] rounded-full blur-[80px] opacity-30"></div>
+                   <div className="absolute inset-0 bg-yellow-200 rounded-full blur-[80px] opacity-40"></div>
                    <MotivationCard />
                 </motion.div>
                 <div className="flex-1 space-y-6 text-left">
-                   <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center text-[#F2994A] mb-4">
+                   <div className="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center text-yellow-600 mb-4">
                       <Zap size={24} fill="currentColor" />
                    </div>
                    <h2 className="text-5xl font-bold text-[#1A1A1A]">Find your spark.</h2>
@@ -690,10 +690,10 @@ export default function LandingPage() {
          {/* ITEM 4: TIPS */}
          <div id="tips" className="scroll-mt-32">
              
-             {/* === MOBILE LAYOUT === */}
+             {/* === MOBILE LAYOUT (UPDATED GRID: 1 ATAS 2 BAWAH) === */}
              <div className="md:hidden space-y-8">
                 <div className="text-center space-y-3">
-                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-[#3664BA] text-xs font-bold mb-2">
+                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-50 text-green-600 text-xs font-bold mb-2">
                         <Star size={14} /> Tips & Tricks
                      </div>
                      <h2 className="text-3xl font-bold text-[#1A1A1A]">Rest & Reset.</h2>
@@ -718,7 +718,7 @@ export default function LandingPage() {
                 </div>
              </div>
 
-             {/* === DESKTOP LAYOUT === */}
+             {/* === DESKTOP LAYOUT (Reverse) === */}
              <div className="hidden md:flex flex-row-reverse items-center gap-24">
                 <motion.div 
                    initial={{ opacity: 0, x: 50 }}
@@ -726,11 +726,11 @@ export default function LandingPage() {
                    viewport={{ once: true }}
                    className="flex-1 relative flex justify-center"
                 >
-                   <div className="absolute inset-0 bg-blue-200 rounded-full blur-[80px] opacity-40"></div>
+                   <div className="absolute inset-0 bg-green-200 rounded-full blur-[80px] opacity-40"></div>
                    <TipsPagePreview />
                 </motion.div>
                 <div className="flex-1 space-y-6 text-left">
-                   <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-[#3664BA] mb-4">
+                   <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-green-600 mb-4">
                       <Star size={24} />
                    </div>
                    <h2 className="text-5xl font-bold text-[#1A1A1A]">Rest & Reset.</h2>
@@ -752,10 +752,10 @@ export default function LandingPage() {
          {/* ITEM 5: DIARY */}
          <div id="diary" className="scroll-mt-32">
              
-             {/* === MOBILE LAYOUT === */}
+             {/* === MOBILE LAYOUT (UPDATED GRID: 1 ATAS 2 BAWAH) === */}
              <div className="md:hidden space-y-8">
                 <div className="text-center space-y-3">
-                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 text-[#F2994A] text-xs font-bold mb-2">
+                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-pink-50 text-pink-600 text-xs font-bold mb-2">
                         <Book size={14} /> Diary
                      </div>
                      <h2 className="text-3xl font-bold text-[#1A1A1A]">Dear Diary.</h2>
@@ -788,11 +788,11 @@ export default function LandingPage() {
                    viewport={{ once: true }}
                    className="flex-1 relative flex justify-center"
                 >
-                   <div className="absolute inset-0 bg-[#F2994A] rounded-full blur-[80px] opacity-20"></div>
+                   <div className="absolute inset-0 bg-pink-200 rounded-full blur-[80px] opacity-40"></div>
                    <DiaryBookPreview />
                 </motion.div>
                 <div className="flex-1 space-y-6 text-left">
-                   <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center text-[#F2994A] mb-4">
+                   <div className="w-12 h-12 bg-pink-100 rounded-xl flex items-center justify-center text-pink-600 mb-4">
                       <Book size={24} />
                    </div>
                    <h2 className="text-5xl font-bold text-[#1A1A1A]">Dear Diary.</h2>
@@ -823,7 +823,6 @@ export default function LandingPage() {
                   <span className="text-[#F2994A]">College Life?</span>
                </h2>
                <div className="flex flex-col sm:flex-row justify-center gap-4 pt-4">
-                  {/* JOIN NOW ADDED CURSOR POINTER */}
                   <Link to="/login" className="px-8 py-3 md:px-10 md:py-4 bg-white text-[#1A1A1A] rounded-full font-bold text-base md:text-lg hover:bg-[#F2994A] hover:text-white transition-all shadow-lg transform hover:-translate-y-1 cursor-pointer">
                      Join Now - It's Free
                   </Link>
