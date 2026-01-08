@@ -3,15 +3,14 @@ import { useOutletContext } from "react-router-dom";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import { BarChart3 } from "lucide-react";
-import { BASE_URL } from "../../api/config";
 import {
+  LineChart,
+  Line,
   CartesianGrid,
   XAxis,
   YAxis,
   Tooltip,
   ResponsiveContainer,
-  BarChart,
-  Bar,
 } from "recharts";
 
 // --- BACKGROUND CONFIGURATION (SAME AS DASHBOARD) ---
@@ -37,9 +36,6 @@ const toISODate = (d) => {
 
 const weekdayShort = (d) =>
   new Intl.DateTimeFormat("en-US", { weekday: "short" }).format(d);
-
-const moodEmojis = ["😢", "😕", "😐", "😊", "😄"];
-const stressLabels = ["Low", "Moderate", "High"];
 
 // Build 7-day series ending today
 const buildWeekSeries = (logs) => {
@@ -111,17 +107,23 @@ const buildMonthSeries = (logs) => {
   }));
 };
 
-const calcMode = (values) => {
-  if (!values.length) return null;
-  const counts = values.reduce((acc, v) => {
-    acc[v] = (acc[v] || 0) + 1;
-    return acc;
-  }, {});
-  return Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
-};
+const calcSummary = (series) => {
+  const vals = (series || []).map((d) => clampNumber(d.stress, 0));
+  const moods = (series || []).map((d) => clampNumber(d.mood, 0));
 
-const formatMonthDay = (date) =>
-  `${new Intl.DateTimeFormat("en-US", { month: "short" }).format(date)} ${date.getDate()}`;
+  // Ignore zeros (missing days)
+  const nonZeroStress = vals.filter((x) => x > 0);
+  const nonZeroMood = moods.filter((x) => x > 0);
+
+  const avg = (arr) =>
+    arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
+
+  return {
+    avgStress: Number(avg(nonZeroStress).toFixed(2)),
+    avgMood: Number(avg(nonZeroMood).toFixed(2)),
+    highestStress: nonZeroStress.length ? Math.max(...nonZeroStress) : 0,
+  };
+};
 
 export default function Analytics() {
   const [mode, setMode] = useState("week");
@@ -152,13 +154,14 @@ export default function Analytics() {
         setLoading(true);
         setErrorMsg("");
 
+        const API_BASE = "https://akbarekaputra01-nostressia-backend.hf.space";
         const token =
           localStorage.getItem("token") ||
           localStorage.getItem("access_token") ||
           localStorage.getItem("accessToken") ||
           localStorage.getItem("jwt");
 
-        const res = await fetch(`${BASE_URL}/stress/my-logs`, {
+        const res = await fetch(`${API_BASE}/api/stress/my-logs`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -203,56 +206,10 @@ export default function Analytics() {
   const monthData = useMemo(() => buildMonthSeries(logs), [logs]);
   const data = mode === "week" ? weekData : monthData;
 
-  const stressMode = useMemo(() => {
-    const values = (data || [])
-      .map((entry) => clampNumber(entry.stress, 0))
-      .filter((value) => value > 0);
-    const mode = calcMode(values);
-    return mode !== null ? stressLabels[Number(mode)] || "Unknown" : "No data";
-  }, [data]);
-
-  const moodMode = useMemo(() => {
-    const values = (data || [])
-      .map((entry) => clampNumber(entry.mood, 0))
-      .filter((value) => value >= 0);
-    const mode = calcMode(values);
-    return mode !== null ? moodEmojis[Number(mode)] || "—" : "—";
-  }, [data]);
-
-  const highestWeek = useMemo(() => {
-    const today = startOfDay(new Date());
-    const start = new Date(today);
-    start.setDate(today.getDate() - 6);
-
-    const filtered = (logs || []).filter((entry) => {
-      const dt = entry?.date ? startOfDay(new Date(entry.date)) : null;
-      if (!dt || Number.isNaN(dt.getTime())) return false;
-      return dt >= start && dt <= today;
-    });
-
-    if (!filtered.length) return "—";
-    const highest = filtered.reduce((acc, entry) => {
-      const level = clampNumber(entry.stressLevel, 0);
-      return level > acc.level ? { level, date: new Date(entry.date) } : acc;
-    }, { level: -1, date: null });
-    return highest.date ? formatMonthDay(highest.date) : "—";
-  }, [logs]);
-
-  const highestMonth = useMemo(() => {
-    const today = startOfDay(new Date());
-    const filtered = (logs || []).filter((entry) => {
-      const dt = entry?.date ? startOfDay(new Date(entry.date)) : null;
-      if (!dt || Number.isNaN(dt.getTime())) return false;
-      return dt.getMonth() === today.getMonth() && dt.getFullYear() === today.getFullYear();
-    });
-
-    if (!filtered.length) return "—";
-    const highest = filtered.reduce((acc, entry) => {
-      const level = clampNumber(entry.stressLevel, 0);
-      return level > acc.level ? { level, date: new Date(entry.date) } : acc;
-    }, { level: -1, date: null });
-    return highest.date ? formatMonthDay(highest.date) : "—";
-  }, [logs]);
+  const { avgStress, avgMood, highestStress } = useMemo(
+    () => calcSummary(data),
+    [data]
+  );
 
   return (
     <div
@@ -385,7 +342,7 @@ export default function Analytics() {
 
             <div className="h-[200px] md:h-[260px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data}>
+                <LineChart data={data}>
                   <CartesianGrid stroke="#e5e7eb" strokeDasharray="5 5" />
                   <XAxis
                     dataKey={mode === "week" ? "day" : "week"}
@@ -399,8 +356,15 @@ export default function Analytics() {
                       boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
                     }}
                   />
-                  <Bar dataKey="stress" fill="var(--brand-blue)" radius={[8, 8, 0, 0]} />
-                </BarChart>
+                  <Line
+                    type="monotone"
+                    dataKey="stress"
+                    stroke="var(--brand-blue)"
+                    strokeWidth={3}
+                    dot={{ r: 4, strokeWidth: 2 }}
+                    activeDot={{ r: 6 }}
+                  />
+                </LineChart>
               </ResponsiveContainer>
             </div>
           </div>
@@ -423,7 +387,7 @@ export default function Analytics() {
 
             <div className="h-[200px] md:h-[260px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data}>
+                <LineChart data={data}>
                   <CartesianGrid stroke="#e5e7eb" strokeDasharray="5 5" />
                   <XAxis
                     dataKey={mode === "week" ? "day" : "week"}
@@ -437,8 +401,15 @@ export default function Analytics() {
                       boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
                     }}
                   />
-                  <Bar dataKey="mood" fill="var(--brand-blue-light)" radius={[8, 8, 0, 0]} />
-                </BarChart>
+                  <Line
+                    type="monotone"
+                    dataKey="mood"
+                    stroke="var(--brand-blue-light)"
+                    strokeWidth={3}
+                    dot={{ r: 4, strokeWidth: 2 }}
+                    activeDot={{ r: 6 }}
+                  />
+                </LineChart>
               </ResponsiveContainer>
             </div>
           </div>
@@ -446,67 +417,31 @@ export default function Analytics() {
 
         {/* ==== SUMMARY CARDS ==== */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-          <div
-            className="rounded-2xl p-6 border backdrop-blur-xl flex flex-col items-center md:items-start text-center md:text-left"
-            style={{
-              background: "rgba(255,255,255,0.45)",
-              borderColor: "var(--glass-border)",
-              boxShadow: "0 8px 25px rgba(0,0,0,0.06)",
-            }}
-          >
-            <h3
-              className="text-sm md:text-md font-medium mb-2 uppercase tracking-wide opacity-80"
-              style={{ color: "var(--brand-blue)" }}
+          {[
+            { title: "Average Stress", value: avgStress },
+            { title: "Average Mood", value: avgMood },
+            { title: "Highest Stress", value: highestStress },
+          ].map((item, i) => (
+            <div
+              key={i}
+              className="rounded-2xl p-6 border backdrop-blur-xl flex flex-col items-center md:items-start text-center md:text-left"
+              style={{
+                background: "rgba(255,255,255,0.45)",
+                borderColor: "var(--glass-border)",
+                boxShadow: "0 8px 25px rgba(0,0,0,0.06)",
+              }}
             >
-              Stress Mode
-            </h3>
-            <p className="text-3xl md:text-4xl font-bold text-[var(--text-primary)]">
-              {stressMode}
-            </p>
-          </div>
-
-          <div
-            className="rounded-2xl p-6 border backdrop-blur-xl flex flex-col items-center md:items-start text-center md:text-left"
-            style={{
-              background: "rgba(255,255,255,0.45)",
-              borderColor: "var(--glass-border)",
-              boxShadow: "0 8px 25px rgba(0,0,0,0.06)",
-            }}
-          >
-            <h3
-              className="text-sm md:text-md font-medium mb-2 uppercase tracking-wide opacity-80"
-              style={{ color: "var(--brand-blue)" }}
-            >
-              Mood Mode
-            </h3>
-            <p className="text-4xl font-bold text-[var(--text-primary)]">
-              {moodMode}
-            </p>
-          </div>
-
-          <div
-            className="rounded-2xl p-6 border backdrop-blur-xl flex flex-col gap-3 text-center md:text-left"
-            style={{
-              background: "rgba(255,255,255,0.45)",
-              borderColor: "var(--glass-border)",
-              boxShadow: "0 8px 25px rgba(0,0,0,0.06)",
-            }}
-          >
-            <h3
-              className="text-sm md:text-md font-medium uppercase tracking-wide opacity-80"
-              style={{ color: "var(--brand-blue)" }}
-            >
-              Highest Stress
-            </h3>
-            <div className="flex items-center justify-between text-sm font-semibold text-[var(--text-secondary)]">
-              <span>Week</span>
-              <span className="text-[var(--text-primary)]">{highestWeek}</span>
+              <h3
+                className="text-sm md:text-md font-medium mb-2 uppercase tracking-wide opacity-80"
+                style={{ color: "var(--brand-blue)" }}
+              >
+                {item.title}
+              </h3>
+              <p className="text-3xl md:text-4xl font-bold text-[var(--text-primary)]">
+                {item.value}
+              </p>
             </div>
-            <div className="flex items-center justify-between text-sm font-semibold text-[var(--text-secondary)]">
-              <span>Month</span>
-              <span className="text-[var(--text-primary)]">{highestMonth}</span>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
 
