@@ -1,5 +1,5 @@
 // src/pages/Dashboard/Dashboard.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useOutletContext } from "react-router-dom"; 
 import { BASE_URL } from "../../api/config";
 import Footer from "../../components/Footer";
@@ -135,7 +135,6 @@ export default function Dashboard() {
   const { user } = useOutletContext() || { user: {} };
   const userName = user?.name || "Friend";
 
-  const [loading, setLoading] = useState(true);
   const [isFlipped, setIsFlipped] = useState(false);
    
   // State Data Utama
@@ -172,11 +171,6 @@ export default function Dashboard() {
   const [calendarDate, setCalendarDate] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
   const [selectedDate, setSelectedDate] = useState(today);
   const TODAY_KEY = formatDate(today);
-
-  useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 600);
-    return () => clearTimeout(t);
-  }, []);
 
   const month = calendarDate.getMonth();
   const year = calendarDate.getFullYear();
