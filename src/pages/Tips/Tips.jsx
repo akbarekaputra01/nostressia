@@ -1,7 +1,7 @@
 // src/pages/Tips/Tips.jsx
-import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useOutletContext } from "react-router-dom"; 
-import { motion, AnimatePresence } from "framer-motion";
+import { motion as Motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Lightbulb, RefreshCw, CheckCircle2, AlertCircle } from "lucide-react"; 
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer"; 
@@ -87,7 +87,7 @@ export default function Tips() {
 
       setCategories(updatedCategories);
       setSyncStatus('updated');
-    } catch (err) {
+    } catch {
       console.warn("Sync failed, using local/static data.");
       setSyncStatus('error');
     }
@@ -138,9 +138,9 @@ export default function Tips() {
       <main className="w-full max-w-[1600px] mx-auto px-4 pb-20 pt-32 md:pt-40 flex-grow relative z-10">
         <AnimatePresence mode="wait">
           {!selectedCategory ? (
-            <motion.div key="list" variants={containerVariants} initial="hidden" animate="visible" exit="hidden">
+            <Motion.div key="list" variants={containerVariants} initial="hidden" animate="visible" exit="hidden">
               
-              <motion.div variants={itemVariants} className="mb-8 md:mb-10 text-center">
+              <Motion.div variants={itemVariants} className="mb-8 md:mb-10 text-center">
                 <div className="flex items-center gap-2 mb-2 justify-center">
                   <Lightbulb className="w-6 h-6 md:w-8 md:h-8 text-[var(--brand-blue)] drop-shadow-lg" />
                   <h1 className="text-2xl md:text-4xl font-extrabold bg-gradient-to-r from-[var(--brand-blue)] to-[var(--brand-blue-light)] bg-clip-text text-transparent drop-shadow-md">
@@ -150,9 +150,9 @@ export default function Tips() {
                 <p className="text-xs md:text-base font-medium drop-shadow-sm px-4 text-[var(--text-secondary)]">
                   Choose a category to explore helpful tips for managing stress
                 </p>
-              </motion.div>
+              </Motion.div>
 
-              <motion.div variants={itemVariants} className="flex flex-col md:flex-row items-center gap-3 mb-10">
+              <Motion.div variants={itemVariants} className="flex flex-col md:flex-row items-center gap-3 mb-10">
                 <div className="relative flex-grow w-full">
                   <input 
                     type="text" 
@@ -192,11 +192,11 @@ export default function Tips() {
                     </>
                   )}
                 </div>
-              </motion.div>
+              </Motion.div>
 
-              <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <Motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredCategories.map((cat) => (
-                  <motion.div 
+                  <Motion.div 
                     key={cat.id} 
                     layoutId={`cat-${cat.id}`} 
                     onClick={() => openCategory(cat)} 
@@ -213,12 +213,12 @@ export default function Tips() {
                       <h3 className="text-2xl font-bold text-gray-800">{cat.name}</h3>
                       <p className="text-sm text-gray-500 mt-1">Click to explore</p>
                     </div>
-                  </motion.div>
+                  </Motion.div>
                 ))}
-              </motion.div>
-            </motion.div>
+              </Motion.div>
+            </Motion.div>
           ) : (
-            <motion.div key="details" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4 }}>
+            <Motion.div key="details" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4 }}>
               <div className="mb-8 bg-white/90 backdrop-blur-xl px-6 py-5 rounded-[24px] shadow-lg border border-white/50 flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <button onClick={() => setSelectedCategory(null)} className="w-11 h-11 flex items-center justify-center rounded-full bg-white hover:bg-gray-50 border border-gray-100 shadow-sm transition-transform active:scale-90">
@@ -232,7 +232,7 @@ export default function Tips() {
               {/* Grid Responsif: md:grid-cols-2 untuk Desktop, grid-cols-1 untuk Mobile */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 {getVerticalOrderedTips(selectedCategory.tips).map((tip, idx) => (
-                  <motion.div 
+                  <Motion.div 
                     key={idx}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -245,10 +245,10 @@ export default function Tips() {
                     <p className="text-sm md:text-xl font-medium text-gray-700 relative z-10 leading-relaxed pr-10">
                       {tip.text}
                     </p>
-                  </motion.div>
+                  </Motion.div>
                 ))}
               </div>
-            </motion.div>
+            </Motion.div>
           )}
         </AnimatePresence>
       </main>

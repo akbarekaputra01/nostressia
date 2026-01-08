@@ -1,9 +1,8 @@
 // src/pages/LandingPage/LandingPage.jsx
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { 
-  motion, 
-  useScroll,
+  motion as Motion, 
   AnimatePresence 
 } from "framer-motion";
 import { 
@@ -53,7 +52,7 @@ const AnalyticsCard = () => (
        <div className="flex items-end justify-between gap-2 h-28 md:h-32 mb-2 px-1">
           {[40, 65, 30, 85, 50, 20, 60].map((h, i) => (
              <div key={i} className="w-full bg-gray-50 rounded-t-lg relative group-hover:bg-blue-50 transition-colors h-full flex items-end">
-                <motion.div 
+                <Motion.div 
                    initial={{ height: 0 }}
                    whileInView={{ height: `${h}%` }}
                    viewport={{ once: true }}
@@ -158,21 +157,21 @@ const HeroAppPreview = () => {
   };
 
   return (
-   <motion.div 
+   <Motion.div 
       animate={{ y: [0, -15, 0] }}
       transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
       className="relative w-full max-w-[360px] mx-auto z-10"
    >
-      <motion.div 
+      <Motion.div 
          variants={containerVariants}
          initial="hidden"
          animate="visible"
          className="bg-white/80 backdrop-blur-xl border border-white p-5 rounded-[2.5rem] shadow-2xl relative overflow-hidden"
       >
          {/* Fake Status Bar */}
-         <motion.div variants={itemVariants} className="flex justify-between items-center mb-6 px-1">
+         <Motion.div variants={itemVariants} className="flex justify-between items-center mb-6 px-1">
             <div className="flex items-center gap-3">
-               <motion.img 
+               <Motion.img 
                   initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.5, type: "spring" }}
                   src={Avatar1} alt="User" className="w-10 h-10 rounded-full border-2 border-[#3664BA] object-cover cursor-pointer" 
                />
@@ -181,37 +180,37 @@ const HeroAppPreview = () => {
                   <p className="text-sm font-bold text-[#1A1A1A]">PPTI Student</p>
                </div>
             </div>
-            <motion.div 
+            <Motion.div 
                animate={{ rotate: [0, 15, -15, 0] }}
                transition={{ repeat: Infinity, repeatDelay: 4, duration: 1 }}
                className="p-2 bg-white rounded-full shadow-sm text-gray-400 cursor-pointer hover:text-[#F2994A]"
             >
                <Bell size={16} />
-            </motion.div>
-         </motion.div>
+            </Motion.div>
+         </Motion.div>
 
          {/* Hero Widget: Daily Check-in */}
-         <motion.div variants={itemVariants} className="bg-[#3664BA] rounded-[1.5rem] p-5 text-white mb-4 relative overflow-hidden group">
+         <Motion.div variants={itemVariants} className="bg-[#3664BA] rounded-[1.5rem] p-5 text-white mb-4 relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-24 h-24 bg-white opacity-10 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-110 transition-transform duration-700"></div>
             <p className="text-xs font-medium text-blue-100 mb-1">Daily Check-in</p>
             <h3 className="text-lg font-bold mb-4">How are you feeling?</h3>
             <div className="flex justify-between items-center bg-white/20 backdrop-blur-sm rounded-xl p-2 px-4">
                {['😔', '😐', '😌', '🤩'].map((emoji, i) => (
-                  <motion.span 
+                  <Motion.span 
                      key={i}
                      whileHover={{ scale: 1.4, rotate: [0, -10, 10, 0] }}
                      whileTap={{ scale: 0.9 }}
                      className={`text-2xl cursor-pointer transition-all ${i === 2 ? 'scale-125 drop-shadow-md' : 'opacity-80 hover:opacity-100'}`}
                   >
                      {emoji}
-                  </motion.span>
+                  </Motion.span>
                ))}
             </div>
-         </motion.div>
+         </Motion.div>
 
          {/* Shortcuts */}
          <div className="grid grid-cols-2 gap-3">
-            <motion.div variants={itemVariants} className="bg-orange-50 p-4 rounded-[1.5rem] border border-orange-100 hover:shadow-md transition-shadow cursor-pointer">
+            <Motion.div variants={itemVariants} className="bg-orange-50 p-4 rounded-[1.5rem] border border-orange-100 hover:shadow-md transition-shadow cursor-pointer">
                <div className="flex justify-between items-start mb-2">
                   <div className="p-1.5 bg-white rounded-lg text-[#F2994A] shadow-sm">
                      <Zap size={14} fill="currentColor" />
@@ -219,36 +218,36 @@ const HeroAppPreview = () => {
                   <span className="text-[10px] font-bold text-orange-300">Today</span>
                </div>
                <p className="text-xs font-medium text-gray-600 italic">"Keep pushing forward."</p>
-            </motion.div>
+            </Motion.div>
             
-            <motion.div variants={itemVariants} className="bg-white p-4 rounded-[1.5rem] border border-gray-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+            <Motion.div variants={itemVariants} className="bg-white p-4 rounded-[1.5rem] border border-gray-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
                <div className="flex justify-between items-start mb-3">
                   <span className="text-xs font-bold text-gray-400">Stress</span>
                   <span className="text-xs font-bold text-green-500 bg-green-50 px-2 py-0.5 rounded-full">Low</span>
                </div>
                <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
-                  <motion.div 
+                  <Motion.div 
                      initial={{ width: 0 }}
                      animate={{ width: "30%" }}
                      transition={{ duration: 1.5, delay: 1, ease: "easeOut" }}
                      className="h-full bg-green-500" 
                   />
                </div>
-            </motion.div>
+            </Motion.div>
          </div>
 
          {/* Bottom Nav Simulation */}
-         <motion.div variants={itemVariants} className="mt-6 flex justify-around text-gray-300 border-t border-gray-100 pt-4">
+         <Motion.div variants={itemVariants} className="mt-6 flex justify-around text-gray-300 border-t border-gray-100 pt-4">
             <div className="text-[#3664BA] cursor-pointer hover:scale-110 transition-transform">
                <div className="w-5 h-5 bg-current rounded-full opacity-20 mx-auto mb-1"></div>
             </div>
             <div className="w-5 h-5 bg-gray-200 rounded-full mx-auto cursor-pointer hover:bg-gray-300 transition-colors"></div>
             <div className="w-5 h-5 bg-gray-200 rounded-full mx-auto cursor-pointer hover:bg-gray-300 transition-colors"></div>
-         </motion.div>
-      </motion.div>
+         </Motion.div>
+      </Motion.div>
 
       {/* Background Decor */}
-      <motion.div 
+      <Motion.div 
          animate={{ y: [-15, 10, -15], rotate: [12, 15, 12] }}
          transition={{ repeat: Infinity, duration: 5, ease: "easeInOut", delay: 0.5 }}
          className="absolute top-20 -right-8 z-[-1] bg-white p-3 rounded-2xl shadow-xl border border-gray-50 hidden md:block"
@@ -262,9 +261,9 @@ const HeroAppPreview = () => {
                <div className="h-2 w-8 bg-gray-100 rounded-full"></div>
             </div>
          </div>
-      </motion.div>
+      </Motion.div>
 
-      <motion.div 
+      <Motion.div 
          animate={{ y: [15, -10, 15], rotate: [-6, -3, -6] }}
          transition={{ repeat: Infinity, duration: 7, ease: "easeInOut" }}
          className="absolute bottom-32 -left-8 z-[-1] bg-white p-3 rounded-2xl shadow-xl border border-gray-50 hidden md:block"
@@ -275,9 +274,9 @@ const HeroAppPreview = () => {
             </div>
             <span className="text-xs font-bold text-gray-600">All Clear!</span>
          </div>
-      </motion.div>
+      </Motion.div>
 
-   </motion.div>
+   </Motion.div>
   );
 };
 
@@ -291,24 +290,24 @@ const HeroSimple = () => {
     <header className="relative z-10 pt-20 pb-10 md:pt-28 md:pb-16 px-6 overflow-hidden flex flex-col md:justify-center md:min-h-[80vh]">
       
       {/* Background Blobs */}
-      <motion.div 
+      <Motion.div 
         animate={{ scale: [1, 1.1, 1], opacity: [0.05, 0.08, 0.05] }}
         transition={{ duration: 10, repeat: Infinity }}
         className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-[#3664BA] opacity-5 blur-[100px] rounded-full pointer-events-none -z-10"
-      ></motion.div>
+      ></Motion.div>
       <div className="absolute top-20 right-0 w-[400px] h-[400px] bg-[#F2994A] opacity-10 blur-[100px] rounded-full pointer-events-none -z-10"></div>
 
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
         
         {/* KOLOM KIRI */}
-        <motion.div
+        <Motion.div
           initial={{ opacity: 0, x: -30 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="text-center lg:text-left z-20 md:pl-10 lg:pl-16 flex flex-col items-center lg:items-start"
         >
           {/* Badge */}
-          <motion.div 
+          <Motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
@@ -319,7 +318,7 @@ const HeroSimple = () => {
               <span className="relative inline-flex rounded-full h-2 w-2 bg-[#F2994A]"></span>
             </span>
             Available for PPTI Students
-          </motion.div>
+          </Motion.div>
 
           <h1 className="text-6xl md:text-7xl lg:text-8xl font-black tracking-tighter text-[#1A1A1A] leading-[0.95] mb-6">
             NO STRESS<br/>
@@ -329,16 +328,16 @@ const HeroSimple = () => {
             </span>
           </h1>
           
-          <motion.p 
+          <Motion.p 
              initial={{ opacity: 0 }}
              animate={{ opacity: 1 }}
              transition={{ delay: 0.4 }}
              className="text-lg md:text-xl text-gray-500 max-w-xl font-medium leading-relaxed mb-8"
           >
             Your personal academic companion. Track mood, manage stress, and survive college without losing your mind.
-          </motion.p>
+          </Motion.p>
 
-          <motion.div 
+          <Motion.div 
              initial={{ opacity: 0, y: 20 }}
              animate={{ opacity: 1, y: 0 }}
              transition={{ delay: 0.6 }}
@@ -352,8 +351,8 @@ const HeroSimple = () => {
              <button onClick={() => document.getElementById('prediction').scrollIntoView({ behavior: 'smooth'})} className="px-8 py-4 bg-white text-[#1A1A1A] border border-gray-200 rounded-full font-bold text-base shadow-sm hover:bg-gray-50 transition-all flex items-center justify-center cursor-pointer">
               Explore Features
             </button>
-          </motion.div>
-        </motion.div>
+          </Motion.div>
+        </Motion.div>
 
         {/* KOLOM KANAN (Desktop) */}
         <div className="relative h-auto md:h-[500px] flex items-center justify-center hidden lg:flex">
@@ -385,8 +384,6 @@ const HeroSimple = () => {
 // --- MAIN PAGE COMPONENT ---
 
 export default function LandingPage() {
-  const containerRef = useRef(null);
-  const { scrollYProgress } = useScroll({ target: containerRef });
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const scrollToSection = (id) => {
@@ -448,7 +445,7 @@ export default function LandingPage() {
 
          <AnimatePresence>
             {isMobileMenuOpen && (
-               <motion.div 
+               <Motion.div 
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: "auto", opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
@@ -473,7 +470,7 @@ export default function LandingPage() {
                          Login
                       </Link>
                   </div>
-               </motion.div>
+               </Motion.div>
             )}
          </AnimatePresence>
       </nav>
@@ -537,7 +534,7 @@ export default function LandingPage() {
 
            {/* === DESKTOP LAYOUT (Side by Side) === */}
            <div className="hidden md:flex flex-row items-center gap-24">
-              <motion.div 
+              <Motion.div 
                  initial={{ opacity: 0, x: -50 }}
                  whileInView={{ opacity: 1, x: 0 }}
                  viewport={{ once: true }}
@@ -545,7 +542,7 @@ export default function LandingPage() {
               >
                  <div className="absolute inset-0 bg-blue-200 rounded-full blur-[80px] opacity-40"></div>
                  <MoodCard />
-              </motion.div>
+              </Motion.div>
               <div className="flex-1 space-y-6 text-left">
                  <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center text-[#F2994A] mb-4">
                     <Smile size={24} />
@@ -598,7 +595,7 @@ export default function LandingPage() {
 
              {/* === DESKTOP LAYOUT (Reverse) === */}
              <div className="hidden md:flex flex-row-reverse items-center gap-24">
-                <motion.div 
+                <Motion.div 
                    initial={{ opacity: 0, x: 50 }}
                    whileInView={{ opacity: 1, x: 0 }}
                    viewport={{ once: true }}
@@ -606,7 +603,7 @@ export default function LandingPage() {
                 >
                    <div className="absolute inset-0 bg-purple-200 rounded-full blur-[80px] opacity-40"></div>
                    <AnalyticsCard />
-                </motion.div>
+                </Motion.div>
                 <div className="flex-1 space-y-6 text-left">
                    <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-[#3664BA] mb-4">
                       <BarChart3 size={24} />
@@ -659,7 +656,7 @@ export default function LandingPage() {
 
              {/* === DESKTOP LAYOUT === */}
              <div className="hidden md:flex flex-row items-center gap-24">
-                <motion.div 
+                <Motion.div 
                    initial={{ opacity: 0, x: -50 }}
                    whileInView={{ opacity: 1, x: 0 }}
                    viewport={{ once: true }}
@@ -667,7 +664,7 @@ export default function LandingPage() {
                 >
                    <div className="absolute inset-0 bg-yellow-200 rounded-full blur-[80px] opacity-40"></div>
                    <MotivationCard />
-                </motion.div>
+                </Motion.div>
                 <div className="flex-1 space-y-6 text-left">
                    <div className="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center text-yellow-600 mb-4">
                       <Zap size={24} fill="currentColor" />
@@ -720,7 +717,7 @@ export default function LandingPage() {
 
              {/* === DESKTOP LAYOUT (Reverse) === */}
              <div className="hidden md:flex flex-row-reverse items-center gap-24">
-                <motion.div 
+                <Motion.div 
                    initial={{ opacity: 0, x: 50 }}
                    whileInView={{ opacity: 1, x: 0 }}
                    viewport={{ once: true }}
@@ -728,7 +725,7 @@ export default function LandingPage() {
                 >
                    <div className="absolute inset-0 bg-green-200 rounded-full blur-[80px] opacity-40"></div>
                    <TipsPagePreview />
-                </motion.div>
+                </Motion.div>
                 <div className="flex-1 space-y-6 text-left">
                    <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-green-600 mb-4">
                       <Star size={24} />
@@ -782,7 +779,7 @@ export default function LandingPage() {
 
              {/* === DESKTOP LAYOUT === */}
              <div className="hidden md:flex flex-row items-center gap-24">
-                <motion.div 
+                <Motion.div 
                    initial={{ opacity: 0, x: -50 }}
                    whileInView={{ opacity: 1, x: 0 }}
                    viewport={{ once: true }}
@@ -790,7 +787,7 @@ export default function LandingPage() {
                 >
                    <div className="absolute inset-0 bg-pink-200 rounded-full blur-[80px] opacity-40"></div>
                    <DiaryBookPreview />
-                </motion.div>
+                </Motion.div>
                 <div className="flex-1 space-y-6 text-left">
                    <div className="w-12 h-12 bg-pink-100 rounded-xl flex items-center justify-center text-pink-600 mb-4">
                       <Book size={24} />

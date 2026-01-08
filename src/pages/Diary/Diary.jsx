@@ -1,7 +1,7 @@
 // src/pages/Diary/Diary.jsx
 import { useState, useRef, useEffect } from "react";
 import { useOutletContext } from "react-router-dom"; 
-import { motion, AnimatePresence } from "framer-motion";
+import { motion as Motion, AnimatePresence } from "framer-motion";
 import { Heart } from "lucide-react"; 
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer"; 
@@ -19,7 +19,6 @@ export default function Diary() {
   const [text, setText] = useState("");
   const [selectedMood, setSelectedMood] = useState("😐");
   const [selectedFont, setSelectedFont] = useState(baseFont);
-  const [selectedEntry, setSelectedEntry] = useState(null);
   const [isBookOpen, setIsBookOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const scrollRef = useRef(null);
@@ -105,7 +104,7 @@ export default function Diary() {
       <main className="flex-grow flex flex-col items-center w-full max-w-[1400px] mx-auto p-4 md:p-8 lg:p-10 z-10 pt-0">
         
         {/* --- HEADER SECTION --- */}
-        <motion.div 
+        <Motion.div 
           initial={{ opacity: 0, y: 20 }} 
           animate={{ opacity: 1, y: 0 }} 
           transition={{ duration: 0.6 }} 
@@ -120,12 +119,12 @@ export default function Diary() {
             <p className="text-gray-600 mt-2 text-base md:text-lg font-medium w-full text-center">
               Write your story today.
             </p>
-        </motion.div>
+        </Motion.div>
 
         {/* 3D BOOK ENGINE */}
         {/* mt-0 memastikan tidak ada jarak tambahan di atas kontainer buku */}
         <div className="relative w-full max-w-[1000px] h-[520px] md:h-[600px] flex items-center justify-center perspective-[2000px] mt-0">
-            <motion.div className="relative w-[310px] sm:w-[360px] md:w-[380px] h-[480px] md:h-[520px] preserve-3d"
+            <Motion.div className="relative w-[310px] sm:w-[360px] md:w-[380px] h-[480px] md:h-[520px] preserve-3d"
                 animate={{ x: (isBookOpen && !isMobile) ? 190 : 0 }} 
                 transition={{ duration: 0.8, type: "spring", stiffness: 40, damping: 15 }}
             >
@@ -175,7 +174,7 @@ export default function Diary() {
                 </div>
 
                 {/* --- LAYER 2: COVER DEPAN --- */}
-                <motion.div className="absolute inset-0 w-full h-full cursor-pointer preserve-3d origin-left z-20"
+                <Motion.div className="absolute inset-0 w-full h-full cursor-pointer preserve-3d origin-left z-20"
                     animate={{ rotateY: isBookOpen ? -180 : 0, opacity: (isBookOpen && isMobile) ? 0 : 1 }}
                     transition={{ duration: 0.8, type: "spring", stiffness: 40, damping: 15 }} 
                     onClick={() => !isBookOpen && setIsBookOpen(true)}
@@ -203,8 +202,8 @@ export default function Diary() {
                             <p className="text-center text-xs text-slate-400 leading-loose italic font-serif">"Keep your face always toward the sunshine—and shadows will fall behind you."</p>
                          </div>
                     </div>
-                </motion.div>
-            </motion.div>
+                </Motion.div>
+            </Motion.div>
         </div>
 
         {/* --- 3. HISTORY SECTION --- */}
@@ -217,11 +216,11 @@ export default function Diary() {
                     <div ref={scrollRef} className="flex gap-5 overflow-x-auto pb-8 pt-2 no-scrollbar snap-x snap-mandatory" style={{ scrollBehavior: 'smooth' }}>
                         <AnimatePresence mode="popLayout">
                             {entries.map(entry => (
-                                <motion.div key={entry.id} layout initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.5 }} className="flex-shrink-0 snap-center relative group/card bg-white rounded-2xl shadow-sm border border-slate-100 cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between p-6 w-[85vw] sm:w-[320px] md:w-[calc(50%-10px)] lg:w-[calc(33.333%-14px)] h-[240px]" onClick={() => setSelectedEntry(entry)}>
+                                <Motion.div key={entry.id} layout initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.5 }} className="flex-shrink-0 snap-center relative group/card bg-white rounded-2xl shadow-sm border border-slate-100 cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between p-6 w-[85vw] sm:w-[320px] md:w-[calc(50%-10px)] lg:w-[calc(33.333%-14px)] h-[240px]">
                                     <div><div className="flex justify-between items-start mb-3"><span className="text-3xl filter drop-shadow-sm">{entry.mood}</span><button onClick={(e) => handleDelete(entry.id, e)} className="w-8 h-8 flex items-center justify-center rounded-full bg-red-50 text-red-400 opacity-0 group-hover/card:opacity-100 transition-all hover:bg-red-500 hover:text-white">✕</button></div><h4 className="font-bold text-lg mb-1 truncate leading-tight" style={{ color: colors.textPrimary, fontFamily: entry.font || baseFont }}>{entry.title}</h4><p className="text-[10px] font-bold uppercase tracking-widest opacity-40 mb-3 text-slate-500">{entry.date}</p></div>
                                     <div className="relative overflow-hidden h-full"><p className="text-slate-500 text-sm leading-relaxed line-clamp-3" style={{ fontFamily: entry.font || baseFont }}>{entry.content}</p><div className="absolute bottom-0 left-0 w-full h-8 bg-gradient-to-t from-white to-transparent"></div></div>
                                     <div className="mt-2 text-right"><span className="text-xs font-semibold text-blue-400 group-hover/card:underline">Read more →</span></div>
-                                </motion.div>
+                                </Motion.div>
                             ))}
                         </AnimatePresence>
                     </div>
