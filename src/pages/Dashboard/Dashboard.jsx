@@ -188,7 +188,6 @@ export default function Dashboard() {
   // --- MENGHITUNG TREND DOTS ---
   const trendDots = [];
   const daysShort = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  const last7Days = [];
   for (let i = 6; i >= 0; i--) {
     const d = new Date(today);
     d.setDate(today.getDate() - i);
@@ -210,80 +209,7 @@ export default function Dashboard() {
         status: status, 
         isToday: i === 0
     });
-
-    const level =
-      dataOnDate && !dataOnDate.isEmpty ? dataOnDate.level : i === 0 && hasSubmittedToday ? stressScore : 0;
-    last7Days.push({
-      date: new Date(d),
-      day: daysShort[d.getDay()],
-      level,
-    });
   }
-
-  const monthEntries = Object.entries(stressData).filter(([dateKey, entry]) => {
-    if (!entry || entry.isEmpty) return false;
-    const entryDate = new Date(dateKey);
-    return entryDate.getMonth() === month && entryDate.getFullYear() === year;
-  });
-
-  const stressCounts = monthEntries.reduce(
-    (acc, [, entry]) => {
-      const status = getStatusFromLevel(entry.level);
-      if (status === 2) acc.high += 1;
-      if (status === 1) acc.moderate += 1;
-      if (status === 0) acc.low += 1;
-      return acc;
-    },
-    { low: 0, moderate: 0, high: 0 }
-  );
-
-  const stressMode =
-    stressCounts.low + stressCounts.moderate + stressCounts.high > 0
-      ? Object.entries(stressCounts).sort((a, b) => b[1] - a[1])[0][0]
-      : "No data";
-
-  const moodCounts = monthEntries.reduce((acc, [, entry]) => {
-    if (!entry.mood) return acc;
-    acc[entry.mood] = (acc[entry.mood] || 0) + 1;
-    return acc;
-  }, {});
-
-  const moodMode =
-    Object.keys(moodCounts).length > 0
-      ? Object.entries(moodCounts).sort((a, b) => b[1] - a[1])[0][0]
-      : "—";
-
-  const highestWeekEntry = last7Days.reduce(
-    (acc, entry) => (entry.level > acc.level ? entry : acc),
-    { level: -1, date: null }
-  );
-
-  const highestMonthEntry = monthEntries.reduce(
-    (acc, [dateKey, entry]) => {
-      if (entry.level > acc.level) {
-        return { level: entry.level, date: new Date(dateKey) };
-      }
-      return acc;
-    },
-    { level: -1, date: null }
-  );
-
-  const highestWeekLabel = highestWeekEntry.date
-    ? `${monthNames[highestWeekEntry.date.getMonth()]} ${highestWeekEntry.date.getDate()}`
-    : "—";
-  const highestMonthLabel = highestMonthEntry.date
-    ? `${monthNames[highestMonthEntry.date.getMonth()]} ${highestMonthEntry.date.getDate()}`
-    : "—";
-
-  const weeklyChartData = last7Days.map((entry) => ({
-    day: entry.day,
-    level: entry.level,
-  }));
-
-  const stressModeLabel =
-    stressMode === "No data"
-      ? "No data"
-      : stressMode.charAt(0).toUpperCase() + stressMode.slice(1);
 
   function handleNewQuote() {
     setIsQuoteAnimating(true);
@@ -471,57 +397,6 @@ export default function Dashboard() {
           </h1>
           <p className="text-gray-600 mt-2 text-lg font-medium">Ready to navigate the day with more calm?</p>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-          <div className="rounded-[20px] bg-white/70 backdrop-blur-md border border-white/40 shadow-lg p-6">
-            <p className="text-xs font-bold tracking-widest text-blue-500 uppercase">Stress Mode</p>
-            <div className="mt-3 flex items-end gap-3">
-              <span className="text-3xl font-extrabold text-gray-800">{stressModeLabel}</span>
-              <span className="text-sm font-semibold text-gray-500">Most frequent</span>
-            </div>
-          </div>
-          <div className="rounded-[20px] bg-white/70 backdrop-blur-md border border-white/40 shadow-lg p-6">
-            <p className="text-xs font-bold tracking-widest text-blue-500 uppercase">Mood Mode</p>
-            <div className="mt-3 flex items-end gap-3">
-              <span className="text-4xl">{moodMode}</span>
-              <span className="text-sm font-semibold text-gray-500">Most frequent</span>
-            </div>
-          </div>
-          <div className="rounded-[20px] bg-white/70 backdrop-blur-md border border-white/40 shadow-lg p-6">
-            <p className="text-xs font-bold tracking-widest text-blue-500 uppercase">Highest Stress</p>
-            <div className="mt-3 space-y-2">
-              <div className="flex items-center justify-between text-sm font-semibold text-gray-600">
-                <span>Week</span>
-                <span className="text-gray-800">{highestWeekLabel}</span>
-              </div>
-              <div className="flex items-center justify-between text-sm font-semibold text-gray-600">
-                <span>Month</span>
-                <span className="text-gray-800">{highestMonthLabel}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <section className="mb-8 rounded-[20px] bg-white/70 backdrop-blur-md border border-white/40 shadow-lg p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-gray-800">Stress Trend (Last 7 Days)</h2>
-            <span className="text-xs font-semibold text-gray-500">Score 0-100</span>
-          </div>
-          <div className="h-40">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={weeklyChartData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                <XAxis dataKey="day" tickLine={false} axisLine={false} />
-                <YAxis domain={[0, 100]} tickLine={false} axisLine={false} />
-                <Tooltip
-                  cursor={{ fill: "rgba(54, 100, 186, 0.08)" }}
-                  contentStyle={{ borderRadius: 12, borderColor: "rgba(0,0,0,0.1)" }}
-                  labelStyle={{ fontWeight: 700, color: "#1f2937" }}
-                />
-                <Bar dataKey="level" fill={brandBlue} radius={[8, 8, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </section>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {/* FLIP CARD SECTION */}
