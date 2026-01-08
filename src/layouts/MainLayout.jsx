@@ -27,31 +27,14 @@ export default function MainLayout() {
 
         // 3. Normalisasi Data (Jaga-jaga nama field beda)
         const completeUserData = {
-          ...backendData,
+          ...backendData, 
           // Pastikan field utama selalu ada:
-          name:
-            backendData.name ||
-            backendData.full_name ||
-            backendData.fullName ||
-            "User",
-          userName:
-            backendData.userName ||
-            backendData.username ||
-            backendData.user_name ||
-            "user",
-          username:
-            backendData.username ||
-            backendData.userName ||
-            backendData.user_name ||
-            "user",
+          name: backendData.name || backendData.full_name || backendData.fullName || "User",
+          username: backendData.username || backendData.user_name || "user",
           email: backendData.email || "",
           avatar: backendData.avatar || backendData.profile_picture || null,
-          birthday:
-            backendData.birthday ||
-            backendData.birth_date ||
-            backendData.dob ||
-            "",
-          gender: backendData.gender || backendData.sex || "",
+          birthday: backendData.birthday || backendData.birth_date || backendData.dob || "",
+          gender: backendData.gender || backendData.sex || ""
         };
 
         // 4. Update State & SIMPAN SEMUA KE CACHE (JSON)
