@@ -1,9 +1,9 @@
-// export const BASE_URL = "https://akbarekaputra01-nostressia-backend.hf.space/api";
-// export const BASE_URL = "http://127.0.0.1:8000/api";
-// Pilih environment: 'local' atau 'deploy'
-const ENV = "deploy"; // ganti ke 'local' kalau mau pakai backend lokal
+const BASE_URLS = {
+  local: "http://127.0.0.1:8000/api",
+  deploy: "https://akbarekaputra01-nostressia-backend.hf.space/api",
+};
+
+const ENV = import.meta.env.VITE_API_ENV || "deploy";
 
 export const BASE_URL =
-  ENV === "local"
-    ? "http://127.0.0.1:8000/api"
-    : "https://akbarekaputra01-nostressia-backend.hf.space/api";
+  import.meta.env.VITE_API_BASE_URL || BASE_URLS[ENV] || BASE_URLS.deploy;
