@@ -350,7 +350,7 @@ export default function Dashboard() {
       const apiData = await response.json();
       if (!response.ok) throw new Error(apiData.detail || "Error connecting to server.");
 
-      const { score, color } = mapPredictionToUI(apiData.result);
+      const { score, color, status } = mapPredictionToUI(apiData.result);
       
       setSuccessModal({ 
         visible: true, 
@@ -370,6 +370,39 @@ export default function Dashboard() {
           mood: moods[moodIndex], color: color, isToday: true, isEmpty: false,
         },
       }));
+
+      const token = localStorage.getItem("token");
+      if (token) {
+        try {
+          const logPayload = {
+            date: TODAY_KEY,
+            stressLevel: status,
+            GPA: Number(gpa),
+            extracurricularHourPerDay: Number(extraHours),
+            physicalActivityHourPerDay: Number(physicalHours),
+            sleepHourPerDay: Number(sleepHours),
+            studyHourPerDay: Number(studyHours),
+            socialHourPerDay: Number(socialHours),
+            emoji: moodIndex,
+          };
+
+          const logResponse = await fetch(`${BASE_URL}/stress/`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(logPayload),
+          });
+
+          if (!logResponse.ok) {
+            const logError = await logResponse.json();
+            console.error("Failed to save stress log:", logError);
+          }
+        } catch (logError) {
+          console.error("Failed to save stress log:", logError);
+        }
+      }
 
       setTimeout(() => {
         setSuccessModal((prev) => ({ ...prev, visible: false }));
