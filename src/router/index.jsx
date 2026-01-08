@@ -30,19 +30,21 @@ function AppRouter() {
     <BrowserRouter>
       <Routes>
         {/* --- 1. ROUTE PUBLIK (Tanpa Navbar User) --- */}
-        <Route path="/" element={<Navigate to="/login" replace />} />
+        {/* Route redirect lama dihapus agar "/" tidak melempar ke login */}
         <Route path="/login" element={<Login />} /> 
 
         {/* --- 2. ROUTE USER (DILINDUNGI MAINLAYOUT) --- */}
         {/* Semua halaman di dalam sini akan punya Navbar & Data User otomatis */}
         <Route element={<MainLayout />}>
+            {/* Set Landing Page di path root "/" */}
+            <Route path="/" element={<LandingPage />} />
+            
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/tips" element={<Tips />} />
             <Route path="/motivation" element={<Motivation />} />
             <Route path="/diary" element={<Diary />} />
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/profile" element={<Profile />} /> 
-            <Route path="/landing" element={<LandingPage />} /> 
         </Route>
 
         {/* --- 3. ROUTE ADMIN (Terpisah) --- */}
