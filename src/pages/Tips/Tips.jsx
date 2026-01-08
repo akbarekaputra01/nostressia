@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useOutletContext } from "react-router-dom"; 
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Lightbulb, Loader2 } from "lucide-react"; 
+import { ArrowLeft, Lightbulb, RefreshCw, CheckCircle2, AlertCircle } from "lucide-react"; 
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer"; 
 
@@ -28,128 +28,81 @@ const bgStyle = {
 };
 
 const INITIAL_CATEGORIES = [
-  { id: 1, name: "Reading & Learning", emoji: "📚", colorClass: "from-blue-50 to-blue-100 text-blue-600 border-blue-100" },
-  { id: 2, name: "Healthy Nutrition", emoji: "🥗", colorClass: "from-emerald-50 to-emerald-100 text-emerald-600 border-emerald-100" },
-  { id: 3, name: "Quality Sleep", emoji: "😴", colorClass: "from-indigo-50 to-indigo-100 text-indigo-600 border-indigo-100" },
-  { id: 4, name: "Meditation & Mindfulness", emoji: "🧘", colorClass: "from-teal-50 to-teal-100 text-teal-600 border-teal-100" },
-  { id: 5, name: "Social Connection", emoji: "🗣️", colorClass: "from-orange-50 to-orange-100 text-orange-600 border-orange-100" },
-  { id: 6, name: "Positive Mindset", emoji: "🧠", colorClass: "from-gray-50 to-gray-100 text-gray-600 border-gray-200" },
+  { id: 1, name: "Reading & Learning", emoji: "📚", colorClass: "from-blue-50 to-blue-100 text-blue-600 border-blue-100", tipsCount: 7, tips: ["Read for 20-30 minutes before bed to calm your mind", "Join a book club to share insights with others", "Try audiobooks during commutes or workouts", "Explore different genres to broaden perspectives", "Choose books that inspire and motivate you", "Keep a reading journal to track your thoughts", "Set realistic reading goals to avoid pressure"] },
+  { id: 2, name: "Healthy Nutrition", emoji: "🥗", colorClass: "from-emerald-50 to-emerald-100 text-emerald-600 border-emerald-100", tipsCount: 7, tips: ["Drink at least 8 glasses of water daily", "Include fruits and vegetables in every meal", "Limit caffeine intake, especially in the afternoon", "Practice mindful eating without distractions", "Choose whole grains over processed foods", "Prepare healthy snacks in advance", "Listen to your body's hunger and fullness cues"] },
+  { id: 3, name: "Quality Sleep", emoji: "😴", colorClass: "from-indigo-50 to-indigo-100 text-indigo-600 border-indigo-100", tipsCount: 7, tips: ["Maintain a consistent sleep schedule", "Create a relaxing bedtime routine", "Keep your bedroom cool, dark, and quiet", "Avoid screens 1 hour before bedtime", "Limit naps to 20-30 minutes during the day", "Exercise regularly but not close to bedtime", "Use relaxation techniques like deep breathing"] },
+  { id: 4, name: "Meditation & Mindfulness", emoji: "🧘", colorClass: "from-teal-50 to-teal-100 text-teal-600 border-teal-100", tipsCount: 7, tips: ["Start your day with 5 minutes of mindful breathing", "Practice daily gratitude by writing down 3 things", "Engage in body scan meditation to release tension", "Take mindful walks in nature regularly", "Use a meditation app for guided sessions", "Notice the present moment without judgment", "Take short breaks to breathe during the day"] },
+  { id: 5, name: "Social Connection", emoji: "🗣️", colorClass: "from-orange-50 to-orange-100 text-orange-600 border-orange-100", tipsCount: 7, tips: ["Call or meet a friend you haven't talked to in a while", "Practice active listening during conversations", "Volunteer for a cause you care about", "Join a community group or hobby class", "Spend quality time with family without gadgets", "Say hello to your neighbors or coworkers", "Express appreciation to people in your life"] },
+  { id: 6, name: "Positive Mindset", emoji: "🧠", colorClass: "from-gray-50 to-gray-100 text-gray-600 border-gray-200", tipsCount: 7, tips: ["Challenge negative thoughts with positive affirmations", "Focus on things you can control, not the ones you can't", "Celebrate small wins every day", "Surround yourself with positive and supportive people", "Practice self-compassion when things go wrong", "Visualize your success and goals regularly", "Limit exposure to negative news or social media"] },
 ];
 
-// --- ANIMATION VARIANTS FOR SMOOTH ENTRANCE ---
 const containerVariants = {
   hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.2
-    }
-  }
+  visible: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.2 } }
 };
 
 const itemVariants = {
   hidden: { y: 20, opacity: 0 },
-  visible: {
-    y: 0,
-    opacity: 1,
-    transition: { duration: 0.5, ease: "easeOut" }
-  }
-};
-
-const getCategoryEmoji = (name) => {
-  const n = name?.toLowerCase() || "";
-  if (n.includes("read")) return "📚";
-  if (n.includes("nutrition")) return "🥗";
-  if (n.includes("sleep")) return "😴";
-  if (n.includes("meditation")) return "🧘";
-  if (n.includes("social")) return "🗣️";
-  if (n.includes("mindset")) return "🧠";
-  return "💡"; 
-};
-
-const getCategoryColor = (name) => {
-  const n = name?.toLowerCase() || "";
-  if (n.includes("read")) return "from-blue-50 to-blue-100 text-blue-600 border-blue-100";
-  if (n.includes("nutrition")) return "from-emerald-50 to-emerald-100 text-emerald-600 border-emerald-100";
-  if (n.includes("sleep")) return "from-indigo-50 to-indigo-100 text-indigo-600 border-indigo-100";
-  if (n.includes("meditation")) return "from-teal-50 to-teal-100 text-teal-600 border-teal-100";
-  if (n.includes("social")) return "from-orange-50 to-orange-100 text-orange-600 border-orange-100";
-  return "from-gray-50 to-gray-100 text-gray-600 border-gray-200";
+  visible: { y: 0, opacity: 1, transition: { duration: 0.5, ease: "easeOut" } }
 };
 
 export default function Tips() {
-  const [categories, setCategories] = useState(() => 
-    INITIAL_CATEGORIES.map(c => ({ ...c, tipsCount: null, preloadedTips: [] }))
-  );
+  const [categories, setCategories] = useState(INITIAL_CATEGORIES);
   const [selectedCategory, setSelectedCategory] = useState(null);
-  const [tips, setTips] = useState([]);
-  const [loadingTips, setLoadingTips] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isScrolled, setIsScrolled] = useState(false);
+  const [syncStatus, setSyncStatus] = useState('updating'); 
   
-  const headerRef = useRef(null);
   const { user } = useOutletContext() || { user: {} };
 
   const syncData = useCallback(async () => {
+    setSyncStatus('updating');
     try {
       const res = await fetch(`${BASE_URL}/tips/categories`);
-      if (!res.ok) return;
+      if (!res.ok) throw new Error();
       const serverData = await res.json();
-      const updatedCategories = serverData.map(item => ({
-        id: item.tipCategoryID || item.id,
-        name: item.categoryName || item.name || "",
-        emoji: getCategoryEmoji(item.categoryName || item.name),
-        colorClass: getCategoryColor(item.categoryName || item.name),
-        tipsCount: null,
-        preloadedTips: []
+      
+      const updatedCategories = await Promise.all(serverData.map(async (item) => {
+        const id = item.tipCategoryID || item.id;
+        const tipsRes = await fetch(`${BASE_URL}/tips/by-category/${id}`);
+        const tipsData = await tipsRes.json();
+        const existing = INITIAL_CATEGORIES.find(c => c.id === id);
+        return {
+          id: id,
+          name: item.categoryName || item.name || "",
+          emoji: existing?.emoji || "💡",
+          colorClass: existing?.colorClass || "from-gray-50 to-gray-100 text-gray-600 border-gray-200",
+          tipsCount: tipsData.length,
+          tips: tipsData.map(t => t.detail)
+        };
       }));
+
       setCategories(updatedCategories);
-      updatedCategories.forEach(async (cat) => {
-        try {
-          const tipsRes = await fetch(`${BASE_URL}/tips/by-category/${cat.id}`);
-          if (tipsRes.ok) {
-            const tipsData = await tipsRes.json();
-            setCategories(prev => prev.map(c => 
-              c.id === cat.id ? { ...c, tipsCount: tipsData.length, preloadedTips: tipsData } : c
-            ));
-          }
-        } catch (e) { console.warn(e); }
-      });
-    } catch (err) { console.error("Sync Error:", err); }
+      setSyncStatus('updated');
+    } catch (err) {
+      console.warn("Sync failed, using local/static data.");
+      setSyncStatus('error');
+    }
   }, []);
 
   useEffect(() => {
     syncData();
-    const handleScroll = () => setIsScrolled(window.scrollY > 50);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
   }, [syncData]);
 
-  const openCategory = async (cat) => {
+  const openCategory = (cat) => {
     setSelectedCategory(cat);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    if (cat.preloadedTips?.length > 0) {
-      setTips(cat.preloadedTips.map(item => ({ id: item.tipID, text: item.detail })));
-    } else {
-      setLoadingTips(true);
-      try {
-        const res = await fetch(`${BASE_URL}/tips/by-category/${cat.id}`);
-        const data = await res.json();
-        setTips(data.map(item => ({ id: item.tipID, text: item.detail })));
-      } catch { setTips([]); } finally { setLoadingTips(false); }
-    }
   };
 
   const getVerticalOrderedTips = (items) => {
-    if (items.length === 0) return [];
+    if (!items || items.length === 0) return [];
     const half = Math.ceil(items.length / 2);
     const leftColumn = items.slice(0, half);
     const rightColumn = items.slice(half);
+    
     const ordered = [];
     for (let i = 0; i < half; i++) {
-      if (leftColumn[i]) ordered.push({ ...leftColumn[i], displayIndex: i + 1 });
-      if (rightColumn[i]) ordered.push({ ...rightColumn[i], displayIndex: half + i + 1 });
+      if (leftColumn[i]) ordered.push({ text: leftColumn[i], displayIndex: i + 1 });
+      if (rightColumn[i]) ordered.push({ text: rightColumn[i], displayIndex: half + i + 1 });
     }
     return ordered;
   };
@@ -169,14 +122,8 @@ export default function Tips() {
       <main className="w-full max-w-[1600px] mx-auto px-4 pb-20 pt-32 md:pt-40 flex-grow relative z-10">
         <AnimatePresence mode="wait">
           {!selectedCategory ? (
-            <motion.div 
-              key="list" 
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-              exit="hidden"
-            >
-              {/* --- HEADER TIPS --- */}
+            <motion.div key="list" variants={containerVariants} initial="hidden" animate="visible" exit="hidden">
+              
               <motion.div variants={itemVariants} className="mb-10 md:mb-14 text-center">
                 <div className="flex items-center gap-3 mb-3 justify-center">
                   <Lightbulb className="w-8 h-8 md:w-10 md:h-10 text-[var(--brand-blue)] drop-shadow-lg" />
@@ -189,57 +136,76 @@ export default function Tips() {
                 </p>
               </motion.div>
 
-              {/* --- SEARCH BAR --- */}
-              <motion.div variants={itemVariants} className="w-full mb-12">
-                <div className="relative w-full">
+              {/* --- BAGIAN SEARCH & STATUS (Ramping/Tipis) --- */}
+              <motion.div variants={itemVariants} className="flex flex-col md:flex-row items-center gap-3 mb-10">
+                {/* Search Input (Lebih ramping) */}
+                <div className="relative flex-grow w-full">
                   <input 
                     type="text" 
                     placeholder="Find topics..." 
                     value={searchQuery} 
                     onChange={(e) => setSearchQuery(e.target.value)} 
-                    className="w-full pl-14 pr-6 py-5 bg-white/60 backdrop-blur-md rounded-2xl shadow-sm border border-white/50 focus:bg-white outline-none font-medium text-lg transition-all"
+                    className="w-full pl-11 pr-4 py-3 bg-white/60 backdrop-blur-md rounded-xl shadow-sm border border-white/50 focus:bg-white outline-none font-medium text-base transition-all"
                   />
-                  <div className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none z-10">
-                    <svg width="24" height="24" fill="currentColor" viewBox="0 0 256 256"><path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z" /></svg>
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none z-10">
+                    <svg width="18" height="18" fill="currentColor" viewBox="0 0 256 256"><path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z" /></svg>
                   </div>
+                </div>
+
+                {/* Status Indicator (Lebih ramping) */}
+                <div 
+                  className={`flex items-center gap-2 font-bold text-[10px] md:text-xs px-4 py-3 rounded-xl border backdrop-blur-md shadow-sm whitespace-nowrap transition-all duration-500 min-w-fit h-full ${
+                    syncStatus === 'updating' 
+                    ? "text-blue-600 bg-blue-50/90 border-blue-200" 
+                    : syncStatus === 'updated'
+                    ? "text-emerald-600 bg-emerald-50/90 border-emerald-200"
+                    : "text-rose-600 bg-rose-50/90 border-rose-200"
+                  }`}
+                >
+                  {syncStatus === 'updating' ? (
+                    <>
+                      <RefreshCw size={14} className="animate-spin" />
+                      <span>Updating...</span>
+                    </>
+                  ) : syncStatus === 'updated' ? (
+                    <>
+                      <CheckCircle2 size={14} />
+                      <span>Data Updated</span>
+                    </>
+                  ) : (
+                    <>
+                      <AlertCircle size={14} />
+                      <span>Failed to load tips. Using local data.</span>
+                    </>
+                  )}
                 </div>
               </motion.div>
 
               <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredCategories.length > 0 ? (
-                  filteredCategories.map((cat) => (
-                    <motion.div 
-                      key={cat.id} 
-                      whileHover={{ y: -5, scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => openCategory(cat)} 
-                      className={`group relative p-8 rounded-[32px] cursor-pointer bg-white/80 backdrop-blur-sm border shadow-sm hover:shadow-md hover:bg-white transition-all h-56 overflow-hidden ${cat.colorClass.split(" ").pop()}`}
-                    >
-                      <div className="flex justify-between items-start z-10 relative">
-                        <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-4xl bg-white/60 border border-white/50">{cat.emoji}</div>
-                        <div className="bg-white/60 text-gray-600 text-[10px] font-bold px-3 py-1.5 rounded-full border border-white/50 flex items-center gap-1.5 min-w-[75px] justify-center">
-                          {cat.tipsCount !== null ? `${cat.tipsCount} Tips` : <><Loader2 size={10} className="animate-spin text-blue-500" /><span>Loading...</span></>}
-                        </div>
+                {filteredCategories.map((cat) => (
+                  <motion.div 
+                    key={cat.id} 
+                    layoutId={`cat-${cat.id}`} 
+                    onClick={() => openCategory(cat)} 
+                    whileHover={{ y: -5, scale: 1.02 }}
+                    className={`group relative p-8 rounded-[32px] cursor-pointer bg-white/80 backdrop-blur-sm border shadow-sm hover:shadow-md hover:bg-white transition-all h-56 overflow-hidden ${cat.colorClass.split(" ").pop()}`}
+                  >
+                    <div className="flex justify-between items-start z-10 relative">
+                      <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-4xl bg-white/60 border border-white/50">{cat.emoji}</div>
+                      <div className="bg-white/60 text-gray-600 text-[10px] font-bold px-3 py-1.5 rounded-full border border-white/50 flex items-center justify-center">
+                        {cat.tipsCount} Tips
                       </div>
-                      <div className="mt-8 relative z-10">
-                        <h3 className="text-2xl font-bold text-gray-800">{cat.name}</h3>
-                        <p className="text-sm text-gray-500 mt-1">Click to explore</p>
-                      </div>
-                    </motion.div>
-                  ))
-                ) : (
-                  <div className="col-span-full py-20 text-center text-gray-400 font-medium">No categories found.</div>
-                )}
+                    </div>
+                    <div className="mt-8 relative z-10">
+                      <h3 className="text-2xl font-bold text-gray-800">{cat.name}</h3>
+                      <p className="text-sm text-gray-500 mt-1">Click to explore</p>
+                    </div>
+                  </motion.div>
+                ))}
               </motion.div>
             </motion.div>
           ) : (
-            <motion.div 
-              key="details" 
-              initial={{ opacity: 0, x: 20 }} 
-              animate={{ opacity: 1, x: 0 }} 
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.4 }}
-            >
+            <motion.div key="details" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4 }}>
               <div className="mb-8 bg-white/90 backdrop-blur-xl px-6 py-5 rounded-[24px] shadow-lg border border-white/50 flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <button onClick={() => setSelectedCategory(null)} className="w-11 h-11 flex items-center justify-center rounded-full bg-white hover:bg-gray-50 border border-gray-100 shadow-sm transition-transform active:scale-90">
@@ -251,26 +217,22 @@ export default function Tips() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {loadingTips ? (
-                  [...Array(4)].map((_, i) => <div key={i} className="h-24 bg-white/40 rounded-3xl animate-pulse"/>)
-                ) : (
-                  getVerticalOrderedTips(tips).map((tip, idx) => (
-                    <motion.div 
-                      key={tip.id}
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: idx * 0.05 }}
-                      className="bg-white/80 px-8 py-5 rounded-[28px] border border-white/60 shadow-sm relative group hover:bg-white transition-colors overflow-hidden flex items-center min-h-[90px]"
-                    >
-                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-7xl md:text-8xl font-extrabold text-gray-200/40 select-none pointer-events-none group-hover:text-blue-100/50 transition-colors z-0">
-                        {tip.displayIndex}
-                      </span>
-                      <p className="text-lg md:text-xl font-medium text-gray-700 relative z-10 leading-relaxed pr-10">
-                        {tip.text}
-                      </p>
-                    </motion.div>
-                  ))
-                )}
+                {getVerticalOrderedTips(selectedCategory.tips).map((tip, idx) => (
+                  <motion.div 
+                    key={idx}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.05 }}
+                    className="bg-white/80 px-8 py-5 rounded-[28px] border border-white/60 shadow-sm relative group hover:bg-white transition-colors overflow-hidden flex items-center min-h-[90px]"
+                  >
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-7xl md:text-8xl font-extrabold text-gray-200/40 select-none pointer-events-none group-hover:text-blue-100/50 transition-colors z-0">
+                      {tip.displayIndex}
+                    </span>
+                    <p className="text-lg md:text-xl font-medium text-gray-700 relative z-10 leading-relaxed pr-10">
+                      {tip.text}
+                    </p>
+                  </motion.div>
+                ))}
               </div>
             </motion.div>
           )}
