@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useOutletContext } from "react-router-dom"; 
 import { motion as Motion, AnimatePresence } from "framer-motion";
-import { Heart } from "lucide-react"; 
+import { Heart, Calendar, X } from "lucide-react"; 
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer"; 
 
@@ -19,6 +19,7 @@ export default function Diary() {
   const [text, setText] = useState("");
   const [selectedMood, setSelectedMood] = useState("😐");
   const [selectedFont, setSelectedFont] = useState(baseFont);
+  const [selectedEntry, setSelectedEntry] = useState(null);
   const [isBookOpen, setIsBookOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const scrollRef = useRef(null);
@@ -92,6 +93,46 @@ export default function Diary() {
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+        .notebook-lines {
+            background-color: #fffaf5;
+            background-image: linear-gradient(transparent 31px, #e2e8f0 31px);
+            background-size: 100% 32px;
+            background-attachment: local;
+        }
+
+        .spiral-spine {
+            position: absolute;
+            left: 12px;
+            top: 16px;
+            bottom: 16px;
+            width: 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            z-index: 30;
+        }
+        .spiral-ring {
+            width: 25px;
+            height: 8px;
+            background: linear-gradient(to bottom, #d1d5db, #9ca3af, #d1d5db);
+            border-radius: 4px;
+            box-shadow: 2px 1px 3px rgba(0,0,0,0.15);
+            position: relative;
+        }
+        .spiral-hole {
+            position: absolute;
+            right: -8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 8px;
+            background: #475569;
+            border-radius: 50%;
+        }
       `}</style>
       
       {/* NAVBAR */}
@@ -132,7 +173,7 @@ export default function Diary() {
                 <div className="absolute inset-0 w-full h-full bg-[#fcf9f5] rounded-[16px] md:rounded-l-[4px] md:rounded-r-[16px] shadow-[10px_10px_30px_rgba(0,0,0,0.15)] z-0 flex flex-col overflow-hidden border border-slate-200">
                     <div className="flex-grow p-5 md:p-8 flex flex-col relative z-10">
                          <button onClick={() => setIsBookOpen(false)} className="absolute top-3 right-3 z-30 w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all cursor-pointer">
-                            <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                            <X size={20} />
                         </button>
 
                         <div className="flex items-center gap-2 mb-2 overflow-x-auto overflow-y-hidden no-scrollbar py-2 border-b border-slate-200">
@@ -216,7 +257,7 @@ export default function Diary() {
                     <div ref={scrollRef} className="flex gap-5 overflow-x-auto pb-8 pt-2 no-scrollbar snap-x snap-mandatory" style={{ scrollBehavior: 'smooth' }}>
                         <AnimatePresence mode="popLayout">
                             {entries.map(entry => (
-                                <Motion.div key={entry.id} layout initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.5 }} className="flex-shrink-0 snap-center relative group/card bg-white rounded-2xl shadow-sm border border-slate-100 cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between p-6 w-[85vw] sm:w-[320px] md:w-[calc(50%-10px)] lg:w-[calc(33.333%-14px)] h-[240px]">
+                                <Motion.div key={entry.id} layout initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.5 }} className="flex-shrink-0 snap-center relative group/card bg-white rounded-2xl shadow-sm border border-slate-100 cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between p-6 w-[85vw] sm:w-[320px] md:w-[calc(50%-10px)] lg:w-[calc(33.333%-14px)] h-[240px]" onClick={() => setSelectedEntry(entry)}>
                                     <div><div className="flex justify-between items-start mb-3"><span className="text-3xl filter drop-shadow-sm">{entry.mood}</span><button onClick={(e) => handleDelete(entry.id, e)} className="w-8 h-8 flex items-center justify-center rounded-full bg-red-50 text-red-400 opacity-0 group-hover/card:opacity-100 transition-all hover:bg-red-500 hover:text-white">✕</button></div><h4 className="font-bold text-lg mb-1 truncate leading-tight" style={{ color: colors.textPrimary, fontFamily: entry.font || baseFont }}>{entry.title}</h4><p className="text-[10px] font-bold uppercase tracking-widest opacity-40 mb-3 text-slate-500">{entry.date}</p></div>
                                     <div className="relative overflow-hidden h-full"><p className="text-slate-500 text-sm leading-relaxed line-clamp-3" style={{ fontFamily: entry.font || baseFont }}>{entry.content}</p><div className="absolute bottom-0 left-0 w-full h-8 bg-gradient-to-t from-white to-transparent"></div></div>
                                     <div className="mt-2 text-right"><span className="text-xs font-semibold text-blue-400 group-hover/card:underline">Read more →</span></div>
@@ -230,6 +271,66 @@ export default function Diary() {
              ) : ( <div className="flex flex-col items-center justify-center py-16 opacity-50 border-2 border-dashed border-slate-200 rounded-3xl mx-4"><span className="text-4xl mb-2">📝</span><p className="text-sm font-bold uppercase tracking-widest text-slate-400">No stories recorded yet</p></div> )}
         </div>
       </main>
+
+      {/* --- MODAL DETAIL --- */}
+      <AnimatePresence>
+        {selectedEntry && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <Motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSelectedEntry(null)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" />
+            
+            <Motion.div initial={{ opacity: 0, scale: 0.9, y: 30 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 30 }} 
+                className="relative bg-[#e2e8f0] w-full max-w-4xl h-full max-h-[85vh] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col p-2"
+            >
+              <div className="relative flex-grow bg-[#fffaf5] rounded-xl overflow-hidden flex shadow-inner border border-slate-300">
+                
+                <div className="spiral-spine">
+                  {[...Array(14)].map((_, i) => (
+                    <div key={i} className="spiral-ring">
+                      <div className="spiral-hole"></div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex-grow notebook-lines pl-16 pr-8 md:pl-24 md:pr-12 overflow-y-auto custom-scrollbar pt-[32px]">
+                  <div className="pb-16">
+                    <div className="flex items-start gap-6 mb-0">
+                       <div className="w-16 h-[64px] bg-white rounded-xl shadow-sm border border-slate-200 flex items-center justify-center text-4xl shrink-0">
+                         {selectedEntry.mood}
+                       </div>
+                       <div className="flex flex-col justify-end h-[64px]">
+                          <div className="flex items-center gap-2 text-blue-600 h-[32px] border-b border-transparent">
+                             <Calendar size={14} />
+                             <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest">{selectedEntry.date}</span>
+                          </div>
+                          <h2 className="text-lg md:text-3xl font-extrabold text-slate-800 leading-[32px] h-[32px] truncate" 
+                              style={{ fontFamily: selectedEntry.font || baseFont }}>
+                              {selectedEntry.title}
+                          </h2>
+                       </div>
+                    </div>
+
+                    <div 
+                        className="text-slate-700 text-sm md:text-xl whitespace-pre-wrap mt-0" 
+                        style={{ 
+                            fontFamily: selectedEntry.font || baseFont,
+                            lineHeight: '32px', 
+                        }}
+                    >
+                        {selectedEntry.content}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="px-6 py-4 flex justify-end items-center bg-white/50">
+                 <button onClick={() => setSelectedEntry(null)} className="px-6 py-2 bg-[#1e293b] text-white rounded-lg font-bold text-sm shadow-md hover:bg-slate-700 transition-all active:scale-95">
+                  Close Journal
+                 </button>
+              </div>
+            </Motion.div>
+          </div>
+        )}
+      </AnimatePresence>
       
       <Footer />
     </div>
