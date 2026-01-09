@@ -30,6 +30,6 @@ class UserResponse(BaseModel):
     email: EmailStr
     gender: Optional[str] = None
     avatar: Optional[str] = None
-    
+    userDOB: Optional[date] = None
     class Config:
         from_attributes = True
