@@ -1,5 +1,5 @@
 // src/pages/Profile/Profile.jsx
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Link, useOutletContext } from "react-router-dom";
 import axios from "axios"; 
 import Navbar from "../../components/Navbar";
@@ -189,14 +189,12 @@ export default function Profile() {
     }
   }, [contextUser]);
 
-  // --- LOGIC FETCH BOOKMARK (BARU) ---
-  useEffect(() => {
-    if (activeTab === "bookmark") {
-      fetchBookmarks();
-    }
-  }, [activeTab]);
+  const showNotification = useCallback((message, type = "success") => {
+    setNotification({ message, type });
+    setTimeout(() => setNotification(null), 3000);
+  }, []);
 
-  const fetchBookmarks = async () => {
+  const fetchBookmarks = useCallback(async () => {
     setLoadingBookmarks(true);
     const token = localStorage.getItem("token");
     if (!token) return;
@@ -209,7 +207,14 @@ export default function Profile() {
     } finally {
       setLoadingBookmarks(false);
     }
-  };
+  }, [showNotification]);
+
+  // --- LOGIC FETCH BOOKMARK (BARU) ---
+  useEffect(() => {
+    if (activeTab === "bookmark") {
+      fetchBookmarks();
+    }
+  }, [activeTab, fetchBookmarks]);
 
   const handleUnsave = async (motivationID) => {
     const token = localStorage.getItem("token");
@@ -217,7 +222,7 @@ export default function Profile() {
         await axios.delete(`${BASE_URL}/bookmarks/${motivationID}`, { headers: { Authorization: `Bearer ${token}` } });
         setBookmarks(prev => prev.filter(b => b.motivationID !== motivationID));
         showNotification("Bookmark removed", "info");
-    } catch (err) {
+    } catch {
         showNotification("Failed to remove bookmark", "error");
     }
   };
@@ -232,8 +237,6 @@ export default function Profile() {
     { label: "Stress", value: "Low", icon: <Activity className="w-5 h-5 text-green-500" />, bg: "bg-green-100" },
   ];
 
-  const showNotification = (message, type = "success") => { setNotification({ message, type }); setTimeout(() => setNotification(null), 3000); };
-  
   const handleInputChange = (e) => { const { name, value } = e.target; setFormData({ ...formData, [name]: value }); };
 
   const handleSaveProfile = async () => {
@@ -264,7 +267,14 @@ export default function Profile() {
   };
 
   const handleEmailChangeRequest = () => { if (window.confirm("Changing email requires verification. Do you want to proceed?")) alert("Redirecting to email verification..."); };
-  const handleLogout = () => { if (window.confirm("Are you sure you want to log out?")) { localStorage.removeItem("token"); localStorage.removeItem("cache_userData"); window.location.href = "/login"; } };
+  const handleLogout = () => { 
+    if (window.confirm("Are you sure you want to log out?")) { 
+        localStorage.removeItem("token"); 
+        localStorage.removeItem("cache_userData"); 
+        // Redirect to Landing Page ("/") instead of "/login"
+        window.location.href = "/"; 
+    } 
+  };
 
   // --- SETTINGS LOGIC (RESTORED) ---
   const handleNotifChange = (e) => {

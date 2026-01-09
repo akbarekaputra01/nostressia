@@ -5,7 +5,7 @@ import axios from "axios";
 // 1. UBAH IMPORT: Panggil BASE_URL, bukan API_BASE_URL
 import { BASE_URL } from "../../api/config"; 
 import { Mail, Lock, ArrowRight, Loader2, CheckCircle, User, Calendar, AtSign, Users, Check, Eye, EyeOff } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion as Motion } from "framer-motion";
 
 import logoBuka from "../../assets/images/Logo-Buka.png";
 import logoKedip from "../../assets/images/Logo-Kedip.png";
@@ -154,7 +154,7 @@ export default function Login() {
             <div className="absolute inset-0 bg-blue-400/10 blur-[60px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             <div className="relative w-full flex items-center justify-center">
                 <img src={logoKedip} alt="Nostressia Wink" className="w-full h-auto object-contain relative z-10" />
-                <motion.img src={logoBuka} alt="Nostressia Open" className="absolute top-0 left-0 w-full h-full object-contain z-20" initial={{ opacity: 1 }} animate={{ opacity: isWinking ? 0 : 1 }} transition={{ duration: 0.1 }} />
+                <Motion.img src={logoBuka} alt="Nostressia Open" className="absolute top-0 left-0 w-full h-full object-contain z-20" initial={{ opacity: 1 }} animate={{ opacity: isWinking ? 0 : 1 }} transition={{ duration: 0.1 }} />
             </div>
             <p className="text-center text-gray-400/60 text-[10px] mt-8 font-medium tracking-widest uppercase animate-pulse">No stress, More success</p>
         </div>
@@ -164,7 +164,7 @@ export default function Login() {
       <div className="w-full lg:w-1/2 h-full flex items-center justify-center p-4 relative bg-white perspective-[1000px]">
          
          {/* KARTU FLIP */}
-         <motion.div 
+         <Motion.div 
             className="relative w-full max-w-md h-[85vh] max-h-[850px] min-h-[600px]" 
             animate={{ rotateY: isFlipped ? -180 : 0 }}
             transition={{ duration: 0.6, type: "spring", stiffness: 50, damping: 15 }}
@@ -371,7 +371,7 @@ export default function Login() {
                 </div>
             </div>
 
-         </motion.div>
+         </Motion.div>
       </div>
       {/* --- TOMBOL TEMPORARY: DEV BYPASS LOGIN --- */}
       <a
