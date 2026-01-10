@@ -517,20 +517,6 @@ export default function Dashboard() {
           </h1>
           <p className="text-gray-600 mt-2 text-lg font-medium">Ready to navigate the day with more calm?</p>
         </div>
-        {isLoadingLogs && (
-          <div className="mb-6 rounded-2xl border border-white/60 bg-white/60 p-4 shadow-sm">
-            <div className="flex items-center gap-3 text-sm font-semibold text-gray-700">
-              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-blue-500">
-                <span className="absolute inset-0 rounded-full bg-blue-300 animate-ping" />
-              </span>
-              <span>Memuat data dashboard...</span>
-            </div>
-            <div className="mt-3 space-y-2">
-              <div className="skeleton h-2.5 w-1/3 rounded-full" />
-              <div className="skeleton h-2.5 w-2/3 rounded-full" />
-            </div>
-          </div>
-        )}
         {!isLoadingLogs && loadError && (
           <div className="mb-6 flex items-center gap-2 rounded-xl bg-red-50 text-red-700 px-4 py-3 text-sm font-semibold">
             <span className="inline-flex h-2.5 w-2.5 rounded-full bg-red-500" />
@@ -635,9 +621,9 @@ export default function Dashboard() {
                     </button>
                   </header>
                   {isLoadingLogs && !successModal.visible && (
-                    <div className="mb-4 space-y-2">
-                      <div className="skeleton h-3 w-28 rounded-full" />
-                      <div className="skeleton h-3 w-44 rounded-full" />
+                    <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-gray-500">
+                      <i className="ph ph-spinner-gap text-lg animate-spin" />
+                      <span>Loading data...</span>
                     </div>
                   )}
 
@@ -747,9 +733,9 @@ export default function Dashboard() {
               <button className="icon-btn text-gray-600 hover:text-gray-900 transition-colors cursor-pointer" onClick={() => changeMonth(1)}><i className="ph ph-arrow-right text-xl" /></button>
             </header>
             {isLoadingLogs && (
-              <div className="mb-4 space-y-2">
-                <div className="skeleton h-3 w-36 rounded-full" />
-                <div className="skeleton h-3 w-48 rounded-full" />
+              <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-gray-500">
+                <i className="ph ph-spinner-gap text-lg animate-spin" />
+                <span>Loading calendar...</span>
               </div>
             )}
             <div className="grid grid-cols-7 gap-1 mb-2 text-center">
