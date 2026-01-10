@@ -18,15 +18,22 @@ class User(Base):
     # Data Tambahan
     gender = Column(String(50))
     userGPA = Column(Float)
+    
+    # ✅ Atribut Streak & LastLogin
     streak = Column(Integer, default=0)
+    lastLogin = Column(Date, nullable=True) # Tambah ini (boleh NULL)
+    
     userDOB = Column(Date)
-    
-    # Fitur Baru
     avatar = Column(String(255), nullable=True)
-    
     createdAt = Column(TIMESTAMP, server_default=func.now())
 
     # Relasi
     diaries = relationship("Diary", back_populates="user")
     stress_levels = relationship("StressLevel", back_populates="user")
     bookmarks = relationship("Bookmark", back_populates="user")
+
+    # ✅ Properti untuk menghitung jumlah diary otomatis
+    @property
+    def diary_count(self):
+        # Ini akan menghitung jumlah item di relasi diaries
+        return len(self.diaries)
