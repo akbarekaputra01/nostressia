@@ -534,7 +534,7 @@ export default function Dashboard() {
           <section className="col-span-1 md:col-span-2 relative" style={{ minHeight: 640 }}>
             {isLoadingLogs && (
               <div className="absolute inset-0 z-20 rounded-[20px] bg-white/70 backdrop-blur-sm p-6 md:p-8">
-                <div className="h-full w-full rounded-[16px] border border-white/40 bg-white/60 p-6 md:p-8 shadow-inner">
+                <div className="relative h-full w-full rounded-[16px] border border-white/40 bg-white/60 p-6 md:p-8 shadow-inner">
                   <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-3">
                       <div className="skeleton h-10 w-10 rounded-full" />
@@ -564,7 +564,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <div className="skeleton h-12 w-full rounded-xl" />
-                  <div className="mt-6 flex flex-col items-center gap-3">
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-center">
                     <div className="relative flex items-center justify-center">
                       <div className="h-16 w-16 rounded-full border-4 border-blue-200 border-t-blue-500 spin-slow" />
                       <div className="absolute h-10 w-10 rounded-full border-4 border-orange-200 border-t-orange-500 spin-reverse" />
@@ -764,7 +764,7 @@ export default function Dashboard() {
           <section className="col-span-1 md:col-span-2 p-6 md:p-8 rounded-[20px] bg-white/40 backdrop-blur-md border border-white/20 shadow-xl relative overflow-hidden" style={{ minHeight: 640 }}>
             {isLoadingLogs && (
               <div className="absolute inset-0 z-20 bg-white/70 backdrop-blur-sm p-6 md:p-8">
-                <div className="h-full w-full rounded-[16px] border border-white/40 bg-white/60 p-6 md:p-8 shadow-inner">
+                <div className="relative h-full w-full rounded-[16px] border border-white/40 bg-white/60 p-6 md:p-8 shadow-inner">
                   <div className="flex items-center justify-between mb-6">
                     <div className="skeleton h-8 w-8 rounded-full" />
                     <div className="skeleton h-5 w-40 rounded-full" />
@@ -780,7 +780,7 @@ export default function Dashboard() {
                       <div key={`day-skel-${idx}`} className="skeleton aspect-square rounded-xl" />
                     ))}
                   </div>
-                  <div className="mt-6 flex flex-col items-center gap-3">
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-center">
                     <div className="relative flex items-center justify-center">
                       <div className="h-14 w-14 rounded-full border-4 border-blue-200 border-t-blue-500 spin-slow" />
                       <div className="absolute h-9 w-9 rounded-full border-4 border-orange-200 border-t-orange-500 spin-reverse" />
