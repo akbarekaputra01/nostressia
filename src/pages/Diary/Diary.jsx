@@ -157,11 +157,11 @@ export default function Diary() {
                 className="w-10 h-10 sm:w-12 md:w-14 lg:w-16 text-yellow-400 drop-shadow-lg flex-shrink-0" 
                 strokeWidth={2.5} 
               />
-              <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent drop-shadow-md leading-tight">
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent drop-shadow-md">
                 Diary Nostressia
               </h1>
             </div>
-            <p className="text-gray-600 text-sm sm:text-base md:text-lg font-medium max-w-[280px] sm:max-w-md md:max-w-xl leading-relaxed">
+            <p className="text-gray-600 mt-2 text-base md:text-lg font-medium">
               Write your story today.
             </p>
         </motion.div>
