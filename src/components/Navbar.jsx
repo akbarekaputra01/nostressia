@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import LogoImage from "../assets/images/Logo-Nostressia.png"; 
+import { resolveAvatarUrl } from "../utils/avatar";
 
 // --- Data Menu Navigasi ---
 const navLinks = [
@@ -31,6 +32,9 @@ const Navbar = ({ user }) => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  const fallbackAvatar = "https://i.pravatar.cc/40?img=12";
+  const avatarSrc = resolveAvatarUrl(user?.avatar) || fallbackAvatar;
 
   return (
     <header
@@ -105,9 +109,12 @@ const Navbar = ({ user }) => {
           <Link to="/profile" className="hidden lg:block">
             <img
               // LOGIKA: Jika user punya avatar, pakai itu. Jika tidak, pakai placeholder default.
-              src={user?.avatar || "https://i.pravatar.cc/40?img=12"}
+              src={avatarSrc}
               alt="Profile"
               className="w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-white/20 object-cover cursor-pointer hover:border-blue-400 transition-colors"
+              onError={(event) => {
+                event.currentTarget.src = fallbackAvatar;
+              }}
             />
           </Link>
 
@@ -163,9 +170,12 @@ const Navbar = ({ user }) => {
           >
             {/* FOTO PROFIL (MOBILE) */}
             <img
-              src={user?.avatar || "https://i.pravatar.cc/40?img=12"}
+              src={avatarSrc}
               alt="Profile"
               className="w-9 h-9 rounded-full border border-gray-300 object-cover"
+              onError={(event) => {
+                event.currentTarget.src = fallbackAvatar;
+              }}
             />
             <span className="text-gray-700 font-semibold">My Profile</span>
           </Link>

@@ -11,6 +11,7 @@ import {
   Cake, Smile, Activity, Lock, Key, Clock, Smartphone, Bookmark, Plus, Loader2, AtSign, Check, AlertCircle,
   Eye, EyeOff
 } from "lucide-react";
+import { resolveAvatarUrl } from "../../utils/avatar";
 
 // --- IMPORT AVATAR ---
 import avatar1 from "../../assets/images/avatar1.png";
@@ -235,6 +236,8 @@ export default function Profile() {
     username: "", fullName: "", email: "",
     avatar: null, birthday: "", gender: "",
   });
+  const fallbackAvatar = AVATAR_OPTIONS[0];
+  const displayAvatar = resolveAvatarUrl(formData.avatar) || fallbackAvatar;
 
   // --- LOGIC SYNC USER ---
   useEffect(() => {
@@ -492,7 +495,18 @@ export default function Profile() {
             <div className="relative z-10 flex flex-col md:flex-row items-center gap-6 md:gap-8">
                 <div className="relative group">
                     <div className="w-28 h-28 md:w-32 md:h-32 rounded-full border-4 border-white shadow-lg overflow-hidden bg-white">
-                        {formData.avatar ? <img src={formData.avatar} alt="Profile" className="w-full h-full object-cover" /> : <div className="w-full h-full bg-gray-200 animate-pulse"></div>}
+                        {formData.avatar ? (
+                          <img
+                            src={displayAvatar}
+                            alt="Profile"
+                            className="w-full h-full object-cover"
+                            onError={(event) => {
+                              event.currentTarget.src = fallbackAvatar;
+                            }}
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gray-200 animate-pulse"></div>
+                        )}
                     </div>
                     {/* BUTTON UBAH AVATAR (MEMBUKA MODAL) */}
                     <button onClick={() => setShowAvatarModal(true)} className="absolute bottom-1 right-1 bg-blue-600 text-white p-2 rounded-full shadow-md hover:bg-blue-700 transition-all cursor-pointer"><Edit3 className="w-4 h-4" /></button>
