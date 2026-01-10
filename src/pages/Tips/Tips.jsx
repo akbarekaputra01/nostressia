@@ -143,11 +143,11 @@ export default function Tips() {
               <Motion.div variants={itemVariants} className="mb-8 md:mb-10 text-center">
                 <div className="flex items-center gap-2 mb-2 justify-center">
                   <Lightbulb className="w-6 h-6 md:w-8 md:h-8 text-[var(--brand-blue)] drop-shadow-lg" />
-                  <h1 className="text-2xl md:text-4xl font-extrabold bg-gradient-to-r from-[var(--brand-blue)] to-[var(--brand-blue-light)] bg-clip-text text-transparent drop-shadow-md">
+                  <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold bg-gradient-to-r from-[var(--brand-blue)] to-[var(--brand-blue-light)] bg-clip-text text-transparent drop-shadow-md">
                     Tips
                   </h1>
                 </div>
-                <p className="text-xs md:text-base font-medium drop-shadow-sm px-4 text-[var(--text-secondary)]">
+                <p className="text-gray-600 mt-2 text-base md:text-lg font-medium">
                   Choose a category to explore helpful tips for managing stress
                 </p>
               </Motion.div>
