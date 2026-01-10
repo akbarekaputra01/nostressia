@@ -492,6 +492,8 @@ export default function Dashboard() {
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes shimmer-slide { 100% { transform: translateX(100%); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pulse-soft { 0%, 100% { opacity: 0.7; transform: scale(0.98); } 50% { opacity: 1; transform: scale(1); } }
         .skeleton {
           position: relative;
           overflow: hidden;
@@ -505,6 +507,9 @@ export default function Dashboard() {
           background: linear-gradient(90deg, transparent, rgba(255,255,255,0.7), transparent);
           animation: shimmer-slide 1.6s infinite;
         }
+        .spin-slow { animation: spin 1.4s linear infinite; }
+        .spin-reverse { animation: spin 2.1s linear infinite reverse; }
+        .pulse-soft { animation: pulse-soft 1.8s ease-in-out infinite; }
       `}</style>
 
       {/* NAVBAR */}
@@ -559,9 +564,15 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <div className="skeleton h-12 w-full rounded-xl" />
-                  <p className="mt-4 text-center text-sm font-semibold text-gray-500">
-                    Menyiapkan dashboard kamu...
-                  </p>
+                  <div className="mt-6 flex flex-col items-center gap-3">
+                    <div className="relative flex items-center justify-center">
+                      <div className="h-16 w-16 rounded-full border-4 border-blue-200 border-t-blue-500 spin-slow" />
+                      <div className="absolute h-10 w-10 rounded-full border-4 border-orange-200 border-t-orange-500 spin-reverse" />
+                    </div>
+                    <p className="text-center text-sm font-semibold text-gray-500 pulse-soft">
+                      Menyiapkan dashboard kamu...
+                    </p>
+                  </div>
                 </div>
               </div>
             )}
@@ -769,9 +780,15 @@ export default function Dashboard() {
                       <div key={`day-skel-${idx}`} className="skeleton aspect-square rounded-xl" />
                     ))}
                   </div>
-                  <p className="mt-5 text-center text-sm font-semibold text-gray-500">
-                    Mengambil riwayat log harian...
-                  </p>
+                  <div className="mt-6 flex flex-col items-center gap-3">
+                    <div className="relative flex items-center justify-center">
+                      <div className="h-14 w-14 rounded-full border-4 border-blue-200 border-t-blue-500 spin-slow" />
+                      <div className="absolute h-9 w-9 rounded-full border-4 border-orange-200 border-t-orange-500 spin-reverse" />
+                    </div>
+                    <p className="text-center text-sm font-semibold text-gray-500 pulse-soft">
+                      Mengambil riwayat log harian...
+                    </p>
+                  </div>
                 </div>
               </div>
             )}
