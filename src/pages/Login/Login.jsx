@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom"; 
 import axios from "axios"; 
-// 1. UBAH IMPORT: Panggil BASE_URL, bukan API_BASE_URL
 import { BASE_URL } from "../../api/config"; 
 import { Mail, Lock, ArrowRight, Loader2, CheckCircle, User, Calendar, AtSign, Users, Check, Eye, EyeOff } from "lucide-react";
 import { motion as Motion } from "framer-motion";
@@ -11,10 +10,11 @@ import logoBuka from "../../assets/images/Logo-Buka.png";
 import logoKedip from "../../assets/images/Logo-Kedip.png";
 
 import avatar1 from "../../assets/images/avatar1.png";
-import avatar2 from "../../assets/images/avatar2.png";   // PNG
-import avatar3 from "../../assets/images/avatar3.png";  // JPEG (Hati-hati, ini beda sendiri)
+import avatar2 from "../../assets/images/avatar2.png"; 
+import avatar3 from "../../assets/images/avatar3.png"; 
 import avatar4 from "../../assets/images/avatar4.png";
 import avatar5 from "../../assets/images/avatar5.png";
+
 // --- DATA AVATAR STATIS ---
 const AVATAR_OPTIONS = [
   avatar1,
@@ -62,7 +62,6 @@ export default function Login() {
     
     setIsLoading(true);
     try {
-        // 2. GUNAKAN BASE_URL DI SINI
         const response = await axios.post(`${BASE_URL}/user/login`, {
             email: formData.email,
             password: formData.password
@@ -82,21 +81,42 @@ export default function Login() {
     }
   };
 
-  // --- LOGIKA REGISTER ---
+  // --- LOGIKA REGISTER (UPDATED) ---
   const handleSignUp = async (e) => {
     e.preventDefault();
+    
+    // 1. Validasi Input Kosong
     if (!formData.name || !formData.username || !formData.email || !formData.password || !formData.confirmPassword || !formData.gender || !formData.dob) {
         alert("Mohon lengkapi semua data!"); 
         return;
     }
+
+    // 2. Validasi Password Match
     if (formData.password !== formData.confirmPassword) {
         alert("Password dan Konfirmasi Password tidak cocok!");
         return;
     }
+
+    // 3. Konfirmasi Data (Bahasa Inggris)
+    const confirmMessage = 
+`Please confirm your details:
+
+Name: ${formData.name}
+Username: ${formData.username}
+Email: ${formData.email}
+Gender: ${formData.gender}
+Date of Birth: ${formData.dob}
+
+Is the data above correct?`;
+
+    // Jika user klik "Cancel", hentikan proses
+    if (!window.confirm(confirmMessage)) {
+        return;
+    }
     
+    // 4. Proses API
     setIsLoading(true);
     try {
-        // 3. GUNAKAN BASE_URL DI SINI
         await axios.post(`${BASE_URL}/user/register`, {
             name: formData.name,
             userName: formData.username,
@@ -162,7 +182,7 @@ export default function Login() {
 
       {/* --- BAGIAN KANAN (FORM FLIP) --- */}
       <div className="w-full lg:w-1/2 h-full flex items-center justify-center p-4 relative bg-white perspective-[1000px]">
-         
+          
          {/* KARTU FLIP */}
          <Motion.div 
             className="relative w-full max-w-md h-[85vh] max-h-[850px] min-h-[600px]" 
@@ -345,18 +365,24 @@ export default function Login() {
                             </div>
                         </div>
 
-                        {/* DOB */}
+                        {/* DOB (UPDATED with Enter Key) */}
                         <div className="space-y-1">
                             <label className="text-xs font-bold text-gray-700 ml-1">Date of Birth</label>
                             <div className="relative group">
                                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><Calendar className="h-4 w-4 text-gray-400 group-focus-within:text-orange-500 transition-colors" /></div>
-                                <input type="date" value={formData.dob} onChange={(e) => setFormData({...formData, dob: e.target.value})} className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:bg-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 outline-none transition-all font-medium cursor-pointer" />
+                                <input 
+                                    type="date" 
+                                    value={formData.dob} 
+                                    onChange={(e) => setFormData({...formData, dob: e.target.value})} 
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            handleSignUp(e);
+                                        }
+                                    }}
+                                    className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:bg-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 outline-none transition-all font-medium cursor-pointer" 
+                                />
                             </div>
                         </div>
-
-                       
-
-                      
 
                     </form>
                 </div>
