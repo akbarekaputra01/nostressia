@@ -528,8 +528,41 @@ export default function Dashboard() {
           {/* FLIP CARD SECTION */}
           <section className="col-span-1 md:col-span-2 relative" style={{ minHeight: 640 }}>
             {isLoadingLogs && (
-              <div className="absolute inset-0 z-20 flex items-center justify-center rounded-[20px] bg-white/70 backdrop-blur-sm">
-                <i className="ph ph-spinner-gap text-4xl text-gray-500 animate-spin" />
+              <div className="absolute inset-0 z-20 rounded-[20px] bg-white/70 backdrop-blur-sm p-6 md:p-8">
+                <div className="h-full w-full rounded-[16px] border border-white/40 bg-white/60 p-6 md:p-8 shadow-inner">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-3">
+                      <div className="skeleton h-10 w-10 rounded-full" />
+                      <div className="space-y-2">
+                        <div className="skeleton h-4 w-40 rounded-full" />
+                        <div className="skeleton h-3 w-28 rounded-full" />
+                      </div>
+                    </div>
+                    <div className="skeleton h-8 w-20 rounded-full" />
+                  </div>
+                  <div className="flex flex-col items-center justify-center text-center gap-4 mb-8">
+                    <div className="skeleton h-24 w-24 rounded-full" />
+                    <div className="space-y-2">
+                      <div className="skeleton h-6 w-56 rounded-full mx-auto" />
+                      <div className="skeleton h-4 w-40 rounded-full mx-auto" />
+                    </div>
+                  </div>
+                  <div className="space-y-4 mb-8">
+                    <div className="skeleton h-4 w-32 rounded-full" />
+                    <div className="flex justify-between gap-2">
+                      {Array.from({ length: 7 }).map((_, idx) => (
+                        <div key={`trend-skel-${idx}`} className="flex flex-col items-center gap-2 flex-1">
+                          <div className="skeleton h-4 w-4 rounded-full" />
+                          <div className="skeleton h-3 w-6 rounded-full" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="skeleton h-12 w-full rounded-xl" />
+                  <p className="mt-4 text-center text-sm font-semibold text-gray-500">
+                    Menyiapkan dashboard kamu...
+                  </p>
+                </div>
               </div>
             )}
             <div style={{ perspective: 1500 }} className={`w-full h-full ${isLoadingLogs ? "opacity-0 pointer-events-none" : ""}`}>
@@ -719,8 +752,27 @@ export default function Dashboard() {
           {/* CALENDAR */}
           <section className="col-span-1 md:col-span-2 p-6 md:p-8 rounded-[20px] bg-white/40 backdrop-blur-md border border-white/20 shadow-xl relative overflow-hidden" style={{ minHeight: 640 }}>
             {isLoadingLogs && (
-              <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/70 backdrop-blur-sm">
-                <i className="ph ph-spinner-gap text-4xl text-gray-500 animate-spin" />
+              <div className="absolute inset-0 z-20 bg-white/70 backdrop-blur-sm p-6 md:p-8">
+                <div className="h-full w-full rounded-[16px] border border-white/40 bg-white/60 p-6 md:p-8 shadow-inner">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="skeleton h-8 w-8 rounded-full" />
+                    <div className="skeleton h-5 w-40 rounded-full" />
+                    <div className="skeleton h-8 w-8 rounded-full" />
+                  </div>
+                  <div className="grid grid-cols-7 gap-2 mb-4">
+                    {Array.from({ length: 7 }).map((_, idx) => (
+                      <div key={`weekday-skel-${idx}`} className="skeleton h-4 w-full rounded-full" />
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-7 gap-2">
+                    {Array.from({ length: 35 }).map((_, idx) => (
+                      <div key={`day-skel-${idx}`} className="skeleton aspect-square rounded-xl" />
+                    ))}
+                  </div>
+                  <p className="mt-5 text-center text-sm font-semibold text-gray-500">
+                    Mengambil riwayat log harian...
+                  </p>
+                </div>
               </div>
             )}
             <div className={isLoadingLogs ? "opacity-0 pointer-events-none" : ""}>
