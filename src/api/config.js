@@ -3,7 +3,7 @@ const BASE_URLS = {
   deploy: "https://akbarekaputra01-nostressia-backend.hf.space/api",
 };
 
-const ENV = import.meta.env.VITE_API_ENV || "deploy";
+const ENV = import.meta.env.VITE_API_ENV || "local";
 
 export const BASE_URL =
   import.meta.env.VITE_API_BASE_URL || BASE_URLS[ENV] || BASE_URLS.deploy;

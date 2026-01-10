@@ -8,10 +8,58 @@ import {
   User, Mail, Heart, Settings, LogOut, 
   Edit3, Trophy, BookOpen, 
   ChevronRight, Bell, CheckCircle, X,
-  Cake, Smile, Activity, Lock, Key, Clock, Smartphone, Bookmark, Plus, Loader2
+  Cake, Smile, Activity, Lock, Key, Clock, Smartphone, Bookmark, Plus, Loader2, AtSign, Check, AlertCircle,
+  Eye, EyeOff
 } from "lucide-react";
 
-// --- GAME COMPONENT (FULL ORIGINAL - TIDAK DIUBAH) ---
+// --- IMPORT AVATAR ---
+import avatar1 from "../../assets/images/avatar1.png";
+import avatar2 from "../../assets/images/avatar2.png";
+import avatar3 from "../../assets/images/avatar3.png";
+import avatar4 from "../../assets/images/avatar4.png";
+import avatar5 from "../../assets/images/avatar5.png";
+
+const AVATAR_OPTIONS = [
+  avatar1,
+  avatar4,
+  avatar3,
+  avatar5,
+  avatar2
+];
+
+// --- COMPONENT: AVATAR SELECTION MODAL ---
+const AvatarSelectionModal = ({ onClose, onSelect, currentAvatar }) => {
+  return (
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in">
+      <div className="bg-white rounded-[24px] p-6 w-full max-w-lg shadow-2xl border border-white/50 relative">
+        <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors">
+          <X size={24} />
+        </button>
+        <h3 className="text-xl font-bold text-gray-800 mb-6 text-center">Pick Your Avatar</h3>
+        <div className="flex justify-center items-center gap-3 md:gap-4 flex-wrap bg-gray-50 border border-gray-200 rounded-2xl p-4">
+          {AVATAR_OPTIONS.map((avatarImg, index) => {
+            const isSelected = currentAvatar === avatarImg;
+            return (
+              <div 
+                key={index} 
+                onClick={() => onSelect(avatarImg)}
+                className={`relative cursor-pointer transition-all duration-300 rounded-full p-1 ${isSelected ? "scale-110 ring-4 ring-orange-500 shadow-lg bg-white" : "hover:scale-105 opacity-70 hover:opacity-100"}`}
+              >
+                <img src={avatarImg} alt={`Avatar ${index}`} className="w-14 h-14 md:w-16 md:h-16 rounded-full object-cover bg-white border border-gray-200" />
+                {isSelected && (
+                  <div className="absolute -bottom-1 -right-1 bg-orange-500 text-white rounded-full p-1 border-2 border-white shadow-sm"><Check size={10} strokeWidth={4}/></div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+        <p className="text-center text-xs text-gray-400 mt-4">*Select an avatar to update your profile picture</p>
+      </div>
+    </div>
+  );
+};
+
+// --- GAME COMPONENT (FULL ORIGINAL) ---
 const FishGameModal = ({ onClose }) => {
   const canvasRef = useRef(null);
   useEffect(() => {
@@ -150,16 +198,29 @@ const FishGameModal = ({ onClose }) => {
 // --- MAIN PROFILE COMPONENT ---
 export default function Profile() {
   const [activeTab, setActiveTab] = useState("personal"); 
-  const fileInputRef = useRef(null);
   const [notification, setNotification] = useState(null);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showNotifModal, setShowNotifModal] = useState(false); 
   const [showGameModal, setShowGameModal] = useState(false); 
+  const [showAvatarModal, setShowAvatarModal] = useState(false); 
   const [isLoadingSave, setIsLoadingSave] = useState(false);
+  
+  const [isLoadingPassword, setIsLoadingPassword] = useState(false);
 
-  // STATE UNTUK BOOKMARK (BARU)
+  // STATE VISIBILITY TOGGLES
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPasswords, setShowNewPasswords] = useState(false);
+
+  // STATE UNTUK BOOKMARK
   const [bookmarks, setBookmarks] = useState([]);
   const [loadingBookmarks, setLoadingBookmarks] = useState(false);
+
+  // STATE UNTUK LOCK/UNLOCK FIELD
+  const [editableFields, setEditableFields] = useState({
+    username: false,
+    fullName: false,
+    email: false
+  });
 
   const { user: contextUser } = useOutletContext() || { user: {} };
 
@@ -182,7 +243,7 @@ export default function Profile() {
         username: contextUser.userName || getDisplayUsername(contextUser),
         fullName: contextUser.name || contextUser.fullName || "",
         email: contextUser.email || "",
-        avatar: contextUser.avatar || `https://ui-avatars.com/api/?name=${contextUser.name || "User"}&background=F2994A&color=fff`,
+        avatar: contextUser.avatar || AVATAR_OPTIONS[0],
         birthday: contextUser.userDOB || contextUser.birthday || "", 
         gender: contextUser.gender || "",
       });
@@ -209,7 +270,6 @@ export default function Profile() {
     }
   }, [showNotification]);
 
-  // --- LOGIC FETCH BOOKMARK (BARU) ---
   useEffect(() => {
     if (activeTab === "bookmark") {
       fetchBookmarks();
@@ -227,14 +287,29 @@ export default function Profile() {
     }
   };
 
-  // --- ORIGINAL STATE FOR SETTINGS ---
   const [notifSettings, setNotifSettings] = useState({ dailyReminder: true, reminderTime: "08:00", emailUpdates: false });
   const [passwordForm, setPasswordForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
 
+  // ✅ LOGIC BARU: STATISTIK DINAMIS (STREAK & NOTES)
   const stats = [
-    { label: "Streak", value: "12 Days", icon: <Trophy className="w-5 h-5 text-yellow-500" />, bg: "bg-yellow-100" },
-    { label: "Entries", value: "45 Notes", icon: <BookOpen className="w-5 h-5 text-blue-500" />, bg: "bg-blue-100" },
-    { label: "Stress", value: "Low", icon: <Activity className="w-5 h-5 text-green-500" />, bg: "bg-green-100" },
+    { 
+      label: "Streak", 
+      value: `${contextUser?.streak || 0} Days`, // Otomatis dari Backend
+      icon: <Trophy className="w-5 h-5 text-yellow-500" />, 
+      bg: "bg-yellow-100" 
+    },
+    { 
+      label: "Entries", 
+      value: `${contextUser?.diary_count || 0} Notes`, // Otomatis dari Backend
+      icon: <BookOpen className="w-5 h-5 text-blue-500" />, 
+      bg: "bg-blue-100" 
+    },
+    { 
+      label: "Stress", 
+      value: "Low", // Untuk sementara masih hardcoded (belum ada logic stress)
+      icon: <Activity className="w-5 h-5 text-green-500" />, 
+      bg: "bg-green-100" 
+    },
   ];
 
   const handleInputChange = (e) => { const { name, value } = e.target; setFormData({ ...formData, [name]: value }); };
@@ -244,65 +319,171 @@ export default function Profile() {
     try {
       const token = localStorage.getItem("token");
       if (!token) { showNotification("You are logged out", "error"); return; }
+      
       const payload = {
-        userName: formData.username, name: formData.fullName, email: formData.email,
-        userDOB: formData.birthday, gender: formData.gender, avatar: formData.avatar
+        userName: formData.username, 
+        name: formData.fullName, 
+        email: formData.email,
+        avatar: formData.avatar
       };
+
       await axios.put(`${BASE_URL}/user/me`, payload, { headers: { Authorization: `Bearer ${token}` } });
       showNotification("Profile updated successfully!");
+      setEditableFields({ username: false, fullName: false, email: false });
       setTimeout(() => window.location.reload(), 1000);
     } catch (error) {
       showNotification(error.response?.data?.detail || "Failed to update profile", "error");
     } finally { setIsLoadingSave(false); }
   };
   
-  const handleImageClick = () => fileInputRef.current.click();
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const imageUrl = URL.createObjectURL(file);
-      setFormData(prev => ({ ...prev, avatar: imageUrl })); 
-      showNotification("Picture selected. Click Save Changes to apply.");
-    }
+  const handleAvatarSelect = (url) => {
+    setFormData(prev => ({ ...prev, avatar: url }));
+    setShowAvatarModal(false);
+    showNotification("Avatar selected. Click Save Changes to apply.");
   };
 
-  const handleEmailChangeRequest = () => { if (window.confirm("Changing email requires verification. Do you want to proceed?")) alert("Redirecting to email verification..."); };
+  const toggleEdit = (field) => {
+    setEditableFields(prev => ({ ...prev, [field]: !prev[field] }));
+  };
+
   const handleLogout = () => { 
     if (window.confirm("Are you sure you want to log out?")) { 
         localStorage.removeItem("token"); 
         localStorage.removeItem("cache_userData"); 
-        // Redirect to Landing Page ("/") instead of "/login"
         window.location.href = "/"; 
     } 
   };
 
-  // --- SETTINGS LOGIC (RESTORED) ---
   const handleNotifChange = (e) => {
     const { name, value, type, checked } = e.target;
     setNotifSettings(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
     if (name === "reminderTime" && value === "04:04") { setShowGameModal(true); }
   };
   const saveNotifSettings = () => { setShowNotifModal(false); showNotification("Notification preferences saved!"); };
+  
   const handlePasswordChangeInput = (e) => { const { name, value } = e.target; setPasswordForm({ ...passwordForm, [name]: value }); };
-  const handleSubmitPasswordChange = (e) => {
+  
+  const handleClosePasswordModal = () => {
+    setShowPasswordModal(false);
+    setShowCurrentPassword(false);
+    setShowNewPasswords(false);
+  };
+
+  const handleSubmitPasswordChange = async (e) => {
     e.preventDefault();
-    if (!passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) { showNotification("Please fill in all fields", "error"); return; }
-    if (passwordForm.newPassword !== passwordForm.confirmPassword) { showNotification("New passwords do not match!", "error"); return; }
-    setShowPasswordModal(false); setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" }); showNotification("Password changed successfully!");
+    if (!passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) { 
+        showNotification("Please fill in all fields", "error"); return; 
+    }
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) { 
+        showNotification("New passwords do not match!", "error"); return; 
+    }
+
+    setIsLoadingPassword(true);
+    try {
+        const token = localStorage.getItem("token");
+        await axios.put(`${BASE_URL}/user/change-password`, {
+            current_password: passwordForm.currentPassword,
+            new_password: passwordForm.newPassword
+        }, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+
+        showNotification("Password changed successfully!", "success");
+        handleClosePasswordModal();
+        setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
+    } catch (error) {
+        showNotification(error.response?.data?.detail || "Failed to change password", "error");
+    } finally {
+        setIsLoadingPassword(false);
+    }
   };
 
   return (
     <div className="min-h-screen pb-24 md:pb-10 font-sans" style={{ background: `linear-gradient(135deg, #FFF3E0 0%, #eaf2ff 50%, #e3edff 100%)`, backgroundAttachment: "fixed" }}>
       <Navbar user={contextUser} />
       {showGameModal && <FishGameModal onClose={() => setShowGameModal(false)} />}
+      {showAvatarModal && <AvatarSelectionModal onClose={() => setShowAvatarModal(false)} onSelect={handleAvatarSelect} currentAvatar={formData.avatar} />}
       
       {/* NOTIFICATIONS */}
       {notification && (<div className="fixed top-24 right-4 z-[100] animate-bounce-in"><div className={`flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl border ${notification.type === "success" ? "bg-white text-green-600 border-green-100" : notification.type === "error" ? "bg-white text-red-600 border-red-100" : "bg-white text-blue-600 border-blue-100"}`}>{notification.type === "success" ? <CheckCircle className="w-5 h-5"/> : notification.type === "error" ? <X className="w-5 h-5"/> : <Heart className="w-5 h-5"/>}<span className="font-bold">{notification.message}</span></div></div>)}
       
-      {/* SETTINGS MODAL (RESTORED) */}
+      {/* SETTINGS MODAL */}
       {showNotifModal && (<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in"><div className="bg-white rounded-[24px] p-8 w-full max-w-md shadow-2xl border border-white/50"><div className="flex justify-between items-center mb-6"><h3 className="text-xl font-bold text-gray-800 flex items-center gap-2"><Bell className="w-5 h-5 text-orange-500" /> Notifications</h3><button onClick={() => setShowNotifModal(false)} className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"><X className="w-6 h-6" /></button></div><div className="space-y-6"><div className="flex items-center justify-between"><div className="flex items-center gap-3"><div className="bg-blue-100 p-2 rounded-full text-blue-600"><Smartphone className="w-5 h-5" /></div><div><p className="font-bold text-gray-800">Daily Reminder</p><p className="text-xs text-gray-500">Remind me to check-in</p></div></div><label className="relative inline-flex items-center cursor-pointer"><input type="checkbox" name="dailyReminder" checked={notifSettings.dailyReminder} onChange={handleNotifChange} className="sr-only peer" /><div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div></label></div>{notifSettings.dailyReminder && (<div className="bg-gray-50 p-4 rounded-xl flex items-center justify-between border border-gray-100"><div className="flex items-center gap-2 text-gray-600"><Clock className="w-4 h-4" /><span className="text-sm font-semibold">Time</span></div><input type="time" name="reminderTime" value={notifSettings.reminderTime} onChange={handleNotifChange} className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2"/></div>)}<div className="h-px bg-gray-100"></div><div className="flex items-center justify-between"><div className="flex items-center gap-3"><div className="bg-purple-100 p-2 rounded-full text-purple-600"><Mail className="w-5 h-5" /></div><div><p className="font-bold text-gray-800">Weekly Report</p><p className="text-xs text-gray-500">Receive summary via email</p></div></div><label className="relative inline-flex items-center cursor-pointer"><input type="checkbox" name="emailUpdates" checked={notifSettings.emailUpdates} onChange={handleNotifChange} className="sr-only peer" /><div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div></label></div><button onClick={saveNotifSettings} className="w-full mt-4 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl shadow-lg shadow-orange-200 transition-all cursor-pointer transform active:scale-95">Save Preferences</button></div></div></div>)}
-      {/* PASSWORD MODAL (RESTORED) */}
-      {showPasswordModal && (<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in"><div className="bg-white rounded-[24px] p-8 w-full max-w-md shadow-2xl border border-white/50"><div className="flex justify-between items-center mb-6"><h3 className="text-xl font-bold text-gray-800 flex items-center gap-2"><Lock className="w-5 h-5 text-blue-500" /> Change Password</h3><button onClick={() => setShowPasswordModal(false)} className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"><X className="w-6 h-6" /></button></div><form onSubmit={handleSubmitPasswordChange} className="space-y-4"><div className="space-y-2"><label className="text-sm font-bold text-gray-600 ml-1">Current Password</label><div className="relative"><Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" /><input type="password" name="currentPassword" value={passwordForm.currentPassword} onChange={handlePasswordChangeInput} placeholder="Enter current password" className="w-full pl-12 pr-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-blue-400 focus:outline-none transition-all"/></div></div><div className="h-px bg-gray-100 my-2"></div><div className="space-y-2"><label className="text-sm font-bold text-gray-600 ml-1">New Password</label><div className="relative"><Key className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" /><input type="password" name="newPassword" value={passwordForm.newPassword} onChange={handlePasswordChangeInput} placeholder="Enter new password" className="w-full pl-12 pr-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-blue-400 focus:outline-none transition-all"/></div></div><div className="space-y-2"><label className="text-sm font-bold text-gray-600 ml-1">Confirm New Password</label><div className="relative"><Key className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" /><input type="password" name="confirmPassword" value={passwordForm.confirmPassword} onChange={handlePasswordChangeInput} placeholder="Re-enter new password" className="w-full pl-12 pr-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-blue-400 focus:outline-none transition-all"/></div></div><button type="submit" className="w-full mt-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-200 transition-all cursor-pointer transform active:scale-95">Update Password</button></form></div></div>)}
+      
+      {/* PASSWORD MODAL */}
+      {showPasswordModal && (<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in"><div className="bg-white rounded-[24px] p-8 w-full max-w-md shadow-2xl border border-white/50"><div className="flex justify-between items-center mb-6"><h3 className="text-xl font-bold text-gray-800 flex items-center gap-2"><Lock className="w-5 h-5 text-blue-500" /> Change Password</h3><button onClick={handleClosePasswordModal} className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"><X className="w-6 h-6" /></button></div><form onSubmit={handleSubmitPasswordChange} className="space-y-4">
+        
+        {/* CURRENT PASSWORD (Icon Mata) */}
+        <div className="space-y-2">
+            <label className="text-sm font-bold text-gray-600 ml-1">Current Password</label>
+            <div className="relative">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input 
+                    type={showCurrentPassword ? "text" : "password"} 
+                    name="currentPassword" 
+                    value={passwordForm.currentPassword} 
+                    onChange={handlePasswordChangeInput} 
+                    placeholder="Enter current password" 
+                    className="w-full pl-12 pr-12 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-blue-400 focus:outline-none transition-all"
+                />
+                <button type="button" onClick={() => setShowCurrentPassword(!showCurrentPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer">
+                    {showCurrentPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+            </div>
+        </div>
+        
+        <div className="h-px bg-gray-100 my-2"></div>
+        
+        {/* NEW PASSWORD (Checkbox) */}
+        <div className="space-y-2">
+            <label className="text-sm font-bold text-gray-600 ml-1">New Password</label>
+            <div className="relative">
+                <Key className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input 
+                    type={showNewPasswords ? "text" : "password"} 
+                    name="newPassword" 
+                    value={passwordForm.newPassword} 
+                    onChange={handlePasswordChangeInput} 
+                    placeholder="Enter new password" 
+                    className="w-full pl-12 pr-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-blue-400 focus:outline-none transition-all"
+                />
+            </div>
+        </div>
+        
+        {/* CONFIRM PASSWORD (Checkbox) */}
+        <div className="space-y-2">
+            <label className="text-sm font-bold text-gray-600 ml-1">Confirm New Password</label>
+            <div className="relative">
+                <Key className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input 
+                    type={showNewPasswords ? "text" : "password"} 
+                    name="confirmPassword" 
+                    value={passwordForm.confirmPassword} 
+                    onChange={handlePasswordChangeInput} 
+                    placeholder="Re-enter new password" 
+                    className="w-full pl-12 pr-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-blue-400 focus:outline-none transition-all"
+                />
+            </div>
+            
+            {/* CHECKBOX SHOW PASSWORD */}
+            <div className="flex items-center gap-2 mt-2 ml-1">
+                <input 
+                    type="checkbox" 
+                    id="showNewPass" 
+                    checked={showNewPasswords} 
+                    onChange={(e) => setShowNewPasswords(e.target.checked)}
+                    className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                />
+                <label htmlFor="showNewPass" className="text-sm text-gray-600 cursor-pointer select-none">
+                    Show New Passwords
+                </label>
+            </div>
+        </div>
+        
+        <button type="submit" disabled={isLoadingPassword} className={`w-full mt-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-200 transition-all cursor-pointer transform active:scale-95 flex justify-center items-center gap-2 ${isLoadingPassword ? "opacity-70 cursor-not-allowed" : ""}`}>
+            {isLoadingPassword ? <><Loader2 className="w-5 h-5 animate-spin"/> Updating...</> : "Update Password"}
+        </button>
+      </form></div></div>)}
 
       <main className="max-w-4xl mx-auto px-4 pt-24 md:pt-28">
         <div className="relative bg-white/60 backdrop-blur-xl border border-white/40 rounded-[30px] p-6 md:p-10 shadow-xl overflow-hidden mb-8">
@@ -310,10 +491,11 @@ export default function Profile() {
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-orange-400/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
             <div className="relative z-10 flex flex-col md:flex-row items-center gap-6 md:gap-8">
                 <div className="relative group">
-                    <div className="w-28 h-28 md:w-32 md:h-32 rounded-full border-4 border-white shadow-lg overflow-hidden">
+                    <div className="w-28 h-28 md:w-32 md:h-32 rounded-full border-4 border-white shadow-lg overflow-hidden bg-white">
                         {formData.avatar ? <img src={formData.avatar} alt="Profile" className="w-full h-full object-cover" /> : <div className="w-full h-full bg-gray-200 animate-pulse"></div>}
                     </div>
-                    <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*"/><button onClick={handleImageClick} className="absolute bottom-1 right-1 bg-blue-600 text-white p-2 rounded-full shadow-md hover:bg-blue-700 transition-all cursor-pointer"><Edit3 className="w-4 h-4" /></button>
+                    {/* BUTTON UBAH AVATAR (MEMBUKA MODAL) */}
+                    <button onClick={() => setShowAvatarModal(true)} className="absolute bottom-1 right-1 bg-blue-600 text-white p-2 rounded-full shadow-md hover:bg-blue-700 transition-all cursor-pointer"><Edit3 className="w-4 h-4" /></button>
                 </div>
                 <div className="text-center md:text-left flex-1">
                     <h1 className="text-3xl font-extrabold text-gray-800">{formData.fullName || "Your Name"}</h1>
@@ -343,13 +525,100 @@ export default function Profile() {
                 <div className="bg-white/60 backdrop-blur-md border border-white/40 rounded-[24px] p-6 md:p-8 shadow-lg">
                     <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2"><User className="w-5 h-5 text-blue-500" /> Personal Details</h3>
                     <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
-                        <div className="space-y-2"><label className="text-sm font-bold text-gray-600 ml-1">Username</label><div className="relative"><span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">@</span><input type="text" name="username" value={formData.username} onChange={handleInputChange} className="w-full pl-10 pr-4 py-3 rounded-xl bg-white border border-gray-200 focus:ring-2 focus:ring-blue-400 focus:outline-none transition-all" /></div></div>
-                        <div className="space-y-2"><label className="text-sm font-bold text-gray-600 ml-1">Full Name</label><div className="relative"><User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" /><input name="fullName" type="text" value={formData.fullName} onChange={handleInputChange} className="w-full pl-12 pr-4 py-3 rounded-xl bg-white border border-gray-200 focus:ring-2 focus:ring-blue-400 focus:outline-none transition-all" /></div></div>
-                        <div className="space-y-2"><label className="text-sm font-bold text-gray-600 ml-1">Email Address</label><div className="relative flex items-center gap-2"><div className="relative flex-1"><Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" /><input name="email" type="email" value={formData.email} onChange={handleInputChange} className="w-full pl-12 pr-4 py-3 rounded-xl bg-white border border-gray-200 focus:ring-2 focus:ring-blue-400 focus:outline-none transition-all" /></div><button onClick={handleEmailChangeRequest} className="px-4 py-3 rounded-xl border border-blue-200 text-blue-600 font-bold text-sm hover:bg-blue-50 transition-colors cursor-pointer whitespace-nowrap">Change</button></div></div>
-                        <div className="grid grid-cols-2 gap-4">
-                             <div className="space-y-2"><label className="text-sm font-bold text-gray-600 ml-1">Birthday</label><div className="relative"><Cake className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" /><input name="birthday" type="date" value={formData.birthday} onChange={handleInputChange} className="w-full pl-12 pr-4 py-3 rounded-xl bg-white border border-gray-200 focus:ring-2 focus:ring-blue-400 focus:outline-none transition-all" /></div></div>
-                             <div className="space-y-2"><label className="text-sm font-bold text-gray-600 ml-1">Gender</label><div className="relative"><Smile className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" /><select name="gender" value={formData.gender} onChange={handleInputChange} className="w-full pl-12 pr-4 py-3 rounded-xl bg-white border border-gray-200 focus:ring-2 focus:ring-blue-400 focus:outline-none transition-all appearance-none cursor-pointer"><option value="">Select Gender</option><option value="Male">Male</option><option value="Female">Female</option><option value="Other">Other</option></select></div></div>
+                        
+                        {/* USERNAME (Editable) */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-bold text-gray-600 ml-1">Username</label>
+                            <div className="flex gap-2">
+                                <div className="relative flex-1">
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">@</span>
+                                    <input 
+                                        type="text" 
+                                        name="username" 
+                                        value={formData.username} 
+                                        onChange={handleInputChange} 
+                                        disabled={!editableFields.username}
+                                        className={`w-full pl-10 pr-4 py-3 rounded-xl bg-white border ${editableFields.username ? "border-blue-400 ring-2 ring-blue-100" : "border-gray-200 bg-gray-50 text-gray-500"} focus:outline-none transition-all`} 
+                                    />
+                                </div>
+                                <button onClick={() => toggleEdit('username')} className="px-4 py-3 rounded-xl border border-blue-200 text-blue-600 font-bold text-sm hover:bg-blue-50 transition-colors cursor-pointer whitespace-nowrap">
+                                    {editableFields.username ? "Lock" : "Change"}
+                                </button>
+                            </div>
                         </div>
+
+                        {/* FULL NAME (Editable) */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-bold text-gray-600 ml-1">Full Name</label>
+                            <div className="flex gap-2">
+                                <div className="relative flex-1">
+                                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                    <input 
+                                        name="fullName" 
+                                        type="text" 
+                                        value={formData.fullName} 
+                                        onChange={handleInputChange}
+                                        disabled={!editableFields.fullName}
+                                        className={`w-full pl-12 pr-4 py-3 rounded-xl bg-white border ${editableFields.fullName ? "border-blue-400 ring-2 ring-blue-100" : "border-gray-200 bg-gray-50 text-gray-500"} focus:outline-none transition-all`} 
+                                    />
+                                </div>
+                                <button onClick={() => toggleEdit('fullName')} className="px-4 py-3 rounded-xl border border-blue-200 text-blue-600 font-bold text-sm hover:bg-blue-50 transition-colors cursor-pointer whitespace-nowrap">
+                                    {editableFields.fullName ? "Lock" : "Change"}
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* EMAIL (Editable) */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-bold text-gray-600 ml-1">Email Address</label>
+                            <div className="flex gap-2">
+                                <div className="relative flex-1">
+                                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                    <input 
+                                        name="email" 
+                                        type="email" 
+                                        value={formData.email} 
+                                        onChange={handleInputChange} 
+                                        disabled={!editableFields.email}
+                                        className={`w-full pl-12 pr-4 py-3 rounded-xl bg-white border ${editableFields.email ? "border-blue-400 ring-2 ring-blue-100" : "border-gray-200 bg-gray-50 text-gray-500"} focus:outline-none transition-all`} 
+                                    />
+                                </div>
+                                <button onClick={() => toggleEdit('email')} className="px-4 py-3 rounded-xl border border-blue-200 text-blue-600 font-bold text-sm hover:bg-blue-50 transition-colors cursor-pointer whitespace-nowrap">
+                                    {editableFields.email ? "Lock" : "Change"}
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* BIRTHDAY & GENDER (READ ONLY) */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold text-gray-600 ml-1">Birthday</label>
+                                <div className="relative">
+                                    <Cake className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                    <input 
+                                        name="birthday" 
+                                        type="date" 
+                                        value={formData.birthday} 
+                                        disabled={true} 
+                                        className="w-full pl-12 pr-4 py-3 rounded-xl bg-gray-100 border border-gray-200 text-gray-500 cursor-not-allowed focus:outline-none" 
+                                    />
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold text-gray-600 ml-1">Gender</label>
+                                <div className="relative">
+                                    <Smile className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                    <input 
+                                        name="gender" 
+                                        type="text" 
+                                        value={formData.gender} 
+                                        disabled={true} 
+                                        className="w-full pl-12 pr-4 py-3 rounded-xl bg-gray-100 border border-gray-200 text-gray-500 cursor-not-allowed focus:outline-none" 
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
                         <div className="pt-4 flex justify-end">
                             <button onClick={handleSaveProfile} disabled={isLoadingSave} className={`px-8 py-3 bg-[#F2994A] hover:bg-[#e08a3e] text-white font-bold rounded-xl shadow-lg hover:shadow-orange-200 transition-all cursor-pointer transform active:scale-95 ${isLoadingSave ? "opacity-50 cursor-not-allowed" : ""}`}>{isLoadingSave ? "Saving..." : "Save Changes"}</button>
                         </div>
@@ -357,7 +626,6 @@ export default function Profile() {
                 </div>
             )}
             
-            {/* BOOKMARK TAB (NEW INTEGRATION) */}
             {activeTab === "bookmark" && (
                 <div>
                     {loadingBookmarks ? (
