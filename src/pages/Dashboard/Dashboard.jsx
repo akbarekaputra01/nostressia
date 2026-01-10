@@ -114,6 +114,8 @@ export default function Dashboard() {
   const [hasSubmittedToday, setHasSubmittedToday] = useState(false);
   const [stressScore, setStressScore] = useState(0);
   const [todayLogId, setTodayLogId] = useState(null);
+  const [isLoadingLogs, setIsLoadingLogs] = useState(true);
+  const [loadError, setLoadError] = useState("");
 
   // Success Modal & Detail
   const [successModal, setSuccessModal] = useState({ visible: false, title: "", text: "" });
@@ -200,6 +202,8 @@ export default function Dashboard() {
     const controller = new AbortController();
 
     const fetchLogs = async () => {
+      setIsLoadingLogs(true);
+      setLoadError("");
       try {
         const token =
           localStorage.getItem("token") ||
@@ -212,6 +216,7 @@ export default function Dashboard() {
           setHasSubmittedToday(false);
           setStressScore(0);
           setTodayLogId(null);
+          setIsLoadingLogs(false);
           return;
         }
 
@@ -286,6 +291,9 @@ export default function Dashboard() {
         setHasSubmittedToday(false);
         setStressScore(0);
         setTodayLogId(null);
+        setLoadError("Gagal memuat data dashboard. Silakan coba lagi.");
+      } finally {
+        setIsLoadingLogs(false);
       }
     };
 
@@ -519,6 +527,22 @@ export default function Dashboard() {
                     <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">Today's Stress Prediction</h2>
                     <div className="text-2xl text-gray-500"><i className="ph ph-cloud-sun mr-2" /> <i className="ph ph-smiley" /></div>
                   </header>
+                  {(isLoadingLogs || loadError) && (
+                    <div className="mb-4 rounded-xl border px-3 py-2 text-xs font-semibold text-gray-700 bg-white/70 border-white/60">
+                      {isLoadingLogs && (
+                        <div className="flex items-center gap-2 text-blue-700">
+                          <span className="inline-flex h-2 w-2 animate-pulse rounded-full bg-blue-500" />
+                          Memuat data terbaru...
+                        </div>
+                      )}
+                      {!isLoadingLogs && loadError && (
+                        <div className="flex items-center gap-2 text-red-600">
+                          <span className="inline-flex h-2 w-2 rounded-full bg-red-500" />
+                          {loadError}
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   <div className="flex-grow flex flex-col items-center justify-center text-center relative z-10">
                     {(() => {
@@ -586,6 +610,22 @@ export default function Dashboard() {
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                   </header>
+                  {(isLoadingLogs || loadError) && !successModal.visible && (
+                    <div className="mb-4 rounded-xl border px-3 py-2 text-xs font-semibold text-gray-700 bg-white/70 border-white/60">
+                      {isLoadingLogs && (
+                        <div className="flex items-center gap-2 text-blue-700">
+                          <span className="inline-flex h-2 w-2 animate-pulse rounded-full bg-blue-500" />
+                          Memuat data terbaru...
+                        </div>
+                      )}
+                      {!isLoadingLogs && loadError && (
+                        <div className="flex items-center gap-2 text-red-600">
+                          <span className="inline-flex h-2 w-2 rounded-full bg-red-500" />
+                          {loadError}
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   <form
                     onSubmit={handleSaveForm}
@@ -692,6 +732,22 @@ export default function Dashboard() {
               <h3 className="text-xl font-bold text-gray-800">{monthNames[month]} {year}</h3>
               <button className="icon-btn text-gray-600 hover:text-gray-900 transition-colors cursor-pointer" onClick={() => changeMonth(1)}><i className="ph ph-arrow-right text-xl" /></button>
             </header>
+            {(isLoadingLogs || loadError) && (
+              <div className="mb-4 rounded-xl border px-3 py-2 text-xs font-semibold text-gray-700 bg-white/70 border-white/60">
+                {isLoadingLogs && (
+                  <div className="flex items-center gap-2 text-blue-700">
+                    <span className="inline-flex h-2 w-2 animate-pulse rounded-full bg-blue-500" />
+                    Memuat data terbaru...
+                  </div>
+                )}
+                {!isLoadingLogs && loadError && (
+                  <div className="flex items-center gap-2 text-red-600">
+                    <span className="inline-flex h-2 w-2 rounded-full bg-red-500" />
+                    {loadError}
+                  </div>
+                )}
+              </div>
+            )}
             <div className="grid grid-cols-7 gap-1 mb-2 text-center">
               {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (<div key={d} className="text-sm font-bold text-gray-500">{d}</div>))}
             </div>
