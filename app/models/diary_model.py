@@ -8,10 +8,15 @@ class Diary(Base):
 
     diaryID = Column(Integer, primary_key=True, index=True)
     title = Column(String(255))
-    note = Column(Text)  # Di SQL tipe datanya TEXT
+    note = Column(Text)
     date = Column(Date, nullable=False)
-    emoji = Column(Integer) # Di SQL tipe datanya INT
     
+    # PERUBAHAN 1: Emoji jadi String (untuk simpan "😢", "😊")
+    emoji = Column(String(10)) 
+    
+    # PERUBAHAN 2: Tambah kolom Font
+    font = Column(String(100), default="sans-serif") 
+
     userID = Column(Integer, ForeignKey("users.userID"), nullable=False)
     createdAt = Column(TIMESTAMP, server_default=func.now())
 
