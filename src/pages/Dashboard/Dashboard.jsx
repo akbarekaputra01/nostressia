@@ -570,7 +570,7 @@ export default function Dashboard() {
                       <div className="absolute h-10 w-10 rounded-full border-4 border-orange-200 border-t-orange-500 spin-reverse" />
                     </div>
                     <p className="text-center text-sm font-semibold text-gray-500 pulse-soft">
-                      Menyiapkan dashboard kamu...
+                      Preparing your dashboard...
                     </p>
                   </div>
                 </div>
@@ -786,7 +786,7 @@ export default function Dashboard() {
                       <div className="absolute h-9 w-9 rounded-full border-4 border-orange-200 border-t-orange-500 spin-reverse" />
                     </div>
                     <p className="text-center text-sm font-semibold text-gray-500 pulse-soft">
-                      Mengambil riwayat log harian...
+                      Fetching your daily log history...
                     </p>
                   </div>
                 </div>

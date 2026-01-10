@@ -264,7 +264,7 @@ export default function Analytics() {
                 className="text-sm md:text-base"
                 style={{ color: "var(--text-secondary)" }}
               >
-                Mengambil data dari server...
+                Fetching data from the server...
               </p>
             </div>
           )}
