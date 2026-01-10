@@ -491,6 +491,20 @@ export default function Dashboard() {
         @keyframes circle-draw { 0% { stroke-dasharray: 0, 100; } 100% { stroke-dasharray: 100, 100; } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes shimmer-slide { 100% { transform: translateX(100%); } }
+        .skeleton {
+          position: relative;
+          overflow: hidden;
+          background-color: rgba(255,255,255,0.65);
+        }
+        .skeleton::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          transform: translateX(-100%);
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.7), transparent);
+          animation: shimmer-slide 1.6s infinite;
+        }
       `}</style>
 
       {/* NAVBAR */}
@@ -503,20 +517,24 @@ export default function Dashboard() {
           </h1>
           <p className="text-gray-600 mt-2 text-lg font-medium">Ready to navigate the day with more calm?</p>
         </div>
-        {(isLoadingLogs || loadError) && (
-          <div className="mb-6">
-            {isLoadingLogs && (
-              <div className="flex items-center gap-2 rounded-xl bg-blue-50 text-blue-700 px-4 py-3 text-sm font-semibold">
-                <span className="inline-flex h-2.5 w-2.5 animate-pulse rounded-full bg-blue-500" />
-                Memuat data dashboard...
-              </div>
-            )}
-            {!isLoadingLogs && loadError && (
-              <div className="flex items-center gap-2 rounded-xl bg-red-50 text-red-700 px-4 py-3 text-sm font-semibold">
-                <span className="inline-flex h-2.5 w-2.5 rounded-full bg-red-500" />
-                {loadError}
-              </div>
-            )}
+        {isLoadingLogs && (
+          <div className="mb-6 rounded-2xl border border-white/60 bg-white/60 p-4 shadow-sm">
+            <div className="flex items-center gap-3 text-sm font-semibold text-gray-700">
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-blue-500">
+                <span className="absolute inset-0 rounded-full bg-blue-300 animate-ping" />
+              </span>
+              <span>Memuat data dashboard...</span>
+            </div>
+            <div className="mt-3 space-y-2">
+              <div className="skeleton h-2.5 w-1/3 rounded-full" />
+              <div className="skeleton h-2.5 w-2/3 rounded-full" />
+            </div>
+          </div>
+        )}
+        {!isLoadingLogs && loadError && (
+          <div className="mb-6 flex items-center gap-2 rounded-xl bg-red-50 text-red-700 px-4 py-3 text-sm font-semibold">
+            <span className="inline-flex h-2.5 w-2.5 rounded-full bg-red-500" />
+            {loadError}
           </div>
         )}
 
@@ -543,20 +561,10 @@ export default function Dashboard() {
                     <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">Today's Stress Prediction</h2>
                     <div className="text-2xl text-gray-500"><i className="ph ph-cloud-sun mr-2" /> <i className="ph ph-smiley" /></div>
                   </header>
-                  {(isLoadingLogs || loadError) && (
-                    <div className="mb-4 rounded-xl border px-3 py-2 text-xs font-semibold text-gray-700 bg-white/70 border-white/60">
-                      {isLoadingLogs && (
-                        <div className="flex items-center gap-2 text-blue-700">
-                          <span className="inline-flex h-2 w-2 animate-pulse rounded-full bg-blue-500" />
-                          Memuat data terbaru...
-                        </div>
-                      )}
-                      {!isLoadingLogs && loadError && (
-                        <div className="flex items-center gap-2 text-red-600">
-                          <span className="inline-flex h-2 w-2 rounded-full bg-red-500" />
-                          {loadError}
-                        </div>
-                      )}
+                  {isLoadingLogs && (
+                    <div className="mb-4 space-y-2">
+                      <div className="skeleton h-3 w-32 rounded-full" />
+                      <div className="skeleton h-3 w-52 rounded-full" />
                     </div>
                   )}
 
@@ -626,20 +634,10 @@ export default function Dashboard() {
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                   </header>
-                  {(isLoadingLogs || loadError) && !successModal.visible && (
-                    <div className="mb-4 rounded-xl border px-3 py-2 text-xs font-semibold text-gray-700 bg-white/70 border-white/60">
-                      {isLoadingLogs && (
-                        <div className="flex items-center gap-2 text-blue-700">
-                          <span className="inline-flex h-2 w-2 animate-pulse rounded-full bg-blue-500" />
-                          Memuat data terbaru...
-                        </div>
-                      )}
-                      {!isLoadingLogs && loadError && (
-                        <div className="flex items-center gap-2 text-red-600">
-                          <span className="inline-flex h-2 w-2 rounded-full bg-red-500" />
-                          {loadError}
-                        </div>
-                      )}
+                  {isLoadingLogs && !successModal.visible && (
+                    <div className="mb-4 space-y-2">
+                      <div className="skeleton h-3 w-28 rounded-full" />
+                      <div className="skeleton h-3 w-44 rounded-full" />
                     </div>
                   )}
 
@@ -748,20 +746,10 @@ export default function Dashboard() {
               <h3 className="text-xl font-bold text-gray-800">{monthNames[month]} {year}</h3>
               <button className="icon-btn text-gray-600 hover:text-gray-900 transition-colors cursor-pointer" onClick={() => changeMonth(1)}><i className="ph ph-arrow-right text-xl" /></button>
             </header>
-            {(isLoadingLogs || loadError) && (
-              <div className="mb-4 rounded-xl border px-3 py-2 text-xs font-semibold text-gray-700 bg-white/70 border-white/60">
-                {isLoadingLogs && (
-                  <div className="flex items-center gap-2 text-blue-700">
-                    <span className="inline-flex h-2 w-2 animate-pulse rounded-full bg-blue-500" />
-                    Memuat data terbaru...
-                  </div>
-                )}
-                {!isLoadingLogs && loadError && (
-                  <div className="flex items-center gap-2 text-red-600">
-                    <span className="inline-flex h-2 w-2 rounded-full bg-red-500" />
-                    {loadError}
-                  </div>
-                )}
+            {isLoadingLogs && (
+              <div className="mb-4 space-y-2">
+                <div className="skeleton h-3 w-36 rounded-full" />
+                <div className="skeleton h-3 w-48 rounded-full" />
               </div>
             )}
             <div className="grid grid-cols-7 gap-1 mb-2 text-center">
