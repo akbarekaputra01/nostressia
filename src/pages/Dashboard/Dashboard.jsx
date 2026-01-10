@@ -114,6 +114,8 @@ export default function Dashboard() {
   const [hasSubmittedToday, setHasSubmittedToday] = useState(false);
   const [stressScore, setStressScore] = useState(0);
   const [todayLogId, setTodayLogId] = useState(null);
+  const [isLoadingLogs, setIsLoadingLogs] = useState(true);
+  const [loadError, setLoadError] = useState("");
 
   // Success Modal & Detail
   const [successModal, setSuccessModal] = useState({ visible: false, title: "", text: "" });
@@ -200,6 +202,8 @@ export default function Dashboard() {
     const controller = new AbortController();
 
     const fetchLogs = async () => {
+      setIsLoadingLogs(true);
+      setLoadError("");
       try {
         const token =
           localStorage.getItem("token") ||
@@ -212,6 +216,7 @@ export default function Dashboard() {
           setHasSubmittedToday(false);
           setStressScore(0);
           setTodayLogId(null);
+          setIsLoadingLogs(false);
           return;
         }
 
@@ -286,6 +291,9 @@ export default function Dashboard() {
         setHasSubmittedToday(false);
         setStressScore(0);
         setTodayLogId(null);
+        setLoadError("Gagal memuat data dashboard. Silakan coba lagi.");
+      } finally {
+        setIsLoadingLogs(false);
       }
     };
 
@@ -495,6 +503,22 @@ export default function Dashboard() {
           </h1>
           <p className="text-gray-600 mt-2 text-lg font-medium">Ready to navigate the day with more calm?</p>
         </div>
+        {(isLoadingLogs || loadError) && (
+          <div className="mb-6">
+            {isLoadingLogs && (
+              <div className="flex items-center gap-2 rounded-xl bg-blue-50 text-blue-700 px-4 py-3 text-sm font-semibold">
+                <span className="inline-flex h-2.5 w-2.5 animate-pulse rounded-full bg-blue-500" />
+                Memuat data dashboard...
+              </div>
+            )}
+            {!isLoadingLogs && loadError && (
+              <div className="flex items-center gap-2 rounded-xl bg-red-50 text-red-700 px-4 py-3 text-sm font-semibold">
+                <span className="inline-flex h-2.5 w-2.5 rounded-full bg-red-500" />
+                {loadError}
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {/* FLIP CARD SECTION */}
