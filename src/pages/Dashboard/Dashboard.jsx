@@ -527,7 +527,12 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {/* FLIP CARD SECTION */}
           <section className="col-span-1 md:col-span-2 relative" style={{ minHeight: 640 }}>
-            <div style={{ perspective: 1500 }} className="w-full h-full">
+            {isLoadingLogs && (
+              <div className="absolute inset-0 z-20 flex items-center justify-center rounded-[20px] bg-white/70 backdrop-blur-sm">
+                <i className="ph ph-spinner-gap text-4xl text-gray-500 animate-spin" />
+              </div>
+            )}
+            <div style={{ perspective: 1500 }} className={`w-full h-full ${isLoadingLogs ? "opacity-0 pointer-events-none" : ""}`}>
               <div className={`absolute inset-0 transition-transform duration-700 transform-style-preserve-3d ${isFlipped ? "rotate-y-180" : ""}`}>
                 
                 {/* FRONT CARD (PREDICTION) */}
@@ -547,13 +552,6 @@ export default function Dashboard() {
                     <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">Today's Stress Prediction</h2>
                     <div className="text-2xl text-gray-500"><i className="ph ph-cloud-sun mr-2" /> <i className="ph ph-smiley" /></div>
                   </header>
-                  {isLoadingLogs && (
-                    <div className="mb-4 space-y-2">
-                      <div className="skeleton h-3 w-32 rounded-full" />
-                      <div className="skeleton h-3 w-52 rounded-full" />
-                    </div>
-                  )}
-
                   <div className="flex-grow flex flex-col items-center justify-center text-center relative z-10">
                     {(() => {
                       let ui = { label: "NO DATA", sub: "Let's check your status", color: "#9ca3af", icon: "ph-question", anim: "" };
@@ -620,13 +618,6 @@ export default function Dashboard() {
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                   </header>
-                  {isLoadingLogs && !successModal.visible && (
-                    <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-gray-500">
-                      <i className="ph ph-spinner-gap text-lg animate-spin" />
-                      <span>Loading data...</span>
-                    </div>
-                  )}
-
                   <form
                     onSubmit={handleSaveForm}
                     className="flex-grow overflow-y-auto pr-2 flex flex-col gap-3 transition-all duration-500 custom-scroll"
@@ -727,38 +718,39 @@ export default function Dashboard() {
 
           {/* CALENDAR */}
           <section className="col-span-1 md:col-span-2 p-6 md:p-8 rounded-[20px] bg-white/40 backdrop-blur-md border border-white/20 shadow-xl relative overflow-hidden" style={{ minHeight: 640 }}>
-            <header className="flex justify-between items-center mb-4">
-              <button className="icon-btn text-gray-600 hover:text-gray-900 transition-colors cursor-pointer" onClick={() => changeMonth(-1)}><i className="ph ph-arrow-left text-xl" /></button>
-              <h3 className="text-xl font-bold text-gray-800">{monthNames[month]} {year}</h3>
-              <button className="icon-btn text-gray-600 hover:text-gray-900 transition-colors cursor-pointer" onClick={() => changeMonth(1)}><i className="ph ph-arrow-right text-xl" /></button>
-            </header>
             {isLoadingLogs && (
-              <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-gray-500">
-                <i className="ph ph-spinner-gap text-lg animate-spin" />
-                <span>Loading calendar...</span>
+              <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/70 backdrop-blur-sm">
+                <i className="ph ph-spinner-gap text-4xl text-gray-500 animate-spin" />
               </div>
             )}
-            <div className="grid grid-cols-7 gap-1 mb-2 text-center">
-              {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (<div key={d} className="text-sm font-bold text-gray-500">{d}</div>))}
-            </div>
-            <div className="grid grid-cols-7 gap-1">
-              {[...Array(firstDayOfMonth)].map((_, i) => (<div key={`e-${i}`} className="aspect-square" />))}
-              {[...Array(daysInMonth)].map((_, i) => {
-                const day = i + 1;
-                const d = new Date(year, month, day);
-                const ds = formatDate(d);
-                const has = stressData[ds];
-                const hasData = has && !has.isEmpty;
-                const isSel = selectedDate.getDate() === day && selectedDate.getMonth() === month;
-                return (
-                  <div key={day} className={`aspect-square flex flex-col items-center justify-center rounded-xl font-semibold text-sm cursor-pointer transition-all duration-200 ${isSel ? "scale-105 shadow-md" : "hover:bg-white/50"}`} onClick={() => handleDateClick(day)} style={{ background: isSel ? brandBlue : "transparent", color: isSel ? "white" : "#333", border: hasData ? `2px solid ${has.color}40` : "none" }}>
-                    <div style={{ width: "100%", textAlign: "center" }}>
-                      <div>{day}</div>
-                      {hasData && !isSel && (<div style={{ height: 6, width: 6, background: has.color, borderRadius: 999, margin: "6px auto 0" }} />)}
+            <div className={isLoadingLogs ? "opacity-0 pointer-events-none" : ""}>
+              <header className="flex justify-between items-center mb-4">
+                <button className="icon-btn text-gray-600 hover:text-gray-900 transition-colors cursor-pointer" onClick={() => changeMonth(-1)}><i className="ph ph-arrow-left text-xl" /></button>
+                <h3 className="text-xl font-bold text-gray-800">{monthNames[month]} {year}</h3>
+                <button className="icon-btn text-gray-600 hover:text-gray-900 transition-colors cursor-pointer" onClick={() => changeMonth(1)}><i className="ph ph-arrow-right text-xl" /></button>
+              </header>
+              <div className="grid grid-cols-7 gap-1 mb-2 text-center">
+                {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (<div key={d} className="text-sm font-bold text-gray-500">{d}</div>))}
+              </div>
+              <div className="grid grid-cols-7 gap-1">
+                {[...Array(firstDayOfMonth)].map((_, i) => (<div key={`e-${i}`} className="aspect-square" />))}
+                {[...Array(daysInMonth)].map((_, i) => {
+                  const day = i + 1;
+                  const d = new Date(year, month, day);
+                  const ds = formatDate(d);
+                  const has = stressData[ds];
+                  const hasData = has && !has.isEmpty;
+                  const isSel = selectedDate.getDate() === day && selectedDate.getMonth() === month;
+                  return (
+                    <div key={day} className={`aspect-square flex flex-col items-center justify-center rounded-xl font-semibold text-sm cursor-pointer transition-all duration-200 ${isSel ? "scale-105 shadow-md" : "hover:bg-white/50"}`} onClick={() => handleDateClick(day)} style={{ background: isSel ? brandBlue : "transparent", color: isSel ? "white" : "#333", border: hasData ? `2px solid ${has.color}40` : "none" }}>
+                      <div style={{ width: "100%", textAlign: "center" }}>
+                        <div>{day}</div>
+                        {hasData && !isSel && (<div style={{ height: 6, width: 6, background: has.color, borderRadius: 999, margin: "6px auto 0" }} />)}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
 
             {/* DETAIL CARD OVERLAY */}
