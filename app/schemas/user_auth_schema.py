@@ -31,5 +31,20 @@ class UserResponse(BaseModel):
     gender: Optional[str] = None
     avatar: Optional[str] = None
     userDOB: Optional[date] = None
+    streak: int
+    diary_count: int 
+
     class Config:
         from_attributes = True
+
+class UserUpdate(BaseModel):
+    name: Optional[str] = None
+    userName: Optional[str] = None
+    email: Optional[EmailStr] = None
+    avatar: Optional[str] = None
+    gender: Optional[str] = None
+    # Kita buat semuanya Optional, jadi user bisa cuma ganti nama tanpa ganti email
+
+class ChangePasswordSchema(BaseModel):
+    current_password: str
+    new_password: str
