@@ -17,6 +17,7 @@ import {
 const bgCream = "#FFF3E0";
 const bgPink = "#eaf2ff";
 const bgLavender = "#e3edff";
+const moodEmojis = ["😢", "😕", "😐", "😊", "😄"];
 
 // ===== Helpers =====
 const clampNumber = (v, fallback = 0) => {
@@ -36,6 +37,18 @@ const toISODate = (d) => {
 
 const weekdayShort = (d) =>
   new Intl.DateTimeFormat("en-US", { weekday: "short" }).format(d);
+
+const getLogsInRange = (logs, viewMode) => {
+  const today = startOfDay(new Date());
+  const start = new Date(today);
+  start.setDate(today.getDate() - (viewMode === "month" ? 27 : 6));
+
+  return (logs || []).filter((it) => {
+    const dt = it?.date ? startOfDay(new Date(it.date)) : null;
+    if (!dt || Number.isNaN(dt.getTime())) return false;
+    return dt >= start && dt <= today;
+  });
+};
 
 // Build 7-day series ending today
 const buildWeekSeries = (logs) => {
@@ -107,20 +120,29 @@ const buildMonthSeries = (logs) => {
   }));
 };
 
-const calcSummary = (series) => {
-  const vals = (series || []).map((d) => clampNumber(d.stress, 0));
-  const moods = (series || []).map((d) => clampNumber(d.mood, 0));
+const calcMode = (values) => {
+  const counts = new Map();
+  values.forEach((v) => {
+    const n = Math.round(clampNumber(v, 0));
+    if (n <= 0) return;
+    counts.set(n, (counts.get(n) || 0) + 1);
+  });
+  if (!counts.size) return 0;
+  return [...counts.entries()]
+    .sort((a, b) => b[1] - a[1] || b[0] - a[0])[0][0];
+};
 
-  // Ignore zeros (missing days)
-  const nonZeroStress = vals.filter((x) => x > 0);
-  const nonZeroMood = moods.filter((x) => x > 0);
+const calcSummary = (logsInRange) => {
+  const stressVals = (logsInRange || []).map((d) => d?.stressLevel);
+  const moodVals = (logsInRange || []).map((d) => d?.emoji);
 
-  const avg = (arr) =>
-    arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
+  const nonZeroStress = stressVals
+    .map((v) => clampNumber(v, 0))
+    .filter((x) => x > 0);
 
   return {
-    avgStress: Number(avg(nonZeroStress).toFixed(2)),
-    avgMood: Number(avg(nonZeroMood).toFixed(2)),
+    modeStress: calcMode(stressVals),
+    modeMood: calcMode(moodVals),
     highestStress: nonZeroStress.length ? Math.max(...nonZeroStress) : 0,
   };
 };
@@ -205,10 +227,11 @@ export default function Analytics() {
   const weekData = useMemo(() => buildWeekSeries(logs), [logs]);
   const monthData = useMemo(() => buildMonthSeries(logs), [logs]);
   const data = mode === "week" ? weekData : monthData;
+  const rangeLogs = useMemo(() => getLogsInRange(logs, mode), [logs, mode]);
 
-  const { avgStress, avgMood, highestStress } = useMemo(
-    () => calcSummary(data),
-    [data]
+  const { modeStress, modeMood, highestStress } = useMemo(
+    () => calcSummary(rangeLogs),
+    [rangeLogs]
   );
 
   return (
@@ -223,6 +246,25 @@ export default function Analytics() {
     >
       <style>{`
         @keyframes gradient-bg { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        @keyframes shimmer-slide { 100% { transform: translateX(100%); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pulse-soft { 0%, 100% { opacity: 0.7; transform: scale(0.98); } 50% { opacity: 1; transform: scale(1); } }
+        .skeleton {
+          position: relative;
+          overflow: hidden;
+          background-color: rgba(255,255,255,0.65);
+        }
+        .skeleton::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          transform: translateX(-100%);
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.7), transparent);
+          animation: shimmer-slide 1.6s infinite;
+        }
+        .spin-slow { animation: spin 1.4s linear infinite; }
+        .spin-reverse { animation: spin 2.1s linear infinite reverse; }
+        .pulse-soft { animation: pulse-soft 1.8s ease-in-out infinite; }
       `}</style>
 
       <Navbar activeLink="Analytics" user={user} />
@@ -258,17 +300,6 @@ export default function Analytics() {
 
         {/* INFO STATE */}
         <div className="max-w-3xl mx-auto mb-6">
-          {loading && (
-            <div className="bg-white/50 border border-white/30 rounded-2xl p-4 text-center shadow-sm backdrop-blur">
-              <p
-                className="text-sm md:text-base"
-                style={{ color: "var(--text-secondary)" }}
-              >
-                Fetching data from the server...
-              </p>
-            </div>
-          )}
-
           {!loading && errorMsg && (
             <div className="bg-white/60 border border-white/30 rounded-2xl p-4 text-center shadow-sm backdrop-blur">
               <p className="text-sm md:text-base font-medium text-red-600">
@@ -326,13 +357,30 @@ export default function Analytics() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 mb-8 md:mb-10">
           {/* Stress Chart */}
           <div
-            className="rounded-2xl p-4 md:p-6 border backdrop-blur-xl"
+            className="relative rounded-2xl p-4 md:p-6 border backdrop-blur-xl"
             style={{
               background: "rgba(255,255,255,0.45)",
               borderColor: "var(--glass-border)",
               boxShadow: "0 8px 30px rgba(0,0,0,0.07)",
             }}
           >
+            {loading && (
+              <div className="absolute inset-0 z-10 rounded-2xl bg-white/70 backdrop-blur-sm p-4 md:p-6">
+                <div className="relative h-full w-full rounded-2xl border border-white/40 bg-white/60 p-4 md:p-6 shadow-inner">
+                  <div className="skeleton h-5 w-40 rounded-full mb-4" />
+                  <div className="skeleton h-full w-full rounded-2xl" />
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-center">
+                    <div className="relative flex items-center justify-center">
+                      <div className="h-14 w-14 rounded-full border-4 border-blue-200 border-t-blue-500 spin-slow" />
+                      <div className="absolute h-9 w-9 rounded-full border-4 border-orange-200 border-t-orange-500 spin-reverse" />
+                    </div>
+                    <p className="text-center text-sm font-semibold text-gray-500 pulse-soft">
+                      Loading stress analytics...
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
             <h2
               className="text-lg md:text-xl font-semibold mb-4 text-center md:text-left"
               style={{ color: "var(--brand-blue)" }}
@@ -340,7 +388,11 @@ export default function Analytics() {
               Stress Trend ({mode})
             </h2>
 
-            <div className="h-[200px] md:h-[260px] w-full">
+            <div
+              className={`h-[200px] md:h-[260px] w-full ${
+                loading ? "opacity-0 pointer-events-none" : ""
+              }`}
+            >
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={data}>
                   <CartesianGrid stroke="#e5e7eb" strokeDasharray="5 5" />
@@ -348,7 +400,13 @@ export default function Analytics() {
                     dataKey={mode === "week" ? "day" : "week"}
                     tick={{ fontSize: 12 }}
                   />
-                  <YAxis tick={{ fontSize: 12 }} width={30} domain={[0, 3]} />
+                  <YAxis
+                    tick={{ fontSize: 12 }}
+                    width={30}
+                    domain={[0, 3]}
+                    ticks={[1, 2, 3]}
+                    allowDecimals={false}
+                  />
                   <Tooltip
                     contentStyle={{
                       borderRadius: "12px",
@@ -371,13 +429,30 @@ export default function Analytics() {
 
           {/* Mood Chart */}
           <div
-            className="rounded-2xl p-4 md:p-6 border backdrop-blur-xl"
+            className="relative rounded-2xl p-4 md:p-6 border backdrop-blur-xl"
             style={{
               background: "rgba(255,255,255,0.45)",
               borderColor: "var(--glass-border)",
               boxShadow: "0 8px 30px rgba(0,0,0,0.07)",
             }}
           >
+            {loading && (
+              <div className="absolute inset-0 z-10 rounded-2xl bg-white/70 backdrop-blur-sm p-4 md:p-6">
+                <div className="relative h-full w-full rounded-2xl border border-white/40 bg-white/60 p-4 md:p-6 shadow-inner">
+                  <div className="skeleton h-5 w-40 rounded-full mb-4" />
+                  <div className="skeleton h-full w-full rounded-2xl" />
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-center">
+                    <div className="relative flex items-center justify-center">
+                      <div className="h-14 w-14 rounded-full border-4 border-blue-200 border-t-blue-500 spin-slow" />
+                      <div className="absolute h-9 w-9 rounded-full border-4 border-orange-200 border-t-orange-500 spin-reverse" />
+                    </div>
+                    <p className="text-center text-sm font-semibold text-gray-500 pulse-soft">
+                      Loading mood analytics...
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
             <h2
               className="text-lg md:text-xl font-semibold mb-4 text-center md:text-left"
               style={{ color: "var(--brand-blue)" }}
@@ -385,7 +460,11 @@ export default function Analytics() {
               Mood Trend ({mode})
             </h2>
 
-            <div className="h-[200px] md:h-[260px] w-full">
+            <div
+              className={`h-[200px] md:h-[260px] w-full ${
+                loading ? "opacity-0 pointer-events-none" : ""
+              }`}
+            >
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={data}>
                   <CartesianGrid stroke="#e5e7eb" strokeDasharray="5 5" />
@@ -393,7 +472,14 @@ export default function Analytics() {
                     dataKey={mode === "week" ? "day" : "week"}
                     tick={{ fontSize: 12 }}
                   />
-                  <YAxis tick={{ fontSize: 12 }} width={30} />
+                  <YAxis
+                    tick={{ fontSize: 14 }}
+                    width={36}
+                    domain={[0, 5]}
+                    ticks={[1, 2, 3, 4, 5]}
+                    allowDecimals={false}
+                    tickFormatter={(value) => moodEmojis[value - 1] || value}
+                  />
                   <Tooltip
                     contentStyle={{
                       borderRadius: "12px",
@@ -418,8 +504,11 @@ export default function Analytics() {
         {/* ==== SUMMARY CARDS ==== */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
           {[
-            { title: "Average Stress", value: avgStress },
-            { title: "Average Mood", value: avgMood },
+            { title: "Mode Stress", value: modeStress || "-" },
+            {
+              title: "Mode Mood",
+              value: modeMood ? moodEmojis[modeMood - 1] : "-",
+            },
             { title: "Highest Stress", value: highestStress },
           ].map((item, i) => (
             <div
@@ -437,9 +526,16 @@ export default function Analytics() {
               >
                 {item.title}
               </h3>
-              <p className="text-3xl md:text-4xl font-bold text-[var(--text-primary)]">
-                {item.value}
-              </p>
+              {loading ? (
+                <div className="w-full space-y-2">
+                  <div className="skeleton h-10 w-28 rounded-full" />
+                  <div className="skeleton h-3 w-24 rounded-full" />
+                </div>
+              ) : (
+                <p className="text-3xl md:text-4xl font-bold text-[var(--text-primary)]">
+                  {item.value}
+                </p>
+              )}
             </div>
           ))}
         </div>
