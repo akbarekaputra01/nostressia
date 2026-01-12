@@ -1,7 +1,13 @@
+import React from "react";
+import AuthGate from "./components/AuthGate";
 import Router from "./router";
 
 function App() {
-  return <Router />;
+  return (
+    <AuthGate>
+      <Router />
+    </AuthGate>
+  );
 }
 
 export default App;
