@@ -513,6 +513,7 @@ export default function Analytics() {
                     strokeDasharray="6 6"
                     dot={false}
                     connectNulls
+                    isAnimationActive={false}
                   />
                   <Line
                     type="linear"
@@ -522,6 +523,7 @@ export default function Analytics() {
                     dot={{ r: 4, strokeWidth: 2 }}
                     activeDot={{ r: 6 }}
                     connectNulls={false}
+                    isAnimationActive={false}
                   />
                 </LineChart>
               </ResponsiveContainer>
@@ -596,6 +598,7 @@ export default function Analytics() {
                     strokeDasharray="6 6"
                     dot={false}
                     connectNulls
+                    isAnimationActive={false}
                   />
                   <Line
                     type="linear"
@@ -605,6 +608,7 @@ export default function Analytics() {
                     dot={{ r: 4, strokeWidth: 2 }}
                     activeDot={{ r: 6 }}
                     connectNulls={false}
+                    isAnimationActive={false}
                   />
                 </LineChart>
               </ResponsiveContainer>
