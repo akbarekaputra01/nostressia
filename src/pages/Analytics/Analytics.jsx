@@ -185,7 +185,10 @@ const addGapSeries = (rows, key, gapKey) => {
 const buildTooltipLabel = (payload, mode) =>
   payload?.payload?.[mode === "week" ? "day" : "week"] || "";
 
-const moodTooltipValue = (value) => moodEmojis[value - 1] || value;
+const moodTooltipValue = (value) => {
+  const rounded = Math.round(clampNumber(value, 0));
+  return moodEmojis[rounded - 1] || value;
+};
 
 const renderMoodTooltip =
   (mode) =>
@@ -503,7 +506,7 @@ export default function Analytics() {
                     filterNull={false}
                   />
                   <Line
-                    type="monotone"
+                    type="linear"
                     dataKey="stressGap"
                     stroke="var(--brand-blue)"
                     strokeWidth={2}
@@ -512,7 +515,7 @@ export default function Analytics() {
                     connectNulls
                   />
                   <Line
-                    type="monotone"
+                    type="linear"
                     dataKey="stress"
                     stroke="var(--brand-blue)"
                     strokeWidth={3}
@@ -580,13 +583,13 @@ export default function Analytics() {
                     ticks={[1, 2, 3, 4, 5]}
                     interval={0}
                     allowDecimals={false}
-                    tickFormatter={(value) => moodEmojis[value - 1] || value}
+                    tickFormatter={(value) => moodTooltipValue(value)}
                     tickMargin={8}
                     padding={{ top: 6, bottom: 6 }}
                   />
                   <Tooltip content={renderMoodTooltip(mode)} filterNull={false} />
                   <Line
-                    type="monotone"
+                    type="linear"
                     dataKey="moodGap"
                     stroke="var(--brand-blue-light)"
                     strokeWidth={2}
@@ -595,7 +598,7 @@ export default function Analytics() {
                     connectNulls
                   />
                   <Line
-                    type="monotone"
+                    type="linear"
                     dataKey="mood"
                     stroke="var(--brand-blue-light)"
                     strokeWidth={3}
