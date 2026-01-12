@@ -498,7 +498,10 @@ export default function Analytics() {
                     tickFormatter={(value) => getStressLabel(value)}
                     tickMargin={8}
                   />
-                  <Tooltip content={renderStressTooltip(mode)} />
+                  <Tooltip
+                    content={renderStressTooltip(mode)}
+                    filterNull={false}
+                  />
                   <Line
                     type="monotone"
                     dataKey="stressGap"
@@ -581,7 +584,7 @@ export default function Analytics() {
                     tickMargin={8}
                     padding={{ top: 6, bottom: 6 }}
                   />
-                  <Tooltip content={renderMoodTooltip(mode)} />
+                  <Tooltip content={renderMoodTooltip(mode)} filterNull={false} />
                   <Line
                     type="monotone"
                     dataKey="moodGap"
