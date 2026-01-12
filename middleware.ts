@@ -1,8 +1,5 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-
 const unauthorized = () => {
-  return new NextResponse("Authentication required", {
+  return new Response("Authentication required", {
     status: 401,
     headers: {
       "WWW-Authenticate": 'Basic realm="Secure Area"',
@@ -10,12 +7,12 @@ const unauthorized = () => {
   });
 };
 
-export function middleware(request: NextRequest) {
+export default function middleware(request: Request) {
   const enabledRaw = process.env.BASIC_AUTH_ENABLED ?? "true";
   const enabled = enabledRaw.toLowerCase() !== "false";
 
   if (!enabled) {
-    return NextResponse.next();
+    return;
   }
 
   const username = process.env.BASIC_AUTH_USER ?? "";
@@ -33,9 +30,7 @@ export function middleware(request: NextRequest) {
   const encoded = authHeader.slice(6);
   let decoded = "";
   try {
-    decoded = new TextDecoder().decode(
-      Uint8Array.from(atob(encoded), (c) => c.charCodeAt(0))
-    );
+    decoded = atob(encoded);
   } catch {
     return unauthorized();
   }
@@ -44,8 +39,6 @@ export function middleware(request: NextRequest) {
   if (incomingUser !== username || incomingPass !== password) {
     return unauthorized();
   }
-
-  return NextResponse.next();
 }
 
 export const config = {
