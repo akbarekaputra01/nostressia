@@ -18,11 +18,21 @@ const bgCream = "#FFF3E0";
 const bgPink = "#eaf2ff";
 const bgLavender = "#e3edff";
 const moodEmojis = ["😢", "😕", "😐", "😊", "😄"];
+const stressLabels = ["Low", "Moderate", "High"];
 
 // ===== Helpers =====
 const clampNumber = (v, fallback = 0) => {
   const n = Number(v);
   return Number.isFinite(n) ? n : fallback;
+};
+
+const getStressLabel = (value) => {
+  if (!value) return "-";
+  const idx = Math.min(
+    stressLabels.length - 1,
+    Math.max(0, Math.round(value) - 1)
+  );
+  return stressLabels[idx];
 };
 
 const startOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
@@ -80,9 +90,9 @@ const buildWeekSeries = (logs) => {
     return {
       day: weekdayShort(d),
       // stress: 1..3
-      stress: row ? clampNumber(row.stressLevel, 0) : 0,
+      stress: row ? clampNumber(row.stressLevel, 0) : null,
       // mood: from emoji (integer). If you store 1..5 this will work directly.
-      mood: row ? clampNumber(row.emoji, 0) : 0,
+      mood: row ? clampNumber(row.emoji, 0) : null,
       _date: key,
     };
   });
@@ -115,8 +125,8 @@ const buildMonthSeries = (logs) => {
   return buckets.map((b, i) => ({
     week: `W${i + 1}`,
     // Use average so chart scale stays consistent with weekly view.
-    stress: b.count ? Number((b.stressSum / b.count).toFixed(2)) : 0,
-    mood: b.count ? Number((b.moodSum / b.count).toFixed(2)) : 0,
+    stress: b.count ? Number((b.stressSum / b.count).toFixed(2)) : null,
+    mood: b.count ? Number((b.moodSum / b.count).toFixed(2)) : null,
   }));
 };
 
@@ -140,10 +150,14 @@ const calcSummary = (logsInRange) => {
     .map((v) => clampNumber(v, 0))
     .filter((x) => x > 0);
 
+  const avgStress = nonZeroStress.length
+    ? nonZeroStress.reduce((sum, v) => sum + v, 0) / nonZeroStress.length
+    : 0;
+
   return {
     modeStress: calcMode(stressVals),
     modeMood: calcMode(moodVals),
-    highestStress: nonZeroStress.length ? Math.max(...nonZeroStress) : 0,
+    avgStress,
   };
 };
 
@@ -151,7 +165,7 @@ export default function Analytics() {
   const [mode, setMode] = useState("week");
   const headerRef = useRef(null);
 
-  // Ambil user dari layout
+  // Get user from layout
   const { user } = useOutletContext() || {
     user: { name: "User", avatar: null },
   };
@@ -203,17 +217,17 @@ export default function Analytics() {
 
           if (res.status === 401) {
             throw new Error(
-              detail || "Unauthorized (401). Pastikan token login tersimpan."
+              detail || "Unauthorized (401). Please ensure your login token exists."
             );
           }
-          throw new Error(detail || `Request gagal (HTTP ${res.status}).`);
+          throw new Error(detail || `Request failed (HTTP ${res.status}).`);
         }
 
         const data = await res.json();
         setLogs(Array.isArray(data) ? data : []);
       } catch (err) {
         if (err?.name === "AbortError") return;
-        setErrorMsg(err?.message || "Gagal mengambil data stress logs.");
+        setErrorMsg(err?.message || "Failed to fetch stress logs.");
       } finally {
         setLoading(false);
       }
@@ -229,7 +243,7 @@ export default function Analytics() {
   const data = mode === "week" ? weekData : monthData;
   const rangeLogs = useMemo(() => getLogsInRange(logs, mode), [logs, mode]);
 
-  const { modeStress, modeMood, highestStress } = useMemo(
+  const { modeStress, modeMood, avgStress } = useMemo(
     () => calcSummary(rangeLogs),
     [rangeLogs]
   );
@@ -293,7 +307,7 @@ export default function Analytics() {
               className="text-sm md:text-lg font-medium drop-shadow-sm px-4"
               style={{ color: "var(--text-secondary)" }}
             >
-              Pantau pola stres & mood kamu dalam tampilan harian atau bulanan
+              Track your stress and mood patterns in weekly or monthly views.
             </p>
           </div>
         </div>
@@ -320,8 +334,7 @@ export default function Analytics() {
                 className="text-sm md:text-base"
                 style={{ color: "var(--text-secondary)" }}
               >
-                Belum ada data stress log. Coba lakukan prediksi / simpan log
-                dulu ya 🙂
+                No stress logs yet. Try running a prediction or saving a log 🙂
               </p>
             </div>
           )}
@@ -406,6 +419,7 @@ export default function Analytics() {
                     domain={[0, 3]}
                     ticks={[1, 2, 3]}
                     allowDecimals={false}
+                    tickFormatter={(value) => getStressLabel(value)}
                   />
                   <Tooltip
                     contentStyle={{
@@ -413,6 +427,7 @@ export default function Analytics() {
                       border: "none",
                       boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
                     }}
+                    formatter={(value) => getStressLabel(value)}
                   />
                   <Line
                     type="monotone"
@@ -421,6 +436,7 @@ export default function Analytics() {
                     strokeWidth={3}
                     dot={{ r: 4, strokeWidth: 2 }}
                     activeDot={{ r: 6 }}
+                    connectNulls={false}
                   />
                 </LineChart>
               </ResponsiveContainer>
@@ -473,7 +489,7 @@ export default function Analytics() {
                     tick={{ fontSize: 12 }}
                   />
                   <YAxis
-                    tick={{ fontSize: 14 }}
+                    tick={{ fontSize: 18 }}
                     width={36}
                     domain={[0, 5]}
                     ticks={[1, 2, 3, 4, 5]}
@@ -486,6 +502,7 @@ export default function Analytics() {
                       border: "none",
                       boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
                     }}
+                    formatter={(value) => moodEmojis[value - 1] || value}
                   />
                   <Line
                     type="monotone"
@@ -494,6 +511,7 @@ export default function Analytics() {
                     strokeWidth={3}
                     dot={{ r: 4, strokeWidth: 2 }}
                     activeDot={{ r: 6 }}
+                    connectNulls={false}
                   />
                 </LineChart>
               </ResponsiveContainer>
@@ -504,12 +522,12 @@ export default function Analytics() {
         {/* ==== SUMMARY CARDS ==== */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
           {[
-            { title: "Mode Stress", value: modeStress || "-" },
+            { title: "Most Common Stress", value: getStressLabel(modeStress) },
             {
-              title: "Mode Mood",
+              title: "Most Common Mood",
               value: modeMood ? moodEmojis[modeMood - 1] : "-",
             },
-            { title: "Highest Stress", value: highestStress },
+            { title: "Average Stress Level", value: getStressLabel(avgStress) },
           ].map((item, i) => (
             <div
               key={i}
