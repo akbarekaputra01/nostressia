@@ -182,6 +182,51 @@ const addGapSeries = (rows, key, gapKey) => {
   }));
 };
 
+const buildTooltipLabel = (payload, mode) =>
+  payload?.payload?.[mode === "week" ? "day" : "week"] || "";
+
+const moodTooltipValue = (value) => moodEmojis[value - 1] || value;
+
+const renderMoodTooltip =
+  (mode) =>
+  ({ active, payload }) => {
+    if (!active || !payload?.length) return null;
+    const base = payload[0]?.payload;
+    const label = buildTooltipLabel(payload[0], mode);
+    const value = base?.mood;
+
+    return (
+      <div className="rounded-xl bg-white/90 px-3 py-2 text-sm shadow-lg">
+        <div className="font-semibold text-gray-700">{label}</div>
+        <div className="mt-1">
+          {value
+            ? `Mood: ${moodTooltipValue(value)}`
+            : "Tidak ada data — garis putus-putus menunjukkan jeda."}
+        </div>
+      </div>
+    );
+  };
+
+const renderStressTooltip =
+  (mode) =>
+  ({ active, payload }) => {
+    if (!active || !payload?.length) return null;
+    const base = payload[0]?.payload;
+    const label = buildTooltipLabel(payload[0], mode);
+    const value = base?.stress;
+
+    return (
+      <div className="rounded-xl bg-white/90 px-3 py-2 text-sm shadow-lg">
+        <div className="font-semibold text-gray-700">{label}</div>
+        <div className="mt-1">
+          {value
+            ? `Stress: ${getStressLabel(value)}`
+            : "Tidak ada data — garis putus-putus menunjukkan jeda."}
+        </div>
+      </div>
+    );
+  };
+
 export default function Analytics() {
   const [mode, setMode] = useState("week");
   const headerRef = useRef(null);
@@ -451,16 +496,9 @@ export default function Analytics() {
                     tickFormatter={(value) => getStressLabel(value)}
                     tickMargin={8}
                   />
-                  <Tooltip
-                    contentStyle={{
-                      borderRadius: "12px",
-                      border: "none",
-                      boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-                    }}
-                    formatter={(value) => getStressLabel(value)}
-                  />
+                  <Tooltip content={renderStressTooltip(mode)} />
                   <Line
-                    type="linear"
+                    type="monotone"
                     dataKey="stressGap"
                     stroke="var(--brand-blue)"
                     strokeWidth={2}
@@ -469,7 +507,7 @@ export default function Analytics() {
                     connectNulls
                   />
                   <Line
-                    type="linear"
+                    type="monotone"
                     dataKey="stress"
                     stroke="var(--brand-blue)"
                     strokeWidth={3}
@@ -521,7 +559,10 @@ export default function Analytics() {
               }`}
             >
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={moodChartData}>
+                <LineChart
+                  data={moodChartData}
+                  margin={{ top: 12, right: 8, left: 12, bottom: 4 }}
+                >
                   <CartesianGrid stroke="#e5e7eb" strokeDasharray="5 5" />
                   <XAxis
                     dataKey={mode === "week" ? "day" : "week"}
@@ -529,24 +570,18 @@ export default function Analytics() {
                   />
                   <YAxis
                     tick={{ fontSize: 22 }}
-                    width={48}
+                    width={64}
                     domain={[0, 5]}
                     ticks={[1, 2, 3, 4, 5]}
                     interval={0}
                     allowDecimals={false}
                     tickFormatter={(value) => moodEmojis[value - 1] || value}
                     tickMargin={8}
+                    padding={{ top: 6, bottom: 6 }}
                   />
-                  <Tooltip
-                    contentStyle={{
-                      borderRadius: "12px",
-                      border: "none",
-                      boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-                    }}
-                    formatter={(value) => moodEmojis[value - 1] || value}
-                  />
+                  <Tooltip content={renderMoodTooltip(mode)} />
                   <Line
-                    type="linear"
+                    type="monotone"
                     dataKey="moodGap"
                     stroke="var(--brand-blue-light)"
                     strokeWidth={2}
@@ -555,7 +590,7 @@ export default function Analytics() {
                     connectNulls
                   />
                   <Line
-                    type="linear"
+                    type="monotone"
                     dataKey="mood"
                     stroke="var(--brand-blue-light)"
                     strokeWidth={3}
