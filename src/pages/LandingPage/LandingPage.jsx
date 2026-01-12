@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { 
   motion as Motion, 
-  AnimatePresence 
+  AnimatePresence,
 } from "framer-motion";
 import { 
   ArrowRight, Star, Smile, CheckCircle, 
@@ -13,8 +13,10 @@ import {
 // --- Assets ---
 import LogoNostressia from "../../assets/images/Logo-Nostressia.png";
 import Avatar1 from "../../assets/images/avatar1.png"; 
+// GANTI 'preview1.png' INI DENGAN GAMBAR BACKGROUND YANG ANDA INGINKAN (misal: foto gedung kampus atau kegiatan mhs)
+import CTABackground from "../../assets/images/preview2.png"; 
 
-// --- COMPONENTS: UI MOCKUPS ---
+// --- COMPONENTS: UI MOCKUPS (TETAP SAMA) ---
 
 // 1. Mockup Mood Tracker
 const MoodCard = () => (
@@ -283,11 +285,7 @@ const HeroAppPreview = () => {
 // --- COMPONENT: HERO SIMPLE ---
 const HeroSimple = () => {
   return (
-    // UPDATE: 
-    // - Desktop Padding: dikurangi drastis jadi md:pt-28 (sebelumnya 40)
-    // - Desktop Min-Height: dikurangi jadi md:min-h-[80vh] (agar titik tengahnya naik)
-    // - Mobile: pt-20 (agar pas)
-    <header className="relative z-10 pt-20 pb-10 md:pt-28 md:pb-16 px-6 overflow-hidden flex flex-col md:justify-center md:min-h-[80vh]">
+    <header className="relative z-10 pt-20 pb-10 md:pt-28 md:pb-16 px-6 overflow-hidden flex flex-col md:justify-center md:min-h-[90vh]">
       
       {/* Background Blobs */}
       <Motion.div 
@@ -311,7 +309,7 @@ const HeroSimple = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-orange-50 border border-orange-100 text-[#F2994A] text-[10px] md:text-xs font-bold uppercase tracking-wider mb-6 shadow-sm"
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/80 backdrop-blur-md border border-gray-200 text-[#F2994A] text-[10px] md:text-xs font-bold uppercase tracking-wider mb-6 shadow-sm"
           >
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
@@ -381,99 +379,182 @@ const HeroSimple = () => {
   );
 };
 
+// --- COMPONENT: SPLIT FLOATING NAV ---
+
+const SplitNav = ({ scrollToSection, setIsMobileMenuOpen }) => {
+   
+   const navVariants = {
+      hidden: { y: -100, opacity: 0 },
+      visible: { 
+         y: 0, 
+         opacity: 1,
+         transition: { type: 'spring', stiffness: 100, damping: 20, delay: 0.2 }
+      }
+   };
+
+   return (
+      <>
+         {/* LEFT ISLAND: LOGO (UPDATED) */}
+         <Motion.div 
+            variants={navVariants}
+            initial="hidden"
+            animate="visible"
+            className="fixed top-4 left-4 md:top-6 md:left-8 z-50"
+         >
+            {/* CLICK TO SCROLL TOP */}
+            <Link 
+               to="/" 
+               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+               className="flex items-center gap-3 bg-white/70 backdrop-blur-xl border border-white/50 shadow-sm px-5 py-3 rounded-full hover:shadow-lg transition-all cursor-pointer group"
+            >
+               <img 
+                 src={LogoNostressia} 
+                 alt="Logo" 
+                 className="h-8 w-auto md:h-9 object-contain group-hover:scale-110 transition-transform" 
+               />
+               <span className="font-extrabold text-[#1A1A1A] text-lg tracking-tight group-hover:text-[#3664BA] transition-colors">
+                  Nostressia
+               </span>
+            </Link>
+         </Motion.div>
+
+         {/* RIGHT ISLAND: MENU (DESKTOP) */}
+         <Motion.div 
+            variants={navVariants}
+            initial="hidden"
+            animate="visible"
+            className="hidden md:flex fixed top-6 right-8 z-50 items-center gap-3"
+         >
+            {/* Navigation Pill */}
+            <div className="flex items-center gap-1 bg-white/70 backdrop-blur-xl border border-white/50 shadow-sm px-2 py-1.5 rounded-full">
+               {['Prediction', 'Analytics', 'Motivation', 'Tips', 'Diary'].map((item) => (
+                  <button
+                     key={item}
+                     onClick={() => scrollToSection(item.toLowerCase())}
+                     className="px-4 py-2 text-sm font-semibold text-gray-500 hover:text-[#1A1A1A] hover:bg-white rounded-full transition-all relative group cursor-pointer"
+                  >
+                     {item}
+                  </button>
+               ))}
+            </div>
+
+            {/* Login Button Independent */}
+            <Link to="/login" className="px-6 py-3 bg-[#1A1A1A] text-white rounded-full font-bold text-sm shadow-xl hover:shadow-2xl hover:bg-[#3664BA] hover:-translate-y-0.5 transition-all cursor-pointer flex items-center gap-2">
+               Login <ArrowRight size={14} />
+            </Link>
+         </Motion.div>
+
+         {/* RIGHT ISLAND: MENU (MOBILE) */}
+         <div className="md:hidden fixed top-4 right-4 z-50">
+            <button 
+               onClick={() => setIsMobileMenuOpen(true)}
+               className="p-3 bg-white/80 backdrop-blur-md border border-white/50 rounded-full shadow-sm text-[#1A1A1A] cursor-pointer"
+            >
+               <Menu size={24} />
+            </button>
+         </div>
+      </>
+   );
+};
+
+// --- COMPONENT: MOBILE MENU FLOATING DROPDOWN (UPDATED) ---
+
+const MobileMenuOverlay = ({ isOpen, setIsOpen, scrollToSection }) => {
+   return (
+      <AnimatePresence>
+         {isOpen && (
+            <>
+               {/* Backdrop */}
+               <Motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={() => setIsOpen(false)}
+                  className="fixed inset-0 z-[55] bg-black/10 backdrop-blur-[2px] md:hidden"
+               />
+               
+               {/* FLOATING BOX MENU */}
+               <Motion.div 
+                  initial={{ opacity: 0, scale: 0.9, y: -20, originY: 0, originX: 1 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9, y: -20 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  className="fixed top-20 right-4 z-[60] w-64 bg-white/95 backdrop-blur-2xl border border-white/60 rounded-3xl shadow-2xl p-2 flex flex-col gap-1 md:hidden"
+               >
+                  {/* Close Button Header */}
+                  <div className="flex justify-between items-center px-4 pt-2 pb-2">
+                     <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Menu</span>
+                     <button 
+                        onClick={() => setIsOpen(false)}
+                        className="p-1.5 bg-gray-100 rounded-full text-gray-500 hover:bg-gray-200 transition-colors"
+                     >
+                        <X size={16} />
+                     </button>
+                  </div>
+                  
+                  {/* Menu Items */}
+                  {['Prediction', 'Analytics', 'Motivation', 'Tips', 'Diary'].map((item) => (
+                     <button
+                        key={item}
+                        onClick={() => {
+                           setIsOpen(false);
+                           setTimeout(() => scrollToSection(item.toLowerCase()), 300);
+                        }}
+                        className="w-full text-left px-4 py-3 text-sm font-bold text-gray-600 hover:text-[#3664BA] hover:bg-white rounded-2xl transition-all active:scale-95"
+                     >
+                        {item}
+                     </button>
+                  ))}
+                  
+                  <div className="h-[1px] bg-gray-100 my-1 mx-2"></div>
+                  
+                  {/* Login Button */}
+                  <Link 
+                     to="/login"
+                     onClick={() => setIsOpen(false)} 
+                     className="w-full flex items-center justify-between px-4 py-3 text-sm font-bold text-white bg-[#1A1A1A] hover:bg-[#3664BA] rounded-2xl transition-colors shadow-lg active:scale-95 mb-1"
+                  >
+                     Login App <ArrowRight size={14} />
+                  </Link>
+               </Motion.div>
+            </>
+         )}
+      </AnimatePresence>
+   );
+}
+
+
 // --- MAIN PAGE COMPONENT ---
 
 export default function LandingPage() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const scrollToSection = (id) => {
-    // 1. Tutup menu terlebih dahulu
-    setIsMobileMenuOpen(false);
-
-    // 2. Beri jeda sedikit (misal 100ms) agar React selesai memproses penutupan menu
-    // baru kemudian lakukan scroll. Ini mencegah konflik event di mobile.
-    setTimeout(() => {
-      const element = document.getElementById(id);
-      if (element) {
-        const y = element.getBoundingClientRect().top + window.scrollY - 100; 
-        window.scrollTo({ top: y, behavior: 'smooth' });
-      }
-    }, 100);
+    const element = document.getElementById(id);
+    if (element) {
+      const y = element.getBoundingClientRect().top + window.scrollY - 100; 
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    }
   };
   
   return (
     <div className="min-h-screen font-sans bg-[#F8F9FA] text-[#1A1A1A] overflow-x-hidden selection:bg-[#F2994A] selection:text-white">
       
-      {/* Background */}
+      {/* Background Pattern */}
       <div className="fixed inset-0 z-0 opacity-[0.4] pointer-events-none"
            style={{ backgroundImage: 'radial-gradient(#CBD5E1 1px, transparent 1px)', backgroundSize: '32px 32px' }}>
       </div>
 
-      {/* Navbar */}
-      <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-gray-200 transition-all">
-         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center relative">
-            <Link to="/" className="flex items-center gap-2 shrink-0 cursor-pointer">
-                <img src={LogoNostressia} alt="Logo" className="h-7 md:h-8 w-auto" />
-                <span className="font-bold text-[#3664BA] text-lg">Nostressia</span>
-            </Link>
-
-            <button 
-              className="md:hidden p-2 text-gray-600 hover:text-[#F2994A] focus:outline-none cursor-pointer"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-               {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
-
-            <div className="hidden md:flex items-center gap-8">
-               <div className="flex items-center gap-6">
-                  {['Prediction', 'Analytics', 'Motivation', 'Tips', 'Diary'].map((item) => (
-                     <button
-                        key={item}
-                        onClick={() => scrollToSection(item.toLowerCase())}
-                        className="text-sm font-medium text-gray-600 hover:text-[#F2994A] transition-colors relative group cursor-pointer"
-                     >
-                        {item}
-                        <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#F2994A] transition-all group-hover:w-full"></span>
-                     </button>
-                  ))}
-               </div>
-               <Link to="/login" className="shrink-0 px-6 py-2 bg-[#1A1A1A] hover:bg-[#3664BA] text-white rounded-full font-medium text-sm transition-colors shadow-lg cursor-pointer">
-                  Login
-               </Link>
-            </div>
-         </div>
-
-         <AnimatePresence>
-            {isMobileMenuOpen && (
-               <Motion.div 
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  className="md:hidden bg-white border-b border-gray-100 overflow-hidden"
-               >
-                  <div className="flex flex-col p-6 space-y-4">
-                      {['Prediction', 'Analytics', 'Motivation', 'Tips', 'Diary'].map((item) => (
-                         <button
-                            key={item}
-                            onClick={() => scrollToSection(item.toLowerCase())}
-                            className="text-left text-base font-medium text-gray-600 hover:text-[#F2994A] py-2 cursor-pointer"
-                         >
-                            {item}
-                         </button>
-                      ))}
-                      <hr className="border-gray-100" />
-                      <Link 
-                         to="/login" 
-                         className="text-center w-full px-6 py-3 bg-[#1A1A1A] text-white rounded-full font-medium transition-colors shadow-lg hover:bg-[#F2994A] cursor-pointer"
-                         onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                         Login
-                      </Link>
-                  </div>
-               </Motion.div>
-            )}
-         </AnimatePresence>
-      </nav>
+      {/* --- NEW SPLIT NAVIGATION (Fixed Logo) --- */}
+      <SplitNav 
+         scrollToSection={scrollToSection} 
+         setIsMobileMenuOpen={setIsMobileMenuOpen}
+      />
+      <MobileMenuOverlay 
+         isOpen={isMobileMenuOpen} 
+         setIsOpen={setIsMobileMenuOpen}
+         scrollToSection={scrollToSection}
+      />
 
       {/* Hero Section Baru */}
       <HeroSimple />
@@ -499,7 +580,7 @@ export default function LandingPage() {
       `}</style>
 
       {/* --- FEATURE SHOWCASE (HYBRID LAYOUT) --- */}
-      <section className="py-16 md:py-24 px-4 md:px-20 max-w-7xl mx-auto relative z-10 space-y-24 md:space-y-32">
+      <section className="py-16 md:py-24 px-4 md:px-20 max-w-7xl mx-auto relative z-10 space-y-24 md:space-y-32 mb-20">
          
          {/* ITEM 1: MOOD TRACKER */}
          <div id="prediction" className="scroll-mt-32">
@@ -810,10 +891,16 @@ export default function LandingPage() {
          
       </section>
 
-      {/* CTA Bottom */}
+      {/* CTA Bottom (UPDATED WITH BACKGROUND IMAGE) */}
       <section className="py-12 md:py-20 px-6">
-         <div className="max-w-5xl mx-auto bg-[#1A1A1A] rounded-[2rem] md:rounded-[3rem] p-8 md:p-20 text-center relative overflow-hidden shadow-2xl">
-            <div className="absolute top-0 left-0 w-full h-full opacity-20 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-gray-700 via-black to-black"></div>
+         <div 
+            className="max-w-5xl mx-auto rounded-[2rem] md:rounded-[3rem] p-8 md:p-20 text-center relative overflow-hidden shadow-2xl bg-cover bg-center group"
+            style={{ backgroundImage: `url(${CTABackground})` }}
+         >
+            {/* Overlay Gelap (Agar teks terbaca jelas) */}
+            <div className="absolute inset-0 bg-black/60 group-hover:bg-black/50 transition-colors duration-500 z-0"></div>
+
+            {/* Content (z-10 agar di atas overlay) */}
             <div className="relative z-10 space-y-6 md:space-y-8">
                <h2 className="text-3xl md:text-6xl font-bold text-white tracking-tight">
                   Ready to upgrade your <br/>
