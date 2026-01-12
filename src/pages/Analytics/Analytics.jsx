@@ -460,7 +460,7 @@ export default function Analytics() {
                     formatter={(value) => getStressLabel(value)}
                   />
                   <Line
-                    type="monotone"
+                    type="linear"
                     dataKey="stressGap"
                     stroke="var(--brand-blue)"
                     strokeWidth={2}
@@ -469,7 +469,7 @@ export default function Analytics() {
                     connectNulls
                   />
                   <Line
-                    type="monotone"
+                    type="linear"
                     dataKey="stress"
                     stroke="var(--brand-blue)"
                     strokeWidth={3}
@@ -532,6 +532,7 @@ export default function Analytics() {
                     width={48}
                     domain={[0, 5]}
                     ticks={[1, 2, 3, 4, 5]}
+                    interval={0}
                     allowDecimals={false}
                     tickFormatter={(value) => moodEmojis[value - 1] || value}
                     tickMargin={8}
@@ -545,7 +546,7 @@ export default function Analytics() {
                     formatter={(value) => moodEmojis[value - 1] || value}
                   />
                   <Line
-                    type="monotone"
+                    type="linear"
                     dataKey="moodGap"
                     stroke="var(--brand-blue-light)"
                     strokeWidth={2}
@@ -554,7 +555,7 @@ export default function Analytics() {
                     connectNulls
                   />
                   <Line
-                    type="monotone"
+                    type="linear"
                     dataKey="mood"
                     stroke="var(--brand-blue-light)"
                     strokeWidth={3}
