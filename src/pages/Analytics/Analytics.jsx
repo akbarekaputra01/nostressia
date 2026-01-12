@@ -189,19 +189,20 @@ const moodTooltipValue = (value) => moodEmojis[value - 1] || value;
 
 const renderMoodTooltip =
   (mode) =>
-  ({ active, payload }) => {
-    if (!active || !payload?.length) return null;
-    const base = payload[0]?.payload;
-    const label = buildTooltipLabel(payload[0], mode);
+  ({ active, payload, label: chartLabel }) => {
+    if (!active) return null;
+    const base = payload?.[0]?.payload;
+    const label = chartLabel || buildTooltipLabel(payload?.[0], mode);
     const value = base?.mood;
+    const hasValue = Number.isFinite(value) && value > 0;
 
     return (
       <div className="rounded-xl bg-white/90 px-3 py-2 text-sm shadow-lg">
         <div className="font-semibold text-gray-700">{label}</div>
         <div className="mt-1">
-          {value
+          {hasValue
             ? `Mood: ${moodTooltipValue(value)}`
-            : "Tidak ada data — garis putus-putus menunjukkan jeda."}
+            : "Tidak ada data pada hari ini."}
         </div>
       </div>
     );
@@ -209,19 +210,20 @@ const renderMoodTooltip =
 
 const renderStressTooltip =
   (mode) =>
-  ({ active, payload }) => {
-    if (!active || !payload?.length) return null;
-    const base = payload[0]?.payload;
-    const label = buildTooltipLabel(payload[0], mode);
+  ({ active, payload, label: chartLabel }) => {
+    if (!active) return null;
+    const base = payload?.[0]?.payload;
+    const label = chartLabel || buildTooltipLabel(payload?.[0], mode);
     const value = base?.stress;
+    const hasValue = Number.isFinite(value) && value > 0;
 
     return (
       <div className="rounded-xl bg-white/90 px-3 py-2 text-sm shadow-lg">
         <div className="font-semibold text-gray-700">{label}</div>
         <div className="mt-1">
-          {value
+          {hasValue
             ? `Stress: ${getStressLabel(value)}`
-            : "Tidak ada data — garis putus-putus menunjukkan jeda."}
+            : "Tidak ada data pada hari ini."}
         </div>
       </div>
     );
@@ -496,7 +498,10 @@ export default function Analytics() {
                     tickFormatter={(value) => getStressLabel(value)}
                     tickMargin={8}
                   />
-                  <Tooltip content={renderStressTooltip(mode)} />
+                  <Tooltip
+                    content={renderStressTooltip(mode)}
+                    filterNull={false}
+                  />
                   <Line
                     type="monotone"
                     dataKey="stressGap"
@@ -579,7 +584,7 @@ export default function Analytics() {
                     tickMargin={8}
                     padding={{ top: 6, bottom: 6 }}
                   />
-                  <Tooltip content={renderMoodTooltip(mode)} />
+                  <Tooltip content={renderMoodTooltip(mode)} filterNull={false} />
                   <Line
                     type="monotone"
                     dataKey="moodGap"
