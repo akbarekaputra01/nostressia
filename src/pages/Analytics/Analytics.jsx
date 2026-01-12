@@ -161,6 +161,27 @@ const calcSummary = (logsInRange) => {
   };
 };
 
+const addGapSeries = (rows, key, gapKey) => {
+  if (!Array.isArray(rows)) return [];
+  const gapIndexes = new Set();
+  let lastIndex = null;
+
+  rows.forEach((row, idx) => {
+    const value = row?.[key];
+    if (value === null || value === undefined) return;
+    if (lastIndex !== null && idx - lastIndex > 1) {
+      gapIndexes.add(lastIndex);
+      gapIndexes.add(idx);
+    }
+    lastIndex = idx;
+  });
+
+  return rows.map((row, idx) => ({
+    ...row,
+    [gapKey]: gapIndexes.has(idx) ? row?.[key] : null,
+  }));
+};
+
 export default function Analytics() {
   const [mode, setMode] = useState("week");
   const headerRef = useRef(null);
@@ -242,6 +263,14 @@ export default function Analytics() {
   const monthData = useMemo(() => buildMonthSeries(logs), [logs]);
   const data = mode === "week" ? weekData : monthData;
   const rangeLogs = useMemo(() => getLogsInRange(logs, mode), [logs, mode]);
+  const stressChartData = useMemo(
+    () => addGapSeries(data, "stress", "stressGap"),
+    [data]
+  );
+  const moodChartData = useMemo(
+    () => addGapSeries(data, "mood", "moodGap"),
+    [data]
+  );
 
   const { modeStress, modeMood, avgStress } = useMemo(
     () => calcSummary(rangeLogs),
@@ -407,7 +436,7 @@ export default function Analytics() {
               }`}
             >
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={data}>
+                <LineChart data={stressChartData}>
                   <CartesianGrid stroke="#e5e7eb" strokeDasharray="5 5" />
                   <XAxis
                     dataKey={mode === "week" ? "day" : "week"}
@@ -415,11 +444,12 @@ export default function Analytics() {
                   />
                   <YAxis
                     tick={{ fontSize: 12 }}
-                    width={30}
+                    width={70}
                     domain={[0, 3]}
                     ticks={[1, 2, 3]}
                     allowDecimals={false}
                     tickFormatter={(value) => getStressLabel(value)}
+                    tickMargin={8}
                   />
                   <Tooltip
                     contentStyle={{
@@ -428,6 +458,15 @@ export default function Analytics() {
                       boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
                     }}
                     formatter={(value) => getStressLabel(value)}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="stressGap"
+                    stroke="var(--brand-blue)"
+                    strokeWidth={2}
+                    strokeDasharray="6 6"
+                    dot={false}
+                    connectNulls
                   />
                   <Line
                     type="monotone"
@@ -482,19 +521,20 @@ export default function Analytics() {
               }`}
             >
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={data}>
+                <LineChart data={moodChartData}>
                   <CartesianGrid stroke="#e5e7eb" strokeDasharray="5 5" />
                   <XAxis
                     dataKey={mode === "week" ? "day" : "week"}
                     tick={{ fontSize: 12 }}
                   />
                   <YAxis
-                    tick={{ fontSize: 18 }}
-                    width={36}
+                    tick={{ fontSize: 22 }}
+                    width={48}
                     domain={[0, 5]}
                     ticks={[1, 2, 3, 4, 5]}
                     allowDecimals={false}
                     tickFormatter={(value) => moodEmojis[value - 1] || value}
+                    tickMargin={8}
                   />
                   <Tooltip
                     contentStyle={{
@@ -503,6 +543,15 @@ export default function Analytics() {
                       boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
                     }}
                     formatter={(value) => moodEmojis[value - 1] || value}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="moodGap"
+                    stroke="var(--brand-blue-light)"
+                    strokeWidth={2}
+                    strokeDasharray="6 6"
+                    dot={false}
+                    connectNulls
                   />
                   <Line
                     type="monotone"
