@@ -202,7 +202,7 @@ const renderMoodTooltip =
         <div className="mt-1">
           {hasValue
             ? `Mood: ${moodTooltipValue(value)}`
-            : "Tidak ada data pada hari ini."}
+            : "Tidak ada data pada titik ini."}
         </div>
       </div>
     );
@@ -223,7 +223,7 @@ const renderStressTooltip =
         <div className="mt-1">
           {hasValue
             ? `Stress: ${getStressLabel(value)}`
-            : "Tidak ada data pada hari ini."}
+            : "Tidak ada data pada titik ini."}
         </div>
       </div>
     );
