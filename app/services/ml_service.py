@@ -5,12 +5,12 @@ import sys
 
 # Tentukan path absolut biar tidak bingung
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MODEL_PATH = os.path.join(BASE_DIR, "models_ml", "current_stress_model.joblib")
+MODEL_PATH = os.path.join(BASE_DIR, "models_ml", "current_stress_pipeline.joblib")
 
 class StressModelService:
     def __init__(self):
-        self.model = None
-        self.scaler = None
+        self.pipeline = None
+        self.feature_names = None
         self.load_model()
 
     def load_model(self):
@@ -25,10 +25,10 @@ class StressModelService:
             
             # Unpack dictionary artifacts
             if isinstance(data, dict):
-                self.model = data.get('model')
-                self.scaler = data.get('scaler')
+                self.pipeline = data.get('pipeline')
+                self.feature_names = data.get('feature_names')
             else:
-                self.model = data
+                self.pipeline = data
             
             print("✅ ML Model Berhasil Dimuat!")
         except Exception as e:
@@ -51,7 +51,7 @@ class StressModelService:
         return mapping.get(category, 0)
 
     def predict_stress(self, input_data: dict) -> str:
-        if not self.model:
+        if not self.pipeline:
             print("❌ Model belum siap saat predict dipanggil.")
             return "Error: Model not ready"
 
@@ -72,14 +72,11 @@ class StressModelService:
                 'Academic_Performance_Encoded': academic_encoded
             }])
 
-            # Scaling
-            if self.scaler:
-                final_input = self.scaler.transform(df)
-            else:
-                final_input = df
+            if self.feature_names:
+                df = df[self.feature_names]
 
             # Predict
-            prediction_idx = self.model.predict(final_input)[0]
+            prediction_idx = self.pipeline.predict(df)[0]
             label_map = {0: "Low", 1: "Moderate", 2: "High"}
             
             return label_map.get(prediction_idx, "Unknown")
