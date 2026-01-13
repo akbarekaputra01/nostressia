@@ -19,6 +19,16 @@ class StressModelService:
         if estimator is None:
             return
 
+        if isinstance(estimator, dict):
+            for value in estimator.values():
+                self._coerce_logistic_regression(value)
+            return
+
+        if isinstance(estimator, (list, tuple, set)):
+            for value in estimator:
+                self._coerce_logistic_regression(value)
+            return
+
         if isinstance(estimator, LogisticRegression):
             if not hasattr(estimator, "multi_class"):
                 estimator.multi_class = "auto"
@@ -107,6 +117,8 @@ class StressModelService:
 
             if self.feature_names:
                 df = df[self.feature_names]
+
+            self._coerce_logistic_regression(self.pipeline)
 
             # Predict
             prediction_idx = self.pipeline.predict(df)[0]
