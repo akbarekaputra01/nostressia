@@ -2,6 +2,8 @@ import joblib
 import pandas as pd
 import os
 import sys
+from sklearn.linear_model import LogisticRegression
+from sklearn.pipeline import Pipeline
 
 # Tentukan path absolut biar tidak bingung
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -12,6 +14,35 @@ class StressModelService:
         self.pipeline = None
         self.feature_names = None
         self.load_model()
+
+    def _coerce_logistic_regression(self, estimator) -> None:
+        if estimator is None:
+            return
+
+        if isinstance(estimator, LogisticRegression):
+            if not hasattr(estimator, "multi_class"):
+                estimator.multi_class = "auto"
+            return
+
+        if isinstance(estimator, Pipeline):
+            for _, step in estimator.steps:
+                self._coerce_logistic_regression(step)
+            return
+
+        if hasattr(estimator, "transformers"):
+            for _, transformer, _ in estimator.transformers:
+                if transformer in {"drop", "passthrough"}:
+                    continue
+                self._coerce_logistic_regression(transformer)
+
+        if hasattr(estimator, "estimator"):
+            self._coerce_logistic_regression(estimator.estimator)
+
+        if hasattr(estimator, "estimator_"):
+            self._coerce_logistic_regression(estimator.estimator_)
+
+        if hasattr(estimator, "base_estimator"):
+            self._coerce_logistic_regression(estimator.base_estimator)
 
     def load_model(self):
         print(f"🔍 Mencari model di: {MODEL_PATH}") # DEBUG PRINT
@@ -29,6 +60,8 @@ class StressModelService:
                 self.feature_names = data.get('feature_names')
             else:
                 self.pipeline = data
+
+            self._coerce_logistic_regression(self.pipeline)
             
             print("✅ ML Model Berhasil Dimuat!")
         except Exception as e:
