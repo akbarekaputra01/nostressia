@@ -29,12 +29,15 @@ class StressModelService:
                 self._coerce_logistic_regression(value)
             return
 
-        if isinstance(estimator, LogisticRegression):
+        is_logistic_regression = isinstance(estimator, LogisticRegression) or (
+            estimator.__class__.__name__ == "LogisticRegression"
+        )
+        if is_logistic_regression:
             if not hasattr(estimator, "multi_class"):
                 estimator.multi_class = "auto"
             return
 
-        if isinstance(estimator, Pipeline):
+        if isinstance(estimator, Pipeline) or hasattr(estimator, "steps"):
             for _, step in estimator.steps:
                 self._coerce_logistic_regression(step)
             return
