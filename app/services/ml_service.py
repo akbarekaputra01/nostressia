@@ -13,49 +13,76 @@ class StressModelService:
     def __init__(self):
         self.pipeline = None
         self.feature_names = None
+        self._ensure_logistic_regression_defaults()
         self.load_model()
 
-    def _coerce_logistic_regression(self, estimator) -> None:
+    def _ensure_logistic_regression_defaults(self) -> None:
+        if not hasattr(LogisticRegression, "multi_class"):
+            LogisticRegression.multi_class = "auto"
+
+    def _coerce_logistic_regression(self, estimator, seen=None) -> None:
         if estimator is None:
             return
 
+        if seen is None:
+            seen = set()
+
+        estimator_id = id(estimator)
+        if estimator_id in seen:
+            return
+        seen.add(estimator_id)
+
         if isinstance(estimator, dict):
             for value in estimator.values():
-                self._coerce_logistic_regression(value)
+                self._coerce_logistic_regression(value, seen=seen)
             return
 
         if isinstance(estimator, (list, tuple, set)):
             for value in estimator:
-                self._coerce_logistic_regression(value)
+                self._coerce_logistic_regression(value, seen=seen)
             return
 
         is_logistic_regression = isinstance(estimator, LogisticRegression) or (
             estimator.__class__.__name__ == "LogisticRegression"
         )
         if is_logistic_regression:
+            self._ensure_logistic_regression_defaults()
             if not hasattr(estimator, "multi_class"):
                 estimator.multi_class = "auto"
             return
 
         if isinstance(estimator, Pipeline) or hasattr(estimator, "steps"):
             for _, step in estimator.steps:
-                self._coerce_logistic_regression(step)
+                self._coerce_logistic_regression(step, seen=seen)
             return
+
+        if hasattr(estimator, "named_steps"):
+            self._coerce_logistic_regression(estimator.named_steps, seen=seen)
 
         if hasattr(estimator, "transformers"):
             for _, transformer, _ in estimator.transformers:
                 if transformer in {"drop", "passthrough"}:
                     continue
-                self._coerce_logistic_regression(transformer)
+                self._coerce_logistic_regression(transformer, seen=seen)
 
         if hasattr(estimator, "estimator"):
-            self._coerce_logistic_regression(estimator.estimator)
+            self._coerce_logistic_regression(estimator.estimator, seen=seen)
 
         if hasattr(estimator, "estimator_"):
-            self._coerce_logistic_regression(estimator.estimator_)
+            self._coerce_logistic_regression(estimator.estimator_, seen=seen)
 
         if hasattr(estimator, "base_estimator"):
-            self._coerce_logistic_regression(estimator.base_estimator)
+            self._coerce_logistic_regression(estimator.base_estimator, seen=seen)
+
+        if hasattr(estimator, "classifier"):
+            self._coerce_logistic_regression(estimator.classifier, seen=seen)
+
+        if hasattr(estimator, "model"):
+            self._coerce_logistic_regression(estimator.model, seen=seen)
+
+        if hasattr(estimator, "__dict__"):
+            for value in estimator.__dict__.values():
+                self._coerce_logistic_regression(value, seen=seen)
 
     def load_model(self):
         print(f"🔍 Mencari model di: {MODEL_PATH}") # DEBUG PRINT
