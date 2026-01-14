@@ -160,7 +160,7 @@ export default function AdminPage({ skipAuth = false }) {
     if (!currentTipInput.trim()) return;
     const payload = { detail: currentTipInput, tipCategoryID: catId, uploaderID: currentUser.id };
     try {
-      const res = await fetch(`${BASE_URL}/tips`, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload) });
+      const res = await fetch(`${BASE_URL}/tips/`, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload) });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const rawNewTip = await res.json();
       const newTip = {
