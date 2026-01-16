@@ -12,15 +12,22 @@ class Settings(BaseSettings):
     api_prefix: str = Field("/api", description="Root API prefix")
     allowed_origins: List[str] = Field(default_factory=lambda: ["*"], description="CORS allow list")
 
+    # --- DATABASE CONFIG ---
     db_user: str = Field(..., env="DB_USER")
     db_password: str = Field(..., env="DB_PASSWORD")
     db_host: str = Field(..., env="DB_HOST")
     db_port: int = Field(3306, env="DB_PORT")
     db_name: str = Field(..., env="DB_NAME")
 
+    # ✅ TAMBAHAN BARU: AGAR TIDAK ERROR "EXTRA INPUTS"
+    brevo_api_key: str = Field(..., env="BREVO_API_KEY")
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
+        # Tambahan ini penting agar jika ada variable lain di .env (misal .DS_Store atau komen), 
+        # aplikasi tidak langsung crash.
+        extra = "ignore" 
 
     @property
     def database_url(self) -> str:
@@ -33,7 +40,6 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     """Return cached application settings instance."""
-
     return Settings()
 
 
