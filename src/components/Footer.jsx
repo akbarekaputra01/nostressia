@@ -40,42 +40,45 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* KOLOM 3: Connect / Socials */}
+          {/* KOLOM 3: Contact Us [DIPERBARUI] */}
           <div className="md:col-span-4">
-            <h3 className="text-gray-900 text-sm font-bold mb-2">Stay Connected</h3>
+            <h3 className="text-gray-900 text-sm font-bold mb-2">Contact Us</h3>
             <p className="text-gray-600 text-xs mb-3">
-              Have questions? Reach out to us.
+              Have questions? Reach out to us directly via email.
             </p>
-            <div className="flex items-center gap-3">
-              {/* Instagram */}
-              <a 
-                href="https://www.instagram.com/nostressia" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="w-8 h-8 flex items-center justify-center rounded-full bg-white border border-white/50 text-gray-500 hover:text-pink-600 transition-all"
-              >
-                <Instagram size={16} />
-              </a>
-
-              {/* Twitter / X */}
-              <a 
-                href="https://x.com/nostressia" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="w-8 h-8 flex items-center justify-center rounded-full bg-white border border-white/50 text-gray-500 hover:text-blue-400 transition-all"
-              >
-                <Twitter size={16} />
-              </a>
-
-              {/* Gmail (Direct Compose Link) */}
+            
+            {/* Tombol Contact Us yang lebih jelas */}
+            <div className="flex flex-col gap-3">
               <a 
                 href="https://mail.google.com/mail/?view=cm&fs=1&to=nostressia.official@gmail.com" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="w-8 h-8 flex items-center justify-center rounded-full bg-white border border-white/50 text-gray-500 hover:text-orange-500 transition-all"
+                className="flex items-center gap-2 w-fit px-4 py-2 rounded-lg bg-white border border-gray-200 text-gray-700 hover:text-orange-600 hover:border-orange-200 hover:shadow-sm transition-all group"
               >
-                <Mail size={16} />
+                <Mail size={16} className="text-gray-500 group-hover:text-orange-500" />
+                <span className="text-xs font-semibold">Contact Support</span>
               </a>
+
+              {/* Social Media Icons (Optional, tetap dipertahankan untuk koneksi lain) */}
+              <div className="flex items-center gap-3 mt-1">
+                <a 
+                  href="https://www.instagram.com/nostressia" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-white border border-white/50 text-gray-500 hover:text-pink-600 transition-all"
+                >
+                  <Instagram size={16} />
+                </a>
+
+                <a 
+                  href="https://x.com/nostressia" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-white border border-white/50 text-gray-500 hover:text-blue-400 transition-all"
+                >
+                  <Twitter size={16} />
+                </a>
+              </div>
             </div>
           </div>
         </div>

@@ -123,7 +123,6 @@ export default function Dashboard() {
   const [activeTip, setActiveTip] = useState(null);
 
   // --- FORM STATE ---
-  // LOGIKA BARU: Cek LocalStorage dulu, kalau tidak ada set kosong string ""
   const [gpa, setGpa] = useState(() => {
     const saved = localStorage.getItem("user_gpa");
     return saved ? Number(saved) : "";
@@ -447,15 +446,25 @@ export default function Dashboard() {
     }
   }
 
-  function changeMonth(delta) { setCalendarDate(new Date(year, month + delta, 1)); }
+  // --- UPDATED CALENDAR LOGIC ---
+  function changeMonth(offset) {
+    setCalendarDate((prev) => {
+      const newDate = new Date(prev);
+      newDate.setMonth(newDate.getMonth() + offset);
+      return newDate;
+    });
+  }
 
   function handleDateClick(day) {
     const dateObj = new Date(year, month, day);
     setSelectedDate(dateObj);
     const ds = formatDate(dateObj);
     const data = stressData[ds];
-    if (data && !data.isEmpty) setDayDetail({ dateStr: `${day} ${monthNames[month]} ${year}`, ...data });
-    else setDayDetail(null);
+    if (data && !data.isEmpty) {
+      setDayDetail({ dateStr: `${day} ${monthNames[month]} ${year}`, ...data });
+    } else {
+      setDayDetail(null);
+    }
   }
 
   return (
@@ -760,62 +769,129 @@ export default function Dashboard() {
             </div>
           </section>
 
-          {/* CALENDAR */}
+          {/* CALENDAR SECTION (FIXED BUTTONS) */}
           <section className="col-span-1 md:col-span-2 p-6 md:p-8 rounded-[20px] bg-white/40 backdrop-blur-md border border-white/20 shadow-xl relative overflow-hidden" style={{ minHeight: 640 }}>
             {isLoadingLogs && (
               <div className="absolute inset-0 z-20 bg-white/70 backdrop-blur-sm p-6 md:p-8">
                 <div className="relative h-full w-full rounded-[16px] border border-white/40 bg-white/60 p-6 md:p-8 shadow-inner">
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="skeleton h-8 w-8 rounded-full" />
-                    <div className="skeleton h-5 w-40 rounded-full" />
-                    <div className="skeleton h-8 w-8 rounded-full" />
-                  </div>
-                  <div className="grid grid-cols-7 gap-2 mb-4">
-                    {Array.from({ length: 7 }).map((_, idx) => (
-                      <div key={`weekday-skel-${idx}`} className="skeleton h-4 w-full rounded-full" />
-                    ))}
-                  </div>
-                  <div className="grid grid-cols-7 gap-2">
-                    {Array.from({ length: 35 }).map((_, idx) => (
-                      <div key={`day-skel-${idx}`} className="skeleton aspect-square rounded-xl" />
-                    ))}
-                  </div>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-center">
-                    <div className="relative flex items-center justify-center">
-                      <div className="h-14 w-14 rounded-full border-4 border-blue-200 border-t-blue-500 spin-slow" />
-                      <div className="absolute h-9 w-9 rounded-full border-4 border-orange-200 border-t-orange-500 spin-reverse" />
-                    </div>
-                    <p className="text-center text-sm font-semibold text-gray-500 pulse-soft">
-                      Fetching your daily log history...
-                    </p>
-                  </div>
+                   <div className="flex items-center justify-between mb-6">
+                      <div className="skeleton h-8 w-8 rounded-full" />
+                      <div className="skeleton h-5 w-40 rounded-full" />
+                      <div className="skeleton h-8 w-8 rounded-full" />
+                   </div>
+                   <div className="grid grid-cols-7 gap-2 mb-4">
+                      {Array.from({ length: 7 }).map((_, idx) => (
+                        <div key={`weekday-skel-${idx}`} className="skeleton h-4 w-full rounded-full" />
+                      ))}
+                   </div>
+                   <div className="grid grid-cols-7 gap-2">
+                      {Array.from({ length: 35 }).map((_, idx) => (
+                        <div key={`day-skel-${idx}`} className="skeleton aspect-square rounded-xl" />
+                      ))}
+                   </div>
+                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-center">
+                      <div className="relative flex items-center justify-center">
+                        <div className="h-14 w-14 rounded-full border-4 border-blue-200 border-t-blue-500 spin-slow" />
+                        <div className="absolute h-9 w-9 rounded-full border-4 border-orange-200 border-t-orange-500 spin-reverse" />
+                      </div>
+                      <p className="text-center text-sm font-semibold text-gray-500 pulse-soft">Loading Calendar...</p>
+                   </div>
                 </div>
               </div>
             )}
+
             <div className={isLoadingLogs ? "opacity-0 pointer-events-none" : ""}>
-              <header className="flex justify-between items-center mb-4">
-                <button className="icon-btn text-gray-600 hover:text-gray-900 transition-colors cursor-pointer" onClick={() => changeMonth(-1)}><i className="ph ph-arrow-left text-xl" /></button>
-                <h3 className="text-xl font-bold text-gray-800">{monthNames[month]} {year}</h3>
-                <button className="icon-btn text-gray-600 hover:text-gray-900 transition-colors cursor-pointer" onClick={() => changeMonth(1)}><i className="ph ph-arrow-right text-xl" /></button>
+              <header className="flex justify-between items-center mb-6">
+                {/* Tombol Back (Previous Month) - MENGGUNAKAN SVG AGAR PASTI MUNCUL */}
+                <button 
+                  type="button"
+                  className="w-10 h-10 flex items-center justify-center rounded-full bg-white/50 hover:bg-white text-gray-600 hover:text-brandBlue shadow-sm transition-all cursor-pointer border border-white/20" 
+                  onClick={() => changeMonth(-1)}
+                  title="Previous Month"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                  </svg>
+                </button>
+
+                {/* Judul Bulan & Tahun */}
+                <div className="flex flex-col items-center">
+                  <h3 className="text-xl font-extrabold text-gray-800 tracking-tight">
+                    {monthNames[month]} {year}
+                  </h3>
+                  {(month !== today.getMonth() || year !== today.getFullYear()) && (
+                    <button 
+                      onClick={() => setCalendarDate(new Date())}
+                      className="text-xs text-blue-600 font-bold mt-1 hover:underline cursor-pointer"
+                    >
+                      Jump to Today
+                    </button>
+                  )}
+                </div>
+
+                {/* Tombol Next (Next Month) - MENGGUNAKAN SVG AGAR PASTI MUNCUL */}
+                <button 
+                  type="button"
+                  className="w-10 h-10 flex items-center justify-center rounded-full bg-white/50 hover:bg-white text-gray-600 hover:text-brandBlue shadow-sm transition-all cursor-pointer border border-white/20" 
+                  onClick={() => changeMonth(1)}
+                  title="Next Month"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                  </svg>
+                </button>
               </header>
-              <div className="grid grid-cols-7 gap-1 mb-2 text-center">
-                {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (<div key={d} className="text-sm font-bold text-gray-500">{d}</div>))}
+
+              {/* Nama Hari */}
+              <div className="grid grid-cols-7 gap-1 mb-3 text-center">
+                {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
+                  <div key={d} className="text-xs font-bold text-gray-400 uppercase tracking-wider">{d}</div>
+                ))}
               </div>
-              <div className="grid grid-cols-7 gap-1">
-                {[...Array(firstDayOfMonth)].map((_, i) => (<div key={`e-${i}`} className="aspect-square" />))}
+
+              {/* Grid Tanggal */}
+              <div className="grid grid-cols-7 gap-2">
+                {[...Array(firstDayOfMonth)].map((_, i) => (
+                  <div key={`empty-${month}-${i}`} className="aspect-square" />
+                ))}
+
                 {[...Array(daysInMonth)].map((_, i) => {
                   const day = i + 1;
-                  const d = new Date(year, month, day);
+                  const d = new Date(year, month, day); 
                   const ds = formatDate(d);
+                  
                   const has = stressData[ds];
                   const hasData = has && !has.isEmpty;
-                  const isSel = selectedDate.getDate() === day && selectedDate.getMonth() === month;
+                  
+                  const isSel = selectedDate.getDate() === day && 
+                                selectedDate.getMonth() === month && 
+                                selectedDate.getFullYear() === year;
+
+                  const isRealToday = day === today.getDate() && 
+                                      month === today.getMonth() && 
+                                      year === today.getFullYear();
+
                   return (
-                    <div key={day} className={`aspect-square flex flex-col items-center justify-center rounded-xl font-semibold text-sm cursor-pointer transition-all duration-200 ${isSel ? "scale-105 shadow-md" : "hover:bg-white/50"}`} onClick={() => handleDateClick(day)} style={{ background: isSel ? brandBlue : "transparent", color: isSel ? "white" : "#333", border: hasData ? `2px solid ${has.color}40` : "none" }}>
-                      <div style={{ width: "100%", textAlign: "center" }}>
-                        <div>{day}</div>
-                        {hasData && !isSel && (<div style={{ height: 6, width: 6, background: has.color, borderRadius: 999, margin: "6px auto 0" }} />)}
-                      </div>
+                    <div
+                      key={`day-${month}-${day}`}
+                      onClick={() => handleDateClick(day)}
+                      className={`
+                        aspect-square flex flex-col items-center justify-center rounded-2xl font-bold text-sm cursor-pointer transition-all duration-300 relative overflow-hidden group
+                        ${isSel ? "text-white shadow-lg scale-105" : "text-gray-600 hover:bg-white/80 hover:shadow-md"}
+                        ${!isSel && isRealToday ? "bg-blue-50 border-2 border-blue-200" : ""}
+                      `}
+                      style={{
+                        background: isSel ? brandBlue : "transparent",
+                        border: (!isSel && hasData) ? `2px solid ${has.color}40` : (!isSel && isRealToday) ? "2px solid #BFDBFE" : "none"
+                      }}
+                    >
+                      <span className="relative z-10">{day}</span>
+                      {hasData && (
+                        <div 
+                          className={`mt-1 w-1.5 h-1.5 rounded-full transition-all duration-300 ${isSel ? "bg-white" : ""}`} 
+                          style={{ backgroundColor: isSel ? "white" : has.color }} 
+                        />
+                      )}
                     </div>
                   );
                 })}
@@ -825,43 +901,62 @@ export default function Dashboard() {
             {/* DETAIL CARD OVERLAY */}
             {dayDetail && (
               <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/10 backdrop-blur-sm p-4 animate-card-enter" onClick={() => setDayDetail(null)}>
-                <div className="relative w-full max-w-sm rounded-2xl p-6 shadow-2xl border border-gray-100 overflow-hidden" style={{ backgroundColor: "#ffffff" }} onClick={(e) => e.stopPropagation()}>
+                <div className="relative w-full max-w-sm rounded-2xl p-6 shadow-2xl border border-gray-100 overflow-hidden bg-white" onClick={(e) => e.stopPropagation()}>
                   <div className="absolute -right-6 -bottom-6 text-9xl opacity-10 select-none pointer-events-none grayscale">{dayDetail.mood}</div>
                   <div className="flex justify-between items-start mb-6">
-                    <div><h4 className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">Daily Recap</h4><h2 className="text-2xl font-extrabold text-gray-800">{dayDetail.dateStr}</h2></div>
-                    <button onClick={() => setDayDetail(null)} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition cursor-pointer"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5 text-gray-600"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button>
+                    <div>
+                        <h4 className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">Daily Recap</h4>
+                        <h2 className="text-2xl font-extrabold text-gray-800">{dayDetail.dateStr}</h2>
+                    </div>
+                    <button onClick={() => setDayDetail(null)} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition cursor-pointer">
+                        <i className="ph ph-x text-lg text-gray-600"></i>
+                    </button>
                   </div>
+                  
                   <div className="flex items-center gap-4 mb-6">
                     <div className="relative w-24 h-24 rounded-full flex items-center justify-center border-[5px]" style={{ borderColor: dayDetail.color }}>
                       <div className="text-center">
                         <div className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Status</div>
-                        {(() => {
-                            const status = getStatusFromLevel(dayDetail.level);
-                            return (
-                              <div className="text-lg font-black uppercase leading-none" style={{ color: dayDetail.color }}>
-                                {status === 2 ? "High" : status === 1 ? "Mod" : "Low"}
-                              </div>
-                            );
-                        })()}
+                        <div className="text-lg font-black uppercase leading-none" style={{ color: dayDetail.color }}>
+                           {getStatusFromLevel(dayDetail.level) === 2 ? "High" : getStatusFromLevel(dayDetail.level) === 1 ? "Mod" : "Low"}
+                        </div>
                       </div>
                     </div>
                     <div className="flex-1"><p className="text-sm font-semibold text-gray-600 italic">"{dayDetail.level > 60 ? "Take a break, you need it." : "Keep it up and maintain balance!"}"</p></div>
                   </div>
+                  
+                  {/* List Statistik */}
                   <div className="space-y-3 custom-scroll" style={{ maxHeight: "220px", overflowY: "auto", paddingRight: "4px" }}>
-                    <div><div className="flex justify-between text-xs font-bold text-gray-600 mb-1"><span className="flex items-center gap-1"><i className="ph ph-moon-stars text-purple-500" /> Sleep</span><span>{dayDetail.sleep} hrs</span></div><div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden"><div className="h-full bg-purple-500 rounded-full" style={{ width: `${Math.min((dayDetail.sleep / 10) * 100, 100)}%` }} /></div></div>
-                    <div><div className="flex justify-between text-xs font-bold text-gray-600 mb-1"><span className="flex items-center gap-1"><i className="ph ph-book-open text-blue-500" /> Study</span><span>{dayDetail.study} hrs</span></div><div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden"><div className="h-full bg-blue-500 rounded-full" style={{ width: `${Math.min((dayDetail.study / 12) * 100, 100)}%` }} /></div></div>
-                    <div><div className="flex justify-between text-xs font-bold text-gray-600 mb-1"><span className="flex items-center gap-1"><i className="ph ph-medal text-pink-500" /> Extra</span><span>{dayDetail.extra || 0} hrs</span></div><div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden"><div className="h-full bg-pink-500 rounded-full" style={{ width: `${Math.min(((dayDetail.extra || 0) / 8) * 100, 100)}%` }} /></div></div>
-                    <div><div className="flex justify-between text-xs font-bold text-gray-600 mb-1"><span className="flex items-center gap-1"><i className="ph ph-users text-orange-500" /> Social</span><span>{dayDetail.social} hrs</span></div><div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden"><div className="h-full bg-orange-500 rounded-full" style={{ width: `${Math.min((dayDetail.social / 8) * 100, 100)}%` }} /></div></div>
-                    <div><div className="flex justify-between text-xs font-bold text-gray-600 mb-1"><span className="flex items-center gap-1"><i className="ph ph-sneaker text-teal-500" /> Exercise</span><span>{dayDetail.physical || 0} hrs</span></div><div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden"><div className="h-full bg-teal-500 rounded-full" style={{ width: `${Math.min(((dayDetail.physical || 0) / 4) * 100, 100)}%` }} /></div></div>
+                    {[
+                      { l: "Sleep", v: dayDetail.sleep, max: 10, c: "bg-purple-500", i: "ph-moon-stars" },
+                      { l: "Study", v: dayDetail.study, max: 12, c: "bg-blue-500", i: "ph-book-open" },
+                      { l: "Extra", v: dayDetail.extra || 0, max: 8, c: "bg-pink-500", i: "ph-medal" },
+                      { l: "Social", v: dayDetail.social, max: 8, c: "bg-orange-500", i: "ph-users" },
+                      { l: "Exercise", v: dayDetail.physical || 0, max: 4, c: "bg-teal-500", i: "ph-sneaker" },
+                    ].map((s, idx) => (
+                       <div key={idx}>
+                         <div className="flex justify-between text-xs font-bold text-gray-600 mb-1">
+                            <span className="flex items-center gap-1"><i className={`ph ${s.i} text-${s.c.split('-')[1]}-500`} /> {s.l}</span>
+                            <span>{s.v} hrs</span>
+                         </div>
+                         <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
+                            <div className={`h-full ${s.c} rounded-full`} style={{ width: `${Math.min((s.v / s.max) * 100, 100)}%` }} />
+                         </div>
+                       </div>
+                    ))}
                   </div>
-                  <div className="mt-4 pt-4 border-t border-gray-200 flex justify-between items-center"><span className="text-xs font-bold text-gray-500 uppercase">Recorded Mood</span><span className="text-3xl animate-bounce">{dayDetail.mood}</span></div>
+
+                  <div className="mt-4 pt-4 border-t border-gray-200 flex justify-between items-center">
+                      <span className="text-xs font-bold text-gray-500 uppercase">Recorded Mood</span>
+                      <span className="text-3xl animate-bounce">{dayDetail.mood}</span>
+                  </div>
                 </div>
               </div>
             )}
           </section>
         </div>
 
-        {/* MOTIVATION & TIPS SECTIONS (SAME AS BEFORE) */}
+        {/* MOTIVATION & TIPS SECTIONS */}
         <div className="mt-8 grid grid-cols-1">
           <section className="col-span-4 relative overflow-hidden rounded-[24px] shadow-2xl group transition-all duration-500 hover:shadow-orange-100">
             <div className="absolute inset-0 bg-white/60 backdrop-blur-xl border border-white/40 z-0"></div>
