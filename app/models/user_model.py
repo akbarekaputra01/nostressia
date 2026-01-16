@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String, Float, Date, TIMESTAMP
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from app.core.database import Base
-
+from sqlalchemy import Column, Integer, String, Boolean
 class User(Base):
     __tablename__ = "users"
 
@@ -32,6 +32,8 @@ class User(Base):
     stress_levels = relationship("StressLevel", back_populates="user")
     bookmarks = relationship("Bookmark", back_populates="user")
 
+    is_verified = Column(Boolean, default=False)
+    otp_code = Column(String(6), nullable=True)
     # ✅ Properti untuk menghitung jumlah diary otomatis
     @property
     def diary_count(self):
