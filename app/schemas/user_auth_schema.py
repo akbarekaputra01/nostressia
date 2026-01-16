@@ -48,3 +48,18 @@ class UserUpdate(BaseModel):
 class ChangePasswordSchema(BaseModel):
     current_password: str
     new_password: str
+
+class AdminUserUpdate(BaseModel):
+    name: Optional[str] = None
+    userName: Optional[str] = None
+    email: Optional[EmailStr] = None
+    gender: Optional[str] = None
+    userDOB: Optional[date] = None # ✅ Admin butuh akses ini
+    avatar: Optional[str] = None
+
+# Schema untuk Response List User (Pagination)
+class UserListResponse(BaseModel):
+    total: int
+    page: int
+    limit: int
+    data: list[UserResponse] # Menggunakan UserResponse yang sudah ada
