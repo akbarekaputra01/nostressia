@@ -11,7 +11,7 @@ load_dotenv()
 BREVO_API_KEY = os.getenv("BREVO_API_KEY")
 
 # ⚠️ Ganti dengan email yang kamu gunakan untuk login Brevo
-SENDER_EMAIL = "kaleblister36@gmail.com" 
+SENDER_EMAIL = "nostressia.official@gmail.com" 
 
 def send_otp_email(to_email: str, otp_code: str):
     """
