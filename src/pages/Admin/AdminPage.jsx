@@ -295,9 +295,11 @@ export default function AdminPage({ skipAuth = false }) {
         {[{title: "Daily Motivation", count: quotes.length, desc: "Manage quotes & authors.", color: "orange", icon: <Sparkles size={24}/>, action: () => setActiveModal('motivation'), btn: "Manage"},
           {title: "Health Tips", count: tipCategories.length, desc: "Manage tip categories.", color: "blue", icon: <Lightbulb size={24}/>, action: () => setActiveModal('tips'), btn: "Manage"},
           {title: "User Management", count: totalUserCount, desc: "Fix data & Reset Password.", color: "purple", icon: <Users size={24}/>, action: () => setActiveView('users'), btn: "Manage"},
-          {title: "Diary Moderation", count: totalDiariesCount, desc: "Delete user diaries.", color: "rose", icon: <BookOpen size={24}/>, action: () => setActiveView('diaries'), btn: "Moderate"}
+          // ✅ PERBAIKAN: Ganti "rose" menjadi "red" di sini
+          {title: "Diary Moderation", count: totalDiariesCount, desc: "Delete user diaries.", color: "red", icon: <BookOpen size={24}/>, action: () => setActiveView('diaries'), btn: "Moderate"}
         ].map((card, idx) => (
           <div key={idx} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all relative overflow-hidden group">
+            {/* Menggunakan dynamic class yang aman untuk red/orange/blue/purple */}
             <div className={`absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity text-${card.color}-500`}>{React.cloneElement(card.icon, {size: 80})}</div>
             <div className="flex justify-between items-start mb-4 relative z-10">
               <div className={`p-3 bg-${card.color}-100 text-${card.color}-600 rounded-xl`}>{card.icon}</div>
@@ -366,7 +368,8 @@ export default function AdminPage({ skipAuth = false }) {
         </div>
       </div>
       <div className="mb-6">
-        <input type="text" placeholder="Search by Content or User Name..." className="w-full max-w-md px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-rose-500 outline-none cursor-text" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
+        {/* ✅ PERBAIKAN: focus:ring-red-500 */}
+        <input type="text" placeholder="Search by Content or User Name..." className="w-full max-w-md px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none cursor-text" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
       </div>
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
@@ -388,7 +391,8 @@ export default function AdminPage({ skipAuth = false }) {
                   <td className="px-6 py-4 text-sm text-gray-800 font-medium">{diary.title || "-"}</td>
                   <td className="px-6 py-4 text-sm text-gray-600">{diary.content.length > 60 ? diary.content.substring(0, 60) + "..." : diary.content}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button onClick={() => handleDeleteDiary(diary.diaryID)} className="text-rose-600 hover:text-rose-900 font-bold bg-rose-50 px-3 py-1 rounded-lg border border-rose-100 cursor-pointer">Delete</button>
+                    {/* ✅ PERBAIKAN: Ganti semua 'rose' menjadi 'red' */}
+                    <button onClick={() => handleDeleteDiary(diary.diaryID)} className="text-red-600 hover:text-red-900 font-bold bg-red-50 px-3 py-1 rounded-lg border border-red-100 cursor-pointer">Delete</button>
                   </td>
                 </tr>
             )))}
@@ -409,7 +413,7 @@ export default function AdminPage({ skipAuth = false }) {
   return (
     <div className="min-h-screen bg-gray-50 font-sans text-gray-800">
       
-      {/* ✅ NAVBAR CANTIK (GLASSMORPHISM & GRADIENT) */}
+      {/* NAVBAR CANTIK */}
       <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-lg border-b border-gray-200 shadow-sm px-6 py-4 transition-all duration-300">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 md:gap-0">
             {/* Logo Section */}
@@ -456,7 +460,7 @@ export default function AdminPage({ skipAuth = false }) {
       </main>
 
       {/* --- MODALS --- */}
-      {/* MOTIVATION MODAL: Responsive Flex-Col on mobile */}
+      {/* MOTIVATION MODAL */}
       {activeModal === 'motivation' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
           <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl">
@@ -492,7 +496,7 @@ export default function AdminPage({ skipAuth = false }) {
         </div>
       )}
 
-      {/* TIPS MODAL: Already responsive grid */}
+      {/* TIPS MODAL */}
       {activeModal === 'tips' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
           <div className="bg-white rounded-2xl w-full max-w-5xl max-h-[85vh] flex flex-col shadow-2xl">
