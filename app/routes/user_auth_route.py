@@ -12,7 +12,6 @@ from app.utils.jwt_handler import create_access_token, decode_access_token
 # ✅ Import Utils Baru
 from app.utils.hashing import verify_password, hash_password 
 from app.utils.otp_generator import generate_otp       
-from app.services.email_service import send_otp_email
 from app.services.email_service import send_otp_email, send_reset_password_email
 
 # ✅ Import Schema
@@ -91,10 +90,10 @@ def register(user_in: UserRegister, db: Session = Depends(get_db)):
     db.refresh(new_user)
 
     # D. Kirim Email
-    email_sent = send_otp_email(new_user.email, otp_code)
+    email_sent, email_error = send_otp_email(new_user.email, otp_code)
     
     if not email_sent:
-        print("⚠️ Gagal mengirim email OTP ke:", new_user.email)
+        print(f"⚠️ Gagal mengirim email OTP ke {new_user.email}: {email_error}")
 
     # E. Return Pesan (Bukan Token)
     return {
@@ -242,10 +241,13 @@ def forgot_password(payload: ForgotPasswordRequest, db: Session = Depends(get_db
     db.commit()
 
     # 4. Kirim Email
-    email_sent = send_reset_password_email(user.email, otp_code)
+    email_sent, email_error = send_reset_password_email(user.email, otp_code)
     
     if not email_sent:
-        raise HTTPException(status_code=500, detail="Gagal mengirim email. Coba lagi nanti.")
+        detail_message = "Gagal mengirim email. Coba lagi nanti."
+        if email_error:
+            detail_message = f"Gagal mengirim email: {email_error}"
+        raise HTTPException(status_code=500, detail=detail_message)
 
     return {"message": "Kode OTP reset password telah dikirim ke email Anda."}
 
