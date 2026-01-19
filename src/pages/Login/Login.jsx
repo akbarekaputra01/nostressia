@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom"; 
 import axios from "axios"; 
 import { BASE_URL } from "../../api/config"; 
-import { Mail, Lock, ArrowRight, Loader2, CheckCircle, User, Calendar, AtSign, Users, Check, Eye, EyeOff, ShieldCheck, ArrowLeft, X } from "lucide-react";
+import { Mail, Lock, ArrowRight, Loader2, CheckCircle, User, Calendar, AtSign, Users, Check, Eye, EyeOff, ShieldCheck, ArrowLeft, X, Clock } from "lucide-react"; // ✅ TAMBAHAN: Import Clock Icon
 import { motion as Motion, AnimatePresence } from "framer-motion";
 
 import logoBuka from "../../assets/images/Logo-Buka.png";
@@ -43,12 +43,33 @@ export default function Login() {
   const [newPassword, setNewPassword] = useState("");
   const [loadingForgot, setLoadingForgot] = useState(false);
 
+  // ✅ TAMBAHAN: STATE COUNTDOWN
+  const [countdown, setCountdown] = useState(0);
+
   // --- EFEK KEDIP ---
   useEffect(() => {
     const triggerBlink = () => { setIsWinking(true); setTimeout(() => { setIsWinking(false); }, 150); };
     const blinkInterval = setInterval(triggerBlink, 3500);
     return () => clearInterval(blinkInterval);
   }, []);
+
+  // ✅ TAMBAHAN: EFEK COUNTDOWN TIMER
+  useEffect(() => {
+    let timer;
+    if (countdown > 0) {
+      timer = setInterval(() => {
+        setCountdown((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [countdown]);
+
+  // ✅ TAMBAHAN: FORMAT WAKTU (MM:SS)
+  const formatTime = (seconds) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s < 10 ? '0' : ''}${s}`;
+  };
 
   // --- 1. LOGIKA LOGIN ---
   const handleLogin = async (e) => {
@@ -84,7 +105,11 @@ export default function Login() {
             name: formData.name, userName: formData.username, email: formData.email, password: formData.password, gender: formData.gender, dob: formData.dob, avatar: formData.avatar
         });
         setIsSuccess(true);
-        setTimeout(() => { setIsSuccess(false); setShowOTPForm(true); }, 1500); 
+        setTimeout(() => { 
+            setIsSuccess(false); 
+            setShowOTPForm(true); 
+            setCountdown(60); // ✅ TAMBAHAN: Mulai hitung mundur 60 detik
+        }, 1500); 
     } catch (error) {
         alert(error.response?.data?.detail || "Registrasi Gagal.");
     } finally { setIsLoading(false); }
@@ -98,6 +123,7 @@ export default function Login() {
     try {
         await axios.post(`${BASE_URL}/user/verify-otp`, { email: formData.email, otp_code: otp });
         setIsSuccess(true);
+        setCountdown(0); // ✅ TAMBAHAN: Hentikan timer
         alert("Akun berhasil diverifikasi! Silakan Login.");
         setTimeout(() => {
             setIsSuccess(false); setShowOTPForm(false); setIsFlipped(false); setOtp("");
@@ -116,6 +142,7 @@ export default function Login() {
     try {
         await axios.post(`${BASE_URL}/user/forgot-password`, { email: forgotEmail });
         setForgotStep(2); // Pindah ke step input OTP
+        setCountdown(60); // ✅ TAMBAHAN: Mulai hitung mundur 60 detik
         alert("Kode OTP telah dikirim ke email Anda.");
     } catch (error) {
         alert(error.response?.data?.detail || "Email tidak ditemukan.");
@@ -131,6 +158,7 @@ export default function Login() {
             email: forgotEmail, otp_code: forgotOtp, new_password: newPassword
         });
         alert("Password berhasil diubah! Silakan login.");
+        setCountdown(0); // ✅ TAMBAHAN: Hentikan timer
         setShowForgotModal(false);
         setForgotStep(1);
         setForgotEmail(""); setForgotOtp(""); setNewPassword("");
@@ -143,6 +171,7 @@ export default function Login() {
       setIsFlipped(!isFlipped);
       if(!isSuccess) setFormData({ ...formData, password: "", confirmPassword: "" });
       setShowLoginPassword(false); setShowSignUpPassword(false); setIsSuccess(false); setIsLoading(false); setShowOTPForm(false); setOtp("");
+      setCountdown(0); // ✅ TAMBAHAN: Reset timer saat flip
   };
 
   return (
@@ -214,6 +243,19 @@ export default function Login() {
                                 <input type="text" placeholder="123456" value={otp} onChange={(e) => setOtp(e.target.value)} className="w-full text-center tracking-[0.5em] text-2xl font-bold py-4 bg-gray-50 border border-gray-200 rounded-2xl text-gray-900 focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 outline-none transition-all" maxLength={6} />
                             </div>
                             <button type="submit" disabled={isLoading || isSuccess} className="w-full py-4 rounded-2xl font-bold text-white text-lg shadow-lg shadow-orange-500/20 bg-orange-500 hover:bg-orange-600 cursor-pointer">{isLoading ? <Loader2 className="w-6 h-6 animate-spin mx-auto" /> : "Verify Code"}</button>
+                            
+                            {/* ✅ TAMBAHAN: UI COUNTDOWN REGISTER */}
+                            <div className="text-center">
+                                {countdown > 0 ? (
+                                    <p className="text-sm font-medium text-gray-400 flex items-center justify-center gap-1">
+                                        <Clock size={14} className="animate-pulse" /> Resend in <span className="text-orange-600 font-bold">{formatTime(countdown)}</span>
+                                    </p>
+                                ) : (
+                                    <button type="button" onClick={() => { setCountdown(60); alert("Kode dikirim ulang!"); /* Tambahkan fungsi resend API disini */ }} className="text-sm font-bold text-orange-600 hover:underline cursor-pointer">
+                                        Resend Code
+                                    </button>
+                                )}
+                            </div>
                         </form>
                         <button onClick={() => setShowOTPForm(false)} className="mt-8 flex items-center gap-2 text-sm font-bold text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"><ArrowLeft size={16} /> Back to Register</button>
                     </div>
@@ -262,7 +304,7 @@ export default function Login() {
                     <div className="p-6">
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="text-xl font-bold text-gray-900">{forgotStep === 1 ? "Reset Password" : "Confirm Reset"}</h3>
-                            <button onClick={() => {setShowForgotModal(false); setForgotStep(1);}} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
+                            <button onClick={() => {setShowForgotModal(false); setForgotStep(1); setCountdown(0);}} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
                         </div>
 
                         {forgotStep === 1 ? (
@@ -290,6 +332,19 @@ export default function Login() {
                                 <button type="submit" disabled={loadingForgot} className="w-full py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition-all flex justify-center items-center cursor-pointer">
                                     {loadingForgot ? <Loader2 className="w-5 h-5 animate-spin" /> : "Reset Password"}
                                 </button>
+                                
+                                {/* ✅ TAMBAHAN: UI COUNTDOWN FORGOT PASSWORD */}
+                                <div className="text-center mt-4">
+                                    {countdown > 0 ? (
+                                        <p className="text-xs font-medium text-gray-400 flex items-center justify-center gap-1">
+                                            <Clock size={12} className="animate-pulse" /> Resend in <span className="text-blue-600 font-bold">{formatTime(countdown)}</span>
+                                        </p>
+                                    ) : (
+                                        <button type="button" onClick={() => { setCountdown(60); alert("Kode dikirim ulang!"); /* Tambahkan fungsi resend API disini */ }} className="text-xs font-bold text-blue-600 hover:underline cursor-pointer">
+                                            Resend Code
+                                        </button>
+                                    )}
+                                </div>
                             </form>
                         )}
                     </div>
