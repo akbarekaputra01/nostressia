@@ -48,6 +48,7 @@ referencing
 rpds-py
 rsa
 six
+sib-api-v3-sdk
 sniffio
 sse-starlette
 starlette
