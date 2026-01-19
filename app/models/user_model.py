@@ -3,6 +3,7 @@ from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy import Column, Integer, String, Boolean, Date, DateTime 
 class User(Base):
     __tablename__ = "users"
 
@@ -34,6 +35,7 @@ class User(Base):
 
     is_verified = Column(Boolean, default=False)
     otp_code = Column(String(6), nullable=True)
+    otp_created_at = Column(DateTime, nullable=True)
     # ✅ Properti untuk menghitung jumlah diary otomatis
     @property
     def diary_count(self):
