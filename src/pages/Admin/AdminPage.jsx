@@ -67,7 +67,7 @@ export default function AdminPage({ skipAuth = false }) {
   const [quoteForm, setQuoteForm] = useState({ text: "", author: "" });
 
   useEffect(() => {
-    // 1. Fetch Motivations
+    // 1. Fetch Motivations (Biarkan bagian ini tetap sama)
     fetch(`${BASE_URL}/motivations`)
       .then(res => res.ok ? res.json() : Promise.reject("Failed"))
       .then(data => {
@@ -82,17 +82,30 @@ export default function AdminPage({ skipAuth = false }) {
       })
       .catch(err => console.log("Offline/Error:", err));
 
-    // 2. Fetch Dashboard Stats
+    // ✅ 2. Fetch Dashboard Stats (INI YANG DIUPDATE)
     const fetchStats = async () => {
         try {
-            const resUser = await fetch(`${BASE_URL}/admin/users/?limit=1`, { headers: { "Authorization": `Bearer ${token}` } });
-            if(resUser.ok) { const data = await resUser.json(); setTotalUserCount(data.total || 0); }
+            // UBAH: Ambil list user (limit besar, misal 1000) agar bisa kita filter manual
+            const resUser = await fetch(`${BASE_URL}/admin/users/?limit=1000`, { headers: { "Authorization": `Bearer ${token}` } });
+            
+            if(resUser.ok) { 
+                const data = await resUser.json(); 
+                
+                // HITUNG MANUAL: Hanya user yang verified
+                const validUsersCount = data.data.filter(u => 
+                    u.is_verified === true || u.is_verified === 1 || u.is_verified == "1"
+                ).length;
 
+                setTotalUserCount(validUsersCount); 
+            }
+
+            // Bagian Diary biarkan tetap sama
             const resDiary = await fetch(`${BASE_URL}/admin/diaries/?limit=1`, { headers: { "Authorization": `Bearer ${token}` } });
             if(resDiary.ok) { const data = await resDiary.json(); setTotalDiariesCount(data.total || 0); }
 
         } catch (error) { console.error("Gagal hitung stats:", error); }
     };
+    
     if(token) fetchStats();
 
   }, [token]);
@@ -203,12 +216,39 @@ export default function AdminPage({ skipAuth = false }) {
     try {
       const params = new URLSearchParams({ page: page, limit: 10 });
       if (search) params.append("search", search);
+      
       const res = await fetch(`${BASE_URL}/admin/users/?${params.toString()}`, { headers: { "Authorization": `Bearer ${token}` } });
       if (!res.ok) throw new Error("Gagal mengambil data user");
+      
       const data = await res.json();
-      setUsers(data.data);
+
+      // 🔍 DEBUG: Cek di Console browser (F12) apakah ada field 'is_verified'
+      console.log("Contoh Data User dari Backend:", data.data[0]); 
+
+      // ✅ PERBAIKAN FILTER: Menangani Boolean, Angka (1), dan String ("1")
+      const validUsers = data.data.filter(user => {
+          // Kita anggap valid jika: true, angka 1, atau string "1"
+          return user.is_verified === true || user.is_verified === 1 || user.is_verified == "1";
+      });
+      
+      // Jika setelah filter hasilnya kosong tapi data aslinya ada, 
+      // berarti backend TIDAK mengirim field 'is_verified'.
+      if (validUsers.length === 0 && data.data.length > 0) {
+          console.warn("⚠️ PERINGATAN: Sepertinya Backend tidak mengirim data 'is_verified'. Filter gagal.");
+          setUsers(data.data); // Terpaksa tampilkan semua daripada kosong
+      } else {
+          setUsers(validUsers);
+      }
+
+      // Update total halaman berdasarkan data yang sudah difilter (estimasi)
+      // Catatan: Pagination akan sedikit tidak akurat jika filter dilakukan di Frontend
       setTotalPages(Math.ceil(data.total / 10));
-    } catch (error) { console.error(error); } finally { setLoadingUsers(false); }
+
+    } catch (error) { 
+      console.error(error); 
+    } finally { 
+      setLoadingUsers(false); 
+    }
   };
 
   const handleDeleteUser = async (userId) => {
@@ -386,7 +426,7 @@ export default function AdminPage({ skipAuth = false }) {
             {loadingDiaries ? (<tr><td colSpan="5" className="text-center py-8 text-gray-500">Loading diaries...</td></tr>) : diaries.length === 0 ? (<tr><td colSpan="5" className="text-center py-8 text-gray-500">No diaries found.</td></tr>) : (
                 diaries.map((diary) => (
                 <tr key={diary.diaryID} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap"><div className="text-sm font-bold text-gray-900">{diary.userName}</div><div className="text-xs text-gray-500">ID: {diary.userID}</div></td>
+                  <td className="px-6 py-4 whitespace-nowrap"><div className="text-sm font-bold text-gray-900">{diary.userName}</div><div className="text-xs text-gray-500"></div></td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(diary.createdAt).toLocaleDateString()}</td>
                   <td className="px-6 py-4 text-sm text-gray-800 font-medium">{diary.title || "-"}</td>
                   <td className="px-6 py-4 text-sm text-gray-600">{diary.content.length > 60 ? diary.content.substring(0, 60) + "..." : diary.content}</td>
