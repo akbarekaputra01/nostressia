@@ -125,11 +125,11 @@ def register(user_in: UserRegister, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_user)
 
-    # Kirim Email
-    email_sent = send_otp_email(new_user.email, otp_code)
+    # D. Kirim Email
+    email_sent, email_error = send_otp_email(new_user.email, otp_code)
     
     if not email_sent:
-        print("⚠️ Gagal mengirim email OTP ke:", new_user.email)
+        print(f"⚠️ Gagal mengirim email OTP ke {new_user.email}: {email_error}")
 
     return {
         "message": "Registration successful! Please check your email for OTP verification.",
@@ -245,9 +245,14 @@ def forgot_password(payload: ForgotPasswordRequest, db: Session = Depends(get_db
     user.otp_created_at = datetime.utcnow() # Reset waktu expired
     db.commit()
 
-    email_sent = send_reset_password_email(user.email, otp_code)
+    # 4. Kirim Email
+    email_sent, email_error = send_reset_password_email(user.email, otp_code)
+    
     if not email_sent:
-        raise HTTPException(status_code=500, detail="Gagal mengirim email.")
+        detail_message = "Gagal mengirim email. Coba lagi nanti."
+        if email_error:
+            detail_message = f"Gagal mengirim email: {email_error}"
+        raise HTTPException(status_code=500, detail=detail_message)
 
     return {"message": "Kode OTP reset password telah dikirim ke email Anda."}
 

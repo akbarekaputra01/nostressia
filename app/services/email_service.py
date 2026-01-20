@@ -1,5 +1,7 @@
 # app/services/email_service.py
 import os
+from typing import Optional, Tuple
+
 from dotenv import load_dotenv
 import sib_api_v3_sdk
 from sib_api_v3_sdk.rest import ApiException
@@ -11,17 +13,28 @@ load_dotenv()
 BREVO_API_KEY = os.getenv("BREVO_API_KEY")
 
 # ⚠️ Ganti dengan email yang kamu gunakan untuk login Brevo
-SENDER_EMAIL = "nostressia.official@gmail.com" 
+SENDER_EMAIL = "nostressia.official@gmail.com"
 
-def send_otp_email(to_email: str, otp_code: str):
+def _get_brevo_client() -> Tuple[Optional[sib_api_v3_sdk.TransactionalEmailsApi], Optional[str]]:
+    if not BREVO_API_KEY:
+        return None, "BREVO_API_KEY belum diset di environment."
+
+    configuration = sib_api_v3_sdk.Configuration()
+    configuration.api_key["api-key"] = BREVO_API_KEY
+    api_instance = sib_api_v3_sdk.TransactionalEmailsApi(
+        sib_api_v3_sdk.ApiClient(configuration)
+    )
+    return api_instance, None
+
+
+def send_otp_email(to_email: str, otp_code: str) -> Tuple[bool, Optional[str]]:
     """
     Fungsi untuk mengirim email OTP Pendaftaran (Register).
     """
-    # Konfigurasi API
-    configuration = sib_api_v3_sdk.Configuration()
-    configuration.api_key['api-key'] = BREVO_API_KEY
-
-    api_instance = sib_api_v3_sdk.TransactionalEmailsApi(sib_api_v3_sdk.ApiClient(configuration))
+    api_instance, error_message = _get_brevo_client()
+    if error_message:
+        print(f"❌ {error_message}")
+        return False, error_message
     
     # Setup Pengirim (Harus Verified Email)
     sender = {"name": "Nostressia Admin", "email": SENDER_EMAIL}
@@ -57,21 +70,25 @@ def send_otp_email(to_email: str, otp_code: str):
     try:
         api_instance.send_transac_email(send_smtp_email)
         print(f"✅ Email Register terkirim ke {to_email}")
-        return True
+        return True, None
     except ApiException as e:
-        print(f"❌ Gagal mengirim email Register: {e}")
-        return False
+        error_detail = f"Brevo API error: {e}"
+        print(f"❌ Gagal mengirim email Register: {error_detail}")
+        return False, error_detail
+    except Exception as e:
+        error_detail = f"Unexpected error: {e}"
+        print(f"❌ Gagal mengirim email Register: {error_detail}")
+        return False, error_detail
 
 
-def send_reset_password_email(to_email: str, otp_code: str):
+def send_reset_password_email(to_email: str, otp_code: str) -> Tuple[bool, Optional[str]]:
     """
     Fungsi untuk mengirim email OTP Reset Password.
     """
-    # Konfigurasi API
-    configuration = sib_api_v3_sdk.Configuration()
-    configuration.api_key['api-key'] = BREVO_API_KEY
-
-    api_instance = sib_api_v3_sdk.TransactionalEmailsApi(sib_api_v3_sdk.ApiClient(configuration))
+    api_instance, error_message = _get_brevo_client()
+    if error_message:
+        print(f"❌ {error_message}")
+        return False, error_message
     
     # Setup Pengirim
     sender = {"name": "Nostressia Support", "email": SENDER_EMAIL}
@@ -106,7 +123,12 @@ def send_reset_password_email(to_email: str, otp_code: str):
     try:
         api_instance.send_transac_email(send_smtp_email)
         print(f"✅ Email Reset Password terkirim ke {to_email}")
-        return True
+        return True, None
     except ApiException as e:
-        print(f"❌ Gagal mengirim email Reset Password: {e}")
-        return False
+        error_detail = f"Brevo API error: {e}"
+        print(f"❌ Gagal mengirim email Reset Password: {error_detail}")
+        return False, error_detail
+    except Exception as e:
+        error_detail = f"Unexpected error: {e}"
+        print(f"❌ Gagal mengirim email Reset Password: {error_detail}")
+        return False, error_detail
