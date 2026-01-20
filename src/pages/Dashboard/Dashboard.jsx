@@ -100,6 +100,61 @@ function createEmptyTodayData(todayKey) {
   };
 }
 
+// --- VARIATION ADVICES LIST ---
+const highStressAdvices = [
+  "High stress likely. Try the 4-7-8 breathing technique: Inhale for 4s, hold for 7s, exhale for 8s.",
+  "Your energy might be drained. Prioritize sleep tonight and limit screen time before bed.",
+  "Don't overwhelm yourself. Pick just 3 major tasks for today and focus only on them.",
+  "High pressure detected. Take a 10-minute walk outside to reset your cortisol levels.",
+  "It's okay to say no. Delegate tasks where possible and focus on your mental well-being.",
+  "Avoid excessive caffeine today; it might heighten anxiety. Opt for herbal tea or water."
+];
+
+const lowStressAdvices = [
+  "Great energy ahead! Use this clarity to tackle your hardest subject or project.",
+  "Low stress predicted. It's a perfect time to learn a new skill or hobby.",
+  "You are in a good flow. Consider helping a friend or socializing to boost your mood further.",
+  "Mental clarity is high. Plan your schedule for the upcoming busy week.",
+  "Take advantage of this calm. Push your physical limits with a slightly more intense workout.",
+  "Enjoy the balance. Treat yourself to a good book or a creative activity you love."
+];
+
+// --- DUMMY DATA FORECAST GENERATOR (3 DAYS) ---
+const generateForecast = () => {
+    const today = new Date();
+    return [1, 2, 3].map((offset) => {
+      const d = new Date(today);
+      d.setDate(today.getDate() + offset);
+      
+      const isHigh = Math.random() > 0.5; 
+      
+      // Select random advice based on status
+      const adviceText = isHigh 
+        ? highStressAdvices[Math.floor(Math.random() * highStressAdvices.length)]
+        : lowStressAdvices[Math.floor(Math.random() * lowStressAdvices.length)];
+
+      return {
+        dateStr: d.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' }),
+        fullDate: d.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long' }),
+        status: isHigh ? "High" : "Low",
+        probability: Math.floor(Math.random() * (98 - 75) + 75), 
+        color: isHigh ? brandRed : brandGreen,
+        
+        // Background untuk Kartu Kecil (Tetap Red/Green 50)
+        bg: isHigh ? "bg-red-50" : "bg-green-50",
+        
+        // Background SOLID GRADIENT untuk Panel Popup (Tanpa Opacity)
+        panelTheme: isHigh 
+          ? "bg-gradient-to-b from-red-50 via-white to-white" 
+          : "bg-gradient-to-b from-green-50 via-white to-white",
+          
+        border: isHigh ? "border-red-200" : "border-green-200",
+        icon: isHigh ? "ph-warning" : "ph-plant",
+        advice: adviceText
+      };
+    });
+};
+
 export default function Dashboard() {
   const { user } = useOutletContext() || { user: {} };
   const userName = user?.name || "Friend";
@@ -121,6 +176,12 @@ export default function Dashboard() {
   const [successModal, setSuccessModal] = useState({ visible: false, title: "", text: "" });
   const [dayDetail, setDayDetail] = useState(null);
   const [activeTip, setActiveTip] = useState(null);
+  
+  // Forecast State
+  const [forecastDetail, setForecastDetail] = useState(null); 
+  const [forecastList] = useState(generateForecast()); 
+  // State khusus untuk animasi tutup panel
+  const [isClosingPanel, setIsClosingPanel] = useState(false);
 
   // --- FORM STATE ---
   const [gpa, setGpa] = useState(() => {
@@ -195,6 +256,15 @@ export default function Dashboard() {
 
   function resetFormToEmpty() {
     setSleepHours(""); setStudyHours(""); setSocialHours(""); setExtraHours(""); setPhysicalHours(""); setMoodIndex(2);
+  }
+
+  // --- FUNGSI UNTUK MENUTUP FORECAST DENGAN ANIMASI ---
+  function handleCloseForecast() {
+    setIsClosingPanel(true); // Mulai animasi tutup (slide-down)
+    setTimeout(() => {
+      setForecastDetail(null); // Hapus data setelah animasi selesai
+      setIsClosingPanel(false); // Reset status animasi
+    }, 380); // Waktu sedikit kurang dari durasi animasi CSS (0.4s) agar mulus
   }
 
   useEffect(() => {
@@ -488,6 +558,15 @@ export default function Dashboard() {
         .animate-card-enter { animation: card-enter 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
         .animate-modal-slide { animation: modalSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         .animate-slide-down { animation: slideDownFade 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+        
+        /* ANIMASI SLIDE UP (MUNCUL) */
+        @keyframes slideUpPanel { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .animate-slide-up-panel { animation: slideUpPanel 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        
+        /* ANIMASI SLIDE DOWN (TUTUP) */
+        @keyframes slideDownPanel { from { transform: translateY(0); } to { transform: translateY(100%); } }
+        .animate-slide-down-panel { animation: slideDownPanel 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
         @keyframes float-gentle { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
         @keyframes heartbeat { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
         @keyframes glow-pulse { 0%, 100% { filter: drop-shadow(0 0 5px rgba(242, 153, 74, 0.3)); } 50% { filter: drop-shadow(0 0 15px rgba(242, 153, 74, 0.6)); } }
@@ -800,7 +879,7 @@ export default function Dashboard() {
               </div>
             )}
 
-            <div className={isLoadingLogs ? "opacity-0 pointer-events-none" : ""}>
+            <div className={`flex flex-col h-full ${isLoadingLogs ? "opacity-0 pointer-events-none" : ""}`}>
               <header className="flex justify-between items-center mb-6">
                 {/* Tombol Back (Previous Month) - MENGGUNAKAN SVG AGAR PASTI MUNCUL */}
                 <button 
@@ -896,9 +975,45 @@ export default function Dashboard() {
                   );
                 })}
               </div>
+
+              {/* --- NEW SECTION: 3-DAY FORECAST --- */}
+              <div className="mt-auto pt-6 pb-2">
+                <div className="w-full h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent mb-4"></div>
+                <div className="flex items-center justify-between mb-3">
+                   <h4 className="text-sm font-bold text-gray-700 flex items-center gap-2">
+                      <i className="ph ph-crystal-ball text-purple-500 text-lg"></i>
+                      3-Day Forecast
+                   </h4>
+                   <span className="text-[10px] bg-purple-50 text-purple-600 px-2 py-0.5 rounded font-bold uppercase tracking-wider">Beta</span>
+                </div>
+                
+                <div className="grid grid-cols-3 gap-3">
+                    {forecastList.map((item, idx) => (
+                      <div 
+                        key={idx}
+                        onClick={() => setForecastDetail(item)}
+                        className={`
+                          relative rounded-xl p-3 flex flex-col items-center text-center cursor-pointer 
+                          transition-all duration-300 hover:scale-105 hover:shadow-md border border-transparent hover:border-black/5 active:scale-95
+                          ${item.bg}
+                        `}
+                      >
+                         <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">{item.dateStr}</span>
+                         <div className="text-2xl mb-1" style={{ color: item.color }}>
+                            <i className={`ph ${item.icon}`}></i>
+                         </div>
+                         <div className="font-extrabold text-sm uppercase" style={{ color: item.color }}>{item.status}</div>
+                         <div className="text-[10px] font-medium text-gray-500 mt-1 flex items-center gap-1 bg-white/50 px-2 py-0.5 rounded-full">
+                            <i className="ph ph-trend-up"></i> {item.probability}%
+                         </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+              {/* --- END FORECAST SECTION --- */}
             </div>
 
-            {/* DETAIL CARD OVERLAY */}
+            {/* DETAIL CARD OVERLAY (Calendar Day Click) */}
             {dayDetail && (
               <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/10 backdrop-blur-sm p-4 animate-card-enter" onClick={() => setDayDetail(null)}>
                 <div className="relative w-full max-w-sm rounded-2xl p-6 shadow-2xl border border-gray-100 overflow-hidden bg-white" onClick={(e) => e.stopPropagation()}>
@@ -925,7 +1040,6 @@ export default function Dashboard() {
                     <div className="flex-1"><p className="text-sm font-semibold text-gray-600 italic">"{dayDetail.level > 60 ? "Take a break, you need it." : "Keep it up and maintain balance!"}"</p></div>
                   </div>
                   
-                  {/* List Statistik */}
                   <div className="space-y-3 custom-scroll" style={{ maxHeight: "220px", overflowY: "auto", paddingRight: "4px" }}>
                     {[
                       { l: "Sleep", v: dayDetail.sleep, max: 10, c: "bg-purple-500", i: "ph-moon-stars" },
@@ -945,12 +1059,65 @@ export default function Dashboard() {
                        </div>
                     ))}
                   </div>
-
-                  <div className="mt-4 pt-4 border-t border-gray-200 flex justify-between items-center">
-                      <span className="text-xs font-bold text-gray-500 uppercase">Recorded Mood</span>
-                      <span className="text-3xl animate-bounce">{dayDetail.mood}</span>
-                  </div>
                 </div>
+              </div>
+            )}
+            
+            {/* --- SLIDE-UP PANEL (OPTION 1 - WITH SVG ICON & SOLID GRADIENT FIX) --- */}
+            {forecastDetail && (
+              <div 
+                // Disini kita gunakan forecastDetail.panelTheme untuk warna container (tanpa opacity class)
+                // Hapus bg-opacity-95 agar solid, tambahkan shadow-2xl agar lebih kontras dengan background
+                className={`
+                  absolute inset-x-0 bottom-0 z-30 rounded-t-[24px] shadow-2xl border-t border-gray-100 overflow-hidden
+                  ${isClosingPanel ? "animate-slide-down-panel" : "animate-slide-up-panel"}
+                  ${forecastDetail.panelTheme}
+                `}
+                onClick={(e) => e.stopPropagation()}
+              >
+                  {/* Handle Bar for aesthetics */}
+                  <div className="w-full flex justify-center pt-3 pb-1" onClick={handleCloseForecast}>
+                     <div className="w-12 h-1.5 bg-gray-400/30 rounded-full cursor-pointer hover:bg-gray-400/50 transition-colors" />
+                  </div>
+
+                  <div className="p-6 pt-2">
+                     <div className="flex justify-between items-start mb-4">
+                        <div>
+                           <div className="flex items-center gap-2 mb-1">
+                              <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">{forecastDetail.fullDate}</span>
+                              <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold bg-white/60 border ${forecastDetail.border}`} style={{ color: forecastDetail.color }}>
+                                 {forecastDetail.status} Risk
+                              </span>
+                           </div>
+                           <h3 className="text-xl font-bold text-gray-800">Stress Forecast Advice</h3>
+                        </div>
+                        {/* TOMBOL X DIGANTI DENGAN SVG */}
+                        <button 
+                           onClick={handleCloseForecast} 
+                           className="w-8 h-8 rounded-full bg-white/40 text-gray-600 hover:bg-white/60 hover:text-gray-900 flex items-center justify-center transition-all cursor-pointer"
+                        >
+                           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                           </svg>
+                        </button>
+                     </div>
+
+                     <div className={`p-4 rounded-xl border ${forecastDetail.border} bg-white/40 flex items-start gap-3`}>
+                        <i className={`ph ${forecastDetail.icon} text-2xl mt-0.5`} style={{ color: forecastDetail.color }}></i>
+                        <div>
+                           <p className="text-sm text-gray-800 font-medium leading-relaxed">
+                              {forecastDetail.advice}
+                           </p>
+                           <div className="mt-2 flex items-center gap-1 text-xs font-bold opacity-70" style={{ color: forecastDetail.color }}>
+                              <i className="ph ph-lightning"></i> Confidence: {forecastDetail.probability}%
+                           </div>
+                        </div>
+                     </div>
+                     
+                     <button onClick={handleCloseForecast} className="w-full mt-4 py-3 bg-gray-900 text-white rounded-xl font-bold text-sm shadow-lg hover:bg-black transition-transform active:scale-95 cursor-pointer">
+                        Got it!
+                     </button>
+                  </div>
               </div>
             )}
           </section>
@@ -958,6 +1125,7 @@ export default function Dashboard() {
 
         {/* MOTIVATION & TIPS SECTIONS */}
         <div className="mt-8 grid grid-cols-1">
+          {/* ... (Section motivasi tetap sama) ... */}
           <section className="col-span-4 relative overflow-hidden rounded-[24px] shadow-2xl group transition-all duration-500 hover:shadow-orange-100">
             <div className="absolute inset-0 bg-white/60 backdrop-blur-xl border border-white/40 z-0"></div>
             <div className="absolute -left-10 -top-10 w-40 h-40 bg-orange-300 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob"></div>
