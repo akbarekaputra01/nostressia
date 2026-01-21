@@ -1,6 +1,7 @@
 // src/pages/Dashboard/Dashboard.jsx
 import React, { useEffect, useState } from "react";
-import { useOutletContext } from "react-router-dom"; 
+import { useNavigate, useOutletContext } from "react-router-dom"; 
+import { fetchGlobalForecast } from "../../api/forecastApi";
 import { BASE_URL } from "../../api/config";
 import Footer from "../../components/Footer";
 import Navbar from "../../components/Navbar";
@@ -119,45 +120,99 @@ const lowStressAdvices = [
   "Enjoy the balance. Treat yourself to a good book or a creative activity you love."
 ];
 
-// --- DUMMY DATA FORECAST GENERATOR (3 DAYS) ---
-const generateForecast = () => {
-    const today = new Date();
-    return [1, 2, 3].map((offset) => {
-      const d = new Date(today);
-      d.setDate(today.getDate() + offset);
-      
-      const isHigh = Math.random() > 0.5; 
-      
-      // Select random advice based on status
-      const adviceText = isHigh 
-        ? highStressAdvices[Math.floor(Math.random() * highStressAdvices.length)]
-        : lowStressAdvices[Math.floor(Math.random() * lowStressAdvices.length)];
+const moderateStressAdvices = [
+  "Balance looks steady. Keep your routine consistent and avoid overcommitting.",
+  "Stress is manageable. Schedule a short break to keep your energy stable.",
+  "You're in the middle zone—prioritize the tasks that matter most today."
+];
 
-      return {
-        dateStr: d.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' }),
-        fullDate: d.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long' }),
-        status: isHigh ? "High" : "Low",
-        probability: Math.floor(Math.random() * (98 - 75) + 75), 
-        color: isHigh ? brandRed : brandGreen,
-        
-        // Background untuk Kartu Kecil (Tetap Red/Green 50)
-        bg: isHigh ? "bg-red-50" : "bg-green-50",
-        
-        // Background SOLID GRADIENT untuk Panel Popup (Tanpa Opacity)
-        panelTheme: isHigh 
-          ? "bg-gradient-to-b from-red-50 via-white to-white" 
-          : "bg-gradient-to-b from-green-50 via-white to-white",
-          
-        border: isHigh ? "border-red-200" : "border-green-200",
-        icon: isHigh ? "ph-warning" : "ph-plant",
-        advice: adviceText
-      };
+function resolveForecastStatus({ predictionLabel, predictionBinary, chancePercent, threshold }) {
+  const normalized = String(predictionLabel || "").toLowerCase();
+  if (normalized.includes("high")) return "High";
+  if (normalized.includes("moderate")) return "Moderate";
+  if (normalized.includes("low")) return "Low";
+  if (typeof predictionBinary === "number") return predictionBinary === 1 ? "High" : "Low";
+  if (typeof chancePercent === "number" && typeof threshold === "number") {
+    return chancePercent >= threshold * 100 ? "High" : "Low";
+  }
+  return "Low";
+}
+
+function getForecastTheme(status) {
+  if (status === "High") {
+    return {
+      color: brandRed,
+      bg: "bg-red-50",
+      panelTheme: "bg-gradient-to-b from-red-50 via-white to-white",
+      border: "border-red-200",
+      icon: "ph-warning"
+    };
+  }
+  if (status === "Moderate") {
+    return {
+      color: brandOrange,
+      bg: "bg-orange-50",
+      panelTheme: "bg-gradient-to-b from-orange-50 via-white to-white",
+      border: "border-orange-200",
+      icon: "ph-activity"
+    };
+  }
+  return {
+    color: brandGreen,
+    bg: "bg-green-50",
+    panelTheme: "bg-gradient-to-b from-green-50 via-white to-white",
+    border: "border-green-200",
+    icon: "ph-plant"
+  };
+}
+
+function buildForecastList(baseForecast) {
+  if (!baseForecast?.forecast_date) return [];
+  const baseChance = Number(baseForecast?.chance_percent ?? baseForecast?.probability ?? 0);
+  const threshold = Number(baseForecast?.threshold ?? 0.5);
+  const baseProbability = Math.max(0, Math.min(baseChance, 100)) / 100;
+  const startDate = new Date(baseForecast.forecast_date);
+  if (Number.isNaN(startDate.getTime())) return [];
+
+  let nestedProbability = baseProbability;
+  return Array.from({ length: 3 }, (_, idx) => {
+    if (idx > 0) nestedProbability *= baseProbability;
+    const chancePercent = Math.round(nestedProbability * 1000) / 10;
+    const status = resolveForecastStatus({
+      predictionLabel: baseForecast?.prediction_label,
+      predictionBinary: baseForecast?.prediction_binary,
+      chancePercent,
+      threshold
     });
-};
+    const adviceOptions =
+      status === "High"
+        ? highStressAdvices
+        : status === "Moderate"
+        ? moderateStressAdvices
+        : lowStressAdvices;
+    const adviceText =
+      adviceOptions[Math.floor(Math.random() * adviceOptions.length)];
+    const forecastDate = new Date(startDate);
+    forecastDate.setDate(startDate.getDate() + idx);
+    const theme = getForecastTheme(status);
+
+    return {
+      dateStr: forecastDate.toLocaleDateString("en-US", { weekday: "short", day: "numeric" }),
+      fullDate: forecastDate.toLocaleDateString("en-US", { weekday: "long", day: "numeric", month: "long" }),
+      status,
+      probability: chancePercent,
+      advice: adviceText,
+      modelType: baseForecast?.model_type,
+      threshold,
+      ...theme
+    };
+  });
+}
 
 export default function Dashboard() {
   const { user } = useOutletContext() || { user: {} };
   const userName = user?.name || "Friend";
+  const navigate = useNavigate();
 
   const today = new Date();
   const TODAY_KEY = formatDate(today);
@@ -179,7 +234,9 @@ export default function Dashboard() {
   
   // Forecast State
   const [forecastDetail, setForecastDetail] = useState(null); 
-  const [forecastList] = useState(generateForecast()); 
+  const [forecastList, setForecastList] = useState([]); 
+  const [forecastLoading, setForecastLoading] = useState(false);
+  const [forecastError, setForecastError] = useState("");
   // State khusus untuk animasi tutup panel
   const [isClosingPanel, setIsClosingPanel] = useState(false);
 
@@ -369,6 +426,57 @@ export default function Dashboard() {
     fetchLogs();
     return () => controller.abort();
   }, [TODAY_KEY]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const fetchForecast = async () => {
+      setForecastLoading(true);
+      setForecastError("");
+      setForecastDetail(null);
+      try {
+        const token =
+          localStorage.getItem("token") ||
+          localStorage.getItem("access_token") ||
+          localStorage.getItem("accessToken") ||
+          localStorage.getItem("jwt");
+
+        if (!token) {
+          setForecastList([]);
+          setForecastError("Login untuk melihat forecast.");
+          return;
+        }
+
+        const data = await fetchGlobalForecast({ token, signal: controller.signal });
+        const list = buildForecastList(data);
+        setForecastList(list);
+        if (list.length === 0) {
+          setForecastError("Forecast belum tersedia.");
+        }
+      } catch (error) {
+        if (error?.name === "AbortError") return;
+        if (error?.status === 401) {
+          localStorage.removeItem("token");
+          navigate("/login", { replace: true });
+          return;
+        }
+        if (error?.status === 400) {
+          setForecastError("Histori belum cukup.");
+          return;
+        }
+        const detail =
+          error?.payload?.detail || error?.payload?.message || error?.message;
+        setForecastError(
+          `Gagal memuat forecast.${detail ? ` ${detail}` : ""}`
+        );
+      } finally {
+        setForecastLoading(false);
+      }
+    };
+
+    fetchForecast();
+    return () => controller.abort();
+  }, [navigate]);
 
   function handleOpenForm() {
     const todayData = stressData[TODAY_KEY];
@@ -988,26 +1096,51 @@ export default function Dashboard() {
                 </div>
                 
                 <div className="grid grid-cols-3 gap-3">
-                    {forecastList.map((item, idx) => (
-                      <div 
-                        key={idx}
-                        onClick={() => setForecastDetail(item)}
-                        className={`
-                          relative rounded-xl p-3 flex flex-col items-center text-center cursor-pointer 
-                          transition-all duration-300 hover:scale-105 hover:shadow-md border border-transparent hover:border-black/5 active:scale-95
-                          ${item.bg}
-                        `}
-                      >
-                         <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">{item.dateStr}</span>
-                         <div className="text-2xl mb-1" style={{ color: item.color }}>
-                            <i className={`ph ${item.icon}`}></i>
-                         </div>
-                         <div className="font-extrabold text-sm uppercase" style={{ color: item.color }}>{item.status}</div>
-                         <div className="text-[10px] font-medium text-gray-500 mt-1 flex items-center gap-1 bg-white/50 px-2 py-0.5 rounded-full">
-                            <i className="ph ph-trend-up"></i> {item.probability}%
-                         </div>
+                    {forecastLoading && (
+                      Array.from({ length: 3 }).map((_, idx) => (
+                        <div
+                          key={`forecast-loading-${idx}`}
+                          className="relative rounded-xl p-3 flex flex-col items-center text-center border border-white/40 bg-white/50 animate-pulse"
+                        >
+                          <div className="h-3 w-12 bg-gray-200 rounded mb-3" />
+                          <div className="h-6 w-6 bg-gray-200 rounded-full mb-2" />
+                          <div className="h-4 w-14 bg-gray-200 rounded mb-2" />
+                          <div className="h-3 w-16 bg-gray-200 rounded-full" />
+                        </div>
+                      ))
+                    )}
+                    {!forecastLoading && forecastError && (
+                      <div className="col-span-3 text-center text-xs font-semibold text-gray-500 bg-white/60 border border-gray-200 rounded-xl px-3 py-4">
+                        {forecastError}
                       </div>
-                    ))}
+                    )}
+                    {!forecastLoading && !forecastError && forecastList.length === 0 && (
+                      <div className="col-span-3 text-center text-xs font-semibold text-gray-500 bg-white/60 border border-gray-200 rounded-xl px-3 py-4">
+                        Forecast belum tersedia.
+                      </div>
+                    )}
+                    {!forecastLoading && !forecastError && forecastList.length > 0 && (
+                      forecastList.map((item, idx) => (
+                        <div 
+                          key={idx}
+                          onClick={() => setForecastDetail(item)}
+                          className={`
+                            relative rounded-xl p-3 flex flex-col items-center text-center cursor-pointer 
+                            transition-all duration-300 hover:scale-105 hover:shadow-md border border-transparent hover:border-black/5 active:scale-95
+                            ${item.bg}
+                          `}
+                        >
+                           <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">{item.dateStr}</span>
+                           <div className="text-2xl mb-1" style={{ color: item.color }}>
+                              <i className={`ph ${item.icon}`}></i>
+                           </div>
+                           <div className="font-extrabold text-sm uppercase" style={{ color: item.color }}>{item.status}</div>
+                           <div className="text-[10px] font-medium text-gray-500 mt-1 flex items-center gap-1 bg-white/50 px-2 py-0.5 rounded-full">
+                              <i className="ph ph-trend-up"></i> {item.probability}%
+                           </div>
+                        </div>
+                      ))
+                    )}
                 </div>
               </div>
               {/* --- END FORECAST SECTION --- */}
@@ -1111,6 +1244,19 @@ export default function Dashboard() {
                            <div className="mt-2 flex items-center gap-1 text-xs font-bold opacity-70" style={{ color: forecastDetail.color }}>
                               <i className="ph ph-lightning"></i> Confidence: {forecastDetail.probability}%
                            </div>
+                           {(forecastDetail.modelType || typeof forecastDetail.threshold === "number") && (
+                             <div className="mt-1 text-[11px] font-semibold text-gray-500">
+                               {forecastDetail.modelType && (
+                                 <span>Model: {forecastDetail.modelType}</span>
+                               )}
+                               {forecastDetail.modelType && typeof forecastDetail.threshold === "number" && (
+                                 <span className="mx-1">·</span>
+                               )}
+                               {typeof forecastDetail.threshold === "number" && (
+                                 <span>Threshold: {forecastDetail.threshold}</span>
+                               )}
+                             </div>
+                           )}
                         </div>
                      </div>
                      
