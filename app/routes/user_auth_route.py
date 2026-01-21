@@ -63,11 +63,11 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
 def register(user_in: UserRegister, db: Session = Depends(get_db)):
     # 1. Cek User berdasarkan Email & Username
     existing_user_email = db.query(User).filter(User.email == user_in.email).first()
-    existing_user_username = db.query(User).filter(User.userName == user_in.userName).first()
+    existing_user_username = db.query(User).filter(User.username == user_in.username).first()
 
     # 2. Cek Konflik Username
     if existing_user_username:
-        if not existing_user_email or (existing_user_email.userID != existing_user_username.userID):
+        if not existing_user_email or (existing_user_email.user_id != existing_user_username.user_id):
              raise HTTPException(status_code=400, detail="Username already taken")
 
     # Persiapan Data
@@ -84,14 +84,14 @@ def register(user_in: UserRegister, db: Session = Depends(get_db)):
         # KASUS B: Email ada TAPI Belum Verifikasi -> UPDATE (TIMPA DATA LAMA)
         else:
             existing_user_email.name = user_in.name
-            existing_user_email.userName = user_in.userName
+            existing_user_email.username = user_in.username
             existing_user_email.password = hashed_pw
             
             # Update OTP & Waktu
             existing_user_email.otp_code = otp_code
             existing_user_email.otp_created_at = now # ✅ Simpan waktu OTP dibuat
             
-            existing_user_email.userDOB = user_in.dob
+            existing_user_email.user_dob = user_in.user_dob
             existing_user_email.gender = user_in.gender
             existing_user_email.avatar = user_in.avatar
             
@@ -106,11 +106,11 @@ def register(user_in: UserRegister, db: Session = Depends(get_db)):
     # KASUS C: User Benar-Benar Baru -> BUAT BARU
     new_user = User(
         name=user_in.name,
-        userName=user_in.userName,
+        username=user_in.username,
         email=user_in.email,
         password=hashed_pw,
         gender=user_in.gender,
-        userDOB=user_in.dob, 
+        user_dob=user_in.user_dob, 
         avatar=user_in.avatar,
         
         # Field OTP
@@ -178,7 +178,7 @@ def login(user_in: UserLogin, db: Session = Depends(get_db)):
     if "@" in user_in.identifier:
         user = db.query(User).filter(User.email == user_in.identifier).first()
     else:
-        user = db.query(User).filter(User.userName == user_in.identifier).first()
+        user = db.query(User).filter(User.username == user_in.identifier).first()
     
     if not user or not verify_password(user_in.password, user.password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Username/Email atau Password salah")
@@ -187,14 +187,16 @@ def login(user_in: UserLogin, db: Session = Depends(get_db)):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Akun belum diverifikasi.")
     
     today = date.today()
-    if user.lastLogin == today - timedelta(days=1):
+    if user.last_login == today - timedelta(days=1):
         user.streak = (user.streak or 0) + 1
-    elif user.lastLogin != today:
+    elif user.last_login != today:
         user.streak = 1
-    user.lastLogin = today
+    user.last_login = today
     db.commit()
     
-    access_token = create_access_token(data={"sub": user.email, "id": user.userID, "userName": user.userName})
+    access_token = create_access_token(
+        data={"sub": user.email, "id": user.user_id, "username": user.username}
+    )
     return {"access_token": access_token, "token_type": "bearer"}
 
 @router.get("/me", response_model=UserResponse)
@@ -203,10 +205,10 @@ def read_users_me(current_user: User = Depends(get_current_user)):
 
 @router.put("/me", response_model=UserResponse)
 def update_user_profile(user_update: UserUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    if user_update.userName and user_update.userName != current_user.userName:
-        if db.query(User).filter(User.userName == user_update.userName).first():
+    if user_update.username and user_update.username != current_user.username:
+        if db.query(User).filter(User.username == user_update.username).first():
             raise HTTPException(status_code=400, detail="Username already taken")
-        current_user.userName = user_update.userName
+        current_user.username = user_update.username
 
     if user_update.email and user_update.email != current_user.email:
         if db.query(User).filter(User.email == user_update.email).first():

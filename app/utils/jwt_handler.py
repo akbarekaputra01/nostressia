@@ -48,7 +48,7 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         # 2. Ambil identitas dari token
         user_identifier = payload.get("sub") # Bisa berupa ID (angka) atau Email (string)
         if user_identifier is None:
-            user_identifier = payload.get("id")
+            user_identifier = payload.get("user_id") or payload.get("id")
             
         if user_identifier is None:
             raise credentials_exception
@@ -59,7 +59,7 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
 
         if identifier_str.isdigit():
             # Jika isinya angka murni (misal: "5"), cari berdasarkan userID
-            user = db.query(User).filter(User.userID == int(identifier_str)).first()
+            user = db.query(User).filter(User.user_id == int(identifier_str)).first()
         else:
             # Jika isinya huruf/email (misal: "kaleb@gmail.com"), cari berdasarkan email
             user = db.query(User).filter(User.email == identifier_str).first()

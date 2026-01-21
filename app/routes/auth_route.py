@@ -46,7 +46,7 @@ def admin_login(request: LoginRequest, db: Session = Depends(get_db)):
         "access_token": access_token,
         "token_type": "bearer",
         "admin": {
-            "id": admin.adminID,
+            "id": admin.admin_id,
             "name": admin.name,
             "username": admin.username,
             "email": admin.email,

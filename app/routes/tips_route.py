@@ -18,7 +18,7 @@ router = APIRouter(prefix="/tips", tags=["Tips"])
 
 @router.post("/categories", response_model=TipsCategoryResponse)
 def create_category(data: TipsCategoryCreate, db: Session = Depends(get_db)):
-    new_cat = TipsCategory(categoryName=data.categoryName)
+    new_cat = TipsCategory(category_name=data.category_name)
     db.add(new_cat)
     db.commit()
     db.refresh(new_cat)
@@ -32,7 +32,7 @@ def get_categories(db: Session = Depends(get_db)):
 
 @router.delete("/categories/{id}")
 def delete_category(id: int, db: Session = Depends(get_db)):
-    cat = db.query(TipsCategory).filter_by(tipCategoryID=id).first()
+    cat = db.query(TipsCategory).filter_by(tip_category_id=id).first()
     if not cat:
         raise HTTPException(404, "Category not found")
 
@@ -45,8 +45,8 @@ def delete_category(id: int, db: Session = Depends(get_db)):
 def create_tip(data: TipsCreate, db: Session = Depends(get_db)):
     new_tip = Tips(
         detail=data.detail,
-        tipCategoryID=data.tipCategoryID,
-        uploaderID=data.uploaderID,
+        tip_category_id=data.tip_category_id,
+        uploader_id=data.uploader_id,
     )
     db.add(new_tip)
     db.commit()
@@ -61,12 +61,12 @@ def get_all_tips(db: Session = Depends(get_db)):
 
 @router.get("/by-category/{category_id}", response_model=List[TipsResponse])
 def get_tips_by_category(category_id: int, db: Session = Depends(get_db)):
-    return db.query(Tips).filter(Tips.tipCategoryID == category_id).all()
+    return db.query(Tips).filter(Tips.tip_category_id == category_id).all()
 
 
 @router.get("/{id}", response_model=TipsResponse)
 def get_tip(id: int, db: Session = Depends(get_db)):
-    tip = db.query(Tips).filter_by(tipID=id).first()
+    tip = db.query(Tips).filter_by(tip_id=id).first()
     if not tip:
         raise HTTPException(404, "Tip not found")
     return tip
@@ -74,14 +74,14 @@ def get_tip(id: int, db: Session = Depends(get_db)):
 
 @router.put("/{id}", response_model=TipsResponse)
 def update_tip(id: int, data: TipsUpdate, db: Session = Depends(get_db)):
-    tip = db.query(Tips).filter_by(tipID=id).first()
+    tip = db.query(Tips).filter_by(tip_id=id).first()
     if not tip:
         raise HTTPException(404, "Tip not found")
 
     if data.detail is not None:
         tip.detail = data.detail
-    if data.tipCategoryID is not None:
-        tip.tipCategoryID = data.tipCategoryID
+    if data.tip_category_id is not None:
+        tip.tip_category_id = data.tip_category_id
 
     db.commit()
     db.refresh(tip)
@@ -90,7 +90,7 @@ def update_tip(id: int, data: TipsUpdate, db: Session = Depends(get_db)):
 
 @router.delete("/{id}")
 def delete_tip(id: int, db: Session = Depends(get_db)):
-    tip = db.query(Tips).filter_by(tipID=id).first()
+    tip = db.query(Tips).filter_by(tip_id=id).first()
     if not tip:
         raise HTTPException(404, "Tip not found")
 

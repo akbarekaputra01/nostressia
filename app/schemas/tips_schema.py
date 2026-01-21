@@ -1,10 +1,10 @@
 from typing import Optional
 
-from pydantic import BaseModel
+from app.schemas.base_schema import BaseSchema
 
 
-class TipsCategoryBase(BaseModel):
-    categoryName: str
+class TipsCategoryBase(BaseSchema):
+    category_name: str
 
 
 class TipsCategoryCreate(TipsCategoryBase):
@@ -12,29 +12,23 @@ class TipsCategoryCreate(TipsCategoryBase):
 
 
 class TipsCategoryResponse(TipsCategoryBase):
-    tipCategoryID: int
-
-    class Config:
-        orm_mode = True
+    tip_category_id: int
 
 
-class TipsBase(BaseModel):
+class TipsBase(BaseSchema):
     detail: str
-    tipCategoryID: int
-    uploaderID: int
+    tip_category_id: int
+    uploader_id: int
 
 
 class TipsCreate(TipsBase):
     pass
 
 
-class TipsUpdate(BaseModel):
+class TipsUpdate(BaseSchema):
     detail: Optional[str] = None
-    tipCategoryID: Optional[int] = None
+    tip_category_id: Optional[int] = None
 
 
 class TipsResponse(TipsBase):
-    tipID: int
-
-    class Config:
-        orm_mode = True
+    tip_id: int

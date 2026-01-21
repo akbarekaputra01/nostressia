@@ -1,5 +1,5 @@
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 
@@ -33,7 +33,7 @@ def get_all_users(
             or_(
                 User.name.ilike(search_fmt),
                 User.email.ilike(search_fmt),
-                User.userName.ilike(search_fmt)
+                User.username.ilike(search_fmt)
             )
         )
 
@@ -54,7 +54,7 @@ def get_user_by_id(
     db: Session = Depends(get_db),
     current_admin: Admin = Depends(get_current_admin)
 ):
-    user = db.query(User).filter(User.userID == user_id).first()
+    user = db.query(User).filter(User.user_id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
@@ -67,7 +67,7 @@ def admin_update_user(
     db: Session = Depends(get_db),
     current_admin: Admin = Depends(get_current_admin)
 ):
-    user = db.query(User).filter(User.userID == user_id).first()
+    user = db.query(User).filter(User.user_id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
@@ -81,17 +81,17 @@ def admin_update_user(
             raise HTTPException(status_code=400, detail="Email already used")
         user.email = user_update.email
 
-    if user_update.userName is not None and user_update.userName != user.userName:
-        existing = db.query(User).filter(User.userName == user_update.userName).first()
+    if user_update.username is not None and user_update.username != user.username:
+        existing = db.query(User).filter(User.username == user_update.username).first()
         if existing:
             raise HTTPException(status_code=400, detail="Username already taken")
-        user.userName = user_update.userName
+        user.username = user_update.username
 
     if user_update.gender is not None:
         user.gender = user_update.gender
     
-    if user_update.userDOB is not None:
-        user.userDOB = user_update.userDOB
+    if user_update.user_dob is not None:
+        user.user_dob = user_update.user_dob
 
     if user_update.avatar is not None:
         user.avatar = user_update.avatar
@@ -107,7 +107,7 @@ def delete_user(
     db: Session = Depends(get_db),
     current_admin: Admin = Depends(get_current_admin)
 ):
-    user = db.query(User).filter(User.userID == user_id).first()
+    user = db.query(User).filter(User.user_id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 

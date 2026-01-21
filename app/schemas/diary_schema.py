@@ -1,9 +1,10 @@
-from pydantic import BaseModel
-from typing import Optional
 from datetime import date, datetime
+from typing import Optional
+
+from app.schemas.base_schema import BaseSchema
 
 # Base Schema (Field yang umum)
-class DiaryBase(BaseModel):
+class DiaryBase(BaseSchema):
     title: Optional[str] = None
     note: str
     date: date
@@ -15,7 +16,7 @@ class DiaryCreate(DiaryBase):
     pass
 
 # Schema untuk Edit (Update)
-class DiaryUpdate(BaseModel):
+class DiaryUpdate(BaseSchema):
     title: Optional[str] = None
     note: Optional[str] = None
     date: Optional[date] = None
@@ -24,9 +25,6 @@ class DiaryUpdate(BaseModel):
 
 # Schema untuk Response (Output ke Frontend)
 class DiaryResponse(DiaryBase):
-    diaryID: int
-    userID: int
-    createdAt: datetime
-
-    class Config:
-        from_attributes = True
+    diary_id: int
+    user_id: int
+    created_at: datetime

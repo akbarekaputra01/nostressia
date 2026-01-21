@@ -1,24 +1,19 @@
-from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional # Pastikan import ini ada
+from typing import Optional
 
-class MotivationInBookmark(BaseModel):
-    motivationID: int
+from app.schemas.base_schema import BaseSchema
+
+class MotivationInBookmark(BaseSchema):
+    motivation_id: int
     quote: str
-    authorName: Optional[str] = None
+    author_name: Optional[str] = None
 
-    class Config:
-        from_attributes = True
-
-class BookmarkResponse(BaseModel):
-    bookmarkID: int
-    userID: int
-    motivationID: int
+class BookmarkResponse(BaseSchema):
+    bookmark_id: int
+    user_id: int
+    motivation_id: int
     
     # UBAH DISINI: Tambahkan Optional dan default None
-    createdAt: Optional[datetime] = None 
+    created_at: Optional[datetime] = None 
     
     motivation: MotivationInBookmark 
-
-    class Config:
-        from_attributes = True

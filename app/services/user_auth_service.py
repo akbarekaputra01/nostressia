@@ -7,7 +7,7 @@ from app.utils.hashing import hash_password, verify_password
 def create_user(db: Session, user_data: UserRegister):
     # 1. Cek Duplikat
     existing_user = db.query(User).filter(
-        (User.email == user_data.email) | (User.userName == user_data.userName) # ✅ Cek userName
+        (User.email == user_data.email) | (User.username == user_data.username)
     ).first()
     
     if existing_user:
@@ -19,11 +19,11 @@ def create_user(db: Session, user_data: UserRegister):
     # 2. Buat User Baru
     new_user = User(
         name=user_data.name,
-        userName=user_data.userName, # ✅ Simpan ke kolom userName
+        username=user_data.username,
         email=user_data.email,
         password=hash_password(user_data.password),
         gender=user_data.gender,
-        userDOB=user_data.dob,
+        user_dob=user_data.user_dob,
         avatar=user_data.avatar 
     )
     

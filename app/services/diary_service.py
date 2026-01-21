@@ -11,7 +11,7 @@ def create_diary(db: Session, diary_data: DiaryCreate, user_id: int):
         date=diary_data.date,
         emoji=diary_data.emoji,
         font=diary_data.font, # Simpan font pilihan user
-        userID=user_id
+        user_id=user_id
     )
     db.add(new_diary)
     db.commit()
@@ -21,11 +21,11 @@ def create_diary(db: Session, diary_data: DiaryCreate, user_id: int):
 # 2. Ambil Semua Diary (Milik User Login)
 def get_user_diaries(db: Session, user_id: int):
     # Urutkan dari yang terbaru (descending)
-    return db.query(Diary).filter(Diary.userID == user_id).order_by(Diary.date.desc()).all()
+    return db.query(Diary).filter(Diary.user_id == user_id).order_by(Diary.date.desc()).all()
 
 # 3. Helper: Ambil Satu Diary & Cek Kepemilikan
 def get_diary_by_id(db: Session, diary_id: int, user_id: int):
-    diary = db.query(Diary).filter(Diary.diaryID == diary_id, Diary.userID == user_id).first()
+    diary = db.query(Diary).filter(Diary.diary_id == diary_id, Diary.user_id == user_id).first()
     if not diary:
         raise HTTPException(status_code=404, detail="Diary not found")
     return diary

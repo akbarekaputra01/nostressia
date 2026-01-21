@@ -6,6 +6,7 @@ from app.routes.motivation_route import router as motivation_router
 from app.routes.tips_route import router as tips_router
 from app.routes.predict_route import router as predict_router
 from app.routes.predict_forecast_route import router as predict_forecast_router
+from app.routes.forecast_route import router as forecast_router
 from app.routes.user_auth_route import router as user_auth_router
 from app.routes.bookmark_route import router as bookmark_router
 from app.routes.diary_route import router as diary_router
@@ -23,6 +24,7 @@ api_router.include_router(motivation_router)
 api_router.include_router(tips_router)
 api_router.include_router(predict_router)
 api_router.include_router(predict_forecast_router)
+api_router.include_router(forecast_router)
 api_router.include_router(user_auth_router)
 api_router.include_router(bookmark_router)
 api_router.include_router(stress_router)
