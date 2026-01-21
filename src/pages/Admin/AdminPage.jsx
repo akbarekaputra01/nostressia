@@ -225,7 +225,7 @@ export default function AdminPage({ skipAuth = false }) {
       const normalizedUsers = (data.data || []).map((user) => ({
         ...user,
         userId: user.userId ?? user.id,
-        userName: user.userName ?? user.username,
+        username: user.username,
         userDob: user.userDob,
         isVerified: user.isVerified
       }));
@@ -276,7 +276,7 @@ export default function AdminPage({ skipAuth = false }) {
       const res = await fetch(`${BASE_URL}/admin/users/${editingUser.userId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-        body: JSON.stringify({ name: editingUser.name, userName: editingUser.userName, email: editingUser.email, gender: editingUser.gender, userDob: editingUser.userDob })
+        body: JSON.stringify({ name: editingUser.name, username: editingUser.username, email: editingUser.email, gender: editingUser.gender, userDob: editingUser.userDob })
       });
       if (!res.ok) throw new Error("Failed to update user profile");
       if (newPassword.trim() !== "") {
@@ -308,7 +308,7 @@ export default function AdminPage({ skipAuth = false }) {
         ...diary,
         diaryId: diary.diaryId ?? diary.id,
         createdAt: diary.createdAt,
-        userName: diary.userName
+        username: diary.username
       }));
       setDiaries(normalizedDiaries);
       setTotalPages(Math.ceil(data.total / 10));
@@ -393,7 +393,7 @@ export default function AdminPage({ skipAuth = false }) {
             {loadingUsers ? (<tr><td colSpan="4" className="text-center py-8 text-gray-500">Loading...</td></tr>) : users.length === 0 ? (<tr><td colSpan="4" className="text-center py-8 text-gray-500">No users found.</td></tr>) : (
               users.map((user) => (
                 <tr key={user.userId} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap"><div className="text-sm font-bold text-gray-900">{user.name}</div><div className="text-sm text-gray-500">{user.email}</div><div className="text-xs text-purple-600 font-mono">@{user.userName}</div></td>
+                  <td className="px-6 py-4 whitespace-nowrap"><div className="text-sm font-bold text-gray-900">{user.name}</div><div className="text-sm text-gray-500">{user.email}</div><div className="text-xs text-purple-600 font-mono">@{user.username}</div></td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><div>{user.gender || "-"}</div><div className="text-xs text-gray-400">{user.userDob || "No DOB"}</div></td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">🔥 {user.streak || 0} Streak</td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -440,7 +440,7 @@ export default function AdminPage({ skipAuth = false }) {
             {loadingDiaries ? (<tr><td colSpan="5" className="text-center py-8 text-gray-500">Loading diaries...</td></tr>) : diaries.length === 0 ? (<tr><td colSpan="5" className="text-center py-8 text-gray-500">No diaries found.</td></tr>) : (
                 diaries.map((diary) => (
                 <tr key={diary.diaryId} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap"><div className="text-sm font-bold text-gray-900">{diary.userName}</div><div className="text-xs text-gray-500"></div></td>
+                  <td className="px-6 py-4 whitespace-nowrap"><div className="text-sm font-bold text-gray-900">{diary.username}</div><div className="text-xs text-gray-500"></div></td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(diary.createdAt).toLocaleDateString()}</td>
                   <td className="px-6 py-4 text-sm text-gray-800 font-medium">{diary.title || "-"}</td>
                   <td className="px-6 py-4 text-sm text-gray-600">{diary.content.length > 60 ? diary.content.substring(0, 60) + "..." : diary.content}</td>
@@ -617,7 +617,7 @@ export default function AdminPage({ skipAuth = false }) {
             <form onSubmit={handleSaveUser} className="space-y-4">
                 <div><label className="block text-sm font-bold text-gray-700 mb-1">Full Name</label><input type="text" className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none cursor-text" value={editingUser.name} onChange={e => setEditingUser({...editingUser, name: e.target.value})} /></div>
                 <div><label className="block text-sm font-bold text-gray-700 mb-1">Email Address</label><input type="email" className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none cursor-text" value={editingUser.email} onChange={e => setEditingUser({...editingUser, email: e.target.value})} /></div>
-                <div><label className="block text-sm font-bold text-gray-700 mb-1">Username</label><input type="text" className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none cursor-text" value={editingUser.userName} onChange={e => setEditingUser({...editingUser, userName: e.target.value})} /></div>
+                <div><label className="block text-sm font-bold text-gray-700 mb-1">Username</label><input type="text" className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none cursor-text" value={editingUser.username} onChange={e => setEditingUser({...editingUser, username: e.target.value})} /></div>
                 <div className="grid grid-cols-2 gap-4">
                     <div><label className="block text-sm font-bold text-gray-700 mb-1">Gender</label><select className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-purple-500 cursor-pointer" value={editingUser.gender || ""} onChange={e => setEditingUser({...editingUser, gender: e.target.value})}><option value="">Select</option><option value="Male">Male</option><option value="Female">Female</option></select></div>
                     <div><label className="block text-sm font-bold text-gray-700 mb-1">Date of Birth</label><input type="date" className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-purple-500 cursor-pointer" value={editingUser.userDob || ""} onChange={e => setEditingUser({...editingUser, userDob: e.target.value})} /></div>

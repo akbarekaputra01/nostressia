@@ -33,13 +33,8 @@ export default function MainLayout() {
             backendData.name ||
             backendData.fullName ||
             "User",
-          userName:
-            backendData.userName ||
-            backendData.username ||
-            "user",
           username:
             backendData.username ||
-            backendData.userName ||
             "user",
           email: backendData.email || "",
           avatar: backendData.avatar || backendData.profilePicture || null,

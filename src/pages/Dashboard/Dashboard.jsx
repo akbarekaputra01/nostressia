@@ -235,7 +235,7 @@ function buildForecastEligibilityMessage({
 
 export default function Dashboard() {
   const { user } = useOutletContext() || { user: {} };
-  const userName = user?.name || "Friend";
+  const username = user?.name || "Friend";
   const navigate = useNavigate();
 
   const today = new Date();
@@ -764,7 +764,7 @@ export default function Dashboard() {
       <main className="max-w-[1400px] mx-auto p-6 md:p-8 lg:p-10 pt-28">
         <div className="mb-8 animate-slide-down">
           <h1 className="text-3xl md:text-4xl font-extrabold text-gray-800 flex items-center gap-2">
-            Hello, <span style={{ color: brandBlue }}>{userName}!</span> 👋
+            Hello, <span style={{ color: brandBlue }}>{username}!</span> 👋
           </h1>
           <p className="text-gray-600 mt-2 text-lg font-medium">Ready to navigate the day with more calm?</p>
         </div>
