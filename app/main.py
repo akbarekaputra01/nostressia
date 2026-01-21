@@ -1,5 +1,9 @@
+import logging
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import inspect
+from sqlalchemy.exc import SQLAlchemyError
 
 from app.api.api_router import api_router
 from app.core.config import settings
@@ -13,6 +17,8 @@ from app.models.bookmark_model import Bookmark
 from app.models.tips_model import Tips, TipsCategory
 from app.models.motivation_model import Motivation
 from app.models.admin_model import Admin
+
+logger = logging.getLogger(__name__)
 
 def create_app() -> FastAPI:
     app = FastAPI(title=settings.app_name)
@@ -36,6 +42,25 @@ def create_app() -> FastAPI:
     @app.on_event("startup")
     def on_startup() -> None:
         Base.metadata.create_all(bind=engine)
+
+        try:
+            inspector = inspect(engine)
+            if "users" not in inspector.get_table_names():
+                message = "Startup check failed: table 'users' not found."
+                logger.error(message)
+                raise RuntimeError(message)
+
+            user_columns = {column["name"] for column in inspector.get_columns("users")}
+            if "username" not in user_columns:
+                message = (
+                    "Startup check failed: column 'users.username' not found. "
+                    "Ensure database migrations have been applied."
+                )
+                logger.error(message)
+                raise RuntimeError(message)
+        except SQLAlchemyError as exc:
+            logger.exception("Startup check failed due to database error.")
+            raise RuntimeError("Startup check failed due to database error.") from exc
 
     app.include_router(api_router, prefix=settings.api_prefix)
 
