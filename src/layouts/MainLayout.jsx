@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { BASE_URL } from "../api/config";
+import { readAuthToken } from "../utils/auth";
 
 export default function MainLayout() {
   const navigate = useNavigate();
@@ -16,7 +17,7 @@ export default function MainLayout() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const token = localStorage.getItem("token");
+        const token = readAuthToken();
         if (!token) return;
 
         const response = await axios.get(`${BASE_URL}/user/me`, {

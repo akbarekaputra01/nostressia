@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom"; 
 import axios from "axios"; 
 import { BASE_URL } from "../../api/config"; 
+import { persistAuthToken } from "../../utils/auth";
 import { Mail, Lock, ArrowRight, Loader2, CheckCircle, User, Calendar, AtSign, Users, Check, Eye, EyeOff, ShieldCheck, ArrowLeft, X, Clock } from "lucide-react"; 
 import { motion as Motion, AnimatePresence } from "framer-motion";
 
@@ -109,7 +110,15 @@ export default function Login() {
         const response = await axios.post(`${BASE_URL}/user/login`, {
             identifier: formData.email, password: formData.password
         });
-        localStorage.setItem("token", response.data.access_token);
+        const token =
+          response?.data?.access_token ||
+          response?.data?.token ||
+          response?.data?.accessToken;
+        if (!token) {
+          alert("Login berhasil, tetapi token tidak ditemukan.");
+          return;
+        }
+        persistAuthToken(token);
         setIsSuccess(true);
         setTimeout(() => navigate("/dashboard"), 1000); 
     } catch (error) {
