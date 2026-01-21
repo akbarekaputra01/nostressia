@@ -71,7 +71,7 @@ export default function Tips() {
       const serverData = await res.json();
       
       const updatedCategories = await Promise.all(serverData.map(async (item) => {
-        const id = item.tipCategoryID || item.id;
+        const id = item.tipCategoryId || item.id;
         const tipsRes = await fetch(`${BASE_URL}/tips/by-category/${id}`);
         const tipsData = await tipsRes.json();
         const existing = INITIAL_CATEGORIES.find(c => c.id === id);

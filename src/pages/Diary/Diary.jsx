@@ -71,7 +71,7 @@ export default function Diary() {
         });
         
         const formattedEntries = response.data.map((item) => ({
-          id: item.diaryID,       
+          id: item.diaryId,       
           title: item.title,
           content: item.note,     
           mood: item.emoji,       
@@ -125,7 +125,7 @@ export default function Diary() {
 
       const savedData = response.data;
       const newEntry = {
-        id: savedData.diaryID,
+        id: savedData.diaryId,
         title: savedData.title,
         content: savedData.note, 
         mood: savedData.emoji, 

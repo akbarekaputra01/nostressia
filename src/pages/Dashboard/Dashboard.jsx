@@ -167,11 +167,12 @@ function getForecastTheme(status) {
 }
 
 function buildForecastList(baseForecast) {
-  if (!baseForecast?.forecast_date) return [];
-  const baseChance = Number(baseForecast?.chance_percent ?? baseForecast?.probability ?? 0);
+  const forecastDate = baseForecast?.forecastDate;
+  if (!forecastDate) return [];
+  const baseChance = Number(baseForecast?.chancePercent ?? baseForecast?.probability ?? 0);
   const threshold = Number(baseForecast?.threshold ?? 0.5);
   const baseProbability = Math.max(0, Math.min(baseChance, 100)) / 100;
-  const startDate = new Date(baseForecast.forecast_date);
+  const startDate = new Date(forecastDate);
   if (Number.isNaN(startDate.getTime())) return [];
 
   let nestedProbability = baseProbability;
@@ -179,8 +180,8 @@ function buildForecastList(baseForecast) {
     if (idx > 0) nestedProbability *= baseProbability;
     const chancePercent = Math.round(nestedProbability * 1000) / 10;
     const status = resolveForecastStatus({
-      predictionLabel: baseForecast?.prediction_label,
-      predictionBinary: baseForecast?.prediction_binary,
+      predictionLabel: baseForecast?.predictionLabel,
+      predictionBinary: baseForecast?.predictionBinary,
       chancePercent,
       threshold
     });
@@ -202,11 +203,34 @@ function buildForecastList(baseForecast) {
       status,
       probability: chancePercent,
       advice: adviceText,
-      modelType: baseForecast?.model_type,
+      modelType: baseForecast?.modelType,
       threshold,
       ...theme
     };
   });
+}
+
+function buildForecastEligibilityMessage({
+  reason,
+  streakCount,
+  restoreUsed,
+  restoreRemaining
+} = {}) {
+  const safeStreak = Number.isFinite(Number(streakCount)) ? streakCount : "-";
+  const safeUsed = Number.isFinite(Number(restoreUsed)) ? restoreUsed : "-";
+  const safeRemaining = Number.isFinite(Number(restoreRemaining)) ? restoreRemaining : "-";
+
+  return [
+    "Forecast belum tersedia karena data belum memenuhi syarat.",
+    reason ? `Alasan: ${reason}` : null,
+    `Data terkumpul: ${safeStreak}/7.`,
+    "• Butuh 7 data (tidak harus berturut).",
+    "• Restore boleh dipakai (maks 3/bulan).",
+    "• Minimal 4 data asli di window 7.",
+    `Restore terpakai: ${safeUsed} • Sisa: ${safeRemaining}.`
+  ]
+    .filter(Boolean)
+    .join("\n");
 }
 
 export default function Dashboard() {
@@ -448,7 +472,22 @@ export default function Dashboard() {
         }
 
         const data = await fetchGlobalForecast({ token, signal: controller.signal });
-        const list = buildForecastList(data);
+
+        if (data?.isEligible === false) {
+          setForecastList([]);
+          setForecastError(
+            buildForecastEligibilityMessage({
+              reason: data?.reason,
+              streakCount: data?.streakCount,
+              restoreUsed: data?.restoreUsed,
+              restoreRemaining: data?.restoreRemaining
+            })
+          );
+          return;
+        }
+
+        const baseForecast = data?.forecast ?? data?.data ?? data;
+        const list = buildForecastList(baseForecast);
         setForecastList(list);
         if (list.length === 0) {
           setForecastError("Forecast belum tersedia.");
@@ -458,6 +497,17 @@ export default function Dashboard() {
         if (error?.status === 401) {
           localStorage.removeItem("token");
           navigate("/login", { replace: true });
+          return;
+        }
+        if (error?.payload?.isEligible === false) {
+          setForecastError(
+            buildForecastEligibilityMessage({
+              reason: error?.payload?.reason,
+              streakCount: error?.payload?.streakCount,
+              restoreUsed: error?.payload?.restoreUsed,
+              restoreRemaining: error?.payload?.restoreRemaining
+            })
+          );
           return;
         }
         if (error?.status === 400) {
@@ -1110,7 +1160,7 @@ export default function Dashboard() {
                       ))
                     )}
                     {!forecastLoading && forecastError && (
-                      <div className="col-span-3 text-center text-xs font-semibold text-gray-500 bg-white/60 border border-gray-200 rounded-xl px-3 py-4">
+                      <div className="col-span-3 text-center text-xs font-semibold text-gray-500 bg-white/60 border border-gray-200 rounded-xl px-3 py-4 whitespace-pre-line">
                         {forecastError}
                       </div>
                     )}

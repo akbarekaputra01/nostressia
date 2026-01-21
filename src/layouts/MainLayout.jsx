@@ -31,24 +31,20 @@ export default function MainLayout() {
           // Pastikan field utama selalu ada:
           name:
             backendData.name ||
-            backendData.full_name ||
             backendData.fullName ||
             "User",
           userName:
             backendData.userName ||
             backendData.username ||
-            backendData.user_name ||
             "user",
           username:
             backendData.username ||
             backendData.userName ||
-            backendData.user_name ||
             "user",
           email: backendData.email || "",
-          avatar: backendData.avatar || backendData.profile_picture || null,
+          avatar: backendData.avatar || backendData.profilePicture || null,
           birthday:
             backendData.birthday ||
-            backendData.birth_date ||
             backendData.dob ||
             "",
           gender: backendData.gender || backendData.sex || "",
