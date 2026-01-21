@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom"; 
 import axios from "axios"; 
 import { BASE_URL } from "../../api/config"; 
-import { persistAuthToken } from "../../utils/auth";
+import { isAuthTokenValid, persistAuthToken } from "../../utils/auth";
 import { Mail, Lock, ArrowRight, Loader2, CheckCircle, User, Calendar, AtSign, Users, Check, Eye, EyeOff, ShieldCheck, ArrowLeft, X, Clock } from "lucide-react"; 
 import { motion as Motion, AnimatePresence } from "framer-motion";
 
@@ -114,8 +114,8 @@ export default function Login() {
           response?.data?.access_token ||
           response?.data?.token ||
           response?.data?.accessToken;
-        if (!token) {
-          alert("Login berhasil, tetapi token tidak ditemukan.");
+        if (!isAuthTokenValid(token)) {
+          alert("Login berhasil, tetapi token tidak valid.");
           return;
         }
         persistAuthToken(token);

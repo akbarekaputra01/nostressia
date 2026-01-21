@@ -1,6 +1,7 @@
 // src/router/index.jsx
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
+import { readAuthToken } from "../utils/auth";
 
 // 1. IMPORT LAYOUT (Pastikan path-nya sesuai dengan lokasi file MainLayout Anda)
 import MainLayout from "../layouts/MainLayout"; 
@@ -26,7 +27,7 @@ const AdminRoute = () => {
 };
 
 const ProtectedRoute = () => {
-  const token = localStorage.getItem("token");
+  const token = readAuthToken();
   return token ? <Outlet /> : <Navigate to="/login" replace />;
 };
 
