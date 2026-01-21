@@ -133,15 +133,15 @@ class GlobalForecastService:
         meta = artifact.get("meta", {})
 
         date_col = meta.get("date_col", "date")
-        user_col = meta.get("user_col", "userID")
-        target_col = meta.get("target_col", "stressLevel")
+        user_col = meta.get("user_col", "user_id")
+        target_col = meta.get("target_col", "stress_level")
         window = int(meta.get("window", 3))
         behavior_cols = meta.get("behavior_cols") or []
         feature_cols = self._resolve_feature_cols(behavior_cols, window, meta)
 
         logs = (
             db.query(StressLevel)
-            .filter(StressLevel.userID == user_id)
+            .filter(StressLevel.user_id == user_id)
             .order_by(StressLevel.date.asc())
             .all()
         )
@@ -159,15 +159,15 @@ class GlobalForecastService:
         for log in logs:
             records.append(
                 {
-                    "userID": log.userID,
+                    "user_id": log.user_id,
                     "date": log.date,
-                    "stressLevel": log.stressLevel,
-                    "GPA": log.GPA,
-                    "extracurricularHourPerDay": log.extracurricularHourPerDay,
-                    "physicalActivityHourPerDay": log.physicalActivityHourPerDay,
-                    "sleepHourPerDay": log.sleepHourPerDay,
-                    "studyHourPerDay": log.studyHourPerDay,
-                    "socialHourPerDay": log.socialHourPerDay,
+                    "stress_level": log.stress_level,
+                    "gpa": log.gpa,
+                    "extracurricular_hour_per_day": log.extracurricular_hour_per_day,
+                    "physical_activity_hour_per_day": log.physical_activity_hour_per_day,
+                    "sleep_hour_per_day": log.sleep_hour_per_day,
+                    "study_hour_per_day": log.study_hour_per_day,
+                    "social_hour_per_day": log.social_hour_per_day,
                 }
             )
 
@@ -266,7 +266,7 @@ class GlobalForecastService:
         prediction_label = "HighRisk" if prediction_binary == 1 else "LowRisk"
 
         return {
-            "userID": user_id,
+            "user_id": user_id,
             "forecast_date": forecast_date.isoformat(),
             "probability": float(probability),
             "chance_percent": round(float(probability) * 100, 2),

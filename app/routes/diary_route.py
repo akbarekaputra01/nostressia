@@ -20,7 +20,7 @@ def create_diary(
     db: Session = Depends(get_db), 
     current_user: User = Depends(get_current_user)
 ):
-    return diary_service.create_diary(db, data, current_user.userID)
+    return diary_service.create_diary(db, data, current_user.user_id)
 
 # GET: Ambil List Diary Saya
 @router.get("/", response_model=List[DiaryResponse])
@@ -28,7 +28,7 @@ def get_my_diaries(
     db: Session = Depends(get_db), 
     current_user: User = Depends(get_current_user)
 ):
-    return diary_service.get_user_diaries(db, current_user.userID)
+    return diary_service.get_user_diaries(db, current_user.user_id)
 
 # GET: Detail Satu Diary
 @router.get("/{diary_id}", response_model=DiaryResponse)
@@ -37,7 +37,7 @@ def get_diary_detail(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    return diary_service.get_diary_by_id(db, diary_id, current_user.userID)
+    return diary_service.get_diary_by_id(db, diary_id, current_user.user_id)
 
 # PUT: Update Diary
 @router.put("/{diary_id}", response_model=DiaryResponse)
@@ -47,7 +47,7 @@ def update_diary(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    return diary_service.update_diary(db, diary_id, current_user.userID, data)
+    return diary_service.update_diary(db, diary_id, current_user.user_id, data)
 
 # # DELETE: Hapus Diary
 # @router.delete("/{diary_id}")

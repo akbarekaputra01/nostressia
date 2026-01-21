@@ -6,11 +6,11 @@ from app.models.user_model import User
 from app.services import stress_service
 from app.utils.jwt_handler import get_current_user
 
-router = APIRouter(prefix="/predict", tags=["Machine Learning"])
+router = APIRouter(prefix="/forecast", tags=["Forecast"])
 
 
-@router.get("/global-forecast")
-def predict_global_forecast(
+@router.get("/global")
+def get_global_forecast(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):

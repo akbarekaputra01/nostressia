@@ -1,16 +1,14 @@
-from sqlalchemy import Column, Integer, String, Float, Date, TIMESTAMP
-from sqlalchemy.sql import func
+from sqlalchemy import Boolean, Column, Date, DateTime, Float, Integer, String, TIMESTAMP
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
+
 from app.core.database import Base
-from sqlalchemy import Column, Integer, String, Boolean
-from sqlalchemy import Column, Integer, String, Boolean, Date, DateTime 
 class User(Base):
     __tablename__ = "users"
 
-    userID = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, primary_key=True, index=True)
     
-    # ✅ KONSISTEN: Pakai userName (N besar)
-    userName = Column(String(255), unique=True, nullable=False)
+    username = Column(String(255), unique=True, nullable=False)
     
     name = Column(String(255), nullable=False)
     email = Column(String(255), unique=True, nullable=False)
@@ -18,15 +16,15 @@ class User(Base):
     
     # Data Tambahan
     gender = Column(String(50))
-    userGPA = Column(Float)
+    user_gpa = Column(Float)
     
     # ✅ Atribut Streak & LastLogin
     streak = Column(Integer, default=0)
-    lastLogin = Column(Date, nullable=True) # Tambah ini (boleh NULL)
+    last_login = Column(Date, nullable=True)
     
-    userDOB = Column(Date)
+    user_dob = Column(Date)
     avatar = Column(String(255), nullable=True)
-    createdAt = Column(TIMESTAMP, server_default=func.now())
+    created_at = Column(TIMESTAMP, server_default=func.now())
 
     # Relasi
     diaries = relationship("Diary", back_populates="user")

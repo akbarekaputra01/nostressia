@@ -19,8 +19,8 @@ def get_motivations(db: Session = Depends(get_db)):
 def create_motivation(payload: MotivationCreate, db: Session = Depends(get_db)):
     new_motivation = Motivation(
         quote=payload.quote,
-        uploaderID=payload.uploaderID,
-        authorName=payload.authorName,
+        uploader_id=payload.uploader_id,
+        author_name=payload.author_name,
     )
     db.add(new_motivation)
     db.commit()
@@ -28,10 +28,10 @@ def create_motivation(payload: MotivationCreate, db: Session = Depends(get_db)):
     return new_motivation
 
 
-@router.delete("/motivations/{motivationID}")
-def delete_motivation(motivationID: int, db: Session = Depends(get_db)):
+@router.delete("/motivations/{motivation_id}")
+def delete_motivation(motivation_id: int, db: Session = Depends(get_db)):
     motivation = db.query(Motivation).filter(
-        Motivation.motivationID == motivationID
+        Motivation.motivation_id == motivation_id
     ).first()
 
     if not motivation:

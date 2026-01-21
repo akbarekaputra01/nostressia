@@ -20,21 +20,21 @@ def add_bookmark(
     current_user: User = Depends(get_current_user)
 ):
     # Cek apakah motivasi ada
-    motivation = db.query(Motivation).filter(Motivation.motivationID == motivation_id).first()
+    motivation = db.query(Motivation).filter(Motivation.motivation_id == motivation_id).first()
     if not motivation:
         raise HTTPException(status_code=404, detail="Motivation not found")
 
     # Cek apakah sudah pernah dibookmark user ini?
     existing_bookmark = db.query(Bookmark).filter(
-        Bookmark.userID == current_user.userID,
-        Bookmark.motivationID == motivation_id
+        Bookmark.user_id == current_user.user_id,
+        Bookmark.motivation_id == motivation_id
     ).first()
 
     if existing_bookmark:
         raise HTTPException(status_code=400, detail="Motivation already bookmarked")
 
     # Simpan Bookmark
-    new_bookmark = Bookmark(userID=current_user.userID, motivationID=motivation_id)
+    new_bookmark = Bookmark(user_id=current_user.user_id, motivation_id=motivation_id)
     db.add(new_bookmark)
     db.commit()
     
@@ -49,7 +49,7 @@ def get_my_bookmarks(
     # joinedload berfungsi menarik data motivation sekaligus (Eager Loading)
     bookmarks = db.query(Bookmark)\
         .options(joinedload(Bookmark.motivation))\
-        .filter(Bookmark.userID == current_user.userID)\
+        .filter(Bookmark.user_id == current_user.user_id)\
         .all()
         
     return bookmarks
@@ -62,8 +62,8 @@ def remove_bookmark(
     current_user: User = Depends(get_current_user)
 ):
     bookmark = db.query(Bookmark).filter(
-        Bookmark.userID == current_user.userID,
-        Bookmark.motivationID == motivation_id
+        Bookmark.user_id == current_user.user_id,
+        Bookmark.motivation_id == motivation_id
     ).first()
 
     if not bookmark:

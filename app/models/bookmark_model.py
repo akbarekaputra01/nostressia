@@ -1,15 +1,15 @@
-from sqlalchemy import Column, Integer, ForeignKey, TIMESTAMP
-from sqlalchemy.sql import func
+from sqlalchemy import Column, ForeignKey, Integer
 from sqlalchemy.orm import relationship
+
 from app.core.database import Base
 
 class Bookmark(Base):
     __tablename__ = "bookmarks"
 
-    bookmarkID = Column(Integer, primary_key=True, index=True)
+    bookmark_id = Column(Integer, primary_key=True, index=True)
     # userID & motivationID wajib ada sebagai Foreign Key
-    userID = Column(Integer, ForeignKey("users.userID"), nullable=False)
-    motivationID = Column(Integer, ForeignKey("motivations.motivationID"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.user_id"), nullable=False)
+    motivation_id = Column(Integer, ForeignKey("motivations.motivation_id"), nullable=False)
     
     # createdAt = Column(TIMESTAMP, server_default=func.now())
 

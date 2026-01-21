@@ -1,6 +1,6 @@
-from pydantic import BaseModel
+from app.schemas.base_schema import BaseSchema
 
-class PredictRequest(BaseModel):
+class PredictRequest(BaseSchema):
     study_hours: float
     extracurricular_hours: float
     sleep_hours: float
@@ -8,10 +8,6 @@ class PredictRequest(BaseModel):
     physical_hours: float
     gpa: float
 
-class PredictResponse(BaseModel):
+class PredictResponse(BaseSchema):
     result: str  # Isinya "Low", "Moderate", atau "High"
     message: str
-
-    class Config:
-        # Ini perbaikan untuk warning tadi (Pydantic V2)
-        from_attributes = True

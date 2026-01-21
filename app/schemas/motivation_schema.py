@@ -1,12 +1,12 @@
 from typing import Optional
 
-from pydantic import BaseModel
+from app.schemas.base_schema import BaseSchema
 
 
-class MotivationBase(BaseModel):
+class MotivationBase(BaseSchema):
     quote: str
-    uploaderID: Optional[int] = None
-    authorName: Optional[str] = None
+    uploader_id: Optional[int] = None
+    author_name: Optional[str] = None
 
 
 class MotivationCreate(MotivationBase):
@@ -14,7 +14,4 @@ class MotivationCreate(MotivationBase):
 
 
 class MotivationResponse(MotivationBase):
-    motivationID: int
-
-    class Config:
-        orm_mode = True
+    motivation_id: int
