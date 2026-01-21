@@ -25,26 +25,31 @@ const AdminRoute = () => {
   return isAuthenticated ? <Outlet /> : <Navigate to="/admin/login" replace />;
 };
 
+const ProtectedRoute = () => {
+  const token = localStorage.getItem("token");
+  return token ? <Outlet /> : <Navigate to="/login" replace />;
+};
+
 function AppRouter() {
   return (
     <BrowserRouter>
       <Routes>
         {/* --- 1. ROUTE PUBLIK (Tanpa Navbar User) --- */}
         {/* Route redirect lama dihapus agar "/" tidak melempar ke login */}
+        <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Login />} /> 
 
         {/* --- 2. ROUTE USER (DILINDUNGI MAINLAYOUT) --- */}
         {/* Semua halaman di dalam sini akan punya Navbar & Data User otomatis */}
-        <Route element={<MainLayout />}>
-            {/* Set Landing Page di path root "/" */}
-            <Route path="/" element={<LandingPage />} />
-            
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/tips" element={<Tips />} />
-            <Route path="/motivation" element={<Motivation />} />
-            <Route path="/diary" element={<Diary />} />
-            <Route path="/analytics" element={<Analytics />} />
-            <Route path="/profile" element={<Profile />} /> 
+        <Route element={<ProtectedRoute />}>
+          <Route element={<MainLayout />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/tips" element={<Tips />} />
+              <Route path="/motivation" element={<Motivation />} />
+              <Route path="/diary" element={<Diary />} />
+              <Route path="/analytics" element={<Analytics />} />
+              <Route path="/profile" element={<Profile />} /> 
+          </Route>
         </Route>
 
         {/* --- 3. ROUTE ADMIN (Terpisah) --- */}

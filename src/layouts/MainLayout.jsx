@@ -1,10 +1,11 @@
 // src/layouts/MainLayout.jsx
 import React, { useState, useEffect } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { BASE_URL } from "../api/config";
 
 export default function MainLayout() {
+  const navigate = useNavigate();
   // 1. Ambil data awal dari Cache. 
   // Jika ada data lengkap tersimpan (JSON), pakai itu. Jika tidak, pakai default.
   const [user, setUser] = useState(() => {
@@ -51,6 +52,11 @@ export default function MainLayout() {
 
       } catch (error) {
         console.error("Gagal update user data di layout:", error);
+        if ([401, 403].includes(error?.response?.status)) {
+          localStorage.removeItem("token");
+          localStorage.removeItem("cache_userData");
+          navigate("/login", { replace: true });
+        }
       }
     };
 
