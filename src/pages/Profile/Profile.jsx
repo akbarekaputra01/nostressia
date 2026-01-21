@@ -247,7 +247,7 @@ export default function Profile() {
         fullName: contextUser.name || contextUser.fullName || "",
         email: contextUser.email || "",
         avatar: contextUser.avatar || AVATAR_OPTIONS[0],
-        birthday: contextUser.userDOB || contextUser.birthday || "", 
+        birthday: contextUser.userDob || contextUser.birthday || "", 
         gender: contextUser.gender || "",
       });
     }
@@ -264,7 +264,12 @@ export default function Profile() {
     if (!token) return;
     try {
       const res = await axios.get(`${BASE_URL}/bookmarks/me`, { headers: { Authorization: `Bearer ${token}` } });
-      setBookmarks(res.data);
+      const normalizedBookmarks = (res.data || []).map((item) => ({
+        ...item,
+        bookmarkId: item.bookmarkId ?? item.id,
+        motivationId: item.motivationId
+      }));
+      setBookmarks(normalizedBookmarks);
     } catch (err) {
       console.error("Failed to load bookmarks", err);
       showNotification("Failed to load bookmarks", "error");
@@ -279,11 +284,11 @@ export default function Profile() {
     }
   }, [activeTab, fetchBookmarks]);
 
-  const handleUnsave = async (motivationID) => {
+  const handleUnsave = async (motivationId) => {
     const token = localStorage.getItem("token");
     try {
-        await axios.delete(`${BASE_URL}/bookmarks/${motivationID}`, { headers: { Authorization: `Bearer ${token}` } });
-        setBookmarks(prev => prev.filter(b => b.motivationID !== motivationID));
+        await axios.delete(`${BASE_URL}/bookmarks/${motivationId}`, { headers: { Authorization: `Bearer ${token}` } });
+        setBookmarks(prev => prev.filter(b => b.motivationId !== motivationId));
         showNotification("Bookmark removed", "info");
     } catch {
         showNotification("Failed to remove bookmark", "error");
@@ -303,7 +308,7 @@ export default function Profile() {
     },
     { 
       label: "Entries", 
-      value: `${contextUser?.diary_count || 0} Notes`, // Otomatis dari Backend
+      value: `${contextUser?.diaryCount ?? 0} Notes`, // Otomatis dari Backend
       icon: <BookOpen className="w-5 h-5 text-blue-500" />, 
       bg: "bg-blue-100" 
     },
@@ -385,8 +390,8 @@ export default function Profile() {
     try {
         const token = localStorage.getItem("token");
         await axios.put(`${BASE_URL}/user/change-password`, {
-            current_password: passwordForm.currentPassword,
-            new_password: passwordForm.newPassword
+            currentPassword: passwordForm.currentPassword,
+            newPassword: passwordForm.newPassword
         }, {
             headers: { Authorization: `Bearer ${token}` }
         });
@@ -652,10 +657,10 @@ export default function Profile() {
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
                            {bookmarks.map((bm) => (
-                             <div key={bm.bookmarkID} className="bg-white/70 backdrop-blur-sm p-6 rounded-[24px] border border-white/50 shadow-sm hover:shadow-md transition-all relative group">
+                             <div key={bm.bookmarkId} className="bg-white/70 backdrop-blur-sm p-6 rounded-[24px] border border-white/50 shadow-sm hover:shadow-md transition-all relative group">
                                 <div className="flex justify-between items-start mb-3">
                                    <span className="bg-blue-100 text-blue-600 text-[10px] font-bold px-2 py-1 rounded-lg uppercase tracking-wider">Motivation</span>
-                                   <button onClick={() => handleUnsave(bm.motivationID)} className="text-orange-500 hover:scale-110 transition-transform cursor-pointer bg-white rounded-full p-1 shadow-sm" title="Remove Bookmark">
+                                   <button onClick={() => handleUnsave(bm.motivationId)} className="text-orange-500 hover:scale-110 transition-transform cursor-pointer bg-white rounded-full p-1 shadow-sm" title="Remove Bookmark">
                                       <Bookmark className="w-4 h-4 fill-current" />
                                    </button>
                                 </div>

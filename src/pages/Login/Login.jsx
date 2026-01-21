@@ -150,7 +150,7 @@ export default function Login() {
     
     setIsLoading(true);
     try {
-        await axios.post(`${BASE_URL}/user/verify-otp`, { email: formData.email, otp_code: otp });
+        await axios.post(`${BASE_URL}/user/verify-otp`, { email: formData.email, otpCode: otp });
         
         setIsSuccess(true); 
         setCountdown(0);
@@ -228,7 +228,7 @@ export default function Login() {
           // Jika OTP salah (status 400), axios akan otomatis THROW error ke block catch
           const response = await axios.post(`${BASE_URL}/user/verify-otp`, { 
               email: forgotEmail, 
-              otp_code: code 
+              otpCode: code 
           });
 
           // 2. VALIDASI GANDA (Double Check)
@@ -266,7 +266,7 @@ export default function Login() {
     setLoadingForgot(true);
     try {
         await axios.post(`${BASE_URL}/user/reset-password-confirm`, {
-            email: forgotEmail, otp_code: code, new_password: newPassword
+            email: forgotEmail, otpCode: code, newPassword
         });
         
         alert("Password berhasil diubah! Silakan login.");

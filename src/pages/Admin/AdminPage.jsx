@@ -72,11 +72,11 @@ export default function AdminPage({ skipAuth = false }) {
       .then(res => res.ok ? res.json() : Promise.reject("Failed"))
       .then(data => {
         const formatted = data.map(item => ({
-          id: item.motivationID,
+          id: item.motivationId,
           text: item.quote,
           author: item.authorName || "Unknown",
           uploaderName: "Admin",
-          uploaderId: "ADM" + String(item.uploaderID || 0).padStart(3, "0"),
+          uploaderId: "ADM" + String(item.uploaderId || 0).padStart(3, "0"),
         }));
         setQuotes(formatted);
       })
@@ -92,8 +92,8 @@ export default function AdminPage({ skipAuth = false }) {
                 const data = await resUser.json(); 
                 
                 // HITUNG MANUAL: Hanya user yang verified
-                const validUsersCount = data.data.filter(u => 
-                    u.is_verified === true || u.is_verified === 1 || u.is_verified == "1"
+                const validUsersCount = data.data.filter(u =>
+                    u.isVerified === true || u.isVerified === 1 || u.isVerified == "1"
                 ).length;
 
                 setTotalUserCount(validUsersCount); 
@@ -112,12 +112,12 @@ export default function AdminPage({ skipAuth = false }) {
 
   const handleAddQuote = async (e) => {
     e.preventDefault();
-    const payload = { quote: quoteForm.text, authorName: quoteForm.author, uploaderID: currentUser.id };
+    const payload = { quote: quoteForm.text, authorName: quoteForm.author, uploaderId: currentUser.id };
     try {
       const res = await fetch(`${BASE_URL}/motivations`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       if(res.ok) {
         const data = await res.json();
-        setQuotes([{ id: data.motivationID, text: data.quote, author: data.authorName, uploaderName: currentUser.name, uploaderId: "ADM" + String(currentUser.id).padStart(3, "0") }, ...quotes]);
+        setQuotes([{ id: data.motivationId, text: data.quote, author: data.authorName, uploaderName: currentUser.name, uploaderId: "ADM" + String(currentUser.id).padStart(3, "0") }, ...quotes]);
         setQuoteForm({ text: "", author: "" });
       }
     } catch { alert("Failed to save."); }
@@ -152,7 +152,7 @@ export default function AdminPage({ skipAuth = false }) {
         const res = await fetch(`${BASE_URL}/tips/categories`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-        const mapped = data.map(item => ({ id: item.tipCategoryID, name: item.categoryName || `Category ${item.tipCategoryID}`, icon: item.icon || iconForCategoryId(item.tipCategoryID) }));
+        const mapped = data.map(item => ({ id: item.tipCategoryId, name: item.categoryName || `Category ${item.tipCategoryId}`, icon: item.icon || iconForCategoryId(item.tipCategoryId) }));
         setTipCategories(mapped);
         const counts = {};
         for (const cat of mapped) {
@@ -175,7 +175,7 @@ export default function AdminPage({ skipAuth = false }) {
       try {
         const res = await fetch(`${BASE_URL}/tips/by-category/${catId}`);
         const data = await res.json();
-        const mappedTips = (data || []).map(item => ({ id: item.tipID || item.id, tip_text: item.detail || item.tipText, uploader_id: item.uploaderID }));
+        const mappedTips = (data || []).map(item => ({ id: item.tipId ?? item.id, tip_text: item.detail || item.tipText, uploader_id: item.uploaderId }));
         setTipsByCategory(prev => ({ ...prev, [catId]: mappedTips }));
       } catch { setTipsByCategory(prev => ({ ...prev, [catId]: [] })); } finally { setLoadingTips(false); }
     }
@@ -183,12 +183,12 @@ export default function AdminPage({ skipAuth = false }) {
 
   const handleAddTipToCategory = async (catId) => {
     if (!currentTipInput.trim()) return;
-    const payload = { detail: currentTipInput, tipCategoryID: catId, uploaderID: currentUser.id };
+    const payload = { detail: currentTipInput, tipCategoryId: catId, uploaderId: currentUser.id };
     try {
       const res = await fetch(`${BASE_URL}/tips/`, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload) });
       if (!res.ok) throw new Error();
       const rawNewTip = await res.json();
-      const newTip = { id: rawNewTip.tipID, tip_text: rawNewTip.detail || currentTipInput, uploader_id: currentUser.id };
+      const newTip = { id: rawNewTip.tipId, tip_text: rawNewTip.detail || currentTipInput, uploader_id: currentUser.id };
       setTipsByCategory(prev => ({ ...prev, [catId]: [...(prev[catId] || []), newTip] }));
       setTipCountByCategory(prev => ({ ...prev, [catId]: (prev[catId] || 0) + 1 }));
       setCurrentTipInput("");
@@ -222,20 +222,28 @@ export default function AdminPage({ skipAuth = false }) {
       
       const data = await res.json();
 
-      // 🔍 DEBUG: Cek di Console browser (F12) apakah ada field 'is_verified'
-      console.log("Contoh Data User dari Backend:", data.data[0]); 
+      const normalizedUsers = (data.data || []).map((user) => ({
+        ...user,
+        userId: user.userId ?? user.id,
+        userName: user.userName ?? user.username,
+        userDob: user.userDob,
+        isVerified: user.isVerified
+      }));
+
+      // 🔍 DEBUG: Cek di Console browser (F12) apakah ada field 'isVerified'
+      console.log("Contoh Data User dari Backend:", normalizedUsers[0]); 
 
       // ✅ PERBAIKAN FILTER: Menangani Boolean, Angka (1), dan String ("1")
-      const validUsers = data.data.filter(user => {
+      const validUsers = normalizedUsers.filter(user => {
           // Kita anggap valid jika: true, angka 1, atau string "1"
-          return user.is_verified === true || user.is_verified === 1 || user.is_verified == "1";
+          return user.isVerified === true || user.isVerified === 1 || user.isVerified == "1";
       });
       
       // Jika setelah filter hasilnya kosong tapi data aslinya ada, 
-      // berarti backend TIDAK mengirim field 'is_verified'.
-      if (validUsers.length === 0 && data.data.length > 0) {
-          console.warn("⚠️ PERINGATAN: Sepertinya Backend tidak mengirim data 'is_verified'. Filter gagal.");
-          setUsers(data.data); // Terpaksa tampilkan semua daripada kosong
+      // berarti backend TIDAK mengirim field 'isVerified'.
+      if (validUsers.length === 0 && normalizedUsers.length > 0) {
+          console.warn("⚠️ PERINGATAN: Sepertinya Backend tidak mengirim data 'isVerified'. Filter gagal.");
+          setUsers(normalizedUsers); // Terpaksa tampilkan semua daripada kosong
       } else {
           setUsers(validUsers);
       }
@@ -265,17 +273,17 @@ export default function AdminPage({ skipAuth = false }) {
   const handleSaveUser = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch(`${BASE_URL}/admin/users/${editingUser.userID}`, {
+      const res = await fetch(`${BASE_URL}/admin/users/${editingUser.userId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-        body: JSON.stringify({ name: editingUser.name, userName: editingUser.userName, email: editingUser.email, gender: editingUser.gender, userDOB: editingUser.userDOB })
+        body: JSON.stringify({ name: editingUser.name, userName: editingUser.userName, email: editingUser.email, gender: editingUser.gender, userDob: editingUser.userDob })
       });
       if (!res.ok) throw new Error("Failed to update user profile");
       if (newPassword.trim() !== "") {
-        await fetch(`${BASE_URL}/admin/users/${editingUser.userID}/reset-password`, {
+        await fetch(`${BASE_URL}/admin/users/${editingUser.userId}/reset-password`, {
             method: "PUT",
             headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-            body: JSON.stringify({ new_password: newPassword })
+            body: JSON.stringify({ newPassword })
         });
       }
       alert("User updated!");
@@ -296,7 +304,13 @@ export default function AdminPage({ skipAuth = false }) {
       const res = await fetch(`${BASE_URL}/admin/diaries/?${params.toString()}`, { headers: { "Authorization": `Bearer ${token}` } });
       if (!res.ok) throw new Error("Gagal mengambil data diary");
       const data = await res.json();
-      setDiaries(data.data);
+      const normalizedDiaries = (data.data || []).map((diary) => ({
+        ...diary,
+        diaryId: diary.diaryId ?? diary.id,
+        createdAt: diary.createdAt,
+        userName: diary.userName
+      }));
+      setDiaries(normalizedDiaries);
       setTotalPages(Math.ceil(data.total / 10));
     } catch (error) { console.error(error); } finally { setLoadingDiaries(false); }
   };
@@ -378,13 +392,13 @@ export default function AdminPage({ skipAuth = false }) {
           <tbody className="divide-y divide-gray-200">
             {loadingUsers ? (<tr><td colSpan="4" className="text-center py-8 text-gray-500">Loading...</td></tr>) : users.length === 0 ? (<tr><td colSpan="4" className="text-center py-8 text-gray-500">No users found.</td></tr>) : (
               users.map((user) => (
-                <tr key={user.userID} className="hover:bg-gray-50 transition-colors">
+                <tr key={user.userId} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap"><div className="text-sm font-bold text-gray-900">{user.name}</div><div className="text-sm text-gray-500">{user.email}</div><div className="text-xs text-purple-600 font-mono">@{user.userName}</div></td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><div>{user.gender || "-"}</div><div className="text-xs text-gray-400">{user.userDOB || "No DOB"}</div></td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><div>{user.gender || "-"}</div><div className="text-xs text-gray-400">{user.userDob || "No DOB"}</div></td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">🔥 {user.streak || 0} Streak</td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button onClick={() => { setEditingUser({...user, userDOB: user.userDOB ? user.userDOB.split("T")[0] : ""}); setIsEditUserModalOpen(true); setNewPassword(""); }} className="text-indigo-600 hover:text-indigo-900 mr-4 font-bold cursor-pointer">Edit</button>
-                    <button onClick={() => handleDeleteUser(user.userID)} className="text-red-600 hover:text-red-900 font-bold cursor-pointer">Delete</button>
+                    <button onClick={() => { setEditingUser({...user, userDob: user.userDob ? user.userDob.split("T")[0] : ""}); setIsEditUserModalOpen(true); setNewPassword(""); }} className="text-indigo-600 hover:text-indigo-900 mr-4 font-bold cursor-pointer">Edit</button>
+                    <button onClick={() => handleDeleteUser(user.userId)} className="text-red-600 hover:text-red-900 font-bold cursor-pointer">Delete</button>
                   </td>
                 </tr>
             )))}
@@ -425,14 +439,14 @@ export default function AdminPage({ skipAuth = false }) {
           <tbody className="divide-y divide-gray-200">
             {loadingDiaries ? (<tr><td colSpan="5" className="text-center py-8 text-gray-500">Loading diaries...</td></tr>) : diaries.length === 0 ? (<tr><td colSpan="5" className="text-center py-8 text-gray-500">No diaries found.</td></tr>) : (
                 diaries.map((diary) => (
-                <tr key={diary.diaryID} className="hover:bg-gray-50 transition-colors">
+                <tr key={diary.diaryId} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap"><div className="text-sm font-bold text-gray-900">{diary.userName}</div><div className="text-xs text-gray-500"></div></td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(diary.createdAt).toLocaleDateString()}</td>
                   <td className="px-6 py-4 text-sm text-gray-800 font-medium">{diary.title || "-"}</td>
                   <td className="px-6 py-4 text-sm text-gray-600">{diary.content.length > 60 ? diary.content.substring(0, 60) + "..." : diary.content}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     {/* ✅ PERBAIKAN: Ganti semua 'rose' menjadi 'red' */}
-                    <button onClick={() => handleDeleteDiary(diary.diaryID)} className="text-red-600 hover:text-red-900 font-bold bg-red-50 px-3 py-1 rounded-lg border border-red-100 cursor-pointer">Delete</button>
+                    <button onClick={() => handleDeleteDiary(diary.diaryId)} className="text-red-600 hover:text-red-900 font-bold bg-red-50 px-3 py-1 rounded-lg border border-red-100 cursor-pointer">Delete</button>
                   </td>
                 </tr>
             )))}
@@ -606,7 +620,7 @@ export default function AdminPage({ skipAuth = false }) {
                 <div><label className="block text-sm font-bold text-gray-700 mb-1">Username</label><input type="text" className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none cursor-text" value={editingUser.userName} onChange={e => setEditingUser({...editingUser, userName: e.target.value})} /></div>
                 <div className="grid grid-cols-2 gap-4">
                     <div><label className="block text-sm font-bold text-gray-700 mb-1">Gender</label><select className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-purple-500 cursor-pointer" value={editingUser.gender || ""} onChange={e => setEditingUser({...editingUser, gender: e.target.value})}><option value="">Select</option><option value="Male">Male</option><option value="Female">Female</option></select></div>
-                    <div><label className="block text-sm font-bold text-gray-700 mb-1">Date of Birth</label><input type="date" className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-purple-500 cursor-pointer" value={editingUser.userDOB || ""} onChange={e => setEditingUser({...editingUser, userDOB: e.target.value})} /></div>
+                    <div><label className="block text-sm font-bold text-gray-700 mb-1">Date of Birth</label><input type="date" className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-purple-500 cursor-pointer" value={editingUser.userDob || ""} onChange={e => setEditingUser({...editingUser, userDob: e.target.value})} /></div>
                 </div>
                 <div className="mt-4 pt-4 border-t border-gray-100"><label className="block text-sm font-bold text-gray-700 mb-1">Reset Password <span className="text-xs font-normal text-gray-400">(Optional)</span></label><input type="text" placeholder="Enter new password to reset..." className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-red-500 outline-none text-red-600 placeholder-gray-400 cursor-text" value={newPassword} onChange={e => setNewPassword(e.target.value)} /><p className="text-xs text-gray-400 mt-1">Leave blank if you don't want to change the password.</p></div>
                 <div className="flex justify-end gap-3 mt-8"><button type="button" onClick={() => setIsEditUserModalOpen(false)} className="px-5 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg font-bold transition-colors cursor-pointer">Cancel</button><button type="submit" className="px-5 py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-bold shadow-md shadow-purple-200 transition-all cursor-pointer">Save Changes</button></div>

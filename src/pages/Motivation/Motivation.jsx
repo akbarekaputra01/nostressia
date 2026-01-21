@@ -108,7 +108,7 @@ export default function Motivation() {
   // MODIFIKASI: Hero Quote harus punya ID null agar konsisten
   const [heroQuote, setHeroQuote] = useState(() => {
     const i = Math.floor(Math.random() * heroQuoteList.length);
-    return { text: heroQuoteList[i].text, motivationID: null };
+    return { text: heroQuoteList[i].text, motivationId: null };
   });
 
   const [shareOpen, setShareOpen] = useState(false);
@@ -132,7 +132,7 @@ export default function Motivation() {
                 headers: { Authorization: `Bearer ${token}` }
             });
             // Simpan ID yang sudah di-bookmark
-            const ids = res.data.map(item => item.motivationID);
+            const ids = res.data.map(item => item.motivationId);
             setLikedIndex(ids);
         } catch (e) {
             console.error("Bookmark sync error:", e);
@@ -191,7 +191,7 @@ export default function Motivation() {
         if (!mounted) return;
 
         const normalized = data.map((d) => ({
-          motivationID: d.motivationID ?? d.id ?? d.motivation_id ?? null,
+          motivationId: d.motivationId ?? d.id ?? null,
           quote: d.quote ?? d.quotes ?? d.text ?? "",
           authorName: d.authorName ?? "Anonymous",
         }));
@@ -201,7 +201,7 @@ export default function Motivation() {
         if (normalized.length > 0) {
           setHeroQuote({
             text: normalized[0].quote,
-            motivationID: normalized[0].motivationID,
+            motivationId: normalized[0].motivationId,
             authorName: normalized[0].authorName,
           });
         }
@@ -220,21 +220,21 @@ export default function Motivation() {
 
   const fallbackMotivationalQuotes = [
     {
-      motivationID: "f-1",
+      motivationId: "f-1",
       quote: "Success starts with small consistent steps every day.",
       category: "Productivity",
       icon: <TrendingUp className="w-4 h-4" />,
       authorName: "Anonymous",
     },
     {
-      motivationID: "f-2",
+      motivationId: "f-2",
       quote: "Don't fear failure — fear never trying.",
       category: "Courage",
       icon: <Star className="w-4 h-4" />,
       authorName: "Anonymous",
     },
     {
-      motivationID: "f-3",
+      motivationId: "f-3",
       quote: "Every expert was once a beginner. Keep learning.",
       category: "Learning",
       icon: <Sparkles className="w-4 h-4" />,
@@ -292,12 +292,12 @@ export default function Motivation() {
       const m = motivations[randomIndex];
       return {
         text: m.quote,
-        motivationID: m.motivationID,
+        motivationId: m.motivationId,
         authorName: m.authorName,
       };
     } else {
       const randomIndex = Math.floor(Math.random() * heroQuoteList.length);
-      return { text: heroQuoteList[randomIndex].text, motivationID: null };
+      return { text: heroQuoteList[randomIndex].text, motivationId: null };
     }
   };
 
@@ -510,19 +510,19 @@ export default function Motivation() {
               
               {/* MODIFIKASI: Passing ID yang benar ke toggleLike */}
               <button
-                onClick={() => toggleLike(heroQuote.motivationID)}
+                onClick={() => toggleLike(heroQuote.motivationId)}
                 className="px-4 py-2 rounded-lg bg-white border font-medium flex items-center gap-2 shadow hover:scale-105 transition cursor-pointer"
                 aria-label="bookmark-hero"
               >
                 <Bookmark
                   className={`w-4 h-4 ${
-                    likedIndex.includes(heroQuote.motivationID)
+                    likedIndex.includes(heroQuote.motivationId)
                       ? "fill-orange-500 text-orange-600"
                       : "text-gray-500"
                   }`}
                 />
                 <span className="hidden sm:inline">
-                  {likedIndex.includes(heroQuote.motivationID) ? "Saved" : "Save"}
+                  {likedIndex.includes(heroQuote.motivationId) ? "Saved" : "Save"}
                 </span>
               </button>
 
@@ -555,7 +555,7 @@ export default function Motivation() {
         {/* Cards grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {currentItems.map((quoteObj, idx) => {
-            const id = quoteObj.motivationID ?? `fallback-${idx}`;
+            const id = quoteObj.motivationId ?? `fallback-${idx}`;
             return (
               <div
                 key={id}
