@@ -226,7 +226,6 @@ export default function Profile() {
   const { user: contextUser } = useOutletContext() || { user: {} };
 
   const getDisplayUsername = (u) => {
-    if (u?.userName) return u.userName;
     if (u?.username && u.username !== "user") return u.username;
     if (u?.email) return u.email.split('@')[0];
     return ""; 
@@ -243,7 +242,7 @@ export default function Profile() {
   useEffect(() => {
     if (contextUser) {
       setFormData({
-        username: contextUser.userName || getDisplayUsername(contextUser),
+        username: contextUser.username || getDisplayUsername(contextUser),
         fullName: contextUser.name || contextUser.fullName || "",
         email: contextUser.email || "",
         avatar: contextUser.avatar || AVATAR_OPTIONS[0],
@@ -329,7 +328,7 @@ export default function Profile() {
       if (!token) { showNotification("You are logged out", "error"); return; }
       
       const payload = {
-        userName: formData.username, 
+        username: formData.username, 
         name: formData.fullName, 
         email: formData.email,
         avatar: formData.avatar

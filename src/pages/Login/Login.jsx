@@ -131,7 +131,7 @@ export default function Login() {
     setIsLoading(true);
     try {
         await axios.post(`${BASE_URL}/user/register`, {
-            name: formData.name, userName: formData.username, email: formData.email, password: formData.password, gender: formData.gender, dob: formData.dob, avatar: formData.avatar
+            name: formData.name, username: formData.username, email: formData.email, password: formData.password, gender: formData.gender, dob: formData.dob, avatar: formData.avatar
         });
         
         setOtp(""); 
