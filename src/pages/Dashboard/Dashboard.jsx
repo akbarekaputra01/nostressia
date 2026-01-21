@@ -370,7 +370,7 @@ export default function Dashboard() {
           return;
         }
 
-        const response = await fetch(`${BASE_URL}/stress/my-logs`, {
+        const response = await fetch(`${BASE_URL}/stress-levels/my-logs`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -412,7 +412,7 @@ export default function Dashboard() {
             color,
             isToday: dateKey === TODAY_KEY,
             isEmpty: false,
-            logId: log?.id ?? log?._id ?? null,
+            logId: log?.stressLevelId ?? log?.id ?? log?._id ?? null,
           };
         });
 
@@ -567,7 +567,7 @@ export default function Dashboard() {
     const logPayload = {
       date: TODAY_KEY,
       stressLevel: status,
-      GPA: Number(gpa),
+      gpa: Number(gpa),
       extracurricularHourPerDay: Number(extraHours),
       physicalActivityHourPerDay: Number(physicalHours),
       sleepHourPerDay: Number(sleepHours),
@@ -586,18 +586,18 @@ export default function Dashboard() {
 
     let logResponse = null;
     if (todayLogId) {
-      logResponse = await fetch(`${BASE_URL}/stress/${todayLogId}`, {
+      logResponse = await fetch(`${BASE_URL}/stress-levels/${todayLogId}`, {
         method: "PUT",
         ...requestConfig,
       });
       if (!logResponse.ok && (logResponse.status === 404 || logResponse.status === 405)) {
-        logResponse = await fetch(`${BASE_URL}/stress/`, {
+        logResponse = await fetch(`${BASE_URL}/stress-levels/`, {
           method: "POST",
           ...requestConfig,
         });
       }
     } else {
-      logResponse = await fetch(`${BASE_URL}/stress/`, {
+      logResponse = await fetch(`${BASE_URL}/stress-levels/`, {
         method: "POST",
         ...requestConfig,
       });
@@ -610,7 +610,7 @@ export default function Dashboard() {
     }
 
     const logData = await logResponse.json().catch(() => null);
-    return logData?.id ?? logData?._id ?? null;
+    return logData?.stressLevelId ?? logData?.id ?? logData?._id ?? null;
   }
 
   async function handleSaveForm(e) {
@@ -626,9 +626,12 @@ export default function Dashboard() {
 
     try {
       const payload = {
-        study_hours: Number(studyHours), extracurricular_hours: Number(extraHours),
-        sleep_hours: Number(sleepHours), social_hours: Number(socialHours),
-        physical_hours: Number(physicalHours), gpa: Number(gpa),
+        studyHours: Number(studyHours),
+        extracurricularHours: Number(extraHours),
+        sleepHours: Number(sleepHours),
+        socialHours: Number(socialHours),
+        physicalHours: Number(physicalHours),
+        gpa: Number(gpa),
       };
 
       const response = await fetch(`${BASE_URL}/predict/current-stress`, {
