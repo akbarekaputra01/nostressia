@@ -596,7 +596,6 @@ export default function Login() {
         )}
       </AnimatePresence>
 
-      <a href="/dashboard" className="fixed bottom-4 right-4 z-[9999] bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-full text-xs font-bold shadow-2xl transition-all opacity-60 hover:opacity-100 hover:scale-105 no-underline flex items-center gap-2 cursor-pointer" title="Klik untuk langsung masuk ke Dashboard (Mode Developer)"><span>🔓</span> Skip Login</a>
       <style>{`
         @keyframes pulse-slow { 0%, 100% { opacity: 0.4; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.1); } }
         .animate-pulse-slow { animation: pulse-slow 8s ease-in-out infinite; }
