@@ -20,7 +20,7 @@ class AdminDiaryResponse(BaseSchema):
     content: str
     created_at: datetime
     user_id: int
-    user_name: str 
+    username: str 
 
 # 1. GET ALL DIARIES (With Search & Pagination)
 @router.get("/", response_model=dict)
@@ -60,7 +60,7 @@ def get_all_diaries(
             "content": d.note, # Note dari DB dikirim sebagai 'content' ke Frontend
             "createdAt": d.created_at,
             "userId": d.user.user_id,
-            "userName": d.user.name
+            "username": d.user.username
         })
 
     return {

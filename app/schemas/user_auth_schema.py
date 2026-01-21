@@ -9,7 +9,7 @@ from app.schemas.base_schema import BaseSchema
 
 class UserRegister(BaseSchema):
     name: str
-    username: str
+    username: str = Field(validation_alias=AliasChoices("username", "user_name", "userName"))
     email: EmailStr
     password: str
     gender: str
@@ -45,7 +45,7 @@ class UserResponse(BaseSchema):
 
 class UserUpdate(BaseSchema):
     name: Optional[str] = None
-    username: Optional[str] = None
+    username: Optional[str] = Field(default=None, validation_alias=AliasChoices("username", "user_name", "userName"))
     email: Optional[EmailStr] = None
     avatar: Optional[str] = None
     gender: Optional[str] = None
@@ -56,7 +56,7 @@ class ChangePasswordSchema(BaseSchema):
 
 class AdminUserUpdate(BaseSchema):
     name: Optional[str] = None
-    username: Optional[str] = None
+    username: Optional[str] = Field(default=None, validation_alias=AliasChoices("username", "user_name", "userName"))
     email: Optional[EmailStr] = None
     gender: Optional[str] = None
     user_dob: Optional[date] = None
