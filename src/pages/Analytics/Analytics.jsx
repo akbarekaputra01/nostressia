@@ -12,6 +12,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { BASE_URL } from "../../api/config";
 
 // --- BACKGROUND CONFIGURATION (SAME AS DASHBOARD) ---
 const bgCream = "#FFF3E0";
@@ -261,14 +262,13 @@ export default function Analytics() {
         setLoading(true);
         setErrorMsg("");
 
-        const API_BASE = "https://akbarekaputra01-nostressia-backend.hf.space";
         const token =
           localStorage.getItem("token") ||
           localStorage.getItem("access_token") ||
           localStorage.getItem("accessToken") ||
           localStorage.getItem("jwt");
 
-        const res = await fetch(`${API_BASE}/api/stress/my-logs`, {
+        const res = await fetch(`${BASE_URL}/stress-levels/my-logs`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -402,7 +402,8 @@ export default function Analytics() {
                 className="text-xs md:text-sm mt-1"
                 style={{ color: "var(--text-secondary)" }}
               >
-                Endpoint: <span className="font-mono">/api/stress/my-logs</span>
+                Endpoint:{" "}
+                <span className="font-mono">/api/stress-levels/my-logs</span>
               </p>
             </div>
           )}
