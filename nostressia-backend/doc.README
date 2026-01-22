@@ -52,9 +52,6 @@ Jika terjadi error, API akan mengembalikan JSON seperti berikut:
 
 ## 3) Autentikasi User
 
-> **Catatan:** Endpoint `/api/user/*` masih tersedia untuk kompatibilitas lama, namun **deprecated**.
-> Gunakan `/api/auth/*` sebagai jalur utama.
-
 ### 3.1 Register User
 **POST** `/api/auth/register`
 
@@ -356,35 +353,6 @@ Response:
   "message": "Your stress level is detected as: Low"
 }
 ```
-
-### 7.2 Predict Global Forecast (Butuh Token)
-**GET** `/api/predict/global-forecast` _(deprecated, gunakan `/api/forecast/global`)_
-
-Headers:
-```
-Authorization: Bearer <jwt_token>
-```
-
-Response (jika eligible):
-```json
-{
-  "message": "Global forecast not integrated yet.",
-  "eligibility": {
-    "userId": 1,
-    "eligible": true,
-    "streak": 7,
-    "requiredStreak": 7,
-    "restoreUsed": 0,
-    "restoreLimit": 3,
-    "missing": 0,
-    "note": "OK"
-  }
-}
-```
-
-Jika belum memenuhi syarat, server mengembalikan **403** dengan payload `eligibility` di field `detail`.
-
----
 
 ## 8) Stress Levels (Butuh Token)
 
