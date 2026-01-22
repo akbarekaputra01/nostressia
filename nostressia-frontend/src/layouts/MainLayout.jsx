@@ -35,7 +35,7 @@ export default function MainLayout() {
         const token = readAuthToken();
         if (!token) return;
 
-        const response = await axios.get(`${BASE_URL}/user/me`, {
+        const response = await axios.get(`${BASE_URL}/auth/me`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 

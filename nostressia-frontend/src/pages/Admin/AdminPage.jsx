@@ -38,7 +38,6 @@ export default function AdminPage({ skipAuth = false }) {
   // Modal State
   const [isEditUserModalOpen, setIsEditUserModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
-  const [newPassword, setNewPassword] = useState(""); 
 
   // AUTH CHECK
   useEffect(() => {
@@ -279,16 +278,8 @@ export default function AdminPage({ skipAuth = false }) {
         body: JSON.stringify({ name: editingUser.name, username: editingUser.username, email: editingUser.email, gender: editingUser.gender, userDob: editingUser.userDob })
       });
       if (!res.ok) throw new Error("Failed to update user profile");
-      if (newPassword.trim() !== "") {
-        await fetch(`${BASE_URL}/admin/users/${editingUser.userId}/reset-password`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-            body: JSON.stringify({ newPassword })
-        });
-      }
       alert("User updated!");
       setIsEditUserModalOpen(false);
-      setNewPassword("");
       fetchUsers();
     } catch (error) { alert(error.message); }
   };
@@ -348,7 +339,7 @@ export default function AdminPage({ skipAuth = false }) {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 animate-fade-in">
         {[{title: "Daily Motivation", count: quotes.length, desc: "Manage quotes & authors.", color: "orange", icon: <Sparkles size={24}/>, action: () => setActiveModal('motivation'), btn: "Manage"},
           {title: "Health Tips", count: tipCategories.length, desc: "Manage tip categories.", color: "blue", icon: <Lightbulb size={24}/>, action: () => setActiveModal('tips'), btn: "Manage"},
-          {title: "User Management", count: totalUserCount, desc: "Fix data & Reset Password.", color: "purple", icon: <Users size={24}/>, action: () => setActiveView('users'), btn: "Manage"},
+          {title: "User Management", count: totalUserCount, desc: "Fix data & manage profiles.", color: "purple", icon: <Users size={24}/>, action: () => setActiveView('users'), btn: "Manage"},
           // ✅ PERBAIKAN: Ganti "rose" menjadi "red" di sini
           {title: "Diary Moderation", count: totalDiariesCount, desc: "Delete user diaries.", color: "red", icon: <BookOpen size={24}/>, action: () => setActiveView('diaries'), btn: "Moderate"}
         ].map((card, idx) => (
@@ -397,7 +388,7 @@ export default function AdminPage({ skipAuth = false }) {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><div>{user.gender || "-"}</div><div className="text-xs text-gray-400">{user.userDob || "No DOB"}</div></td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">🔥 {user.streak || 0} Streak</td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button onClick={() => { setEditingUser({...user, userDob: user.userDob ? user.userDob.split("T")[0] : ""}); setIsEditUserModalOpen(true); setNewPassword(""); }} className="text-indigo-600 hover:text-indigo-900 mr-4 font-bold cursor-pointer">Edit</button>
+                    <button onClick={() => { setEditingUser({...user, userDob: user.userDob ? user.userDob.split("T")[0] : ""}); setIsEditUserModalOpen(true); }} className="text-indigo-600 hover:text-indigo-900 mr-4 font-bold cursor-pointer">Edit</button>
                     <button onClick={() => handleDeleteUser(user.userId)} className="text-red-600 hover:text-red-900 font-bold cursor-pointer">Delete</button>
                   </td>
                 </tr>
@@ -622,7 +613,13 @@ export default function AdminPage({ skipAuth = false }) {
                     <div><label className="block text-sm font-bold text-gray-700 mb-1">Gender</label><select className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-purple-500 cursor-pointer" value={editingUser.gender || ""} onChange={e => setEditingUser({...editingUser, gender: e.target.value})}><option value="">Select</option><option value="Male">Male</option><option value="Female">Female</option></select></div>
                     <div><label className="block text-sm font-bold text-gray-700 mb-1">Date of Birth</label><input type="date" className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-purple-500 cursor-pointer" value={editingUser.userDob || ""} onChange={e => setEditingUser({...editingUser, userDob: e.target.value})} /></div>
                 </div>
-                <div className="mt-4 pt-4 border-t border-gray-100"><label className="block text-sm font-bold text-gray-700 mb-1">Reset Password <span className="text-xs font-normal text-gray-400">(Optional)</span></label><input type="text" placeholder="Enter new password to reset..." className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-red-500 outline-none text-red-600 placeholder-gray-400 cursor-text" value={newPassword} onChange={e => setNewPassword(e.target.value)} /><p className="text-xs text-gray-400 mt-1">Leave blank if you don't want to change the password.</p></div>
+                <div className="mt-4 pt-4 border-t border-gray-100">
+                  <label className="block text-sm font-bold text-gray-700 mb-1">Reset Password <span className="text-xs font-normal text-gray-400">(Unavailable)</span></label>
+                  <div className="w-full border border-gray-200 p-3 rounded-lg bg-gray-100 text-gray-400">
+                    Reset password belum tersedia di backend.
+                  </div>
+                  <p className="text-xs text-gray-400 mt-1">Fitur ini akan aktif setelah endpoint reset password tersedia.</p>
+                </div>
                 <div className="flex justify-end gap-3 mt-8"><button type="button" onClick={() => setIsEditUserModalOpen(false)} className="px-5 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg font-bold transition-colors cursor-pointer">Cancel</button><button type="submit" className="px-5 py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-bold shadow-md shadow-purple-200 transition-all cursor-pointer">Save Changes</button></div>
             </form>
           </div>
