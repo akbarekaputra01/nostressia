@@ -345,7 +345,7 @@ export default function Profile() {
         avatar: formData.avatar
       };
 
-      await axios.put(`${BASE_URL}/user/me`, payload, { headers: { Authorization: `Bearer ${token}` } });
+      await axios.put(`${BASE_URL}/auth/me`, payload, { headers: { Authorization: `Bearer ${token}` } });
       showNotification("Profile updated successfully!");
       setEditableFields({ username: false, fullName: false, email: false });
       setTimeout(() => window.location.reload(), 1000);
@@ -399,7 +399,7 @@ export default function Profile() {
     setIsLoadingPassword(true);
     try {
         const token = localStorage.getItem("token");
-        await axios.put(`${BASE_URL}/user/change-password`, {
+        await axios.put(`${BASE_URL}/auth/change-password`, {
             currentPassword: passwordForm.currentPassword,
             newPassword: passwordForm.newPassword
         }, {

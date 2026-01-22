@@ -107,7 +107,7 @@ export default function Login() {
     if (!formData.email || !formData.password) return;
     setIsLoading(true);
     try {
-        const response = await axios.post(`${BASE_URL}/user/login`, {
+        const response = await axios.post(`${BASE_URL}/auth/login`, {
             identifier: formData.email, password: formData.password
         });
         const token =
@@ -139,7 +139,7 @@ export default function Login() {
     
     setIsLoading(true);
     try {
-        await axios.post(`${BASE_URL}/user/register`, {
+        await axios.post(`${BASE_URL}/auth/register`, {
             name: formData.name,
             username: formData.username,
             email: formData.email,
@@ -165,7 +165,7 @@ export default function Login() {
     
     setIsLoading(true);
     try {
-        await axios.post(`${BASE_URL}/user/verify-otp`, { email: formData.email, otpCode: otp });
+        await axios.post(`${BASE_URL}/auth/verify-otp`, { email: formData.email, otpCode: otp });
         
         setIsSuccess(true); 
         setCountdown(0);
@@ -193,7 +193,7 @@ export default function Login() {
     if(!forgotEmail) return alert("Masukkan email Anda!");
     setLoadingForgot(true);
     try {
-        await axios.post(`${BASE_URL}/user/forgot-password`, { email: forgotEmail });
+        await axios.post(`${BASE_URL}/auth/forgot-password`, { email: forgotEmail });
         
         setForgotStep(2); 
         setCountdown(60); 
@@ -252,7 +252,7 @@ export default function Login() {
     const code = forgotOtpValues.join(""); 
     setLoadingForgot(true);
     try {
-        await axios.post(`${BASE_URL}/user/reset-password-confirm`, {
+        await axios.post(`${BASE_URL}/auth/reset-password-confirm`, {
             email: forgotEmail, otpCode: code, newPassword
         });
         
