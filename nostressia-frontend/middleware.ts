@@ -19,7 +19,7 @@ export default function middleware(request: Request) {
   const password = process.env.BASIC_AUTH_PASS ?? "";
 
   if (!username || !password) {
-    return unauthorized();
+    return;
   }
 
   const authHeader = request.headers.get("authorization");
