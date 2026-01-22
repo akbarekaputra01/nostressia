@@ -15,13 +15,14 @@ Semua endpoint berada di bawah prefix:
 ```
 
 Contoh full URL:
+
 ```
 https://akbarekaputra01-nostressia-backend.hf.space/api/user/login
 ```
 
 ---
 
-## 2) Format Request Umum
+## 2) Konvensi Format Request/Response
 
 ### Headers
 ```
@@ -30,6 +31,13 @@ Authorization: Bearer <access_token>
 ```
 
 `Authorization` hanya diperlukan pada endpoint yang **membutuhkan autentikasi** (lihat bagian endpoint di bawah).
+
+### CamelCase vs Snake Case
+Semua schema API menggunakan **camelCase** untuk request/response. Namun backend tetap menerima **snake_case** berkat alias Pydantic.
+
+Contoh:
+- Request bisa menggunakan `userDob` atau `user_dob`.
+- Response akan menggunakan `userId`, `createdAt`, `stressLevel`, dll.
 
 ### Format Error
 Jika terjadi error, API akan mengembalikan JSON seperti berikut:
@@ -51,11 +59,11 @@ Request body:
 ```json
 {
   "name": "Nama Lengkap",
-  "userName": "username",
+  "username": "username",
   "email": "user@email.com",
   "password": "password",
   "gender": "male",
-  "dob": "2000-01-01",
+  "userDob": "2000-01-01",
   "avatar": "https://example.com/avatar.png"
 }
 ```
@@ -63,44 +71,60 @@ Request body:
 Response:
 ```json
 {
-  "userID": 1,
-  "name": "Nama Lengkap",
-  "userName": "username",
-  "email": "user@email.com",
-  "gender": "male",
-  "avatar": "https://example.com/avatar.png"
+  "message": "Registration successful! Please check your email for OTP verification.",
+  "email": "user@email.com"
 }
 ```
 
 ---
 
-### 3.2 Login User
-**POST** `/api/user/login`
+### 3.2 Verifikasi OTP
+**POST** `/api/user/verify-otp`
 
 Request body:
 ```json
 {
   "email": "user@email.com",
+  "otpCode": "123456"
+}
+```
+
+Response (success):
+```json
+{ "message": "Account verified successfully! You can now login." }
+```
+
+---
+
+### 3.3 Login User
+**POST** `/api/user/login`
+
+Request body:
+```json
+{
+  "identifier": "user@email.com",
   "password": "password"
 }
 ```
 
+`identifier` bisa berupa email **atau** username.
+
 Response:
 ```json
 {
-  "access_token": "<jwt_token>",
-  "token_type": "bearer"
+  "accessToken": "<jwt_token>",
+  "tokenType": "bearer"
 }
 ```
 
-Simpan `access_token` di client, lalu kirim via header:
+Simpan `accessToken` di client, lalu kirim via header:
 ```
 Authorization: Bearer <jwt_token>
 ```
 
 ---
 
-### 3.3 Get Current User
+### 3.4 Get Current User
 **GET** `/api/user/me`
 
 Headers:
@@ -111,13 +135,94 @@ Authorization: Bearer <jwt_token>
 Response:
 ```json
 {
-  "userID": 1,
+  "userId": 1,
   "name": "Nama Lengkap",
-  "userName": "username",
+  "username": "username",
   "email": "user@email.com",
   "gender": "male",
-  "avatar": "https://example.com/avatar.png"
+  "avatar": "https://example.com/avatar.png",
+  "userDob": "2000-01-01",
+  "streak": 3,
+  "isVerified": true
 }
+```
+
+---
+
+### 3.5 Update Profile
+**PUT** `/api/user/me`
+
+Headers:
+```
+Authorization: Bearer <jwt_token>
+```
+
+Request body (semua field opsional):
+```json
+{
+  "name": "Nama Baru",
+  "username": "username_baru",
+  "email": "user_baru@email.com",
+  "avatar": "https://example.com/avatar.png",
+  "gender": "female"
+}
+```
+
+---
+
+### 3.6 Change Password
+**PUT** `/api/user/change-password`
+
+Headers:
+```
+Authorization: Bearer <jwt_token>
+```
+
+Request body:
+```json
+{
+  "currentPassword": "password_lama",
+  "newPassword": "password_baru"
+}
+```
+
+Response:
+```json
+{ "message": "Password updated successfully" }
+```
+
+---
+
+### 3.7 Forgot Password (Kirim OTP)
+**POST** `/api/user/forgot-password`
+
+Request body:
+```json
+{ "email": "user@email.com" }
+```
+
+Response:
+```json
+{ "message": "Kode OTP reset password telah dikirim ke email Anda." }
+```
+
+---
+
+### 3.8 Reset Password (Konfirmasi OTP)
+**POST** `/api/user/reset-password-confirm`
+
+Request body:
+```json
+{
+  "email": "user@email.com",
+  "otpCode": "123456",
+  "newPassword": "password_baru"
+}
+```
+
+Response:
+```json
+{ "message": "Password berhasil diubah! Silakan login dengan password baru." }
 ```
 
 ---
@@ -138,8 +243,8 @@ Request body:
 Response:
 ```json
 {
-  "access_token": "<jwt_token>",
-  "token_type": "bearer",
+  "accessToken": "<jwt_token>",
+  "tokenType": "bearer",
   "admin": {
     "id": 1,
     "name": "Admin Name",
@@ -160,9 +265,9 @@ Response:
 ```json
 [
   {
-    "motivationID": 1,
+    "motivationId": 1,
     "quote": "Stay strong",
-    "uploaderID": 1,
+    "uploaderId": 1,
     "authorName": "Nostressia"
   }
 ]
@@ -175,13 +280,13 @@ Request body:
 ```json
 {
   "quote": "Stay strong",
-  "uploaderID": 1,
+  "uploaderId": 1,
   "authorName": "Nostressia"
 }
 ```
 
 ### 5.3 Delete Motivation
-**DELETE** `/api/motivations/{motivationID}`
+**DELETE** `/api/motivations/{motivationId}`
 
 ---
 
@@ -200,7 +305,7 @@ Request body (create):
 ### 6.2 Tips CRUD
 - **POST** `/api/tips/`
 - **GET** `/api/tips/`
-- **GET** `/api/tips/by-category/{category_id}`
+- **GET** `/api/tips/by-category/{categoryId}`
 - **GET** `/api/tips/{id}`
 - **PUT** `/api/tips/{id}`
 - **DELETE** `/api/tips/{id}`
@@ -209,8 +314,8 @@ Request body (create):
 ```json
 {
   "detail": "Ambil napas dalam",
-  "tipCategoryID": 1,
-  "uploaderID": 1
+  "tipCategoryId": 1,
+  "uploaderId": 1
 }
 ```
 
@@ -218,7 +323,7 @@ Request body (update):
 ```json
 {
   "detail": "Ambil napas 3x",
-  "tipCategoryID": 1
+  "tipCategoryId": 1
 }
 ```
 
@@ -226,17 +331,17 @@ Request body (update):
 
 ## 7) Machine Learning - Prediksi Stres
 
-### Predict Stress Level
+### 7.1 Predict Stress Level
 **POST** `/api/predict/current-stress`
 
 Request body:
 ```json
 {
-  "study_hours": 2,
-  "extracurricular_hours": 1,
-  "sleep_hours": 7,
-  "social_hours": 2,
-  "physical_hours": 1,
+  "studyHours": 2,
+  "extracurricularHours": 1,
+  "sleepHours": 7,
+  "socialHours": 2,
+  "physicalHours": 1,
   "gpa": 3.5
 }
 ```
@@ -249,12 +354,39 @@ Response:
 }
 ```
 
+### 7.2 Predict Global Forecast (Butuh Token)
+**GET** `/api/predict/global-forecast`
+
+Headers:
+```
+Authorization: Bearer <jwt_token>
+```
+
+Response (jika eligible):
+```json
+{
+  "message": "Global forecast not integrated yet.",
+  "eligibility": {
+    "userId": 1,
+    "eligible": true,
+    "streak": 7,
+    "requiredStreak": 7,
+    "restoreUsed": 0,
+    "restoreLimit": 3,
+    "missing": 0,
+    "note": "OK"
+  }
+}
+```
+
+Jika belum memenuhi syarat, server mengembalikan **403** dengan payload `eligibility` di field `detail`.
+
 ---
 
-## 8) Stress Log (Butuh Token)
+## 8) Stress Levels (Butuh Token)
 
 ### 8.1 Add Stress Log
-**POST** `/api/stress/`
+**POST** `/api/stress-levels/`
 
 Headers:
 ```
@@ -266,7 +398,7 @@ Request body:
 {
   "date": "2024-01-01",
   "stressLevel": 2,
-  "GPA": 3.5,
+  "gpa": 3.5,
   "extracurricularHourPerDay": 1,
   "physicalActivityHourPerDay": 1,
   "sleepHourPerDay": 7,
@@ -279,26 +411,45 @@ Request body:
 Response:
 ```json
 {
-  "stressLevelID": 1,
-  "userID": 1,
+  "stressLevelId": 1,
+  "userId": 1,
   "date": "2024-01-01",
   "stressLevel": 2,
-  "GPA": 3.5,
+  "gpa": 3.5,
   "extracurricularHourPerDay": 1,
   "physicalActivityHourPerDay": 1,
   "sleepHourPerDay": 7,
   "studyHourPerDay": 2,
   "socialHourPerDay": 2,
-  "emoji": 1
+  "emoji": 1,
+  "isRestored": false,
+  "createdAt": "2024-01-01T10:00:00"
 }
 ```
 
-### 8.2 Get My Stress Logs
-**GET** `/api/stress/my-logs`
+### 8.2 Restore Stress Log
+**POST** `/api/stress-levels/restore`
 
-Headers:
-```
-Authorization: Bearer <jwt_token>
+Request body sama seperti add stress log.
+
+### 8.3 Get My Stress Logs
+**GET** `/api/stress-levels/my-logs`
+
+### 8.4 Get Eligibility
+**GET** `/api/stress-levels/eligibility`
+
+Response:
+```json
+{
+  "userId": 1,
+  "eligible": true,
+  "streak": 7,
+  "requiredStreak": 7,
+  "restoreUsed": 0,
+  "restoreLimit": 3,
+  "missing": 0,
+  "note": "OK"
+}
 ```
 
 ---
@@ -306,7 +457,7 @@ Authorization: Bearer <jwt_token>
 ## 9) Bookmarks (Butuh Token)
 
 ### 9.1 Add Bookmark
-**POST** `/api/bookmarks/{motivation_id}`
+**POST** `/api/bookmarks/{motivationId}`
 
 Headers:
 ```
@@ -330,12 +481,12 @@ Response:
 ```json
 [
   {
-    "bookmarkID": 1,
-    "userID": 1,
-    "motivationID": 10,
+    "bookmarkId": 1,
+    "userId": 1,
+    "motivationId": 10,
     "createdAt": "2024-01-01T10:00:00",
     "motivation": {
-      "motivationID": 10,
+      "motivationId": 10,
       "quote": "Stay strong",
       "authorName": "Nostressia"
     }
@@ -344,19 +495,181 @@ Response:
 ```
 
 ### 9.3 Remove Bookmark
-**DELETE** `/api/bookmarks/{motivation_id}`
+**DELETE** `/api/bookmarks/{motivationId}`
 
-Headers:
+---
+
+## 10) Diary (Butuh Token)
+
+### 10.1 Create Diary
+**POST** `/api/diary/`
+
+Request body:
+```json
+{
+  "title": "Hari yang berat",
+  "note": "Aku merasa lelah hari ini...",
+  "date": "2024-01-01",
+  "emoji": "😐",
+  "font": "sans-serif"
+}
 ```
-Authorization: Bearer <jwt_token>
+
+### 10.2 Get My Diaries
+**GET** `/api/diary/`
+
+### 10.3 Get Diary Detail
+**GET** `/api/diary/{diaryId}`
+
+### 10.4 Update Diary
+**PUT** `/api/diary/{diaryId}`
+
+Request body (semua opsional):
+```json
+{
+  "title": "Hari yang lebih baik",
+  "note": "Sudah lebih baik hari ini",
+  "date": "2024-01-02",
+  "emoji": "😊",
+  "font": "serif"
+}
 ```
 
 ---
 
-## 10) Catatan Penting untuk Frontend
+## 11) Forecast (Butuh Token)
+
+### Global Forecast
+**GET** `/api/forecast/global`
+
+Response (jika eligible):
+```json
+{
+  "message": "Global forecast not integrated yet.",
+  "eligibility": {
+    "userId": 1,
+    "eligible": true,
+    "streak": 7,
+    "requiredStreak": 7,
+    "restoreUsed": 0,
+    "restoreLimit": 3,
+    "missing": 0,
+    "note": "OK"
+  }
+}
+```
+
+Jika belum memenuhi syarat, server mengembalikan **403** dengan payload `eligibility` di field `detail`.
+
+---
+
+## 12) Admin - User Management (Butuh Token Admin)
+
+### 12.1 Get All Users
+**GET** `/api/admin/users?page=1&limit=10&search=keyword`
+
+Response:
+```json
+{
+  "total": 100,
+  "page": 1,
+  "limit": 10,
+  "data": [
+    {
+      "userId": 1,
+      "name": "Nama",
+      "username": "username",
+      "email": "user@email.com",
+      "gender": "male",
+      "avatar": null,
+      "userDob": "2000-01-01",
+      "streak": 3,
+      "isVerified": true
+    }
+  ]
+}
+```
+
+### 12.2 Get User Detail
+**GET** `/api/admin/users/{userId}`
+
+### 12.3 Update User
+**PUT** `/api/admin/users/{userId}`
+
+Request body (semua opsional):
+```json
+{
+  "name": "Nama",
+  "username": "username",
+  "email": "user@email.com",
+  "gender": "male",
+  "userDob": "2000-01-01",
+  "avatar": "https://example.com/avatar.png"
+}
+```
+
+### 12.4 Delete User
+**DELETE** `/api/admin/users/{userId}`
+
+---
+
+## 13) Admin - Diary Moderation (Butuh Token Admin)
+
+### 13.1 Get All Diaries
+**GET** `/api/admin/diaries?page=1&limit=10&search=keyword`
+
+Response:
+```json
+{
+  "total": 100,
+  "page": 1,
+  "limit": 10,
+  "data": [
+    {
+      "diaryId": 1,
+      "title": "Hari yang berat",
+      "content": "Aku merasa lelah hari ini...",
+      "createdAt": "2024-01-01T10:00:00",
+      "userId": 1,
+      "username": "username"
+    }
+  ]
+}
+```
+
+### 13.2 Delete Diary
+**DELETE** `/api/admin/diaries/{diaryId}`
+
+---
+
+## 14) Catatan Penting untuk Frontend
 
 - Format tanggal memakai **ISO-8601** (`YYYY-MM-DD`).
 - Semua endpoint **terbuka** kecuali yang disebutkan perlu token.
-- Gunakan `Bearer` token dari login user untuk akses `/bookmarks` dan `/stress`.
+- Gunakan `Bearer` token dari login user untuk akses endpoint user-protected.
+- Gunakan `Bearer` token dari login admin untuk endpoint admin.
 - Untuk debugging cepat, Swagger UI tersedia di `/docs`.
 
+---
+
+## 15) Prompt untuk Tim Frontend (Agen Otomatisasi)
+
+Gunakan prompt berikut untuk merapihkan FE dan memastikan seluruh integrasi menggunakan BE dengan benar:
+
+```
+Kamu bertugas merapihkan seluruh frontend Nostressia dan memastikan semua integrasi API sesuai dokumentasi backend terbaru.
+
+Prioritas utama:
+1) Pastikan semua request/response memakai field camelCase (backend menerima snake_case, tapi FE harus konsisten camelCase).
+2) Pastikan seluruh endpoint dan path sesuai doc README backend (prefix /api).
+3) Tambahkan/rapihkan flow autentikasi: register -> verify OTP -> login -> simpan accessToken -> gunakan di header Authorization untuk endpoint protected.
+4) Pastikan update profil, change password, forgot/reset password memakai endpoint dan body sesuai dokumentasi.
+5) Pastikan modul-modul berikut sudah terintegrasi: Motivations, Tips (Categories & CRUD), Stress Levels (add/restore/my-logs/eligibility), Bookmarks, Diary, Forecast, Predict Global Forecast, Admin (user & diary).
+6) Tampilkan error dari backend memakai field `detail` agar user mendapatkan pesan yang konsisten.
+
+Output yang diminta:
+- Checklist endpoint & modul yang sudah/ belum terhubung.
+- Rangkuman perubahan file FE beserta alasan.
+- Catatan jika ada mismatch nama field atau endpoint.
+- Jika ada endpoint yang belum tersedia di FE, buatkan stub service/handler dan contoh pemanggilannya.
+```
