@@ -1,4 +1,5 @@
 import { BASE_URL } from "./config";
+import { parseJsonResponse } from "./request";
 
 const getAuthToken = () =>
   localStorage.getItem("token") ||
@@ -23,22 +24,25 @@ export async function fetchGlobalForecast({ token, signal } = {}) {
     signal,
   });
 
-  let payload = null;
-  try {
-    payload = await response.json();
-  } catch {
-    payload = null;
-  }
+  return parseJsonResponse(response);
+}
 
-  if (!response.ok) {
-    const detail = payload?.detail || payload?.message;
-    const error = new Error(
-      detail ? String(detail) : `Request failed (HTTP ${response.status}).`
-    );
-    error.status = response.status;
-    error.payload = payload;
+export async function fetchForecastGlobal({ token, signal } = {}) {
+  const resolvedToken = token || getAuthToken();
+  if (!resolvedToken) {
+    const error = new Error("Unauthorized");
+    error.status = 401;
     throw error;
   }
 
-  return payload;
+  const response = await fetch(`${BASE_URL}/forecast/global`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${resolvedToken}`,
+    },
+    signal,
+  });
+
+  return parseJsonResponse(response);
 }
