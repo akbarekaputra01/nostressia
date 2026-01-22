@@ -3,12 +3,12 @@
 from datetime import date, datetime, timedelta # ✅ Tambah datetime
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm 
+from fastapi.security import OAuth2PasswordRequestForm 
 from pydantic import ValidationError
 
 from app.core.database import get_db
 from app.models.user_model import User
-from app.utils.jwt_handler import create_access_token, decode_access_token 
+from app.utils.jwt_handler import create_access_token, get_current_user
 
 # ✅ Import Utils
 from app.utils.hashing import verify_password, hash_password 
@@ -28,37 +28,10 @@ from app.schemas.user_auth_schema import (
     ResetPasswordConfirm
 )
 
-router = APIRouter(prefix="/user", tags=["User Auth"])
-
-oauth2_scheme = OAuth2PasswordBearer(
-    tokenUrl="/api/user/token",
-    scheme_name="UserOAuth2PasswordBearer",
-)
+router = APIRouter()
 
 # --- KONFIGURASI ---
 OTP_EXPIRE_MINUTES = 5 # ✅ Waktu Kadaluarsa OTP
-
-# --- DEPENDENCY: Get Current User ---
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    
-    payload = decode_access_token(token)
-    if payload is None:
-        raise credentials_exception
-
-    email: str = payload.get("sub")
-    if email is None:
-        raise credentials_exception
-    
-    user = db.query(User).filter(User.email == email).first()
-    if user is None:
-        raise credentials_exception
-        
-    return user
 
 def _issue_token_for_user(user: User, db: Session) -> Token:
     today = date.today()

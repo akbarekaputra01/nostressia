@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.models.user_model import User
-from app.services import stress_service
+from app.services import forecast_service, stress_service
 from app.utils.jwt_handler import get_current_user
 
 router = APIRouter(prefix="/forecast", tags=["Forecast"])
@@ -21,8 +21,4 @@ def get_global_forecast(
             detail=eligibility.model_dump(by_alias=True),
         )
 
-    # Placeholder: global forecast integration pending.
-    return {
-        "message": "Global forecast not integrated yet.",
-        "eligibility": eligibility.model_dump(by_alias=True),
-    }
+    return forecast_service.build_global_forecast_payload(eligibility)
