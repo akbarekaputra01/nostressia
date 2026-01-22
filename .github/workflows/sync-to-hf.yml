@@ -19,28 +19,59 @@ jobs:
           fetch-depth: 0
           lfs: true
 
-      - name: Prepare backend-only repo content (auto-detect)
+      - name: Prepare backend-only repo content (detect BE root)
         run: |
           set -e
 
-          # Cari main.py backend (FastAPI)
-          MAIN_PATH="$(find . -maxdepth 6 -type f -name 'main.py' | head -n 1 || true)"
+          echo "📁 Repo root:"
+          pwd
+          ls -la
+
+          # 1) Temukan main.py (FastAPI)
+          MAIN_PATH="$(find . -maxdepth 8 -type f -name 'main.py' | head -n 1 || true)"
           if [ -z "$MAIN_PATH" ]; then
-            echo "❌ Tidak ketemu main.py sampai kedalaman 6 folder."
-            find . -maxdepth 3 -type d -print
+            echo "❌ Tidak ketemu main.py sampai kedalaman 8 folder."
+            echo "➡️ Struktur folder (maxdepth 4):"
+            find . -maxdepth 4 -type d -print
             exit 1
           fi
+          echo "✅ main.py found at: $MAIN_PATH"
 
-          BACKEND_DIR="$(dirname "$MAIN_PATH")"
-          echo "✅ Detected backend dir: $BACKEND_DIR"
+          # 2) Mulai dari folder main.py, naik ke atas sampai ketemu root BE
+          # Marker root BE: requirements.txt / Dockerfile / vercel.json / pyproject.toml
+          CUR_DIR="$(dirname "$MAIN_PATH")"
+          BE_ROOT=""
 
+          for i in {1..10}; do
+            if [ -f "$CUR_DIR/requirements.txt" ] || [ -f "$CUR_DIR/Dockerfile" ] || [ -f "$CUR_DIR/vercel.json" ] || [ -f "$CUR_DIR/pyproject.toml" ]; then
+              BE_ROOT="$CUR_DIR"
+              break
+            fi
+
+            # kalau sudah mentok di root repo (.)
+            if [ "$CUR_DIR" = "." ] || [ "$CUR_DIR" = "/" ]; then
+              break
+            fi
+
+            CUR_DIR="$(dirname "$CUR_DIR")"
+          done
+
+          if [ -z "$BE_ROOT" ]; then
+            echo "⚠️ Marker root BE (requirements.txt/Dockerfile/vercel.json/pyproject.toml) tidak ketemu."
+            echo "➡️ Fallback: pakai parent folder dari main.py"
+            BE_ROOT="$(dirname "$MAIN_PATH")"
+          fi
+
+          echo "✅ Backend root detected: $BE_ROOT"
+
+          # 3) Copy SEMUA isi BE root ke folder out (jadi root Space = seluruh BE)
           rm -rf out
           mkdir -p out
 
           rsync -av --delete \
             --exclude ".git" \
             --exclude ".github" \
-            "$BACKEND_DIR"/ out/
+            "$BE_ROOT"/ out/
 
           echo "📦 out content (top):"
           ls -la out
@@ -67,14 +98,13 @@ jobs:
           git add .gitattributes
           git commit -m "Configure Git LFS for model files" || true
 
-          # baru add semua file backend
+          # baru add semua file backend (termasuk README.md kalau ada)
           git add -A
-          git commit -m "Sync backend from GitHub (BE only)" || echo "No changes to commit."
+          git commit -m "Sync backend from GitHub (BE full root)" || echo "No changes to commit."
 
           git remote add space https://akbarekaputra01:$HF_TOKEN@huggingface.co/spaces/akbarekaputra01/Nostressia-Backend
           git branch -M main
 
-          # debug: pastiin model sudah LFS (muncul di list)
           echo "📌 LFS tracked files:"
           git lfs ls-files || true
 
