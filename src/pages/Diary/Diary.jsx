@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useOutletContext } from "react-router-dom"; 
 import { motion, AnimatePresence } from "framer-motion";
-// Tambahkan Loader2 dan CheckCircle untuk icon loading & sukses
 import { Heart, Calendar, X, Loader2, CheckCircle } from "lucide-react"; 
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer"; 
@@ -35,9 +34,9 @@ export default function Diary() {
   const scrollRef = useRef(null);
 
   // --- STATE BARU UNTUK ANIMASI & FEEDBACK ---
-  const [isLoading, setIsLoading] = useState(true); // Loading awal saat fetch data
-  const [isSubmitting, setIsSubmitting] = useState(false); // Loading saat tombol save ditekan
-  const [showSuccessModal, setShowSuccessModal] = useState(false); // Modal sukses
+  const [isLoading, setIsLoading] = useState(true); 
+  const [isSubmitting, setIsSubmitting] = useState(false); 
+  const [showSuccessModal, setShowSuccessModal] = useState(false); 
 
   const { user } = useOutletContext() || { user: {} }; 
 
@@ -59,7 +58,7 @@ export default function Diary() {
   useEffect(() => {
     const fetchDiaries = async () => {
       try {
-        setIsLoading(true); // Mulai loading
+        setIsLoading(true); 
         const token = localStorage.getItem("token");
         if (!token) {
             setIsLoading(false);
@@ -83,8 +82,6 @@ export default function Diary() {
       } catch (error) {
         console.error("Gagal mengambil diary:", error);
       } finally {
-        // Berhenti loading (baik sukses maupun gagal)
-        // Beri sedikit delay agar transisi lebih halus
         setTimeout(() => setIsLoading(false), 800);
       }
     };
@@ -103,7 +100,7 @@ export default function Diary() {
     if (!text.trim() || !title.trim()) return;
 
     try {
-      setIsSubmitting(true); // Mulai loading tombol
+      setIsSubmitting(true); 
       const token = localStorage.getItem("token");
       if (!token) {
           alert("Kamu belum login!");
@@ -142,7 +139,6 @@ export default function Diary() {
       // TAMPILKAN MODAL SUKSES
       setShowSuccessModal(true);
       
-      // Sembunyikan modal setelah 2.5 detik
       setTimeout(() => {
           setShowSuccessModal(false);
       }, 2500);
@@ -151,7 +147,7 @@ export default function Diary() {
       console.error("Gagal menyimpan diary:", error);
       alert("Gagal menyimpan diary.");
     } finally {
-      setIsSubmitting(false); // Selesai loading tombol
+      setIsSubmitting(false); 
     }
   };
 
@@ -220,22 +216,29 @@ export default function Diary() {
         }
       `}</style>
       
-      {/* NAVBAR */}
-      <div className="fixed top-0 left-0 right-0 z-50 pt-4 px-2">
+      {/* --- FIXED NAVBAR WRAPPER (DIPERBAIKI) ---
+          - pt-4 md:pt-6: Memberikan 'gap' di atas navbar agar tidak nempel langit-langit browser.
+          - z-50: Tetap di atas konten.
+      */}
+      <div className="fixed top-0 left-0 w-full z-50 pt-4 md:pt-4 transition-all duration-300">
         <Navbar activeLink="Diary" user={user} />
       </div>
 
-      {/* --- SPACER --- */}
-      <div className="h-[140px] md:h-[160px]" />
+      {/* --- SPACER (DIPERBAIKI LAGI) ---
+          - Ditambah tingginya untuk mengkompensasi padding-top pada navbar.
+          - Mobile: 160px (biar aman dan judul turun).
+          - Desktop: 130px (biar judul tidak ketabrak navbar yang sekarang agak turun).
+      */}
+      <div className="h-[160px] md:h-[162px]" />
 
-      <main className="flex-grow flex flex-col items-center w-full max-w-[1400px] mx-auto px-4 md:px-8 lg:p-10 z-10 pt-0">
+      <main className="flex-grow flex flex-col items-center w-full max-w-[1400px] mx-auto px-4 md:px-8 lg:px-10 z-10 pt-0">
         
         {/* --- HEADER SECTION --- */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }} 
           animate={{ opacity: 1, y: 0 }} 
           transition={{ duration: 0.6 }} 
-          className="w-full flex flex-col items-center text-center mb-10 md:mb-14"
+          className="w-full flex flex-col items-center text-center mb-10 md:mb-10" 
         >
             <div className="flex items-center justify-center gap-3 md:gap-4 mb-2">
               <Heart 
@@ -258,7 +261,7 @@ export default function Diary() {
                 {/* HALAMAN MENULIS */}
                 <div className="absolute inset-0 w-full h-full bg-[#fcf9f5] rounded-[16px] md:rounded-l-[4px] md:rounded-r-[16px] shadow-xl z-0 flex flex-col overflow-hidden border border-slate-200">
                     <div className="flex-grow p-5 md:p-8 flex flex-col relative z-10">
-                         <button onClick={() => setIsBookOpen(false)} className="absolute top-3 right-3 z-30 w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all"><X size={20} /></button>
+                          <button onClick={() => setIsBookOpen(false)} className="absolute top-3 right-3 z-30 w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all"><X size={20} /></button>
                         <div className="flex items-center gap-2 mb-2 overflow-x-auto py-2 border-b border-slate-200 no-scrollbar">
                             {moods.map((m) => (
                                 <button key={m.label} onClick={() => setSelectedMood(m.emoji)} className={`text-xl md:text-2xl hover:scale-110 transition-transform p-1 rounded-lg ${selectedMood === m.emoji ? "bg-blue-50 scale-110" : "opacity-60 grayscale"}`}>{m.emoji}</button>

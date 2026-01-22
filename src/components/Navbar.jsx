@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import LogoImage from "../assets/images/Logo-Nostressia.png"; 
 import { resolveAvatarUrl } from "../utils/avatar";
+import { Flame } from "lucide-react"; 
 
 // --- Data Menu Navigasi ---
 const navLinks = [
@@ -35,6 +36,24 @@ const Navbar = ({ user }) => {
 
   const fallbackAvatar = "https://i.pravatar.cc/40?img=12";
   const avatarSrc = resolveAvatarUrl(user?.avatar) || fallbackAvatar;
+
+  // --- LOGIKA WARNA API BERDASARKAN STREAK ---
+  const getFlameColor = (streakCount) => {
+    const count = streakCount || 0;
+    if (count >= 70) {
+      // Level Tinggi (70+): Ungu (Legendary)
+      return "text-purple-600 fill-purple-600/20";
+    } else if (count >= 7) {
+      // Level Menengah (7-69): Merah/Merah Oren (Membara)
+      return "text-red-500 fill-red-500/20";
+    } else {
+      // Level Awal (< 7): Oranye (Normal)
+      return "text-orange-500 fill-orange-500/20";
+    }
+  };
+
+  const streakVal = user?.streak || 0;
+  const flameClass = getFlameColor(streakVal);
 
   return (
     <header
@@ -96,19 +115,34 @@ const Navbar = ({ user }) => {
           </nav>
         </div>
 
-        {/* KANAN: NOTIF & PROFIL */}
+        {/* KANAN: STREAK & PROFIL */}
         <div className="flex items-center gap-2 md:gap-4">
-          <button className="relative p-2 rounded-xl text-gray-600 hover:bg-black/5 transition-all cursor-pointer">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
-              <path fillRule="evenodd" d="M5.25 9a6.75 6.75 0 0113.5 0v.75c0 2.123.8 4.057 2.118 5.52a.75.75 0 01-.297 1.206c-1.544.57-3.16.99-4.831 1.243a3.75 3.75 0 11-7.48 0 24.585 24.585 0 01-4.831-1.244.75.75 0 01-.298-1.205A8.217 8.217 0 005.25 9.75V9zm4.502 8.9a2.25 2.25 0 104.496 0 25.057 25.057 0 01-4.496 0z" clipRule="evenodd" />
-            </svg>
-            <span className="absolute top-1.5 right-2 w-2 h-2 bg-red-600 border-2 border-white/40 rounded-full"></span>
-          </button>
+          
+          {/* [FINAL] STREAK PILL - API BERUBAH WARNA */}
+          <Link 
+            to="/profile"
+            className="
+              flex items-center gap-2 
+              px-3 py-1.5 md:px-4 md:py-2 
+              text-gray-600 font-semibold text-xs md:text-sm 
+              rounded-full 
+              border border-gray-200/60
+              hover:bg-gray-50 hover:border-gray-300
+              transition-all duration-300
+              cursor-pointer
+            "
+            title={`Current Streak: ${streakVal} days`}
+          >
+            {/* Ikon Flame berubah warna sesuai logika di atas */}
+            <Flame className={`w-4 h-4 md:w-5 md:h-5 transition-colors duration-500 ${flameClass}`} />
+            
+            {/* Angka tetap abu-abu netral */}
+            <span>{streakVal}</span>
+          </Link>
 
           {/* FOTO PROFIL (DESKTOP) */}
           <Link to="/profile" className="hidden lg:block">
             <img
-              // LOGIKA: Jika user punya avatar, pakai itu. Jika tidak, pakai placeholder default.
               src={avatarSrc}
               alt="Profile"
               className="w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-white/20 object-cover cursor-pointer hover:border-blue-400 transition-colors"
