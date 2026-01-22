@@ -104,6 +104,20 @@ This project uses **Docker** for deployment to ensure the Machine Learning envir
 
 The project runs on `python:3.9` image to support specific ML libraries and syntax compatibility. It exposes port `7860` (Hugging Face standard).
 
+## 🔄 Sync From Hugging Face
+
+If you want this folder to mirror the Hugging Face Space repository, use the helper script:
+
+```bash
+HF_TOKEN=hf_your_token_here ./scripts/sync_from_hf.sh
+```
+
+By default, the script syncs from `https://huggingface.co/akbarekaputra01/nostressia-backend` into the current `nostressia-backend` directory. You can override the source and destination with:
+
+```bash
+HF_TOKEN=hf_your_token_here HF_REPO_URL=https://huggingface.co/akbarekaputra01/nostressia-backend DEST_DIR=/path/to/nostressia-backend ./scripts/sync_from_hf.sh
+```
+
 ## 📂 Project Layout
 
 - `main.py`: Entry point for the application.
