@@ -1,9 +1,10 @@
 # app/routes/user_auth_route.py
 
 from datetime import date, datetime, timedelta # ✅ Tambah datetime
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordBearer 
+from pydantic import ValidationError
 
 from app.core.database import get_db
 from app.models.user_model import User
@@ -176,7 +177,30 @@ def verify_otp_endpoint(payload: VerifyOTP, db: Session = Depends(get_db)):
 
 # 3. LOGIN (Tetap Sama)
 @router.post("/login", response_model=Token)
-def login(user_in: UserLogin, db: Session = Depends(get_db)):
+async def login(request: Request, db: Session = Depends(get_db)):
+    content_type = request.headers.get("content-type", "")
+    payload = {}
+    if content_type.startswith("application/x-www-form-urlencoded") or content_type.startswith("multipart/form-data"):
+        form = await request.form()
+        payload = {
+            "identifier": form.get("identifier") or form.get("username"),
+            "password": form.get("password"),
+        }
+    else:
+        try:
+            body = await request.json()
+        except Exception:
+            body = {}
+        payload = {
+            "identifier": body.get("identifier") or body.get("username") or body.get("email"),
+            "password": body.get("password"),
+        }
+
+    try:
+        user_in = UserLogin.model_validate(payload)
+    except ValidationError as exc:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=exc.errors())
+
     user = None
     if "@" in user_in.identifier:
         user = db.query(User).filter(User.email == user_in.identifier).first()
