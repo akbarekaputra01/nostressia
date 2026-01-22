@@ -24,7 +24,7 @@ jobs:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
           git lfs install
-          git remote set-url space https://akbarekaputra01:${HF_TOKEN}@huggingface.co/spaces/akbarekaputra01/Nostressia-Backend || \
-            git remote add space https://akbarekaputra01:${HF_TOKEN}@huggingface.co/spaces/akbarekaputra01/Nostressia-Backend
+          git remote set-url space https://akbarekaputra01:${HF_TOKEN}@huggingface.co/spaces/akbarekaputra01/nostressia-backend || \
+            git remote add space https://akbarekaputra01:${HF_TOKEN}@huggingface.co/spaces/akbarekaputra01/nostressia-backend
           git subtree split --prefix=nostressia-backend -b hf-backend
           git push --force space hf-backend:main
