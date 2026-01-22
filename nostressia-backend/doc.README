@@ -329,10 +329,10 @@ Request body (update):
 
 ---
 
-## 7) Machine Learning - Prediksi Stres
+## 7) Stress Insights
 
-### 7.1 Predict Stress Level
-**POST** `/api/predict/current-stress`
+### 7.1 Predict Current Stress
+**POST** `/api/stress/current`
 
 Request body:
 ```json
@@ -353,6 +353,30 @@ Response:
   "message": "Your stress level is detected as: Low"
 }
 ```
+
+### 7.2 Global Forecast (Butuh Token)
+**GET** `/api/stress/global-forecast`
+
+Response (jika eligible):
+```json
+{
+  "message": "Global forecast not integrated yet.",
+  "eligibility": {
+    "userId": 1,
+    "eligible": true,
+    "streak": 7,
+    "requiredStreak": 7,
+    "restoreUsed": 0,
+    "restoreLimit": 3,
+    "missing": 0,
+    "note": "OK"
+  }
+}
+```
+
+Jika belum memenuhi syarat, server mengembalikan **403** dengan payload `eligibility` di field `detail`.
+
+---
 
 ## 8) Stress Levels (Butuh Token)
 
@@ -508,33 +532,7 @@ Request body (semua opsional):
 
 ---
 
-## 11) Forecast (Butuh Token)
-
-### Global Forecast
-**GET** `/api/forecast/global`
-
-Response (jika eligible):
-```json
-{
-  "message": "Global forecast not integrated yet.",
-  "eligibility": {
-    "userId": 1,
-    "eligible": true,
-    "streak": 7,
-    "requiredStreak": 7,
-    "restoreUsed": 0,
-    "restoreLimit": 3,
-    "missing": 0,
-    "note": "OK"
-  }
-}
-```
-
-Jika belum memenuhi syarat, server mengembalikan **403** dengan payload `eligibility` di field `detail`.
-
----
-
-## 12) Admin - User Management (Butuh Token Admin)
+## 11) Admin - User Management (Butuh Token Admin)
 
 ### 12.1 Get All Users
 **GET** `/api/admin/users?page=1&limit=10&search=keyword`

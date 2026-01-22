@@ -1,0 +1,51 @@
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
+
+from app.core.database import get_db
+from app.models.user_model import User
+from app.schemas.predict_schema import PredictRequest, PredictResponse
+from app.services import forecast_service, stress_service
+from app.services.ml_service import ml_service
+from app.utils.jwt_handler import get_current_user
+
+router = APIRouter(prefix="/stress", tags=["Stress Insights"])
+
+
+@router.post("/current", response_model=PredictResponse)
+def predict_current_stress(
+    request: PredictRequest,
+    db: Session = Depends(get_db),
+):
+    input_data = {
+        "study_hours": request.study_hours,
+        "extracurricular_hours": request.extracurricular_hours,
+        "sleep_hours": request.sleep_hours,
+        "social_hours": request.social_hours,
+        "physical_hours": request.physical_hours,
+        "gpa": request.gpa,
+    }
+
+    result = ml_service.predict_stress(input_data)
+
+    if result == "Error":
+        raise HTTPException(status_code=500, detail="Terjadi kesalahan pada model ML")
+
+    return {
+        "result": result,
+        "message": f"Your stress level is detected as: {result}",
+    }
+
+
+@router.get("/global-forecast")
+def get_global_forecast(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    eligibility = stress_service.check_global_eligibility(db, current_user.user_id)
+    if not eligibility.eligible:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=eligibility.model_dump(by_alias=True),
+        )
+
+    return forecast_service.build_global_forecast_payload(eligibility)
