@@ -1,4 +1,4 @@
-name: Sync backend to Hugging Face hub
+name: Sync Backend to Hugging Face hub
 
 on:
   push:
@@ -9,50 +9,53 @@ jobs:
   sync-to-hub:
     runs-on: ubuntu-latest
 
-    environment:
-      name: Production
-      url: https://akbarekaputra01-nostressia-backend.hf.space
-
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 0
           lfs: true
 
-      - name: Push backend to Hugging Face Space
+      - name: Push backend folder to HF Space (LFS)
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
           set -e
 
-          # ✅ 1) GANTI INI sesuai nama folder backend kamu di GitHub
-          BACKEND_DIR="nostressia-backend"
+          # ✅ folder backend di repo GitHub kamu
+          BACKEND_DIR="Nostressia-Backend"
 
-          # ✅ 2) URL Space HF (pakai lowercase yang kamu pakai sebelumnya)
-          REPO_URL="https://akbarekaputra01:${HF_TOKEN}@huggingface.co/spaces/akbarekaputra01/nostressia-backend.git"
+          # ✅ HF Space kamu
+          HF_USER="akbarekaputra01"
+          HF_SPACE="nostressia-backend"
 
-          echo "Checking backend dir..."
-          ls -la
+          REPO_URL="https://${HF_USER}:${HF_TOKEN}@huggingface.co/spaces/${HF_USER}/${HF_SPACE}.git"
+
           test -d "$BACKEND_DIR"
 
-          echo "Copy backend content to temp repo..."
+          # Siapkan repo sementara yang hanya berisi backend
           rm -rf /tmp/hf-backend
           mkdir -p /tmp/hf-backend
-          rsync -av --delete "$BACKEND_DIR"/ /tmp/hf-backend/
+          rsync -av --delete "${BACKEND_DIR}/" /tmp/hf-backend/
 
           cd /tmp/hf-backend
-
-          echo "Init git repo..."
           git init
-          git lfs install
-
           git config user.email "actions@github.com"
           git config user.name "github-actions"
 
-          echo "Commit and push..."
+          # Pastikan LFS aktif + track model binary
+          git lfs install
+          git lfs track "*.joblib" "*.pkl" "*.pt" "*.onnx" || true
+
+          # Commit .gitattributes dulu biar tracking jalan
+          git add .gitattributes || true
+          git commit -m "Add LFS tracking" || true
+
+          # Add semua file termasuk model
           git add -A
-          git commit -m "Sync backend from GitHub ${GITHUB_SHA}" || echo "No changes to commit"
+          git commit -m "Sync backend from GitHub ${GITHUB_SHA}" || echo "No changes"
 
           git branch -M main
           git remote add origin "$REPO_URL"
-          git push -u origin main --force
+
+          # push LFS objects + code
+          git push --force origin main
