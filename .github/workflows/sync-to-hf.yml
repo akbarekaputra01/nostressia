@@ -1,50 +1,61 @@
-- name: Push backend folder to HF Space (LFS)
-  env:
-    HF_TOKEN: ${{ secrets.HF_TOKEN }}
-  run: |
-    set -e
+name: Sync Backend (BE) to Hugging Face hub
 
-    # 🔴 WAJIB: nama folder backend di repo GitHub
-    BACKEND_DIR="nostressia-backend"
+on:
+  push:
+    branches: [main]
+    paths:
+      - "nostressia-backend/**"     # <-- ganti sesuai folder BE kamu
+      - ".github/workflows/**"      # biar kalau workflow diedit ikut jalan
+  workflow_dispatch:
 
-    # 🔴 WAJIB: HF Space kamu
-    HF_USER="akbarekaputra01"
-    HF_SPACE="nostressia-backend"
+jobs:
+  sync-to-hub:
+    runs-on: ubuntu-latest
 
-    REPO_URL="https://${HF_USER}:${HF_TOKEN}@huggingface.co/spaces/${HF_USER}/${HF_SPACE}.git"
+    environment:
+      name: Production
+      url: https://akbarekaputra01-nostressia-backend.hf.space
 
-    echo "=== CHECK ROOT DIR ==="
-    ls -la
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: true
 
-    echo "=== CHECK BACKEND DIR ==="
-    test -d "$BACKEND_DIR"
-    ls -la "$BACKEND_DIR"
+      - name: Prepare backend-only repo content
+        run: |
+          set -e
+          BACKEND_DIR="Nostressia-Backend"   # <-- ganti ini kalau nama folder BE beda
 
-    echo "=== PREP TEMP REPO ==="
-    rm -rf /tmp/hf-backend
-    mkdir -p /tmp/hf-backend
-    rsync -av --delete "${BACKEND_DIR}/" /tmp/hf-backend/
+          # Bersihin workspace target
+          rm -rf out
+          mkdir -p out
 
-    cd /tmp/hf-backend
+          # Copy hanya folder BE ke folder out (jadi root Space = isi BE)
+          rsync -av --delete \
+            --exclude ".git" \
+            --exclude ".github" \
+            "$BACKEND_DIR"/ out/
 
-    echo "=== INIT GIT ==="
-    git init
-    git config user.email "actions@github.com"
-    git config user.name "github-actions"
+          # (Opsional) kalau mau pastiin nggak ada file aneh kebawa:
+          # find out -name ".DS_Store" -delete
 
-    echo "=== INIT LFS ==="
-    git lfs install
-    git lfs track "*.joblib" "*.pkl" "*.pt" "*.onnx" || true
+      - name: Push backend-only to Hugging Face Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          set -e
+          cd out
 
-    git add .gitattributes || true
-    git commit -m "Add LFS tracking" || true
+          git init
+          git lfs install
 
-    echo "=== COMMIT BACKEND ==="
-    git add -A
-    git commit -m "Sync backend from GitHub ${GITHUB_SHA}" || echo "No changes"
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
 
-    git branch -M main
-    git remote add origin "$REPO_URL"
+          git add -A
+          git commit -m "Sync backend from GitHub (BE only)"
 
-    echo "=== PUSH TO HF SPACE ==="
-    git push --force origin main
+          git remote add space https://akbarekaputra01:$HF_TOKEN@huggingface.co/spaces/akbarekaputra01/Nostressia-Backend
+          git branch -M main
+          git push --force space main
