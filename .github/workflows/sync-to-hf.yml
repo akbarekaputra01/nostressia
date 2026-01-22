@@ -4,8 +4,13 @@ on:
   push:
     branches: [main]
     paths:
-      - "nostressia-backend/**"     # <-- ganti sesuai folder BE kamu
-      - ".github/workflows/**"      # biar kalau workflow diedit ikut jalan
+      - "**/main.py"
+      - "**/requirements.txt"
+      - "Nostressia-Backend/**"
+      - "Nostressia-Backend-Backend/**"
+      - "backend/**"
+      - "be/**"
+      - ".github/workflows/**"
   workflow_dispatch:
 
 jobs:
@@ -22,23 +27,43 @@ jobs:
           fetch-depth: 0
           lfs: true
 
-      - name: Prepare backend-only repo content
+      - name: Prepare backend-only repo content (auto-detect)
         run: |
           set -e
-          BACKEND_DIR="Nostressia-Backend"   # <-- ganti ini kalau nama folder BE beda
 
-          # Bersihin workspace target
+          echo "📁 Repo root:"
+          pwd
+          ls -la
+
+          # 1) Cari kandidat backend directory
+          # Prioritas: folder yang mengandung main.py (FastAPI entrypoint umum)
+          MAIN_PATH="$(find . -maxdepth 6 -type f -name 'main.py' | head -n 1 || true)"
+
+          if [ -z "$MAIN_PATH" ]; then
+            echo "❌ Tidak ketemu main.py sampai kedalaman 6 folder."
+            echo "➡️ Struktur folder (maxdepth 3):"
+            find . -maxdepth 3 -type d -print
+            exit 1
+          fi
+
+          BACKEND_DIR="$(dirname "$MAIN_PATH")"
+
+          # Kalau main.py ada di root, BACKEND_DIR='.'
+          # Itu artinya repo kamu memang backend-only, tetap aman.
+          echo "✅ Detected main.py at: $MAIN_PATH"
+          echo "✅ Backend dir: $BACKEND_DIR"
+
+          # 2) Copy hanya isi folder backend ke folder out (jadi root Space = BE)
           rm -rf out
           mkdir -p out
 
-          # Copy hanya folder BE ke folder out (jadi root Space = isi BE)
           rsync -av --delete \
             --exclude ".git" \
             --exclude ".github" \
             "$BACKEND_DIR"/ out/
 
-          # (Opsional) kalau mau pastiin nggak ada file aneh kebawa:
-          # find out -name ".DS_Store" -delete
+          echo "📦 out content:"
+          ls -la out
 
       - name: Push backend-only to Hugging Face Space
         env:
@@ -54,7 +79,7 @@ jobs:
           git config user.email "github-actions@github.com"
 
           git add -A
-          git commit -m "Sync backend from GitHub (BE only)"
+          git commit -m "Sync backend from GitHub (BE only)" || echo "No changes to commit."
 
           git remote add space https://akbarekaputra01:$HF_TOKEN@huggingface.co/spaces/akbarekaputra01/Nostressia-Backend
           git branch -M main
