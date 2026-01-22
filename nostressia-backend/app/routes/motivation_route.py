@@ -7,15 +7,15 @@ from app.core.database import get_db
 from app.models.motivation_model import Motivation
 from app.schemas.motivation_schema import MotivationCreate, MotivationResponse
 
-router = APIRouter()
+router = APIRouter(prefix="/motivations", tags=["Motivations"])
 
 
-@router.get("/motivations", response_model=List[MotivationResponse])
+@router.get("/", response_model=List[MotivationResponse])
 def get_motivations(db: Session = Depends(get_db)):
     return db.query(Motivation).all()
 
 
-@router.post("/motivations", response_model=MotivationResponse)
+@router.post("/", response_model=MotivationResponse)
 def create_motivation(payload: MotivationCreate, db: Session = Depends(get_db)):
     new_motivation = Motivation(
         quote=payload.quote,
@@ -28,7 +28,7 @@ def create_motivation(payload: MotivationCreate, db: Session = Depends(get_db)):
     return new_motivation
 
 
-@router.delete("/motivations/{motivation_id}")
+@router.delete("/{motivation_id}")
 def delete_motivation(motivation_id: int, db: Session = Depends(get_db)):
     motivation = db.query(Motivation).filter(
         Motivation.motivation_id == motivation_id

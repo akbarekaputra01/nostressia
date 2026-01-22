@@ -17,7 +17,7 @@ Semua endpoint berada di bawah prefix:
 Contoh full URL:
 
 ```
-https://akbarekaputra01-nostressia-backend.hf.space/api/user/login
+https://akbarekaputra01-nostressia-backend.hf.space/api/auth/login
 ```
 
 ---
@@ -52,8 +52,11 @@ Jika terjadi error, API akan mengembalikan JSON seperti berikut:
 
 ## 3) Autentikasi User
 
+> **Catatan:** Endpoint `/api/user/*` masih tersedia untuk kompatibilitas lama, namun **deprecated**.
+> Gunakan `/api/auth/*` sebagai jalur utama.
+
 ### 3.1 Register User
-**POST** `/api/user/register`
+**POST** `/api/auth/register`
 
 Request body:
 ```json
@@ -79,7 +82,7 @@ Response:
 ---
 
 ### 3.2 Verifikasi OTP
-**POST** `/api/user/verify-otp`
+**POST** `/api/auth/verify-otp`
 
 Request body:
 ```json
@@ -97,7 +100,7 @@ Response (success):
 ---
 
 ### 3.3 Login User
-**POST** `/api/user/login`
+**POST** `/api/auth/login`
 
 Request body:
 ```json
@@ -125,7 +128,7 @@ Authorization: Bearer <jwt_token>
 ---
 
 ### 3.4 Get Current User
-**GET** `/api/user/me`
+**GET** `/api/auth/me`
 
 Headers:
 ```
@@ -150,7 +153,7 @@ Response:
 ---
 
 ### 3.5 Update Profile
-**PUT** `/api/user/me`
+**PUT** `/api/auth/me`
 
 Headers:
 ```
@@ -171,7 +174,7 @@ Request body (semua field opsional):
 ---
 
 ### 3.6 Change Password
-**PUT** `/api/user/change-password`
+**PUT** `/api/auth/change-password`
 
 Headers:
 ```
@@ -194,7 +197,7 @@ Response:
 ---
 
 ### 3.7 Forgot Password (Kirim OTP)
-**POST** `/api/user/forgot-password`
+**POST** `/api/auth/forgot-password`
 
 Request body:
 ```json
@@ -209,7 +212,7 @@ Response:
 ---
 
 ### 3.8 Reset Password (Konfirmasi OTP)
-**POST** `/api/user/reset-password-confirm`
+**POST** `/api/auth/reset-password-confirm`
 
 Request body:
 ```json
@@ -355,7 +358,7 @@ Response:
 ```
 
 ### 7.2 Predict Global Forecast (Butuh Token)
-**GET** `/api/predict/global-forecast`
+**GET** `/api/predict/global-forecast` _(deprecated, gunakan `/api/forecast/global`)_
 
 Headers:
 ```
