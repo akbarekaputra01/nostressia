@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { BASE_URL } from "../api/config";
-import { fetchGlobalForecast } from "../api/forecastApi";
+import { getStressEligibility } from "../api/stressLevelsApi";
 import { readAuthToken } from "../utils/auth";
 
 const resolveStreakCount = (payload) => {
@@ -63,13 +63,12 @@ export default function MainLayout() {
         };
 
         let streakCount = resolveStreakCount(backendData);
-        if (streakCount === null) {
-          try {
-            const forecastData = await fetchGlobalForecast({ token });
-            streakCount = resolveStreakCount(forecastData);
-          } catch (error) {
-            streakCount = resolveStreakCount(error?.payload);
-          }
+        try {
+          const eligibilityData = await getStressEligibility({ token });
+          streakCount = resolveStreakCount(eligibilityData) ?? streakCount;
+        } catch (error) {
+          const fallbackPayload = error?.payload?.detail ?? error?.payload;
+          streakCount = resolveStreakCount(fallbackPayload) ?? streakCount;
         }
 
         const enrichedUserData = {

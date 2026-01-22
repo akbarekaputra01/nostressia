@@ -15,7 +15,7 @@ export async function fetchGlobalForecast({ token, signal } = {}) {
     throw error;
   }
 
-  const response = await fetch(`${BASE_URL}/predict/global-forecast`, {
+  const response = await fetch(`${BASE_URL}/stress/global-forecast`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -35,7 +35,7 @@ export async function fetchForecastGlobal({ token, signal } = {}) {
     throw error;
   }
 
-  const response = await fetch(`${BASE_URL}/forecast/global`, {
+  const response = await fetch(`${BASE_URL}/stress/global-forecast`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
