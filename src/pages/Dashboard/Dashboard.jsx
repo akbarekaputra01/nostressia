@@ -167,11 +167,71 @@ function getForecastTheme(status) {
 }
 
 function buildForecastList(baseForecast) {
-  const forecastDate = baseForecast?.forecastDate;
-  if (!forecastDate) return [];
-  const baseChance = Number(baseForecast?.chancePercent ?? baseForecast?.probability ?? 0);
+  if (!baseForecast) return [];
+
+  const forecastArray =
+    (Array.isArray(baseForecast) && baseForecast) ||
+    baseForecast?.forecasts ||
+    baseForecast?.forecastList ||
+    baseForecast?.predictions ||
+    baseForecast?.items;
+
+  const getForecastDate = (entry) =>
+    entry?.forecastDate ||
+    entry?.forecast_date ||
+    entry?.date ||
+    entry?.predictionDate ||
+    entry?.prediction_date;
+
+  const resolveChancePercent = (entry, fallbackChance) => {
+    const rawChance = entry?.chancePercent ?? entry?.probability ?? entry?.chance;
+    const chance = Number.isFinite(Number(rawChance)) ? Number(rawChance) : fallbackChance;
+    return Math.round(chance * 10) / 10;
+  };
+
   const threshold = Number(baseForecast?.threshold ?? 0.5);
+  const baseChance = Number(baseForecast?.chancePercent ?? baseForecast?.probability ?? 0);
   const baseProbability = Math.max(0, Math.min(baseChance, 100)) / 100;
+
+  if (Array.isArray(forecastArray)) {
+    return forecastArray.slice(0, 3).map((entry, idx) => {
+      const entryDate = getForecastDate(entry) || getForecastDate(baseForecast);
+      const resolvedDate = entryDate ? new Date(entryDate) : null;
+      if (!resolvedDate || Number.isNaN(resolvedDate.getTime())) {
+        return null;
+      }
+      const chancePercent = resolveChancePercent(entry, baseChance);
+      const status = resolveForecastStatus({
+        predictionLabel: entry?.predictionLabel ?? baseForecast?.predictionLabel,
+        predictionBinary: entry?.predictionBinary ?? baseForecast?.predictionBinary,
+        chancePercent,
+        threshold
+      });
+      const adviceOptions =
+        status === "High"
+          ? highStressAdvices
+          : status === "Moderate"
+          ? moderateStressAdvices
+          : lowStressAdvices;
+      const adviceText =
+        adviceOptions[Math.floor(Math.random() * adviceOptions.length)];
+      const theme = getForecastTheme(status);
+
+      return {
+        dateStr: resolvedDate.toLocaleDateString("en-US", { weekday: "short", day: "numeric" }),
+        fullDate: resolvedDate.toLocaleDateString("en-US", { weekday: "long", day: "numeric", month: "long" }),
+        status,
+        probability: chancePercent,
+        advice: adviceText,
+        modelType: entry?.modelType ?? baseForecast?.modelType,
+        threshold,
+        ...theme
+      };
+    }).filter(Boolean);
+  }
+
+  const forecastDate = getForecastDate(baseForecast);
+  if (!forecastDate) return [];
   const startDate = new Date(forecastDate);
   if (Number.isNaN(startDate.getTime())) return [];
 
@@ -193,13 +253,13 @@ function buildForecastList(baseForecast) {
         : lowStressAdvices;
     const adviceText =
       adviceOptions[Math.floor(Math.random() * adviceOptions.length)];
-    const forecastDate = new Date(startDate);
-    forecastDate.setDate(startDate.getDate() + idx);
+    const iterDate = new Date(startDate);
+    iterDate.setDate(startDate.getDate() + idx);
     const theme = getForecastTheme(status);
 
     return {
-      dateStr: forecastDate.toLocaleDateString("en-US", { weekday: "short", day: "numeric" }),
-      fullDate: forecastDate.toLocaleDateString("en-US", { weekday: "long", day: "numeric", month: "long" }),
+      dateStr: iterDate.toLocaleDateString("en-US", { weekday: "short", day: "numeric" }),
+      fullDate: iterDate.toLocaleDateString("en-US", { weekday: "long", day: "numeric", month: "long" }),
       status,
       probability: chancePercent,
       advice: adviceText,
