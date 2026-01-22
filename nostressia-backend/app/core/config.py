@@ -10,7 +10,15 @@ class Settings(BaseSettings):
 
     app_name: str = Field("Nostressia API", description="Application name exposed in OpenAPI")
     api_prefix: str = Field("/api", description="Root API prefix")
-    allowed_origins: List[str] = Field(default_factory=lambda: ["*"], description="CORS allow list")
+    allowed_origins: List[str] = Field(
+        default_factory=lambda: [
+            "http://localhost:5173",
+            "http://127.0.0.1:5173",
+            "https://nostressia-frontend-develop.vercel.app",
+            "https://nostressia-frontend-develop.vercel.app/",
+        ],
+        description="CORS allow list",
+    )
 
     # --- DATABASE CONFIG ---
     db_user: str = Field(..., env="DB_USER")
