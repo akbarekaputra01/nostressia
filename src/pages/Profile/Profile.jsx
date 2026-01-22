@@ -6,7 +6,7 @@ import Navbar from "../../components/Navbar";
 import { BASE_URL } from "../../api/config"; 
 import { 
   User, Mail, Heart, Settings, LogOut, 
-  Edit3, Trophy, BookOpen, 
+  Edit3, Flame, BookOpen, // [UBAH] Trophy diganti Flame
   ChevronRight, Bell, CheckCircle, X,
   Cake, Smile, Activity, Lock, Key, Clock, Smartphone, Bookmark, Plus, Loader2, AtSign, Check, AlertCircle,
   Eye, EyeOff
@@ -297,23 +297,34 @@ export default function Profile() {
   const [notifSettings, setNotifSettings] = useState({ dailyReminder: true, reminderTime: "08:00", emailUpdates: false });
   const [passwordForm, setPasswordForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
 
-  // ✅ LOGIC BARU: STATISTIK DINAMIS (STREAK & NOTES)
+  // ✅ LOGIC BARU: STATISTIK DINAMIS & WARNA STREAK
+  const getStreakStyle = (streak) => {
+    const s = streak || 0;
+    if (s >= 70) return { iconColor: "text-purple-600", bgColor: "bg-purple-100" }; // Legendary
+    if (s >= 7) return { iconColor: "text-red-500", bgColor: "bg-red-100" }; // Membara
+    return { iconColor: "text-orange-500", bgColor: "bg-orange-100" }; // Normal
+  };
+
+  const streakVal = contextUser?.streak || 0;
+  const streakStyle = getStreakStyle(streakVal);
+
   const stats = [
     { 
       label: "Streak", 
-      value: `${contextUser?.streak || 0} Days`, // Otomatis dari Backend
-      icon: <Trophy className="w-5 h-5 text-yellow-500" />, 
-      bg: "bg-yellow-100" 
+      value: `${streakVal} Days`, 
+      // [UBAH] Gunakan Flame dan logika warna
+      icon: <Flame className={`w-5 h-5 ${streakStyle.iconColor}`} />, 
+      bg: streakStyle.bgColor 
     },
     { 
       label: "Entries", 
-      value: `${contextUser?.diaryCount ?? 0} Notes`, // Otomatis dari Backend
+      value: `${contextUser?.diaryCount ?? 0} Notes`, 
       icon: <BookOpen className="w-5 h-5 text-blue-500" />, 
       bg: "bg-blue-100" 
     },
     { 
       label: "Stress", 
-      value: "Low", // Untuk sementara masih hardcoded (belum ada logic stress)
+      value: "Low", 
       icon: <Activity className="w-5 h-5 text-green-500" />, 
       bg: "bg-green-100" 
     },
@@ -406,7 +417,7 @@ export default function Profile() {
   };
 
   return (
-    <div className="min-h-screen pb-24 md:pb-10 font-sans" style={{ background: `linear-gradient(135deg, #FFF3E0 0%, #eaf2ff 50%, #e3edff 100%)`, backgroundAttachment: "fixed" }}>
+    <div className="min-h-screen pb-24 md:pb-10" style={{ background: `linear-gradient(135deg, #FFF3E0 0%, #eaf2ff 50%, #e3edff 100%)`, backgroundAttachment: "fixed" }}>
       <Navbar user={contextUser} />
       {showGameModal && <FishGameModal onClose={() => setShowGameModal(false)} />}
       {showAvatarModal && <AvatarSelectionModal onClose={() => setShowAvatarModal(false)} onSelect={handleAvatarSelect} currentAvatar={formData.avatar} />}
