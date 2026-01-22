@@ -1,29 +1,58 @@
-- name: Push backend to hub
-  env:
-    HF_TOKEN: ${{ secrets.HF_TOKEN }}
-  run: |
-    set -e
+name: Sync backend to Hugging Face hub
 
-    REPO_URL="https://akbarekaputra01:${HF_TOKEN}@huggingface.co/spaces/akbarekaputra01/nostressia-backend.git"
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
 
-    # pastikan folder backend ada
-    test -d "nostressia-backend"
+jobs:
+  sync-to-hub:
+    runs-on: ubuntu-latest
 
-    # buat repo sementara dari isi folder backend
-    rm -rf /tmp/hf-backend
-    mkdir -p /tmp/hf-backend
-    rsync -av --delete nostressia-backend/ /tmp/hf-backend/
+    environment:
+      name: Production
+      url: https://akbarekaputra01-nostressia-backend.hf.space
 
-    cd /tmp/hf-backend
-    git init
-    git lfs install
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          lfs: true
 
-    git config user.email "actions@github.com"
-    git config user.name "github-actions"
+      - name: Push backend to Hugging Face Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          set -e
 
-    git add -A
-    git commit -m "Sync backend from GitHub ${GITHUB_SHA}" || echo "No changes to commit"
+          # ✅ 1) GANTI INI sesuai nama folder backend kamu di GitHub
+          BACKEND_DIR="nostressia-backend"
 
-    git branch -M main
-    git remote add origin "$REPO_URL"
-    git push -u origin main --force
+          # ✅ 2) URL Space HF (pakai lowercase yang kamu pakai sebelumnya)
+          REPO_URL="https://akbarekaputra01:${HF_TOKEN}@huggingface.co/spaces/akbarekaputra01/nostressia-backend.git"
+
+          echo "Checking backend dir..."
+          ls -la
+          test -d "$BACKEND_DIR"
+
+          echo "Copy backend content to temp repo..."
+          rm -rf /tmp/hf-backend
+          mkdir -p /tmp/hf-backend
+          rsync -av --delete "$BACKEND_DIR"/ /tmp/hf-backend/
+
+          cd /tmp/hf-backend
+
+          echo "Init git repo..."
+          git init
+          git lfs install
+
+          git config user.email "actions@github.com"
+          git config user.name "github-actions"
+
+          echo "Commit and push..."
+          git add -A
+          git commit -m "Sync backend from GitHub ${GITHUB_SHA}" || echo "No changes to commit"
+
+          git branch -M main
+          git remote add origin "$REPO_URL"
+          git push -u origin main --force
