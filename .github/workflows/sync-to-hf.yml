@@ -1,30 +1,29 @@
-name: Sync backend to Hugging Face hub
+- name: Push backend to hub
+  env:
+    HF_TOKEN: ${{ secrets.HF_TOKEN }}
+  run: |
+    set -e
 
-on:
-  push:
-    branches: [main]
-  workflow_dispatch:
+    REPO_URL="https://akbarekaputra01:${HF_TOKEN}@huggingface.co/spaces/akbarekaputra01/nostressia-backend.git"
 
-jobs:
-  sync-to-hub:
-    runs-on: ubuntu-latest
+    # pastikan folder backend ada
+    test -d "nostressia-backend"
 
-    environment:
-      name: Production
-      url: https://akbarekaputra01-nostressia-backend.hf.space
+    # buat repo sementara dari isi folder backend
+    rm -rf /tmp/hf-backend
+    mkdir -p /tmp/hf-backend
+    rsync -av --delete nostressia-backend/ /tmp/hf-backend/
 
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          lfs: true
+    cd /tmp/hf-backend
+    git init
+    git lfs install
 
-      - name: Push backend to hub
-        env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: |
-          git lfs install
-          git remote set-url space https://akbarekaputra01:${HF_TOKEN}@huggingface.co/spaces/akbarekaputra01/nostressia-backend || \
-            git remote add space https://akbarekaputra01:${HF_TOKEN}@huggingface.co/spaces/akbarekaputra01/nostressia-backend
-          git subtree split --prefix=nostressia-backend --ignore-joins -b hf-backend
-          git push --force space hf-backend:main
+    git config user.email "actions@github.com"
+    git config user.name "github-actions"
+
+    git add -A
+    git commit -m "Sync backend from GitHub ${GITHUB_SHA}" || echo "No changes to commit"
+
+    git branch -M main
+    git remote add origin "$REPO_URL"
+    git push -u origin main --force
