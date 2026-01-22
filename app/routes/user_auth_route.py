@@ -3,7 +3,7 @@
 from datetime import date, datetime, timedelta # ✅ Tambah datetime
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
-from fastapi.security import OAuth2PasswordBearer 
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm 
 from pydantic import ValidationError
 
 from app.core.database import get_db
@@ -31,7 +31,7 @@ from app.schemas.user_auth_schema import (
 router = APIRouter(prefix="/user", tags=["User Auth"])
 
 oauth2_scheme = OAuth2PasswordBearer(
-    tokenUrl="/api/user/login",
+    tokenUrl="/api/user/token",
     scheme_name="UserOAuth2PasswordBearer",
 )
 
@@ -58,6 +58,35 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     if user is None:
         raise credentials_exception
         
+    return user
+
+def _issue_token_for_user(user: User, db: Session) -> Token:
+    today = date.today()
+    if user.last_login == today - timedelta(days=1):
+        user.streak = (user.streak or 0) + 1
+    elif user.last_login != today:
+        user.streak = 1
+    user.last_login = today
+    db.commit()
+
+    access_token = create_access_token(
+        data={"sub": user.email, "id": user.user_id, "username": user.username}
+    )
+    return Token(access_token=access_token, token_type="bearer")
+
+def _authenticate_user(identifier: str, password: str, db: Session) -> User:
+    user = None
+    if "@" in identifier:
+        user = db.query(User).filter(User.email == identifier).first()
+    else:
+        user = db.query(User).filter(User.username == identifier).first()
+
+    if not user or not verify_password(password, user.password):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Username/Email atau Password salah")
+
+    if not user.is_verified:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Akun belum diverifikasi.")
+
     return user
 
 # --- ENDPOINTS ---
@@ -201,30 +230,13 @@ async def login(request: Request, db: Session = Depends(get_db)):
     except ValidationError as exc:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=exc.errors())
 
-    user = None
-    if "@" in user_in.identifier:
-        user = db.query(User).filter(User.email == user_in.identifier).first()
-    else:
-        user = db.query(User).filter(User.username == user_in.identifier).first()
-    
-    if not user or not verify_password(user_in.password, user.password):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Username/Email atau Password salah")
-    
-    if not user.is_verified:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Akun belum diverifikasi.")
-    
-    today = date.today()
-    if user.last_login == today - timedelta(days=1):
-        user.streak = (user.streak or 0) + 1
-    elif user.last_login != today:
-        user.streak = 1
-    user.last_login = today
-    db.commit()
-    
-    access_token = create_access_token(
-        data={"sub": user.email, "id": user.user_id, "username": user.username}
-    )
-    return {"access_token": access_token, "token_type": "bearer"}
+    user = _authenticate_user(user_in.identifier, user_in.password, db)
+    return _issue_token_for_user(user, db)
+
+@router.post("/token", response_model=Token)
+def login_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    user = _authenticate_user(form_data.username, form_data.password, db)
+    return _issue_token_for_user(user, db)
 
 @router.get("/me", response_model=UserResponse)
 def read_users_me(current_user: User = Depends(get_current_user)):

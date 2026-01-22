@@ -17,7 +17,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "1440
 
 # Setup Auth Scheme untuk Swagger UI
 oauth2_scheme = OAuth2PasswordBearer(
-    tokenUrl="/api/user/login",
+    tokenUrl="/api/user/token",
     scheme_name="UserOAuth2PasswordBearer",
 )
 
