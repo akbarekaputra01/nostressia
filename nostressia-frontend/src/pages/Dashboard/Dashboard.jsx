@@ -1,7 +1,8 @@
 // src/pages/Dashboard/Dashboard.jsx
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate, useOutletContext } from "react-router-dom"; 
 import { fetchGlobalForecast } from "../../api/forecastApi";
+import { addStressLog, getStressEligibility, restoreStressLog } from "../../api/stressLevelsApi";
 import { BASE_URL } from "../../api/config";
 import Footer from "../../components/Footer";
 import Navbar from "../../components/Navbar";
@@ -270,11 +271,38 @@ function buildForecastList(baseForecast) {
   });
 }
 
+function normalizeEligibility(payload) {
+  const eligibility = payload?.eligibility ?? payload?.detail ?? payload;
+  if (!eligibility) return null;
+
+  const streak = Number(eligibility?.streak ?? eligibility?.streakCount ?? 0);
+  const requiredStreak = Number(
+    eligibility?.requiredStreak ?? eligibility?.required_streak ?? 7
+  );
+  const restoreUsed = Number(
+    eligibility?.restoreUsed ?? eligibility?.restore_used ?? 0
+  );
+  const restoreLimit = Number(
+    eligibility?.restoreLimit ?? eligibility?.restore_limit ?? 3
+  );
+
+  return {
+    streak,
+    requiredStreak,
+    restoreUsed,
+    restoreLimit,
+    missing: eligibility?.missing,
+    note: eligibility?.note,
+  };
+}
+
 function buildForecastEligibilityMessage({
   reason,
   streakCount,
   restoreUsed,
-  restoreRemaining
+  restoreRemaining,
+  requiredStreak = 7,
+  restoreLimit = 3
 } = {}) {
   const safeStreak = Number.isFinite(Number(streakCount)) ? streakCount : "-";
   const safeUsed = Number.isFinite(Number(restoreUsed)) ? restoreUsed : "-";
@@ -283,9 +311,9 @@ function buildForecastEligibilityMessage({
   return [
     "Forecast belum tersedia karena data belum memenuhi syarat.",
     reason ? `Alasan: ${reason}` : null,
-    `Data terkumpul: ${safeStreak}/7.`,
-    "• Butuh 7 data (tidak harus berturut).",
-    "• Restore boleh dipakai (maks 3/bulan).",
+    `Data terkumpul: ${safeStreak}/${requiredStreak}.`,
+    `• Butuh ${requiredStreak} data (tidak harus berturut).`,
+    `• Restore boleh dipakai (maks ${restoreLimit}/bulan).`,
     "• Minimal 4 data asli di window 7.",
     `Restore terpakai: ${safeUsed} • Sisa: ${safeRemaining}.`
   ]
@@ -323,6 +351,9 @@ export default function Dashboard() {
   const [forecastError, setForecastError] = useState("");
   // State khusus untuk animasi tutup panel
   const [isClosingPanel, setIsClosingPanel] = useState(false);
+  const [eligibilityData, setEligibilityData] = useState(null);
+  const [eligibilityLoading, setEligibilityLoading] = useState(true);
+  const [eligibilityError, setEligibilityError] = useState("");
 
   // --- FORM STATE ---
   const [gpa, setGpa] = useState(() => {
@@ -345,11 +376,36 @@ export default function Dashboard() {
   // Calendar State
   const [calendarDate, setCalendarDate] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
   const [selectedDate, setSelectedDate] = useState(today);
+  const [activeLogDate, setActiveLogDate] = useState(TODAY_KEY);
+  const [isRestoreMode, setIsRestoreMode] = useState(false);
 
   const month = calendarDate.getMonth();
   const year = calendarDate.getFullYear();
   const firstDayOfMonth = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const selectedDateKey = formatDate(selectedDate);
+  const selectedDayData = stressData[selectedDateKey];
+  const selectedDayHasData = selectedDayData && !selectedDayData.isEmpty;
+  const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const selectedCalendarDate = new Date(
+    selectedDate.getFullYear(),
+    selectedDate.getMonth(),
+    selectedDate.getDate()
+  );
+  const isSelectedPast = selectedCalendarDate < todayDate;
+  const normalizedEligibility = normalizeEligibility(eligibilityData);
+  const restoreUsed = normalizedEligibility?.restoreUsed ?? 0;
+  const restoreLimit = normalizedEligibility?.restoreLimit ?? 3;
+  const restoreRemaining = Math.max(restoreLimit - restoreUsed, 0);
+  const canRestoreSelectedDay = isSelectedPast && !selectedDayHasData;
+  const restoreHint = (() => {
+    if (eligibilityLoading) return "Memuat eligibility restore...";
+    if (eligibilityError) return "Gagal memuat eligibility restore.";
+    if (restoreRemaining <= 0) return "Restore limit bulan ini sudah habis.";
+    if (!isSelectedPast) return "Pilih tanggal sebelum hari ini untuk restore.";
+    if (selectedDayHasData) return "Tanggal ini sudah terisi.";
+    return "Tanggal kosong. Kamu bisa restore data.";
+  })();
 
   // --- LOGIKA GRADIEN BACKGROUND ---
   let gradientBg = 'radial-gradient(circle at 50% 30%, rgba(156, 163, 175, 0.15), transparent 70%)'; 
@@ -407,6 +463,48 @@ export default function Dashboard() {
       setIsClosingPanel(false); // Reset status animasi
     }, 380); // Waktu sedikit kurang dari durasi animasi CSS (0.4s) agar mulus
   }
+
+  const refreshEligibility = useCallback(
+    async ({ signal } = {}) => {
+      setEligibilityLoading(true);
+      setEligibilityError("");
+      try {
+        const token =
+          localStorage.getItem("token") ||
+          localStorage.getItem("access_token") ||
+          localStorage.getItem("accessToken") ||
+          localStorage.getItem("jwt");
+
+        if (!token) {
+          setEligibilityData(null);
+          return;
+        }
+
+        const data = await getStressEligibility({ token, signal });
+        setEligibilityData(data);
+      } catch (error) {
+        if (error?.name === "AbortError") return;
+        if (error?.status === 401) {
+          localStorage.removeItem("token");
+          navigate("/login", { replace: true });
+          return;
+        }
+        const detail = error?.payload?.detail || error?.message;
+        setEligibilityError(
+          `Gagal memuat eligibility.${detail ? ` ${detail}` : ""}`
+        );
+      } finally {
+        setEligibilityLoading(false);
+      }
+    },
+    [navigate]
+  );
+
+  useEffect(() => {
+    const controller = new AbortController();
+    refreshEligibility({ signal: controller.signal });
+    return () => controller.abort();
+  }, [refreshEligibility]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -472,6 +570,7 @@ export default function Dashboard() {
             color,
             isToday: dateKey === TODAY_KEY,
             isEmpty: false,
+            isRestored: log?.isRestored ?? log?.is_restored ?? false,
             logId: log?.stressLevelId ?? log?.id ?? log?._id ?? null,
           };
         });
@@ -531,22 +630,46 @@ export default function Dashboard() {
           return;
         }
 
-        const data = await fetchGlobalForecast({ token, signal: controller.signal });
+        let eligibilitySnapshot = normalizedEligibility;
+        if (!eligibilitySnapshot) {
+          const eligibilityRaw = await getStressEligibility({
+            token,
+            signal: controller.signal,
+          });
+          setEligibilityData(eligibilityRaw);
+          eligibilitySnapshot = normalizeEligibility(eligibilityRaw);
+        }
 
-        if (data?.isEligible === false) {
+        const requiredStreak = eligibilitySnapshot?.requiredStreak ?? 7;
+        const restoreLimit = eligibilitySnapshot?.restoreLimit ?? 3;
+        const restoreRemainingCalc = Math.max(
+          (eligibilitySnapshot?.restoreLimit ?? 3) -
+            (eligibilitySnapshot?.restoreUsed ?? 0),
+          0
+        );
+
+        if (!eligibilitySnapshot || eligibilitySnapshot.streak < requiredStreak) {
           setForecastList([]);
           setForecastError(
             buildForecastEligibilityMessage({
-              reason: data?.reason,
-              streakCount: data?.streakCount,
-              restoreUsed: data?.restoreUsed,
-              restoreRemaining: data?.restoreRemaining
+              reason: eligibilitySnapshot?.note,
+              streakCount: eligibilitySnapshot?.streak,
+              restoreUsed: eligibilitySnapshot?.restoreUsed,
+              restoreRemaining: restoreRemainingCalc,
+              requiredStreak,
+              restoreLimit,
             })
           );
           return;
         }
 
-        const baseForecast = data?.forecast ?? data?.data ?? data;
+        const data = await fetchGlobalForecast({
+          token,
+          signal: controller.signal,
+        });
+
+        const baseForecast =
+          data?.forecast ?? data?.data ?? data?.forecastData ?? data;
         const list = buildForecastList(baseForecast);
         setForecastList(list);
         if (list.length === 0) {
@@ -559,13 +682,23 @@ export default function Dashboard() {
           navigate("/login", { replace: true });
           return;
         }
-        if (error?.payload?.isEligible === false) {
+        const normalizedErrorEligibility = normalizeEligibility(
+          error?.payload?.detail ?? error?.payload
+        );
+        if (normalizedErrorEligibility) {
+          const restoreRemainingCalc = Math.max(
+            (normalizedErrorEligibility.restoreLimit ?? 3) -
+              (normalizedErrorEligibility.restoreUsed ?? 0),
+            0
+          );
           setForecastError(
             buildForecastEligibilityMessage({
-              reason: error?.payload?.reason,
-              streakCount: error?.payload?.streakCount,
-              restoreUsed: error?.payload?.restoreUsed,
-              restoreRemaining: error?.payload?.restoreRemaining
+              reason: normalizedErrorEligibility.note,
+              streakCount: normalizedErrorEligibility.streak,
+              restoreUsed: normalizedErrorEligibility.restoreUsed,
+              restoreRemaining: restoreRemainingCalc,
+              requiredStreak: normalizedErrorEligibility.requiredStreak,
+              restoreLimit: normalizedErrorEligibility.restoreLimit,
             })
           );
           return;
@@ -586,10 +719,20 @@ export default function Dashboard() {
 
     fetchForecast();
     return () => controller.abort();
-  }, [navigate]);
+  }, [navigate, normalizedEligibility]);
 
-  function handleOpenForm() {
+  function handleOpenForm({ mode = "today", dateKey = TODAY_KEY } = {}) {
+    if (mode === "restore") {
+      setIsRestoreMode(true);
+      setActiveLogDate(dateKey);
+      resetFormToEmpty();
+      setIsFlipped(true);
+      return;
+    }
+
     const todayData = stressData[TODAY_KEY];
+    setIsRestoreMode(false);
+    setActiveLogDate(TODAY_KEY);
     if (hasSubmittedToday && todayData && !todayData.isEmpty) {
       setSleepHours(todayData.sleep);
       setStudyHours(todayData.study);
@@ -615,7 +758,7 @@ export default function Dashboard() {
     setIsEditingGpa(false);
   }
 
-  async function saveStressLog(status) {
+  async function saveStressLog(status, { dateKey, isRestore } = {}) {
     const token =
       localStorage.getItem("token") ||
       localStorage.getItem("access_token") ||
@@ -625,7 +768,7 @@ export default function Dashboard() {
     if (!token) return null;
 
     const logPayload = {
-      date: TODAY_KEY,
+      date: dateKey,
       stressLevel: status,
       gpa: Number(gpa),
       extracurricularHourPerDay: Number(extraHours),
@@ -635,42 +778,24 @@ export default function Dashboard() {
       socialHourPerDay: Number(socialHours),
       emoji: moodIndex,
     };
-
-    const requestConfig = {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(logPayload),
-    };
-
-    let logResponse = null;
-    if (todayLogId) {
-      logResponse = await fetch(`${BASE_URL}/stress-levels/${todayLogId}`, {
-        method: "PUT",
-        ...requestConfig,
-      });
-      if (!logResponse.ok && (logResponse.status === 404 || logResponse.status === 405)) {
-        logResponse = await fetch(`${BASE_URL}/stress-levels/`, {
-          method: "POST",
-          ...requestConfig,
-        });
+    try {
+      const logData = await (isRestore ? restoreStressLog : addStressLog)(
+        logPayload,
+        { token }
+      );
+      return logData?.stressLevelId ?? logData?.id ?? logData?._id ?? null;
+    } catch (error) {
+      if (error?.status === 409) {
+        alert("Data untuk tanggal ini sudah ada. Update belum tersedia.");
+        return null;
       }
-    } else {
-      logResponse = await fetch(`${BASE_URL}/stress-levels/`, {
-        method: "POST",
-        ...requestConfig,
-      });
-    }
-
-    if (!logResponse.ok) {
-      const logError = await logResponse.json().catch(() => ({}));
-      console.error("Failed to save stress log:", logError);
+      if (error?.status === 403 && isRestore) {
+        alert("Restore limit bulan ini sudah tercapai.");
+        return null;
+      }
+      console.error("Failed to save stress log:", error);
       return null;
     }
-
-    const logData = await logResponse.json().catch(() => null);
-    return logData?.stressLevelId ?? logData?.id ?? logData?._id ?? null;
   }
 
   async function handleSaveForm(e) {
@@ -685,6 +810,8 @@ export default function Dashboard() {
     if (sleepHours === "" || sleepHours < 0 || sleepHours > 24) return alert("Please enter valid sleep hours (0-24).");
 
     try {
+      const targetDateKey = activeLogDate || TODAY_KEY;
+      const isTargetToday = targetDateKey === TODAY_KEY;
       const payload = {
         studyHours: Number(studyHours),
         extracurricularHours: Number(extraHours),
@@ -694,7 +821,7 @@ export default function Dashboard() {
         gpa: Number(gpa),
       };
 
-      const response = await fetch(`${BASE_URL}/predict/current-stress`, {
+      const response = await fetch(`${BASE_URL}/stress/current`, {
         method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload),
       });
       const apiData = await response.json();
@@ -702,26 +829,39 @@ export default function Dashboard() {
 
       const { score, color, status } = mapPredictionToUI(apiData.result);
       
+      const savedLogId = await saveStressLog(status, {
+        dateKey: targetDateKey,
+        isRestore: isRestoreMode,
+      });
+      if (!savedLogId) return;
       setSuccessModal({ 
         visible: true, 
-        title: hasSubmittedToday ? "Data Updated!" : "Analysis Complete!", 
+        title: isRestoreMode
+          ? "Restore Complete!"
+          : hasSubmittedToday
+          ? "Data Updated!"
+          : "Analysis Complete!",
         text: apiData.message // Menggunakan pesan dari Backend
       });
 
-      setStressScore(score);
-      setHasSubmittedToday(true);
-
-      const savedLogId = await saveStressLog(status);
+      if (isTargetToday) {
+        setStressScore(score);
+        setHasSubmittedToday(true);
+      }
       const resolvedLogId = savedLogId ?? todayLogId ?? null;
-      if (savedLogId) setTodayLogId(savedLogId);
+      if (savedLogId && isTargetToday) setTodayLogId(savedLogId);
 
       setStressData((prev) => ({
         ...prev,
-        [TODAY_KEY]: {
+        [targetDateKey]: {
           level: score, label: apiData.result, 
           sleep: Number(sleepHours), study: Number(studyHours),
           extra: Number(extraHours), social: Number(socialHours), physical: Number(physicalHours),
-          mood: moods[moodIndex], color: color, isToday: true, isEmpty: false,
+          mood: moods[moodIndex],
+          color: color,
+          isToday: isTargetToday,
+          isEmpty: false,
+          isRestored: isRestoreMode,
           logId: resolvedLogId,
         },
       }));
@@ -729,7 +869,13 @@ export default function Dashboard() {
       setTimeout(() => {
         setSuccessModal((prev) => ({ ...prev, visible: false }));
         setIsFlipped(false);
+        setIsRestoreMode(false);
+        setActiveLogDate(TODAY_KEY);
       }, 2500);
+
+      if (savedLogId) {
+        refreshEligibility();
+      }
 
     } catch (error) {
       console.error("❌ Gagal Konek:", error);
@@ -966,8 +1112,29 @@ export default function Dashboard() {
                   style={{ backgroundColor: "rgba(255,255,255,0.45)", zIndex: isFlipped ? 10 : 0, pointerEvents: isFlipped ? "auto" : "none" }}
                 >
                   <header className="flex justify-between items-center mb-4 transition-opacity duration-300" style={{ opacity: successModal.visible ? 0 : 1 }}>
-                    <h3 className="text-xl font-bold text-gray-800">{hasSubmittedToday ? "Edit Today's Data" : "Log Today's Data"}</h3>
-                    <button type="button" className="w-8 h-8 rounded-full flex items-center justify-center text-gray-600 hover:text-gray-900 hover:bg-black/5 transition-colors cursor-pointer" onClick={() => setIsFlipped(false)}>
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-800">
+                        {isRestoreMode
+                          ? "Restore Data"
+                          : hasSubmittedToday
+                          ? "Edit Today's Data"
+                          : "Log Today's Data"}
+                      </h3>
+                      {isRestoreMode && (
+                        <p className="text-xs font-semibold text-gray-500 mt-1">
+                          Target: {activeLogDate}
+                        </p>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-gray-600 hover:text-gray-900 hover:bg-black/5 transition-colors cursor-pointer"
+                      onClick={() => {
+                        setIsFlipped(false);
+                        setIsRestoreMode(false);
+                        setActiveLogDate(TODAY_KEY);
+                      }}
+                    >
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                   </header>
@@ -1033,8 +1200,16 @@ export default function Dashboard() {
                         ))}
                       </div>
                     </div>
-                    <button type="submit" className="w-full py-3 rounded-xl font-bold text-white transition-all hover:brightness-110 mt-2 cursor-pointer" style={{ backgroundColor: hasSubmittedToday ? brandOrange : brandBlue }}>
-                      {hasSubmittedToday ? <span className="flex items-center justify-center"><i className="ph ph-floppy-disk mr-2" /> Update Data</span> : <span className="flex items-center justify-center"><i className="ph ph-check-circle mr-2" /> Save Data</span>}
+                    <button type="submit" className="w-full py-3 rounded-xl font-bold text-white transition-all hover:brightness-110 mt-2 cursor-pointer" style={{ backgroundColor: isRestoreMode ? brandOrange : hasSubmittedToday ? brandOrange : brandBlue }}>
+                      {isRestoreMode ? (
+                        <span className="flex items-center justify-center">
+                          <i className="ph ph-clock-counter-clockwise mr-2" /> Restore Data
+                        </span>
+                      ) : hasSubmittedToday ? (
+                        <span className="flex items-center justify-center"><i className="ph ph-floppy-disk mr-2" /> Update Data</span>
+                      ) : (
+                        <span className="flex items-center justify-center"><i className="ph ph-check-circle mr-2" /> Save Data</span>
+                      )}
                     </button>
                   </form>
 
@@ -1197,6 +1372,54 @@ export default function Dashboard() {
                 })}
               </div>
 
+              <div className="mt-4 rounded-2xl border border-white/40 bg-white/60 p-4 shadow-sm">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h4 className="text-sm font-bold text-gray-800 flex items-center gap-2">
+                      <i className="ph ph-fire text-orange-500" />
+                      Restore Streak
+                    </h4>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Gunakan restore untuk mengisi tanggal yang terlewat. Maks{" "}
+                      {restoreLimit} kali per bulan.
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Sisa restore bulan ini:{" "}
+                      <span className="font-semibold text-gray-700">
+                        {restoreRemaining}
+                      </span>
+                      /{restoreLimit}.
+                    </p>
+                    {eligibilityError && (
+                      <p className="text-xs text-red-500 mt-1">
+                        {eligibilityError}
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleOpenForm({ mode: "restore", dateKey: selectedDateKey })
+                    }
+                    disabled={
+                      eligibilityLoading ||
+                      restoreRemaining <= 0 ||
+                      !canRestoreSelectedDay
+                    }
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm ${
+                      eligibilityLoading ||
+                      restoreRemaining <= 0 ||
+                      !canRestoreSelectedDay
+                        ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                        : "bg-orange-500 text-white hover:bg-orange-600"
+                    }`}
+                  >
+                    Restore {selectedDateKey}
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500 mt-2">{restoreHint}</p>
+              </div>
+
               {/* --- NEW SECTION: 3-DAY FORECAST --- */}
               <div className="mt-auto pt-6 pb-2">
                 <div className="w-full h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent mb-4"></div>
@@ -1268,6 +1491,12 @@ export default function Dashboard() {
                     <div>
                         <h4 className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">Daily Recap</h4>
                         <h2 className="text-2xl font-extrabold text-gray-800">{dayDetail.dateStr}</h2>
+                        {dayDetail.isRestored && (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-orange-600 bg-orange-50 border border-orange-100 rounded-full px-2 py-0.5 mt-2">
+                            <i className="ph ph-clock-counter-clockwise" />
+                            Restored
+                          </span>
+                        )}
                     </div>
                     <button onClick={() => setDayDetail(null)} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition cursor-pointer">
                         <i className="ph ph-x text-lg text-gray-600"></i>
