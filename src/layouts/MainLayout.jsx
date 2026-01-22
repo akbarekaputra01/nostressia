@@ -3,7 +3,22 @@ import React, { useState, useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { BASE_URL } from "../api/config";
+import { fetchGlobalForecast } from "../api/forecastApi";
 import { readAuthToken } from "../utils/auth";
+
+const resolveStreakCount = (payload) => {
+  const candidates = [
+    payload?.streakCount,
+    payload?.streak,
+    payload?.data?.streakCount,
+    payload?.data?.streak,
+    payload?.meta?.streakCount,
+    payload?.meta?.streak,
+  ];
+
+  const value = candidates.find((candidate) => Number.isFinite(Number(candidate)));
+  return Number.isFinite(Number(value)) ? Number(value) : null;
+};
 
 export default function MainLayout() {
   const navigate = useNavigate();
@@ -47,9 +62,24 @@ export default function MainLayout() {
           gender: backendData.gender || backendData.sex || "",
         };
 
+        let streakCount = resolveStreakCount(backendData);
+        if (streakCount === null) {
+          try {
+            const forecastData = await fetchGlobalForecast({ token });
+            streakCount = resolveStreakCount(forecastData);
+          } catch (error) {
+            streakCount = resolveStreakCount(error?.payload);
+          }
+        }
+
+        const enrichedUserData = {
+          ...completeUserData,
+          streak: streakCount ?? completeUserData.streak ?? 0,
+        };
+
         // 4. Update State & SIMPAN SEMUA KE CACHE (JSON)
-        setUser(completeUserData);
-        localStorage.setItem("cache_userData", JSON.stringify(completeUserData));
+        setUser(enrichedUserData);
+        localStorage.setItem("cache_userData", JSON.stringify(enrichedUserData));
 
       } catch (error) {
         console.error("Gagal update user data di layout:", error);
