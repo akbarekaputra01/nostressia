@@ -29,7 +29,10 @@ from app.schemas.user_auth_schema import (
 
 router = APIRouter(prefix="/user", tags=["User Auth"])
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="user/login")
+oauth2_scheme = OAuth2PasswordBearer(
+    tokenUrl="/api/user/login",
+    scheme_name="UserOAuth2PasswordBearer",
+)
 
 # --- KONFIGURASI ---
 OTP_EXPIRE_MINUTES = 5 # ✅ Waktu Kadaluarsa OTP

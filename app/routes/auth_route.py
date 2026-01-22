@@ -9,7 +9,10 @@ from app.utils.jwt_handler import create_access_token, decode_access_token
 from app.models.admin_model import Admin 
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
-oauth2_admin_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/admin/login")
+oauth2_admin_scheme = OAuth2PasswordBearer(
+    tokenUrl="/api/auth/admin/login",
+    scheme_name="AdminOAuth2PasswordBearer",
+)
 
 def get_current_admin(token: str = Depends(oauth2_admin_scheme), db: Session = Depends(get_db)):
     credentials_exception = HTTPException(
