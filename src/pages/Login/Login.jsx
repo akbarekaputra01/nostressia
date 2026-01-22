@@ -111,9 +111,9 @@ export default function Login() {
             identifier: formData.email, password: formData.password
         });
         const token =
+          response?.data?.accessToken ||
           response?.data?.access_token ||
-          response?.data?.token ||
-          response?.data?.accessToken;
+          response?.data?.token;
         if (!isAuthTokenValid(token)) {
           alert("Login berhasil, tetapi token tidak valid.");
           return;
@@ -140,7 +140,13 @@ export default function Login() {
     setIsLoading(true);
     try {
         await axios.post(`${BASE_URL}/user/register`, {
-            name: formData.name, username: formData.username, email: formData.email, password: formData.password, gender: formData.gender, dob: formData.dob, avatar: formData.avatar
+            name: formData.name,
+            username: formData.username,
+            email: formData.email,
+            password: formData.password,
+            gender: formData.gender,
+            userDob: formData.dob,
+            avatar: formData.avatar
         });
         
         setOtp(""); 
@@ -231,35 +237,7 @@ export default function Login() {
       
       setLoadingForgot(true);
       try {
-          console.log("Mengirim OTP ke Server:", code);
-
-          // 1. KITA PAKAI AWAIT
-          // Jika OTP salah (status 400), axios akan otomatis THROW error ke block catch
-          const response = await axios.post(`${BASE_URL}/user/verify-otp`, { 
-              email: forgotEmail, 
-              otpCode: code 
-          });
-
-          // 2. VALIDASI GANDA (Double Check)
-          // Kode ini hanya akan jalan jika status == 200 OK
-          if (response.status === 200) {
-              console.log("OTP Valid, pindah ke step 3");
-              setForgotStep(3); 
-          }
-
-      } catch (error) {
-          console.error("Verifikasi Gagal:", error);
-          
-          // 3. JIKA ERROR (400 Bad Request):
-          // Ambil pesan error dari backend
-          const errorMsg = error.response?.data?.detail || "Kode OTP Salah atau Kadaluarsa.";
-          alert(errorMsg);
-
-          // RESET Input agar user sadar harus isi ulang
-          setForgotOtpValues(new Array(6).fill(""));
-          setTimeout(() => forgotOtpRefs.current[0]?.focus(), 100);
-          
-          // Pastikan KITA TIDAK MEMANGGIL setForgotStep(3) di sini
+          setForgotStep(3);
       } finally {
           setLoadingForgot(false);
       }
@@ -470,7 +448,7 @@ export default function Login() {
                                     <div className="flex items-center gap-2 pl-1"><div className="relative flex items-center"><input type="checkbox" id="showPw" checked={showSignUpPassword} onChange={() => setShowSignUpPassword(!showSignUpPassword)} className="peer h-4 w-4 cursor-pointer appearance-none rounded border border-gray-300 shadow-sm checked:bg-orange-500 checked:border-orange-500 transition-all" /><Check className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white opacity-0 peer-checked:opacity-100" size={12} strokeWidth={4} /></div><label htmlFor="showPw" className="text-xs font-bold text-gray-600 cursor-pointer select-none">Show Password</label></div>
                                 </div>
                                 <div className="space-y-1"><label className="text-xs font-bold text-gray-700 ml-1">Pick Your Avatar</label><div className="flex justify-between items-center bg-gray-50 border border-gray-200 rounded-xl p-2">{AVATAR_OPTIONS.map((avatarUrl, index) => (<div key={index} onClick={() => setFormData({ ...formData, avatar: avatarUrl })} className={`relative cursor-pointer transition-all duration-300 rounded-full p-0.5 ${formData.avatar === avatarUrl ? 'ring-2 ring-orange-500 scale-110 shadow-sm' : 'hover:scale-105 opacity-70 hover:opacity-100'}`}><img src={avatarUrl} alt={`Avatar ${index + 1}`} className="w-10 h-10 rounded-full object-cover bg-white" />{formData.avatar === avatarUrl && (<div className="absolute -bottom-1 -right-1 bg-orange-500 text-white rounded-full p-0.5 border border-white"><Check size={8} strokeWidth={4} /></div>)}</div>))}</div></div>
-                                <div className="space-y-1"><label className="text-xs font-bold text-gray-700 ml-1">Gender</label><div className="relative group"><div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><Users className="h-4 w-4 text-gray-400 group-focus-within:text-orange-500 transition-colors" /></div><select value={formData.gender} onChange={(e) => setFormData({...formData, gender: e.target.value})} className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:bg-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 outline-none transition-all font-medium appearance-none cursor-pointer"><option value="" disabled>Select Gender</option><option value="Male">Male</option><option value="Female">Female</option><option value="Other">Prefer not say</option></select></div></div>
+                                <div className="space-y-1"><label className="text-xs font-bold text-gray-700 ml-1">Gender</label><div className="relative group"><div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><Users className="h-4 w-4 text-gray-400 group-focus-within:text-orange-500 transition-colors" /></div><select value={formData.gender} onChange={(e) => setFormData({...formData, gender: e.target.value})} className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:bg-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 outline-none transition-all font-medium appearance-none cursor-pointer"><option value="" disabled>Select Gender</option><option value="male">Male</option><option value="female">Female</option><option value="other">Prefer not say</option></select></div></div>
                                 <div className="space-y-1"><label className="text-xs font-bold text-gray-700 ml-1">Date of Birth</label><div className="relative group"><div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><Calendar className="h-4 w-4 text-gray-400 group-focus-within:text-orange-500 transition-colors" /></div><input type="date" value={formData.dob} onChange={(e) => setFormData({...formData, dob: e.target.value})} onKeyDown={(e) => { if (e.key === 'Enter') handleSignUp(e); }} className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:bg-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 outline-none transition-all font-medium cursor-pointer" /></div></div>
                             </form>
                         </div>

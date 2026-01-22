@@ -32,7 +32,7 @@ export default function AdminLogin() {
       }
 
       // Jika berhasil login via API, simpan token & data
-      localStorage.setItem("adminToken", data.access_token);
+      localStorage.setItem("adminToken", data.accessToken || data.access_token);
       localStorage.setItem("adminData", JSON.stringify(data.admin));
       localStorage.setItem("adminAuth", "true");
 
