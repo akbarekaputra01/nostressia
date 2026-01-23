@@ -186,7 +186,7 @@ async def login(request: Request, db: Session = Depends(get_db)):
     if content_type.startswith("application/x-www-form-urlencoded") or content_type.startswith("multipart/form-data"):
         form = await request.form()
         payload = {
-            "identifier": form.get("identifier") or form.get("username"),
+            "identifier": form.get("identifier") or form.get("username") or form.get("email"),
             "password": form.get("password"),
         }
     else:
@@ -200,6 +200,10 @@ async def login(request: Request, db: Session = Depends(get_db)):
         }
 
     try:
+        if isinstance(payload.get("identifier"), str):
+            payload["identifier"] = payload["identifier"].strip()
+        if isinstance(payload.get("password"), str):
+            payload["password"] = payload["password"].strip()
         user_in = UserLogin.model_validate(payload)
     except ValidationError as exc:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=exc.errors())
