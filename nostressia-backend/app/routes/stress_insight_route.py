@@ -48,4 +48,8 @@ def get_global_forecast(
             detail=eligibility.model_dump(by_alias=True),
         )
 
-    return forecast_service.build_global_forecast_payload(eligibility)
+    return forecast_service.get_global_forecast_for_user(
+        current_user.user_id,
+        eligibility,
+        db,
+    )
