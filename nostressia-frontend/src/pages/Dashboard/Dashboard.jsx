@@ -1,5 +1,5 @@
 // src/pages/Dashboard/Dashboard.jsx
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useOutletContext } from "react-router-dom"; 
 import { fetchGlobalForecast } from "../../api/forecastApi";
 import { addStressLog, getStressEligibility, restoreStressLog } from "../../api/stressLevelsApi";
@@ -393,7 +393,10 @@ export default function Dashboard() {
     selectedDate.getDate()
   );
   const isSelectedPast = selectedCalendarDate < todayDate;
-  const normalizedEligibility = normalizeEligibility(eligibilityData);
+  const normalizedEligibility = useMemo(
+    () => normalizeEligibility(eligibilityData),
+    [eligibilityData]
+  );
   const restoreUsed = normalizedEligibility?.restoreUsed ?? 0;
   const restoreLimit = normalizedEligibility?.restoreLimit ?? 3;
   const restoreRemaining = Math.max(restoreLimit - restoreUsed, 0);
