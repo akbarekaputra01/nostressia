@@ -14,6 +14,7 @@ from app.routes.admin_diary_route import router as admin_diary_router # 👈 Imp
 
 # --- 1. IMPORT ROUTE BARU ---
 from app.routes.admin_user_route import router as admin_user_router 
+from app.routes.analytics_route import router as analytics_router
 
 api_router = APIRouter()
 
@@ -27,3 +28,4 @@ api_router.include_router(stress_router)
 api_router.include_router(diary_router)
 api_router.include_router(admin_user_router)# ... import lainnya ...
 api_router.include_router(admin_diary_router) # 👈 Daftarkan
+api_router.include_router(analytics_router)

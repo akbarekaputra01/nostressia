@@ -1,46 +1,23 @@
-import { BASE_URL } from "./config";
-import { parseJsonResponse } from "./request";
+import client, { unwrapResponse } from "./client";
 
-const buildAuthHeaders = (token) => ({
-  Authorization: `Bearer ${token}`,
-});
-
-export async function createDiary(data, { token, signal } = {}) {
-  const res = await fetch(`${BASE_URL}/diary/`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", ...buildAuthHeaders(token) },
-    body: JSON.stringify(data),
-    signal,
-  });
-  return parseJsonResponse(res);
+export async function createDiary(data) {
+  const response = await client.post("/diary/", data);
+  return unwrapResponse(response);
 }
 
-export async function getMyDiaries({ token, signal } = {}) {
-  const res = await fetch(`${BASE_URL}/diary/`, {
-    method: "GET",
-    headers: { ...buildAuthHeaders(token) },
-    signal,
-  });
-  return parseJsonResponse(res);
+export async function getMyDiaries() {
+  const response = await client.get("/diary/");
+  return unwrapResponse(response);
 }
 
-export async function getDiaryById(diaryId, { token, signal } = {}) {
-  const res = await fetch(`${BASE_URL}/diary/${diaryId}`, {
-    method: "GET",
-    headers: { ...buildAuthHeaders(token) },
-    signal,
-  });
-  return parseJsonResponse(res);
+export async function getDiaryById(diaryId) {
+  const response = await client.get(`/diary/${diaryId}`);
+  return unwrapResponse(response);
 }
 
-export async function updateDiary(diaryId, data, { token, signal } = {}) {
-  const res = await fetch(`${BASE_URL}/diary/${diaryId}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json", ...buildAuthHeaders(token) },
-    body: JSON.stringify(data),
-    signal,
-  });
-  return parseJsonResponse(res);
+export async function updateDiary(diaryId, data) {
+  const response = await client.put(`/diary/${diaryId}`, data);
+  return unwrapResponse(response);
 }
 
 // Example usage:

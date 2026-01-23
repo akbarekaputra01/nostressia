@@ -7,7 +7,7 @@ import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer"; 
 
 // --- API URL ---
-import { BASE_URL } from "../../api/config";
+import { getTipCategories, getTipsByCategory } from "../../services/tipsService";
 
 // --- COLOR CONFIGURATION ---
 const bgCream = "#FFF3E0";
@@ -66,14 +66,11 @@ export default function Tips() {
   const syncData = useCallback(async () => {
     setSyncStatus('updating');
     try {
-      const res = await fetch(`${BASE_URL}/tips/categories`);
-      if (!res.ok) throw new Error();
-      const serverData = await res.json();
+      const serverData = await getTipCategories();
       
       const updatedCategories = await Promise.all(serverData.map(async (item) => {
         const id = item.tipCategoryId || item.id;
-        const tipsRes = await fetch(`${BASE_URL}/tips/by-category/${id}`);
-        const tipsData = await tipsRes.json();
+        const tipsData = await getTipsByCategory(id);
         const existing = INITIAL_CATEGORIES.find(c => c.id === id);
         return {
           id: id,

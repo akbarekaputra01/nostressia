@@ -1,0 +1,64 @@
+import client, { unwrapResponse } from "../api/client";
+
+export const login = async (payload) => {
+  const response = await client.post("/auth/login", payload, {
+    auth: false,
+    skipAuthRedirect: true,
+  });
+  return unwrapResponse(response);
+};
+
+export const register = async (payload) => {
+  const response = await client.post("/auth/register", payload, {
+    auth: false,
+    skipAuthRedirect: true,
+  });
+  return unwrapResponse(response);
+};
+
+export const verifyOtp = async (payload) => {
+  const response = await client.post("/auth/verify-otp", payload, {
+    auth: false,
+    skipAuthRedirect: true,
+  });
+  return unwrapResponse(response);
+};
+
+export const forgotPassword = async (payload) => {
+  const response = await client.post("/auth/forgot-password", payload, {
+    auth: false,
+    skipAuthRedirect: true,
+  });
+  return unwrapResponse(response);
+};
+
+export const resetPasswordConfirm = async (payload) => {
+  const response = await client.post("/auth/reset-password-confirm", payload, {
+    auth: false,
+    skipAuthRedirect: true,
+  });
+  return unwrapResponse(response);
+};
+
+export const getProfile = async () => {
+  const response = await client.get("/auth/me");
+  return unwrapResponse(response);
+};
+
+export const updateProfile = async (payload) => {
+  const response = await client.put("/auth/me", payload);
+  return unwrapResponse(response);
+};
+
+export const changePassword = async (payload) => {
+  const response = await client.put("/auth/change-password", payload);
+  return unwrapResponse(response);
+};
+
+export const adminLogin = async (payload) => {
+  const response = await client.post("/auth/admin/login", payload, {
+    auth: false,
+    skipAuthRedirect: true,
+  });
+  return unwrapResponse(response);
+};

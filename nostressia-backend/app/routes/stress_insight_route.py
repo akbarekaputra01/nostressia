@@ -7,11 +7,12 @@ from app.schemas.predict_schema import PredictRequest, PredictResponse
 from app.services import forecast_service, stress_service
 from app.services.ml_service import ml_service
 from app.utils.jwt_handler import get_current_user
+from app.utils.response import success_response
 
 router = APIRouter(prefix="/stress", tags=["Stress Insights"])
 
 
-@router.post("/current", response_model=PredictResponse)
+@router.post("/current", response_model=dict)
 def predict_current_stress(
     request: PredictRequest,
     db: Session = Depends(get_db),
@@ -30,10 +31,11 @@ def predict_current_stress(
     if result == "Error":
         raise HTTPException(status_code=500, detail="Terjadi kesalahan pada model ML")
 
-    return {
+    payload = {
         "result": result,
         "message": f"Your stress level is detected as: {result}",
     }
+    return success_response(data=payload, message="Prediction created")
 
 
 @router.get("/global-forecast")
@@ -48,8 +50,9 @@ def get_global_forecast(
             detail=eligibility.model_dump(by_alias=True),
         )
 
-    return forecast_service.get_global_forecast_for_user(
+    forecast = forecast_service.get_global_forecast_for_user(
         current_user.user_id,
         eligibility,
         db,
     )
+    return success_response(data=forecast, message="Forecast fetched")

@@ -12,7 +12,8 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { BASE_URL } from "../../api/config";
+import { getAnalyticsSummary } from "../../services/analyticsService";
+import { getMyStressLogs } from "../../services/stressService";
 
 // --- BACKGROUND CONFIGURATION (SAME AS DASHBOARD) ---
 const bgCream = "#FFF3E0";
@@ -246,6 +247,7 @@ export default function Analytics() {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
+  const [summary, setSummary] = useState(null);
 
   useEffect(() => {
     if (!headerRef.current) return;
@@ -262,40 +264,10 @@ export default function Analytics() {
         setLoading(true);
         setErrorMsg("");
 
-        const token =
-          localStorage.getItem("token") ||
-          localStorage.getItem("access_token") ||
-          localStorage.getItem("accessToken") ||
-          localStorage.getItem("jwt");
-
-        const res = await fetch(`${BASE_URL}/stress-levels/my-logs`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          signal: controller.signal,
-        });
-
-        if (!res.ok) {
-          let detail = "";
-          try {
-            const j = await res.json();
-            detail = j?.detail ? String(j.detail) : "";
-          } catch {
-            /* ignore */
-          }
-
-          if (res.status === 401) {
-            throw new Error(
-              detail || "Unauthorized (401). Please ensure your login token exists."
-            );
-          }
-          throw new Error(detail || `Request failed (HTTP ${res.status}).`);
-        }
-
-        const data = await res.json();
+        const data = await getMyStressLogs();
         setLogs(Array.isArray(data) ? data : []);
+        const summaryData = await getAnalyticsSummary();
+        setSummary(summaryData);
       } catch (err) {
         if (err?.name === "AbortError") return;
         setErrorMsg(err?.message || "Failed to fetch stress logs.");
@@ -616,6 +588,36 @@ export default function Analytics() {
             </div>
           </div>
         </div>
+
+        {summary && (
+          <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+            {[
+              { title: "Stress Logs", value: summary.stressLogsCount ?? 0 },
+              { title: "Diary Entries", value: summary.diaryCount ?? 0 },
+              { title: "Streak", value: summary.streak ?? 0 },
+            ].map((item, i) => (
+              <div
+                key={i}
+                className="rounded-2xl p-6 border backdrop-blur-xl flex flex-col items-center md:items-start text-center md:text-left"
+                style={{
+                  background: "rgba(255,255,255,0.45)",
+                  borderColor: "var(--glass-border)",
+                  boxShadow: "0 8px 25px rgba(0,0,0,0.06)",
+                }}
+              >
+                <h3
+                  className="text-sm md:text-md font-medium mb-2 uppercase tracking-wide opacity-80"
+                  style={{ color: "var(--brand-blue)" }}
+                >
+                  {item.title}
+                </h3>
+                <p className="text-3xl md:text-4xl font-bold text-[var(--text-primary)]">
+                  {item.value}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* ==== SUMMARY CARDS ==== */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">

@@ -12,22 +12,23 @@ from app.schemas.tips_schema import (
     TipsResponse,
     TipsUpdate,
 )
+from app.utils.response import success_response
 
 router = APIRouter(prefix="/tips", tags=["Tips"])
 
 
-@router.post("/categories", response_model=TipsCategoryResponse)
+@router.post("/categories", response_model=dict)
 def create_category(data: TipsCategoryCreate, db: Session = Depends(get_db)):
     new_cat = TipsCategory(category_name=data.category_name)
     db.add(new_cat)
     db.commit()
     db.refresh(new_cat)
-    return new_cat
+    return success_response(data=new_cat, message="Category created")
 
 
-@router.get("/categories", response_model=List[TipsCategoryResponse])
+@router.get("/categories", response_model=dict)
 def get_categories(db: Session = Depends(get_db)):
-    return db.query(TipsCategory).all()
+    return success_response(data=db.query(TipsCategory).all(), message="Categories fetched")
 
 
 @router.delete("/categories/{id}")
@@ -38,10 +39,10 @@ def delete_category(id: int, db: Session = Depends(get_db)):
 
     db.delete(cat)
     db.commit()
-    return {"message": "Category deleted"}
+    return success_response(message="Category deleted")
 
 
-@router.post("/", response_model=TipsResponse)
+@router.post("/", response_model=dict)
 def create_tip(data: TipsCreate, db: Session = Depends(get_db)):
     new_tip = Tips(
         detail=data.detail,
@@ -51,28 +52,31 @@ def create_tip(data: TipsCreate, db: Session = Depends(get_db)):
     db.add(new_tip)
     db.commit()
     db.refresh(new_tip)
-    return new_tip
+    return success_response(data=new_tip, message="Tip created")
 
 
-@router.get("/", response_model=List[TipsResponse])
+@router.get("/", response_model=dict)
 def get_all_tips(db: Session = Depends(get_db)):
-    return db.query(Tips).all()
+    return success_response(data=db.query(Tips).all(), message="Tips fetched")
 
 
-@router.get("/by-category/{category_id}", response_model=List[TipsResponse])
+@router.get("/by-category/{category_id}", response_model=dict)
 def get_tips_by_category(category_id: int, db: Session = Depends(get_db)):
-    return db.query(Tips).filter(Tips.tip_category_id == category_id).all()
+    return success_response(
+        data=db.query(Tips).filter(Tips.tip_category_id == category_id).all(),
+        message="Tips fetched",
+    )
 
 
-@router.get("/{id}", response_model=TipsResponse)
+@router.get("/{id}", response_model=dict)
 def get_tip(id: int, db: Session = Depends(get_db)):
     tip = db.query(Tips).filter_by(tip_id=id).first()
     if not tip:
         raise HTTPException(404, "Tip not found")
-    return tip
+    return success_response(data=tip, message="Tip fetched")
 
 
-@router.put("/{id}", response_model=TipsResponse)
+@router.put("/{id}", response_model=dict)
 def update_tip(id: int, data: TipsUpdate, db: Session = Depends(get_db)):
     tip = db.query(Tips).filter_by(tip_id=id).first()
     if not tip:
@@ -85,7 +89,7 @@ def update_tip(id: int, data: TipsUpdate, db: Session = Depends(get_db)):
 
     db.commit()
     db.refresh(tip)
-    return tip
+    return success_response(data=tip, message="Tip updated")
 
 
 @router.delete("/{id}")
@@ -96,4 +100,4 @@ def delete_tip(id: int, db: Session = Depends(get_db)):
 
     db.delete(tip)
     db.commit()
-    return {"message": "Tip deleted"}
+    return success_response(message="Tip deleted")

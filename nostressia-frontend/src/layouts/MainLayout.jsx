@@ -1,9 +1,8 @@
 // src/layouts/MainLayout.jsx
 import React, { useState, useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
-import axios from "axios";
-import { BASE_URL } from "../api/config";
-import { getStressEligibility } from "../api/stressLevelsApi";
+import { getProfile } from "../services/authService";
+import { getStressEligibility } from "../services/stressService";
 import { readAuthToken } from "../utils/auth";
 
 const resolveStreakCount = (payload) => {
@@ -35,12 +34,8 @@ export default function MainLayout() {
         const token = readAuthToken();
         if (!token) return;
 
-        const response = await axios.get(`${BASE_URL}/auth/me`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
         // 2. Data dari Backend
-        const backendData = response.data;
+        const backendData = await getProfile();
 
         // 3. Normalisasi Data (Jaga-jaga nama field beda)
         const completeUserData = {
@@ -64,7 +59,7 @@ export default function MainLayout() {
 
         let streakCount = resolveStreakCount(backendData);
         try {
-          const eligibilityData = await getStressEligibility({ token });
+          const eligibilityData = await getStressEligibility();
           streakCount = resolveStreakCount(eligibilityData) ?? streakCount;
         } catch (error) {
           const fallbackPayload = error?.payload?.detail ?? error?.payload;
@@ -82,7 +77,7 @@ export default function MainLayout() {
 
       } catch (error) {
         console.error("Gagal update user data di layout:", error);
-        if ([401, 403].includes(error?.response?.status)) {
+        if ([401, 403].includes(error?.status)) {
           localStorage.removeItem("token");
           localStorage.removeItem("cache_userData");
           navigate("/login", { replace: true });

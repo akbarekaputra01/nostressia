@@ -1,14 +1,4 @@
-import { BASE_URL } from "../api/config";
-
-const resolveApiOrigin = () => {
-  try {
-    return new URL(BASE_URL).origin;
-  } catch (error) {
-    return "";
-  }
-};
-
-const API_ORIGIN = resolveApiOrigin();
+import { apiOrigin } from "../api/client";
 
 export const resolveAvatarUrl = (avatar) => {
   if (!avatar || typeof avatar !== "string") return null;
@@ -18,8 +8,8 @@ export const resolveAvatarUrl = (avatar) => {
   if (/^https?:\/\//i.test(trimmed)) return trimmed;
   if (trimmed.startsWith("/assets/")) return trimmed;
   if (trimmed.startsWith("/")) {
-    return API_ORIGIN ? `${API_ORIGIN}${trimmed}` : trimmed;
+    return apiOrigin ? `${apiOrigin}${trimmed}` : trimmed;
   }
   if (trimmed.startsWith("assets/")) return `/${trimmed}`;
-  return API_ORIGIN ? `${API_ORIGIN}/${trimmed}` : trimmed;
+  return apiOrigin ? `${apiOrigin}/${trimmed}` : trimmed;
 };
