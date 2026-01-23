@@ -5,7 +5,7 @@ import { Heart, Calendar, X, Loader2, CheckCircle } from "lucide-react";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer"; 
 
-import { createDiary, getMyDiaries } from "../../services/diaryService";
+import { createDiary, getMyDiaries, updateDiary } from "../../services/diaryService";
 
 // --- COLOR CONFIGURATION ---
 const bgCream = "#FFF3E0";
@@ -28,6 +28,7 @@ export default function Diary() {
   const [selectedMood, setSelectedMood] = useState("😐");
   const [selectedFont, setSelectedFont] = useState(baseFont);
   const [selectedEntry, setSelectedEntry] = useState(null); 
+  const [editingEntryId, setEditingEntryId] = useState(null);
   const [isBookOpen, setIsBookOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const scrollRef = useRef(null);
@@ -71,6 +72,7 @@ export default function Diary() {
           content: item.note,     
           mood: item.emoji,       
           font: item.font,
+          rawDate: item.date,
           date: new Date(item.date).toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" })
         }));
         
@@ -104,29 +106,41 @@ export default function Diary() {
         return;
       }
 
+      const entryToEdit = entries.find((entry) => entry.id === editingEntryId);
       const payload = {
         title: title,
         note: text,            
         emoji: selectedMood,
         font: selectedFont,
-        date: new Date().toISOString().split('T')[0]
+        date: entryToEdit?.rawDate || new Date().toISOString().split('T')[0],
       };
 
-      const savedData = await createDiary(payload);
-      const newEntry = {
+      const savedData = editingEntryId
+        ? await updateDiary(editingEntryId, payload)
+        : await createDiary(payload);
+
+      const updatedEntry = {
         id: savedData.diaryId,
         title: savedData.title,
         content: savedData.note, 
         mood: savedData.emoji, 
         font: savedData.font, 
+        rawDate: savedData.date,
         date: new Date(savedData.date).toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric", }),
       };
 
-      setEntries([newEntry, ...entries]); 
+      if (editingEntryId) {
+        setEntries((prev) =>
+          prev.map((entry) => (entry.id === editingEntryId ? updatedEntry : entry))
+        );
+      } else {
+        setEntries([updatedEntry, ...entries]); 
+      }
       setTitle(""); 
       setText(""); 
       setSelectedMood("😐"); 
       setIsBookOpen(false);
+      setEditingEntryId(null);
       
       // TAMPILKAN MODAL SUKSES
       setShowSuccessModal(true);
@@ -149,6 +163,28 @@ export default function Diary() {
       current.scrollBy({ left: direction === "left" ? -scrollAmount : scrollAmount, behavior: "smooth" });
     }
   };
+
+  const handleEditEntry = (entry) => {
+    if (!entry) return;
+    setTitle(entry.title);
+    setText(entry.content);
+    setSelectedMood(entry.mood);
+    setSelectedFont(entry.font || baseFont);
+    setEditingEntryId(entry.id);
+    setIsBookOpen(true);
+    setSelectedEntry(null);
+  };
+
+  const handleCloseEditor = () => {
+    setIsBookOpen(false);
+    setEditingEntryId(null);
+    setTitle("");
+    setText("");
+    setSelectedMood("😐");
+    setSelectedFont(baseFont);
+  };
+
+  const isEditing = Boolean(editingEntryId);
 
   return (
     <div
@@ -253,7 +289,7 @@ export default function Diary() {
                 {/* HALAMAN MENULIS */}
                 <div className="absolute inset-0 w-full h-full bg-[#fcf9f5] rounded-[16px] md:rounded-l-[4px] md:rounded-r-[16px] shadow-xl z-0 flex flex-col overflow-hidden border border-slate-200">
                     <div className="flex-grow p-5 md:p-8 flex flex-col relative z-10">
-                          <button onClick={() => setIsBookOpen(false)} className="absolute top-3 right-3 z-30 w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all"><X size={20} /></button>
+                          <button onClick={handleCloseEditor} className="absolute top-3 right-3 z-30 w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all"><X size={20} /></button>
                         <div className="flex items-center gap-2 mb-2 overflow-x-auto py-2 border-b border-slate-200 no-scrollbar">
                             {moods.map((m) => (
                                 <button key={m.label} onClick={() => setSelectedMood(m.emoji)} className={`text-xl md:text-2xl hover:scale-110 transition-transform p-1 rounded-lg ${selectedMood === m.emoji ? "bg-blue-50 scale-110" : "opacity-60 grayscale"}`}>{m.emoji}</button>
@@ -277,7 +313,7 @@ export default function Diary() {
                                 {isSubmitting ? (
                                     <>Saving <Loader2 className="animate-spin" size={16}/></>
                                 ) : (
-                                    "Save"
+                                    isEditing ? "Update" : "Save"
                                 )}
                              </button>
                         </div>
@@ -436,8 +472,13 @@ export default function Diary() {
                   </div>
                 </div>
               </div>
-              <div className="px-6 py-4 flex justify-end items-center bg-white/50">
-                 <button onClick={() => setSelectedEntry(null)} className="px-6 py-2 bg-[#1e293b] text-white rounded-lg font-bold text-sm shadow-md hover:bg-slate-700 transition-all active:scale-95">Close Journal</button>
+              <div className="px-6 py-4 flex justify-end items-center gap-3 bg-white/50">
+                 <button onClick={() => handleEditEntry(selectedEntry)} className="px-6 py-2 bg-orange-500 text-white rounded-lg font-bold text-sm shadow-md hover:bg-orange-600 transition-all active:scale-95">
+                   Edit Entry
+                 </button>
+                 <button onClick={() => setSelectedEntry(null)} className="px-6 py-2 bg-[#1e293b] text-white rounded-lg font-bold text-sm shadow-md hover:bg-slate-700 transition-all active:scale-95">
+                   Close Journal
+                 </button>
               </div>
             </motion.div>
           </div>
