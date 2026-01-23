@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Lock, User, ArrowLeft } from "lucide-react";
-import { BASE_URL } from "../../api/config";
+import { adminLogin } from "../../services/authService";
 // Import Logo Nostressia
 import LogoNostressia from "../../assets/images/Logo-Nostressia.png";
 
@@ -18,18 +18,7 @@ export default function AdminLogin() {
 
     try {
       // --- coba login via API ---
-      const res = await fetch(`${BASE_URL}/auth/admin/login`, { // <-- backtick
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.detail || "Username atau Password salah!");
-      }
+      const data = await adminLogin(formData);
 
       // Jika berhasil login via API, simpan token & data
       localStorage.setItem("adminToken", data.accessToken || data.access_token);

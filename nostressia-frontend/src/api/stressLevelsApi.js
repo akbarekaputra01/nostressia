@@ -1,46 +1,23 @@
-import { BASE_URL } from "./config";
-import { parseJsonResponse } from "./request";
+import client, { unwrapResponse } from "./client";
 
-const buildAuthHeaders = (token) => ({
-  Authorization: `Bearer ${token}`,
-});
-
-export async function addStressLog(data, { token, signal } = {}) {
-  const res = await fetch(`${BASE_URL}/stress-levels/`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", ...buildAuthHeaders(token) },
-    body: JSON.stringify(data),
-    signal,
-  });
-  return parseJsonResponse(res);
+export async function addStressLog(data) {
+  const response = await client.post("/stress-levels/", data);
+  return unwrapResponse(response);
 }
 
-export async function restoreStressLog(data, { token, signal } = {}) {
-  const res = await fetch(`${BASE_URL}/stress-levels/restore`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", ...buildAuthHeaders(token) },
-    body: JSON.stringify(data),
-    signal,
-  });
-  return parseJsonResponse(res);
+export async function restoreStressLog(data) {
+  const response = await client.post("/stress-levels/restore", data);
+  return unwrapResponse(response);
 }
 
-export async function getMyStressLogs({ token, signal } = {}) {
-  const res = await fetch(`${BASE_URL}/stress-levels/my-logs`, {
-    method: "GET",
-    headers: { ...buildAuthHeaders(token) },
-    signal,
-  });
-  return parseJsonResponse(res);
+export async function getMyStressLogs() {
+  const response = await client.get("/stress-levels/my-logs");
+  return unwrapResponse(response);
 }
 
-export async function getStressEligibility({ token, signal } = {}) {
-  const res = await fetch(`${BASE_URL}/stress-levels/eligibility`, {
-    method: "GET",
-    headers: { ...buildAuthHeaders(token) },
-    signal,
-  });
-  return parseJsonResponse(res);
+export async function getStressEligibility() {
+  const response = await client.get("/stress-levels/eligibility");
+  return unwrapResponse(response);
 }
 
 // Example usage:

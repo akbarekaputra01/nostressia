@@ -1,9 +1,14 @@
 // src/pages/Dashboard/Dashboard.jsx
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useOutletContext } from "react-router-dom"; 
-import { fetchGlobalForecast } from "../../api/forecastApi";
-import { addStressLog, getStressEligibility, restoreStressLog } from "../../api/stressLevelsApi";
-import { BASE_URL } from "../../api/config";
+import {
+  addStressLog,
+  getGlobalForecast,
+  getMyStressLogs,
+  getStressEligibility,
+  predictCurrentStress,
+  restoreStressLog,
+} from "../../services/stressService";
 import Footer from "../../components/Footer";
 import Navbar from "../../components/Navbar";
 
@@ -472,18 +477,14 @@ export default function Dashboard() {
       setEligibilityLoading(true);
       setEligibilityError("");
       try {
-        const token =
-          localStorage.getItem("token") ||
-          localStorage.getItem("access_token") ||
-          localStorage.getItem("accessToken") ||
-          localStorage.getItem("jwt");
+        const token = localStorage.getItem("token");
 
         if (!token) {
           setEligibilityData(null);
           return;
         }
 
-        const data = await getStressEligibility({ token, signal });
+        const data = await getStressEligibility();
         setEligibilityData(data);
       } catch (error) {
         if (error?.name === "AbortError") return;
@@ -516,11 +517,7 @@ export default function Dashboard() {
       setIsLoadingLogs(true);
       setLoadError("");
       try {
-        const token =
-          localStorage.getItem("token") ||
-          localStorage.getItem("access_token") ||
-          localStorage.getItem("accessToken") ||
-          localStorage.getItem("jwt");
+        const token = localStorage.getItem("token");
 
         if (!token) {
           setStressData(createEmptyTodayData(TODAY_KEY));
@@ -530,21 +527,7 @@ export default function Dashboard() {
           setIsLoadingLogs(false);
           return;
         }
-
-        const response = await fetch(`${BASE_URL}/stress-levels/my-logs`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          signal: controller.signal,
-        });
-
-        if (!response.ok) {
-          throw new Error(`Request gagal (HTTP ${response.status}).`);
-        }
-
-        const logs = await response.json();
+        const logs = await getMyStressLogs();
         const logList = Array.isArray(logs) ? logs : [];
 
         const byDate = new Map();
@@ -621,11 +604,7 @@ export default function Dashboard() {
       setForecastError("");
       setForecastDetail(null);
       try {
-        const token =
-          localStorage.getItem("token") ||
-          localStorage.getItem("access_token") ||
-          localStorage.getItem("accessToken") ||
-          localStorage.getItem("jwt");
+        const token = localStorage.getItem("token");
 
         if (!token) {
           setForecastList([]);
@@ -635,10 +614,7 @@ export default function Dashboard() {
 
         let eligibilitySnapshot = normalizedEligibility;
         if (!eligibilitySnapshot) {
-          const eligibilityRaw = await getStressEligibility({
-            token,
-            signal: controller.signal,
-          });
+          const eligibilityRaw = await getStressEligibility();
           setEligibilityData(eligibilityRaw);
           eligibilitySnapshot = normalizeEligibility(eligibilityRaw);
         }
@@ -666,10 +642,7 @@ export default function Dashboard() {
           return;
         }
 
-        const data = await fetchGlobalForecast({
-          token,
-          signal: controller.signal,
-        });
+        const data = await getGlobalForecast();
 
         const baseForecast =
           data?.forecast ?? data?.data ?? data?.forecastData ?? data;
@@ -762,11 +735,7 @@ export default function Dashboard() {
   }
 
   async function saveStressLog(status, { dateKey, isRestore } = {}) {
-    const token =
-      localStorage.getItem("token") ||
-      localStorage.getItem("access_token") ||
-      localStorage.getItem("accessToken") ||
-      localStorage.getItem("jwt");
+    const token = localStorage.getItem("token");
 
     if (!token) return null;
 
@@ -782,10 +751,7 @@ export default function Dashboard() {
       emoji: moodIndex,
     };
     try {
-      const logData = await (isRestore ? restoreStressLog : addStressLog)(
-        logPayload,
-        { token }
-      );
+      const logData = await (isRestore ? restoreStressLog : addStressLog)(logPayload);
       return logData?.stressLevelId ?? logData?.id ?? logData?._id ?? null;
     } catch (error) {
       if (error?.status === 409) {
@@ -824,11 +790,7 @@ export default function Dashboard() {
         gpa: Number(gpa),
       };
 
-      const response = await fetch(`${BASE_URL}/stress/current`, {
-        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload),
-      });
-      const apiData = await response.json();
-      if (!response.ok) throw new Error(apiData.detail || "Error connecting to server.");
+      const apiData = await predictCurrentStress(payload);
 
       const { score, color, status } = mapPredictionToUI(apiData.result);
       

@@ -1,8 +1,13 @@
 // src/pages/Login/Login.jsx
 import React, { useState, useEffect, useRef } from "react"; 
 import { useNavigate } from "react-router-dom"; 
-import axios from "axios"; 
-import { BASE_URL } from "../../api/config"; 
+import {
+  forgotPassword,
+  login,
+  register,
+  resetPasswordConfirm,
+  verifyOtp,
+} from "../../services/authService";
 import { isAuthTokenValid, persistAuthToken } from "../../utils/auth";
 import { Mail, Lock, ArrowRight, Loader2, CheckCircle, User, Calendar, AtSign, Users, Check, Eye, EyeOff, ShieldCheck, ArrowLeft, X, Clock } from "lucide-react"; 
 import { motion as Motion, AnimatePresence } from "framer-motion";
@@ -107,13 +112,13 @@ export default function Login() {
     if (!formData.email || !formData.password) return;
     setIsLoading(true);
     try {
-        const response = await axios.post(`${BASE_URL}/auth/login`, {
+        const response = await login({
             identifier: formData.email, password: formData.password
         });
         const token =
-          response?.data?.accessToken ||
-          response?.data?.access_token ||
-          response?.data?.token;
+          response?.accessToken ||
+          response?.access_token ||
+          response?.token;
         if (!isAuthTokenValid(token)) {
           alert("Login berhasil, tetapi token tidak valid.");
           return;
@@ -122,7 +127,7 @@ export default function Login() {
         setIsSuccess(true);
         setTimeout(() => navigate("/dashboard"), 1000); 
     } catch (error) {
-        alert(error.response?.data?.detail || "Login Gagal.");
+        alert(error?.message || "Login Gagal.");
     } finally { setIsLoading(false); }
   };
 
@@ -139,7 +144,7 @@ export default function Login() {
     
     setIsLoading(true);
     try {
-        await axios.post(`${BASE_URL}/auth/register`, {
+        await register({
             name: formData.name,
             username: formData.username,
             email: formData.email,
@@ -154,7 +159,7 @@ export default function Login() {
         setCountdown(60);
 
     } catch (error) {
-        alert(error.response?.data?.detail || "Registrasi Gagal.");
+        alert(error?.message || "Registrasi Gagal.");
     } finally { setIsLoading(false); }
   };
 
@@ -165,7 +170,7 @@ export default function Login() {
     
     setIsLoading(true);
     try {
-        await axios.post(`${BASE_URL}/auth/verify-otp`, { email: formData.email, otpCode: otp });
+        await verifyOtp({ email: formData.email, otpCode: otp });
         
         setIsSuccess(true); 
         setCountdown(0);
@@ -179,7 +184,7 @@ export default function Login() {
         }, 2000);
 
     } catch (error) {
-        alert(error.response?.data?.detail || "Kode OTP Salah.");
+        alert(error?.message || "Kode OTP Salah.");
     } finally { setIsLoading(false); }
   };
 
@@ -193,13 +198,13 @@ export default function Login() {
     if(!forgotEmail) return alert("Masukkan email Anda!");
     setLoadingForgot(true);
     try {
-        await axios.post(`${BASE_URL}/auth/forgot-password`, { email: forgotEmail });
+        await forgotPassword({ email: forgotEmail });
         
         setForgotStep(2); 
         setCountdown(60); 
         setForgotOtpValues(new Array(6).fill("")); // Reset field OTP
     } catch (error) {
-        alert(error.response?.data?.detail || "Email tidak ditemukan.");
+        alert(error?.message || "Email tidak ditemukan.");
     } finally { setLoadingForgot(false); }
   };
 
@@ -252,7 +257,7 @@ export default function Login() {
     const code = forgotOtpValues.join(""); 
     setLoadingForgot(true);
     try {
-        await axios.post(`${BASE_URL}/auth/reset-password-confirm`, {
+        await resetPasswordConfirm({
             email: forgotEmail, otpCode: code, newPassword
         });
         
@@ -268,7 +273,7 @@ export default function Login() {
         setConfirmNewPassword("");
         
     } catch (error) {
-        alert(error.response?.data?.detail || "Gagal mereset password.");
+        alert(error?.message || "Gagal mereset password.");
     } finally { setLoadingForgot(false); }
   };
 

@@ -10,6 +10,7 @@ from app.models.admin_model import Admin
 from app.routes.auth_route import get_current_admin
 from app.schemas.base_schema import BaseSchema
 from datetime import datetime
+from app.utils.response import success_response
 
 router = APIRouter(prefix="/admin/diaries", tags=["Admin - Diary Moderation"])
 
@@ -63,12 +64,15 @@ def get_all_diaries(
             "username": d.user.username
         })
 
-    return {
-        "total": total,
-        "page": page,
-        "limit": limit,
-        "data": data
-    }
+    return success_response(
+        data={
+            "total": total,
+            "page": page,
+            "limit": limit,
+            "data": data,
+        },
+        message="Diaries fetched",
+    )
 
 # 2. DELETE DIARY
 @router.delete("/{diary_id}")
@@ -84,4 +88,4 @@ def delete_diary_by_admin(
     db.delete(diary)
     db.commit()
     
-    return {"message": "Diary deleted successfully by Admin"}
+    return success_response(message="Diary deleted successfully by Admin")

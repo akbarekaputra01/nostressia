@@ -7,6 +7,7 @@ from app.models.user_model import User
 from app.utils.jwt_handler import get_current_user
 from app.schemas.diary_schema import DiaryCreate, DiaryUpdate, DiaryResponse
 from app.services import diary_service
+from app.utils.response import success_response
 
 router = APIRouter(
     prefix="/diary",
@@ -14,40 +15,52 @@ router = APIRouter(
 )
 
 # POST: Buat Diary
-@router.post("/", response_model=DiaryResponse)
+@router.post("/", response_model=dict)
 def create_diary(
     data: DiaryCreate, 
     db: Session = Depends(get_db), 
     current_user: User = Depends(get_current_user)
 ):
-    return diary_service.create_diary(db, data, current_user.user_id)
+    return success_response(
+        data=diary_service.create_diary(db, data, current_user.user_id),
+        message="Diary created",
+    )
 
 # GET: Ambil List Diary Saya
-@router.get("/", response_model=List[DiaryResponse])
+@router.get("/", response_model=dict)
 def get_my_diaries(
     db: Session = Depends(get_db), 
     current_user: User = Depends(get_current_user)
 ):
-    return diary_service.get_user_diaries(db, current_user.user_id)
+    return success_response(
+        data=diary_service.get_user_diaries(db, current_user.user_id),
+        message="Diaries fetched",
+    )
 
 # GET: Detail Satu Diary
-@router.get("/{diary_id}", response_model=DiaryResponse)
+@router.get("/{diary_id}", response_model=dict)
 def get_diary_detail(
     diary_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    return diary_service.get_diary_by_id(db, diary_id, current_user.user_id)
+    return success_response(
+        data=diary_service.get_diary_by_id(db, diary_id, current_user.user_id),
+        message="Diary fetched",
+    )
 
 # PUT: Update Diary
-@router.put("/{diary_id}", response_model=DiaryResponse)
+@router.put("/{diary_id}", response_model=dict)
 def update_diary(
     diary_id: int,
     data: DiaryUpdate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    return diary_service.update_diary(db, diary_id, current_user.user_id, data)
+    return success_response(
+        data=diary_service.update_diary(db, diary_id, current_user.user_id, data),
+        message="Diary updated",
+    )
 
 # # DELETE: Hapus Diary
 # @router.delete("/{diary_id}")

@@ -17,16 +17,17 @@ from app.services.email_service import send_otp_email, send_reset_password_email
 
 # ✅ Import Schema
 from app.schemas.user_auth_schema import (
-    UserRegister, 
-    UserLogin, 
-    Token, 
-    UserResponse, 
+    UserRegister,
+    UserLogin,
+    Token,
+    UserResponse,
     UserUpdate,
     ChangePasswordSchema,
     VerifyOTP,
     ForgotPasswordRequest,
-    ResetPasswordConfirm
+    ResetPasswordConfirm,
 )
+from app.utils.response import success_response
 
 router = APIRouter()
 
@@ -104,10 +105,10 @@ def register(user_in: UserRegister, db: Session = Depends(get_db)):
             db.commit()
             send_otp_email(existing_user_email.email, otp_code)
             
-            return {
-                "message": "Registration successful (Retry). Please check your email for new OTP.",
-                "email": existing_user_email.email
-            }
+            return success_response(
+                data={"email": existing_user_email.email},
+                message="Registration successful (Retry). Please check your email for new OTP.",
+            )
 
     # KASUS C: User Benar-Benar Baru -> BUAT BARU
     new_user = User(
@@ -137,10 +138,10 @@ def register(user_in: UserRegister, db: Session = Depends(get_db)):
     if not email_sent:
         print(f"⚠️ Gagal mengirim email OTP ke {new_user.email}: {email_error}")
 
-    return {
-        "message": "Registration successful! Please check your email for OTP verification.",
-        "email": new_user.email
-    }
+    return success_response(
+        data={"email": new_user.email},
+        message="Registration successful! Please check your email for OTP verification.",
+    )
 
 # 2. VERIFY OTP (Updated: Check Expired)
 @router.post("/verify-otp", status_code=status.HTTP_200_OK)
@@ -153,7 +154,7 @@ def verify_otp_endpoint(payload: VerifyOTP, db: Session = Depends(get_db)):
 
     # Cek apakah sudah verified
     if user.is_verified:
-        return {"message": "Account already verified. Please login."}
+        return success_response(message="Account already verified. Please login.")
 
     # 1. Cek Kode OTP (Angka)
     if user.otp_code != payload.otp_code:
@@ -175,10 +176,10 @@ def verify_otp_endpoint(payload: VerifyOTP, db: Session = Depends(get_db)):
     user.otp_created_at = None # ✅ Bersihkan waktu juga
     db.commit()
 
-    return {"message": "Account verified successfully! You can now login."}
+    return success_response(message="Account verified successfully! You can now login.")
 
 # 3. LOGIN (Tetap Sama)
-@router.post("/login", response_model=Token)
+@router.post("/login", response_model=dict)
 async def login(request: Request, db: Session = Depends(get_db)):
     content_type = request.headers.get("content-type", "")
     payload = {}
@@ -204,18 +205,20 @@ async def login(request: Request, db: Session = Depends(get_db)):
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=exc.errors())
 
     user = _authenticate_user(user_in.identifier, user_in.password, db)
-    return _issue_token_for_user(user, db)
+    token_payload = _issue_token_for_user(user, db)
+    return success_response(data=token_payload, message="Login successful")
 
-@router.post("/token", response_model=Token)
+@router.post("/token", response_model=dict)
 def login_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = _authenticate_user(form_data.username, form_data.password, db)
-    return _issue_token_for_user(user, db)
+    token_payload = _issue_token_for_user(user, db)
+    return success_response(data=token_payload, message="Login successful")
 
-@router.get("/me", response_model=UserResponse)
+@router.get("/me", response_model=dict)
 def read_users_me(current_user: User = Depends(get_current_user)):
-    return current_user
+    return success_response(data=current_user, message="User profile fetched")
 
-@router.put("/me", response_model=UserResponse)
+@router.put("/me", response_model=dict)
 def update_user_profile(user_update: UserUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     if user_update.username and user_update.username != current_user.username:
         if db.query(User).filter(User.username == user_update.username).first():
@@ -233,7 +236,7 @@ def update_user_profile(user_update: UserUpdate, db: Session = Depends(get_db), 
 
     db.commit()
     db.refresh(current_user)
-    return current_user
+    return success_response(data=current_user, message="Profile updated")
 
 @router.put("/change-password", status_code=status.HTTP_200_OK)
 def change_password(payload: ChangePasswordSchema, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
@@ -243,7 +246,7 @@ def change_password(payload: ChangePasswordSchema, db: Session = Depends(get_db)
         raise HTTPException(status_code=400, detail="Password baru tidak boleh sama dengan password lama")
     current_user.password = hash_password(payload.new_password)
     db.commit()
-    return {"message": "Password updated successfully"}
+    return success_response(message="Password updated successfully")
 
 # 4. FORGOT PASSWORD (Updated: Set Created Time)
 @router.post("/forgot-password", status_code=status.HTTP_200_OK)
@@ -268,7 +271,7 @@ def forgot_password(payload: ForgotPasswordRequest, db: Session = Depends(get_db
             detail_message = f"Gagal mengirim email: {email_error}"
         raise HTTPException(status_code=500, detail=detail_message)
 
-    return {"message": "Kode OTP reset password telah dikirim ke email Anda."}
+    return success_response(message="Kode OTP reset password telah dikirim ke email Anda.")
 
 # 5. RESET PASSWORD CONFIRM (Updated: Check Expired)
 @router.post("/reset-password-confirm", status_code=status.HTTP_200_OK)
@@ -297,4 +300,4 @@ def reset_password_confirm(payload: ResetPasswordConfirm, db: Session = Depends(
     
     db.commit()
 
-    return {"message": "Password berhasil diubah! Silakan login dengan password baru."}
+    return success_response(message="Password berhasil diubah! Silakan login dengan password baru.")

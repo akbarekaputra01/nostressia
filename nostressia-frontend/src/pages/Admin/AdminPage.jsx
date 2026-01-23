@@ -5,7 +5,9 @@ import {
   Trash2, X, UserCircle, User, ArrowLeft, Users, BookOpen 
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { BASE_URL } from "../../api/config";
+import { getAdminDiaries, getAdminUsers, deleteAdminDiary, deleteAdminUser, updateAdminUser } from "../../services/adminService";
+import { createMotivation, deleteMotivation, getMotivations } from "../../services/motivationService";
+import { createTip, getTipCategories, getTipsByCategory, deleteTip } from "../../services/tipsService";
 
 export default function AdminPage({ skipAuth = false }) {
   const navigate = useNavigate();
@@ -67,9 +69,8 @@ export default function AdminPage({ skipAuth = false }) {
 
   useEffect(() => {
     // 1. Fetch Motivations (Biarkan bagian ini tetap sama)
-    fetch(`${BASE_URL}/motivations`)
-      .then(res => res.ok ? res.json() : Promise.reject("Failed"))
-      .then(data => {
+    getMotivations()
+      .then((data) => {
         const formatted = data.map(item => ({
           id: item.motivationId,
           text: item.quote,
@@ -85,22 +86,18 @@ export default function AdminPage({ skipAuth = false }) {
     const fetchStats = async () => {
         try {
             // UBAH: Ambil list user (limit besar, misal 1000) agar bisa kita filter manual
-            const resUser = await fetch(`${BASE_URL}/admin/users/?limit=1000`, { headers: { "Authorization": `Bearer ${token}` } });
-            
-            if(resUser.ok) { 
-                const data = await resUser.json(); 
-                
-                // HITUNG MANUAL: Hanya user yang verified
-                const validUsersCount = data.data.filter(u =>
-                    u.isVerified === true || u.isVerified === 1 || u.isVerified == "1"
-                ).length;
+            const data = await getAdminUsers({ limit: 1000 });
 
-                setTotalUserCount(validUsersCount); 
-            }
+            // HITUNG MANUAL: Hanya user yang verified
+            const validUsersCount = (data.data || []).filter(u =>
+                u.isVerified === true || u.isVerified === 1 || u.isVerified == "1"
+            ).length;
+
+            setTotalUserCount(validUsersCount); 
 
             // Bagian Diary biarkan tetap sama
-            const resDiary = await fetch(`${BASE_URL}/admin/diaries/?limit=1`, { headers: { "Authorization": `Bearer ${token}` } });
-            if(resDiary.ok) { const data = await resDiary.json(); setTotalDiariesCount(data.total || 0); }
+            const diaryData = await getAdminDiaries({ limit: 1 });
+            setTotalDiariesCount(diaryData.total || 0);
 
         } catch (error) { console.error("Gagal hitung stats:", error); }
     };
@@ -113,19 +110,16 @@ export default function AdminPage({ skipAuth = false }) {
     e.preventDefault();
     const payload = { quote: quoteForm.text, authorName: quoteForm.author, uploaderId: currentUser.id };
     try {
-      const res = await fetch(`${BASE_URL}/motivations`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-      if(res.ok) {
-        const data = await res.json();
-        setQuotes([{ id: data.motivationId, text: data.quote, author: data.authorName, uploaderName: currentUser.name, uploaderId: "ADM" + String(currentUser.id).padStart(3, "0") }, ...quotes]);
-        setQuoteForm({ text: "", author: "" });
-      }
+      const data = await createMotivation(payload);
+      setQuotes([{ id: data.motivationId, text: data.quote, author: data.authorName, uploaderName: currentUser.name, uploaderId: "ADM" + String(currentUser.id).padStart(3, "0") }, ...quotes]);
+      setQuoteForm({ text: "", author: "" });
     } catch { alert("Failed to save."); }
   };
 
   const handleDeleteQuote = async (id) => {
     if (!confirm("Delete this quote?")) return;
     try {
-      await fetch(`${BASE_URL}/motivations/${id}`, { method: "DELETE" });
+      await deleteMotivation(id);
       setQuotes(quotes.filter(q => q.id !== id));
     } catch (err) { console.error(err); }
   };
@@ -148,16 +142,13 @@ export default function AdminPage({ skipAuth = false }) {
   useEffect(() => {
     const loadCategories = async () => {
       try {
-        const res = await fetch(`${BASE_URL}/tips/categories`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
+        const data = await getTipCategories();
         const mapped = data.map(item => ({ id: item.tipCategoryId, name: item.categoryName || `Category ${item.tipCategoryId}`, icon: item.icon || iconForCategoryId(item.tipCategoryId) }));
         setTipCategories(mapped);
         const counts = {};
         for (const cat of mapped) {
             try {
-                const resTips = await fetch(`${BASE_URL}/tips/by-category/${cat.id}`);
-                const dataTips = await resTips.json();
+                const dataTips = await getTipsByCategory(cat.id);
                 counts[cat.id] = dataTips.length;
             } catch { counts[cat.id] = 0; }
         }
@@ -172,8 +163,7 @@ export default function AdminPage({ skipAuth = false }) {
     if (!tipsByCategory[catId]) {
       setLoadingTips(true);
       try {
-        const res = await fetch(`${BASE_URL}/tips/by-category/${catId}`);
-        const data = await res.json();
+        const data = await getTipsByCategory(catId);
         const mappedTips = (data || []).map(item => ({ id: item.tipId ?? item.id, tip_text: item.detail || item.tipText, uploader_id: item.uploaderId }));
         setTipsByCategory(prev => ({ ...prev, [catId]: mappedTips }));
       } catch { setTipsByCategory(prev => ({ ...prev, [catId]: [] })); } finally { setLoadingTips(false); }
@@ -184,9 +174,7 @@ export default function AdminPage({ skipAuth = false }) {
     if (!currentTipInput.trim()) return;
     const payload = { detail: currentTipInput, tipCategoryId: catId, uploaderId: currentUser.id };
     try {
-      const res = await fetch(`${BASE_URL}/tips/`, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload) });
-      if (!res.ok) throw new Error();
-      const rawNewTip = await res.json();
+      const rawNewTip = await createTip(payload);
       const newTip = { id: rawNewTip.tipId, tip_text: rawNewTip.detail || currentTipInput, uploader_id: currentUser.id };
       setTipsByCategory(prev => ({ ...prev, [catId]: [...(prev[catId] || []), newTip] }));
       setTipCountByCategory(prev => ({ ...prev, [catId]: (prev[catId] || 0) + 1 }));
@@ -197,7 +185,7 @@ export default function AdminPage({ skipAuth = false }) {
   const handleDeleteTipFromCategory = async (catId, tipId) => {
     if (!confirm("Delete this tip?")) return;
     try {
-      await fetch(`${BASE_URL}/tips/${tipId}`, { method: "DELETE" });
+      await deleteTip(tipId);
       setTipsByCategory(prev => ({ ...prev, [catId]: (prev[catId] || []).filter(t => t.id !== tipId) }));
       setTipCountByCategory(prev => ({ ...prev, [catId]: Math.max(0, (prev[catId] || 1) - 1) }));
     } catch { alert("Failed to delete tip."); }
@@ -216,10 +204,7 @@ export default function AdminPage({ skipAuth = false }) {
       const params = new URLSearchParams({ page: page, limit: 10 });
       if (search) params.append("search", search);
       
-      const res = await fetch(`${BASE_URL}/admin/users/?${params.toString()}`, { headers: { "Authorization": `Bearer ${token}` } });
-      if (!res.ok) throw new Error("Gagal mengambil data user");
-      
-      const data = await res.json();
+      const data = await getAdminUsers({ page: Number(page), limit: 10, search });
 
       const normalizedUsers = (data.data || []).map((user) => ({
         ...user,
@@ -261,8 +246,7 @@ export default function AdminPage({ skipAuth = false }) {
   const handleDeleteUser = async (userId) => {
     if (!confirm("Are you sure you want to DELETE this user permanently?")) return;
     try {
-      const res = await fetch(`${BASE_URL}/admin/users/${userId}`, { method: "DELETE", headers: { "Authorization": `Bearer ${token}` } });
-      if (!res.ok) throw new Error("Failed to delete");
+      await deleteAdminUser(userId);
       alert("User deleted successfully");
       fetchUsers();
       setTotalUserCount(prev => Math.max(0, prev - 1));
@@ -272,12 +256,13 @@ export default function AdminPage({ skipAuth = false }) {
   const handleSaveUser = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch(`${BASE_URL}/admin/users/${editingUser.userId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-        body: JSON.stringify({ name: editingUser.name, username: editingUser.username, email: editingUser.email, gender: editingUser.gender, userDob: editingUser.userDob })
+      await updateAdminUser(editingUser.userId, {
+        name: editingUser.name,
+        username: editingUser.username,
+        email: editingUser.email,
+        gender: editingUser.gender,
+        userDob: editingUser.userDob,
       });
-      if (!res.ok) throw new Error("Failed to update user profile");
       alert("User updated!");
       setIsEditUserModalOpen(false);
       fetchUsers();
@@ -292,9 +277,7 @@ export default function AdminPage({ skipAuth = false }) {
     try {
       const params = new URLSearchParams({ page: page, limit: 10 });
       if (search) params.append("search", search);
-      const res = await fetch(`${BASE_URL}/admin/diaries/?${params.toString()}`, { headers: { "Authorization": `Bearer ${token}` } });
-      if (!res.ok) throw new Error("Gagal mengambil data diary");
-      const data = await res.json();
+      const data = await getAdminDiaries({ page: Number(page), limit: 10, search });
       const normalizedDiaries = (data.data || []).map((diary) => ({
         ...diary,
         diaryId: diary.diaryId ?? diary.id,
@@ -309,8 +292,7 @@ export default function AdminPage({ skipAuth = false }) {
   const handleDeleteDiary = async (diaryId) => {
     if (!confirm("Delete this diary entry permanently?")) return;
     try {
-      const res = await fetch(`${BASE_URL}/admin/diaries/${diaryId}`, { method: "DELETE", headers: { "Authorization": `Bearer ${token}` } });
-      if (!res.ok) throw new Error("Failed to delete diary");
+      await deleteAdminDiary(diaryId);
       alert("Diary deleted");
       fetchDiaries();
       setTotalDiariesCount(prev => Math.max(0, prev - 1));

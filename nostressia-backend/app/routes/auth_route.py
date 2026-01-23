@@ -3,10 +3,11 @@ from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordBearer
 
 from app.core.database import get_db
-from app.schemas.auth_schema import LoginRequest, LoginResponse
+from app.schemas.auth_schema import LoginRequest
 from app.services.auth_service import authenticate_admin
 from app.utils.jwt_handler import create_access_token, decode_access_token
 from app.models.admin_model import Admin 
+from app.utils.response import success_response
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 oauth2_admin_scheme = OAuth2PasswordBearer(
@@ -37,7 +38,7 @@ def get_current_admin(token: str = Depends(oauth2_admin_scheme), db: Session = D
         
     return admin
 
-@router.post("/admin/login", response_model=LoginResponse)
+@router.post("/admin/login", response_model=dict)
 def admin_login(request: LoginRequest, db: Session = Depends(get_db)):
     admin = authenticate_admin(db, request.username, request.password)
     if not admin:
@@ -45,7 +46,7 @@ def admin_login(request: LoginRequest, db: Session = Depends(get_db)):
 
     access_token = create_access_token({"sub": admin.username, "role": "admin"})
 
-    return {
+    payload = {
         "access_token": access_token,
         "token_type": "bearer",
         "admin": {
@@ -55,3 +56,4 @@ def admin_login(request: LoginRequest, db: Session = Depends(get_db)):
             "email": admin.email,
         },
     }
+    return success_response(data=payload, message="Admin login successful")

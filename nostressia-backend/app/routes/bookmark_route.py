@@ -6,6 +6,7 @@ from app.models.motivation_model import Motivation
 from app.models.user_model import User
 from app.schemas.bookmark_schema import BookmarkResponse
 from app.utils.jwt_handler import get_current_user # Asumsi Anda punya fungsi ini untuk auth
+from app.utils.response import success_response
 
 router = APIRouter(
     prefix="/bookmarks",
@@ -38,10 +39,10 @@ def add_bookmark(
     db.add(new_bookmark)
     db.commit()
     
-    return {"message": "Bookmark added successfully"}
+    return success_response(message="Bookmark added successfully")
 
 # 2. GET MY BOOKMARKS (Opsi B: Langsung dapat data motivasinya)
-@router.get("/me", response_model=list[BookmarkResponse])
+@router.get("/me", response_model=dict)
 def get_my_bookmarks(
     db: Session = Depends(get_db), 
     current_user: User = Depends(get_current_user)
@@ -52,10 +53,10 @@ def get_my_bookmarks(
         .filter(Bookmark.user_id == current_user.user_id)\
         .all()
         
-    return bookmarks
+    return success_response(data=bookmarks, message="Bookmarks fetched")
 
 # 3. DELETE BOOKMARK
-@router.delete("/{motivation_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{motivation_id}", status_code=status.HTTP_200_OK)
 def remove_bookmark(
     motivation_id: int, 
     db: Session = Depends(get_db), 
@@ -72,4 +73,4 @@ def remove_bookmark(
     db.delete(bookmark)
     db.commit()
     
-    return None
+    return success_response(message="Bookmark removed")

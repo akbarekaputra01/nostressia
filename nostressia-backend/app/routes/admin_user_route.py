@@ -10,12 +10,13 @@ from app.schemas.user_auth_schema import UserResponse, UserListResponse, AdminUs
 
 # ✅ Import Satpam dari auth_route
 from app.routes.auth_route import get_current_admin 
+from app.utils.response import success_response
 
 # Prefix URL khusus Admin
 router = APIRouter(prefix="/admin/users", tags=["Admin - User Management"])
 
 # --- 1. GET ALL USERS (Search & Pagination) ---
-@router.get("/", response_model=UserListResponse)
+@router.get("/", response_model=dict)
 def get_all_users(
     page: int = 1,
     limit: int = 10,
@@ -40,15 +41,18 @@ def get_all_users(
     total_users = query.count()
     users = query.offset(skip).limit(limit).all()
 
-    return {
-        "total": total_users,
-        "page": page,
-        "limit": limit,
-        "data": users
-    }
+    return success_response(
+        data={
+            "total": total_users,
+            "page": page,
+            "limit": limit,
+            "data": users,
+        },
+        message="Users fetched",
+    )
 
 # --- 2. GET USER DETAIL ---
-@router.get("/{user_id}", response_model=UserResponse)
+@router.get("/{user_id}", response_model=dict)
 def get_user_by_id(
     user_id: int, 
     db: Session = Depends(get_db),
@@ -57,10 +61,10 @@ def get_user_by_id(
     user = db.query(User).filter(User.user_id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    return user
+    return success_response(data=user, message="User fetched")
 
 # --- 3. UPDATE USER (Edit Profile, DOB, Gender) ---
-@router.put("/{user_id}", response_model=UserResponse)
+@router.put("/{user_id}", response_model=dict)
 def admin_update_user(
     user_id: int,
     user_update: AdminUserUpdate, # ✅ Pakai schema update khusus Admin
@@ -98,7 +102,7 @@ def admin_update_user(
 
     db.commit()
     db.refresh(user)
-    return user
+    return success_response(data=user, message="User updated")
 
 # --- 4. DELETE USER ---
 @router.delete("/{user_id}")
@@ -114,4 +118,4 @@ def delete_user(
     db.delete(user)
     db.commit()
     
-    return {"message": "User deleted successfully"}
+    return success_response(message="User deleted successfully")

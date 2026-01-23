@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useOutletContext } from "react-router-dom";
 import html2canvas from "html2canvas";
-import axios from "axios"; // TAMBAHAN: Import Axios
+import { addBookmark, deleteBookmark, getMyBookmarks } from "../../services/bookmarkService";
 import {
   RefreshCw,
   Bookmark,
@@ -15,7 +15,7 @@ import {
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import Logo from "../../assets/images/Logo-Nostressia.png";
-import { BASE_URL } from "../../api/config";
+import { getMotivations } from "../../services/motivationService";
 
 // --- COLOR CONFIGURATION (MATCHING DASHBOARD) ---
 const BG_CREAM = "#FFF3E0";
@@ -125,18 +125,15 @@ export default function Motivation() {
   // --- TAMBAHAN: FETCH DATA BOOKMARK DARI API SAAT LOAD ---
   useEffect(() => {
     const fetchBookmarks = async () => {
-        const token = localStorage.getItem("token");
-        if (!token) return;
-        try {
-            const res = await axios.get(`${BASE_URL}/bookmarks/me`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            // Simpan ID yang sudah di-bookmark
-            const ids = res.data.map(item => item.motivationId);
-            setLikedIndex(ids);
-        } catch (e) {
-            console.error("Bookmark sync error:", e);
-        }
+      const token = localStorage.getItem("token");
+      if (!token) return;
+      try {
+        const data = await getMyBookmarks();
+        const ids = (data || []).map((item) => item.motivationId);
+        setLikedIndex(ids);
+      } catch (e) {
+        console.error("Bookmark sync error:", e);
+      }
     };
     fetchBookmarks();
   }, []);
@@ -182,11 +179,7 @@ export default function Motivation() {
       setLoading(true);
       setError("");
       try {
-        const cleanBaseUrl = BASE_URL.replace(/\/$/, "");
-        const res = await fetch(`${cleanBaseUrl}/motivations`);
-
-        if (!res.ok) throw new Error(`API error ${res.status}`);
-        const data = await res.json();
+        const data = await getMotivations();
 
         if (!mounted) return;
 
@@ -266,15 +259,11 @@ export default function Motivation() {
     try {
         if (isLiked) {
             // Hapus Bookmark
-            await axios.delete(`${BASE_URL}/bookmarks/${id}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            await deleteBookmark(id);
             showToast("Bookmark removed 🗑️");
         } else {
             // Tambah Bookmark
-            await axios.post(`${BASE_URL}/bookmarks/${id}`, {}, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            await addBookmark(id);
             showToast("Saved to profile ❤️");
         }
     } catch (err) {

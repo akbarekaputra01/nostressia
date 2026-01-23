@@ -1,48 +1,11 @@
-import { BASE_URL } from "./config";
-import { parseJsonResponse } from "./request";
+import client, { unwrapResponse } from "./client";
 
-const getAuthToken = () =>
-  localStorage.getItem("token") ||
-  localStorage.getItem("access_token") ||
-  localStorage.getItem("accessToken") ||
-  localStorage.getItem("jwt");
-
-export async function fetchGlobalForecast({ token, signal } = {}) {
-  const resolvedToken = token || getAuthToken();
-  if (!resolvedToken) {
-    const error = new Error("Unauthorized");
-    error.status = 401;
-    throw error;
-  }
-
-  const response = await fetch(`${BASE_URL}/stress/global-forecast`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${resolvedToken}`,
-    },
-    signal,
-  });
-
-  return parseJsonResponse(response);
+export async function fetchGlobalForecast() {
+  const response = await client.get("/stress/global-forecast");
+  return unwrapResponse(response);
 }
 
-export async function fetchForecastGlobal({ token, signal } = {}) {
-  const resolvedToken = token || getAuthToken();
-  if (!resolvedToken) {
-    const error = new Error("Unauthorized");
-    error.status = 401;
-    throw error;
-  }
-
-  const response = await fetch(`${BASE_URL}/stress/global-forecast`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${resolvedToken}`,
-    },
-    signal,
-  });
-
-  return parseJsonResponse(response);
+export async function fetchForecastGlobal() {
+  const response = await client.get("/stress/global-forecast");
+  return unwrapResponse(response);
 }

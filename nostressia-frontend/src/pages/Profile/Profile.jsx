@@ -1,9 +1,9 @@
 // src/pages/Profile/Profile.jsx
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Link, useOutletContext } from "react-router-dom";
-import axios from "axios"; 
 import Navbar from "../../components/Navbar";
-import { BASE_URL } from "../../api/config"; 
+import { changePassword, updateProfile } from "../../services/authService";
+import { deleteBookmark, getMyBookmarks } from "../../services/bookmarkService";
 import { 
   User, Mail, Heart, Settings, LogOut, 
   Edit3, Flame, BookOpen, // [UBAH] Trophy diganti Flame
@@ -260,10 +260,13 @@ export default function Profile() {
   const fetchBookmarks = useCallback(async () => {
     setLoadingBookmarks(true);
     const token = localStorage.getItem("token");
-    if (!token) return;
+    if (!token) {
+      setLoadingBookmarks(false);
+      return;
+    }
     try {
-      const res = await axios.get(`${BASE_URL}/bookmarks/me`, { headers: { Authorization: `Bearer ${token}` } });
-      const normalizedBookmarks = (res.data || []).map((item) => ({
+      const data = await getMyBookmarks();
+      const normalizedBookmarks = (data || []).map((item) => ({
         ...item,
         bookmarkId: item.bookmarkId ?? item.id,
         motivationId: item.motivationId
@@ -284,9 +287,8 @@ export default function Profile() {
   }, [activeTab, fetchBookmarks]);
 
   const handleUnsave = async (motivationId) => {
-    const token = localStorage.getItem("token");
     try {
-        await axios.delete(`${BASE_URL}/bookmarks/${motivationId}`, { headers: { Authorization: `Bearer ${token}` } });
+        await deleteBookmark(motivationId);
         setBookmarks(prev => prev.filter(b => b.motivationId !== motivationId));
         showNotification("Bookmark removed", "info");
     } catch {
@@ -345,12 +347,12 @@ export default function Profile() {
         avatar: formData.avatar
       };
 
-      await axios.put(`${BASE_URL}/auth/me`, payload, { headers: { Authorization: `Bearer ${token}` } });
+      await updateProfile(payload);
       showNotification("Profile updated successfully!");
       setEditableFields({ username: false, fullName: false, email: false });
       setTimeout(() => window.location.reload(), 1000);
     } catch (error) {
-      showNotification(error.response?.data?.detail || "Failed to update profile", "error");
+      showNotification(error?.message || "Failed to update profile", "error");
     } finally { setIsLoadingSave(false); }
   };
   
@@ -398,19 +400,16 @@ export default function Profile() {
 
     setIsLoadingPassword(true);
     try {
-        const token = localStorage.getItem("token");
-        await axios.put(`${BASE_URL}/auth/change-password`, {
+        await changePassword({
             currentPassword: passwordForm.currentPassword,
             newPassword: passwordForm.newPassword
-        }, {
-            headers: { Authorization: `Bearer ${token}` }
         });
 
         showNotification("Password changed successfully!", "success");
         handleClosePasswordModal();
         setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
     } catch (error) {
-        showNotification(error.response?.data?.detail || "Failed to change password", "error");
+        showNotification(error?.message || "Failed to change password", "error");
     } finally {
         setIsLoadingPassword(false);
     }

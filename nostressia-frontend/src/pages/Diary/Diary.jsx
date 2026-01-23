@@ -5,8 +5,7 @@ import { Heart, Calendar, X, Loader2, CheckCircle } from "lucide-react";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer"; 
 
-import axios from "axios";
-import { BASE_URL } from "../../api/config"; 
+import { createDiary, getMyDiaries } from "../../services/diaryService";
 
 // --- COLOR CONFIGURATION ---
 const bgCream = "#FFF3E0";
@@ -61,15 +60,12 @@ export default function Diary() {
         setIsLoading(true); 
         const token = localStorage.getItem("token");
         if (!token) {
-            setIsLoading(false);
-            return;
+          setIsLoading(false);
+          return;
         }
 
-        const response = await axios.get(`${BASE_URL}/diary/`, {
-            headers: { Authorization: `Bearer ${token}` }
-        });
-        
-        const formattedEntries = response.data.map((item) => ({
+        const data = await getMyDiaries();
+        const formattedEntries = (data || []).map((item) => ({
           id: item.diaryId,       
           title: item.title,
           content: item.note,     
@@ -103,9 +99,9 @@ export default function Diary() {
       setIsSubmitting(true); 
       const token = localStorage.getItem("token");
       if (!token) {
-          alert("Kamu belum login!");
-          setIsSubmitting(false);
-          return;
+        alert("Kamu belum login!");
+        setIsSubmitting(false);
+        return;
       }
 
       const payload = {
@@ -116,11 +112,7 @@ export default function Diary() {
         date: new Date().toISOString().split('T')[0]
       };
 
-      const response = await axios.post(`${BASE_URL}/diary/`, payload, {
-          headers: { Authorization: `Bearer ${token}` }
-      });
-
-      const savedData = response.data;
+      const savedData = await createDiary(payload);
       const newEntry = {
         id: savedData.diaryId,
         title: savedData.title,
