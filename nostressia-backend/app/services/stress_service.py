@@ -11,6 +11,7 @@ from app.schemas.stress_schema import (
     REQUIRED_STREAK,
     StressLevelCreate,
 )
+from app.services.global_forecast_service import global_forecast_service
 
 
 def _month_bounds(ref_date: date) -> tuple[date, date]:
@@ -46,12 +47,21 @@ def get_restore_used_in_month(db: Session, user_id: int, ref_date: date) -> int:
     )
 
 
+def _resolve_required_streak() -> int:
+    required_streak = REQUIRED_STREAK
+    model_required = global_forecast_service.get_required_history_days()
+    if model_required:
+        required_streak = max(required_streak, model_required)
+    return required_streak
+
+
 def check_global_eligibility(db: Session, user_id: int) -> EligibilityResponse:
+    required_streak = _resolve_required_streak()
     streak = get_user_streak_count(db, user_id)
-    eligible = streak >= REQUIRED_STREAK
+    eligible = streak >= required_streak
     today = datetime.now(tz=timezone.utc).date()
     restore_used = get_restore_used_in_month(db, user_id, today)
-    missing = max(0, REQUIRED_STREAK - streak)
+    missing = max(0, required_streak - streak)
     note = (
         "Eligible for global forecast."
         if eligible
@@ -61,6 +71,7 @@ def check_global_eligibility(db: Session, user_id: int) -> EligibilityResponse:
         user_id=user_id,
         eligible=eligible,
         streak=streak,
+        required_streak=required_streak,
         restore_used=restore_used,
         missing=missing,
         note=note,
