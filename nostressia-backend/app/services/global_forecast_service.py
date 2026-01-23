@@ -1,6 +1,6 @@
 import os
 from datetime import timedelta
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import joblib
 import pandas as pd
@@ -41,7 +41,8 @@ class GlobalForecastService:
 
         return self._artifact
 
-    def get_required_history_days(self) -> int | None:
+    # ✅ Python 3.9 compatible (tidak pakai `int | None`)
+    def get_required_history_days(self) -> Optional[int]:
         artifact_path = self._artifact_path()
         if not os.path.exists(artifact_path):
             return None
@@ -154,6 +155,7 @@ class GlobalForecastService:
         meta = artifact.get("meta", {})
 
         date_col = meta.get("date_col", "date")
+        # default diset konsisten dengan records (user_id)
         user_col = meta.get("user_col", "user_id")
         target_col = meta.get("target_col", "stress_level")
         window = int(meta.get("window", 3))
@@ -193,6 +195,11 @@ class GlobalForecastService:
             )
 
         df = pd.DataFrame(records)
+
+        # ✅ Guard: kalau meta user_col beda (mis. "userID"), tetap sediakan kolomnya
+        if user_col not in df.columns and "user_id" in df.columns:
+            df[user_col] = df["user_id"]
+
         if date_col not in df.columns:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -202,6 +209,11 @@ class GlobalForecastService:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Kolom target '{target_col}' tidak ditemukan pada data user.",
+            )
+        if user_col not in df.columns:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Kolom user '{user_col}' tidak ditemukan pada data user.",
             )
 
         df[date_col] = pd.to_datetime(df[date_col], errors="raise")
@@ -255,6 +267,7 @@ class GlobalForecastService:
                 )
             threshold = float(artifact.get("thr", 0.5))
             probability = self._markov_proba(probs, last_row)
+
         elif model_type == "global_ml_model":
             pipe = artifact.get("pipe")
             if pipe is None:
@@ -264,6 +277,7 @@ class GlobalForecastService:
                 )
             threshold = float(artifact.get("thr", 0.5))
             probability = float(pipe.predict_proba(input_df[feature_cols])[:, 1][0])
+
         elif model_type == "global_blend_model":
             pipe = artifact.get("pipe")
             probs = artifact.get("markov_probs")
@@ -277,6 +291,7 @@ class GlobalForecastService:
             p_ml = float(pipe.predict_proba(input_df[feature_cols])[:, 1][0])
             p_mk = self._markov_proba(probs, last_row)
             probability = alpha * p_ml + (1.0 - alpha) * p_mk
+
         else:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
