@@ -9,6 +9,8 @@ import {
   predictCurrentStress,
   restoreStressLog,
 } from "../../services/stressService";
+import { getMotivations } from "../../services/motivationService";
+import { getTipCategories, getTipsByCategory } from "../../services/tipsService";
 import Footer from "../../components/Footer";
 import Navbar from "../../components/Navbar";
 
@@ -29,42 +31,66 @@ const monthNames = [
 ];
 const moods = ["😢", "😕", "😐", "😊", "😄"];
 
-// TRANSLATED: Quotes
-const quotesList = [
-  { text: "Every small step counts towards peace.", author: "Daily Reminder" },
-  { text: "Resting doesn't mean stopping, it means recharging.", author: "Mindfulness" },
-  { text: "You don't have to be productive all the time. Just breathe.", author: "Self Care" },
-  { text: "Focus on what you can control, let go of what you can't.", author: "Stoic Wisdom" },
-];
-
-// --- BENTO WIDGET TIPS ---
-const resourcesList = [
+const tipThemePalette = [
   {
-    id: 1,
-    category: "Sleep Hygiene",
     emoji: "🌙",
-    title: "Digital Sunset",
-    desc: "Turn off gadgets 1 hour before sleep.",
-    fullDetail: "The blue light from screens tricks your brain into thinking it's still daytime. Set a 'Digital Sunset' alarm for 9 PM. Replace scrolling with reading a physical book for better sleep.",
-    theme: { bg: "bg-blue-50/40", text: "text-blue-900", subtext: "text-blue-700", accent: "bg-blue-200", btn: "bg-blue-600 hover:bg-blue-700 text-white" }
+    theme: {
+      bg: "bg-blue-50/40",
+      text: "text-blue-900",
+      subtext: "text-blue-700",
+      accent: "bg-blue-200",
+      btn: "bg-blue-600 hover:bg-blue-700 text-white",
+    },
   },
   {
-    id: 2,
-    category: "Focus Hack",
     emoji: "🍅",
-    title: "Pomodoro",
-    desc: "25 minutes focus, 5 minutes break.",
-    fullDetail: "Your brain has a focus limit. Use a timer. When the bell rings, stand up and stretch. This method prevents burnout and keeps energy stable all day.",
-    theme: { bg: "bg-orange-50/40", text: "text-orange-900", subtext: "text-orange-700", accent: "bg-orange-200", btn: "bg-orange-500 hover:bg-orange-600 text-white" }
+    theme: {
+      bg: "bg-orange-50/40",
+      text: "text-orange-900",
+      subtext: "text-orange-700",
+      accent: "bg-orange-200",
+      btn: "bg-orange-500 hover:bg-orange-600 text-white",
+    },
   },
   {
-    id: 3,
-    category: "Anxiety Relief",
     emoji: "🍃",
-    title: "Grounding 5-4-3-2-1",
-    desc: "Anxious? Use your 5 senses.",
-    fullDetail: "Name: 5 things you see, 4 you feel, 3 you hear, 2 you smell, 1 you taste. This technique forces your brain to switch from 'panic mode' to 'conscious mode' instantly.",
-    theme: { bg: "bg-teal-50/40", text: "text-teal-900", subtext: "text-teal-700", accent: "bg-teal-200", btn: "bg-teal-600 hover:bg-teal-700 text-white" }
+    theme: {
+      bg: "bg-teal-50/40",
+      text: "text-teal-900",
+      subtext: "text-teal-700",
+      accent: "bg-teal-200",
+      btn: "bg-teal-600 hover:bg-teal-700 text-white",
+    },
+  },
+  {
+    emoji: "📚",
+    theme: {
+      bg: "bg-indigo-50/40",
+      text: "text-indigo-900",
+      subtext: "text-indigo-700",
+      accent: "bg-indigo-200",
+      btn: "bg-indigo-600 hover:bg-indigo-700 text-white",
+    },
+  },
+  {
+    emoji: "🥗",
+    theme: {
+      bg: "bg-emerald-50/40",
+      text: "text-emerald-900",
+      subtext: "text-emerald-700",
+      accent: "bg-emerald-200",
+      btn: "bg-emerald-600 hover:bg-emerald-700 text-white",
+    },
+  },
+  {
+    emoji: "🧘",
+    theme: {
+      bg: "bg-purple-50/40",
+      text: "text-purple-900",
+      subtext: "text-purple-700",
+      accent: "bg-purple-200",
+      btn: "bg-purple-600 hover:bg-purple-700 text-white",
+    },
   },
 ];
 
@@ -348,6 +374,9 @@ export default function Dashboard() {
   const [successModal, setSuccessModal] = useState({ visible: false, title: "", text: "" });
   const [dayDetail, setDayDetail] = useState(null);
   const [activeTip, setActiveTip] = useState(null);
+  const [tipCards, setTipCards] = useState([]);
+  const [tipsLoading, setTipsLoading] = useState(true);
+  const [tipsError, setTipsError] = useState("");
   
   // Forecast State
   const [forecastDetail, setForecastDetail] = useState(null); 
@@ -375,7 +404,10 @@ export default function Dashboard() {
   const [moodIndex, setMoodIndex] = useState(2);
 
   // Quote State
-  const [quoteData, setQuoteData] = useState(quotesList[0]);
+  const [quotePool, setQuotePool] = useState([]);
+  const [quoteData, setQuoteData] = useState({ text: "", author: "" });
+  const [quoteLoading, setQuoteLoading] = useState(true);
+  const [quoteError, setQuoteError] = useState("");
   const [isQuoteAnimating, setIsQuoteAnimating] = useState(false);
 
   // Calendar State
@@ -415,6 +447,109 @@ export default function Dashboard() {
     return "Tanggal kosong. Kamu bisa restore data.";
   })();
 
+  useEffect(() => {
+    let mounted = true;
+    const fetchQuotes = async () => {
+      setQuoteLoading(true);
+      setQuoteError("");
+      try {
+        const data = await getMotivations();
+        if (!mounted) return;
+
+        const normalized = (Array.isArray(data) ? data : []).map((item) => ({
+          text: item?.quote ?? item?.text ?? "",
+          author: item?.authorName ?? item?.author ?? "Anonymous",
+        })).filter((item) => item.text);
+
+        setQuotePool(normalized);
+        if (normalized.length > 0) {
+          setQuoteData(normalized[0]);
+        } else {
+          setQuoteData({ text: "", author: "" });
+        }
+      } catch (error) {
+        if (!mounted) return;
+        setQuoteError(error?.message || "Failed to load daily wisdom.");
+      } finally {
+        if (mounted) setQuoteLoading(false);
+      }
+    };
+
+    fetchQuotes();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+    const fetchTips = async () => {
+      setTipsLoading(true);
+      setTipsError("");
+      try {
+        const categories = await getTipCategories();
+        const normalizedCategories = Array.isArray(categories) ? categories : [];
+
+        const entries = await Promise.all(
+          normalizedCategories.map(async (category, index) => {
+            const categoryId = category?.tipCategoryId ?? category?.id;
+            if (!categoryId) return null;
+            const categoryName = category?.categoryName ?? category?.name ?? "Tips";
+
+            let tips = [];
+            try {
+              tips = await getTipsByCategory(categoryId);
+            } catch (error) {
+              console.warn("Failed to load tips for category", categoryId, error);
+              tips = [];
+            }
+
+            const primaryTip = (Array.isArray(tips) ? tips : [])[0];
+            if (!primaryTip) return null;
+
+            const detail =
+              primaryTip?.detail ??
+              primaryTip?.tipText ??
+              primaryTip?.text ??
+              "";
+            const words = detail.split(" ").filter(Boolean);
+            const title =
+              words.length > 0
+                ? `${words.slice(0, 6).join(" ")}${words.length > 6 ? "..." : ""}`
+                : categoryName;
+            const desc =
+              detail.length > 80 ? `${detail.slice(0, 77)}...` : detail;
+            const palette = tipThemePalette[index % tipThemePalette.length];
+
+            return {
+              id: primaryTip?.tipId ?? primaryTip?.id ?? `${categoryId}-${index}`,
+              category: categoryName,
+              emoji: palette?.emoji ?? "💡",
+              title,
+              desc: desc || "Tips tersedia",
+              fullDetail: detail || "Tips tersedia",
+              theme: palette?.theme ?? tipThemePalette[0].theme,
+            };
+          })
+        );
+
+        if (!mounted) return;
+        const normalizedTips = entries.filter(Boolean).slice(0, 3);
+        setTipCards(normalizedTips);
+      } catch (error) {
+        if (!mounted) return;
+        setTipsError(error?.message || "Failed to load tips.");
+      } finally {
+        if (mounted) setTipsLoading(false);
+      }
+    };
+
+    fetchTips();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   // --- LOGIKA GRADIEN BACKGROUND ---
   let gradientBg = 'radial-gradient(circle at 50% 30%, rgba(156, 163, 175, 0.15), transparent 70%)'; 
   if (hasSubmittedToday) {
@@ -450,10 +585,13 @@ export default function Dashboard() {
   }
 
   function handleNewQuote() {
+    if (quotePool.length === 0) return;
     setIsQuoteAnimating(true);
     setTimeout(() => {
       let newQuote;
-      do { newQuote = quotesList[Math.floor(Math.random() * quotesList.length)]; } while (newQuote.text === quoteData.text);
+      do {
+        newQuote = quotePool[Math.floor(Math.random() * quotePool.length)];
+      } while (quotePool.length > 1 && newQuote.text === quoteData.text);
       setQuoteData(newQuote);
       setIsQuoteAnimating(false);
     }, 400);
@@ -1586,32 +1724,75 @@ export default function Dashboard() {
             <div className="relative z-10 p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-6">
               <div className="flex flex-col md:flex-row items-center md:items-start gap-6 text-center md:text-left flex-1">
                 <div className="w-16 h-16 flex-shrink-0 rounded-2xl bg-gradient-to-br from-orange-400 to-red-400 flex items-center justify-center shadow-lg text-white"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" className="w-8 h-8"><path d="M224,128a8,8,0,0,1-8,8c-30.85,0-57.5,12.72-76.32,34.4C120.86,192.11,128,218.85,128,248a8,8,0,0,1-16,0c0-29.15,7.14-55.89-11.68-77.6C81.5,148.72,54.85,136,24,136a8,8,0,0,1,0-16c30.85,0,57.5-12.72,76.32-34.4C119.14,63.89,112,37.15,112,8a8,8,0,0,1,16,0c0,29.15-7.14,55.89,11.68,77.6C158.5,107.28,185.15,120,216,120A8,8,0,0,1,224,128Z" /></svg></div>
-                <div className="flex-1"><p className="text-xs font-bold tracking-widest text-orange-600 uppercase mb-2">Daily Wisdom</p><div className={`transition-all duration-500 ${isQuoteAnimating ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"}`}><h3 className="text-2xl md:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-gray-800 to-gray-600 leading-tight mb-2">"{quoteData.text}"</h3><p className="text-gray-500 font-medium italic">— {quoteData.author}</p></div></div>
+                <div className="flex-1">
+                  <p className="text-xs font-bold tracking-widest text-orange-600 uppercase mb-2">
+                    Daily Wisdom
+                  </p>
+                  <div className={`transition-all duration-500 ${isQuoteAnimating ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"}`}>
+                    {quoteLoading ? (
+                      <p className="text-gray-500 font-medium">Loading daily wisdom...</p>
+                    ) : quoteError ? (
+                      <p className="text-rose-500 font-medium">{quoteError}</p>
+                    ) : quoteData.text ? (
+                      <>
+                        <h3 className="text-2xl md:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-gray-800 to-gray-600 leading-tight mb-2">
+                          "{quoteData.text}"
+                        </h3>
+                        <p className="text-gray-500 font-medium italic">— {quoteData.author}</p>
+                      </>
+                    ) : (
+                      <p className="text-gray-500 font-medium">No quotes available yet.</p>
+                    )}
+                  </div>
+                </div>
               </div>
-              <button onClick={handleNewQuote} disabled={isQuoteAnimating} className="flex-shrink-0 group relative px-6 py-3 rounded-xl bg-white border border-gray-200 text-gray-700 font-bold shadow-sm hover:shadow-md hover:border-orange-300 hover:text-orange-600 transition-all active:scale-95 disabled:opacity-70 cursor-pointer"><span className="flex items-center gap-2"><i className={`ph ph-arrows-clockwise text-xl transition-transform duration-700 ${isQuoteAnimating ? "rotate-180" : ""}`}></i><span>New Quote</span></span></button>
+              <button
+                onClick={handleNewQuote}
+                disabled={isQuoteAnimating || quoteLoading || quotePool.length === 0}
+                className="flex-shrink-0 group relative px-6 py-3 rounded-xl bg-white border border-gray-200 text-gray-700 font-bold shadow-sm hover:shadow-md hover:border-orange-300 hover:text-orange-600 transition-all active:scale-95 disabled:opacity-70 cursor-pointer"
+              >
+                <span className="flex items-center gap-2">
+                  <i className={`ph ph-arrows-clockwise text-xl transition-transform duration-700 ${isQuoteAnimating ? "rotate-180" : ""}`}></i>
+                  <span>New Quote</span>
+                </span>
+              </button>
             </div>
           </section>
 
           <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-            {resourcesList.map((item) => (
-              <div
-                key={item.id}
-                onClick={() => setActiveTip(item)}
-                className={`relative overflow-hidden rounded-[30px] p-6 h-64 transition-all duration-300 cursor-pointer hover:shadow-2xl hover:scale-[1.02] backdrop-blur-xl border border-white/40 shadow-lg ${item.theme.bg}`}
-              >
-                <div className={`absolute -right-6 -top-6 w-32 h-32 rounded-full opacity-50 blur-2xl ${item.theme.accent}`} />
-                <div className={`absolute -left-6 -bottom-6 w-24 h-24 rounded-full opacity-50 blur-xl ${item.theme.accent}`} />
-                <div className="relative z-10 h-full flex flex-col justify-between">
-                  <div className="flex justify-between items-start">
-                    <span className="text-4xl filter drop-shadow-sm">{item.emoji}</span>
-                  </div>
-                  <div>
-                    <h3 className={`text-2xl font-bold mb-1 ${item.theme.text}`}>{item.title}</h3>
-                    <p className={`text-sm font-medium ${item.theme.subtext}`}>{item.desc}</p>
+            {tipsLoading ? (
+              <div className="col-span-full bg-white/70 border border-white/50 rounded-2xl p-6 text-center text-gray-500 font-medium">
+                Loading tips...
+              </div>
+            ) : tipsError ? (
+              <div className="col-span-full bg-rose-50 border border-rose-100 rounded-2xl p-6 text-center text-rose-600 font-medium">
+                {tipsError}
+              </div>
+            ) : tipCards.length === 0 ? (
+              <div className="col-span-full bg-white/70 border border-white/50 rounded-2xl p-6 text-center text-gray-500 font-medium">
+                No tips available yet.
+              </div>
+            ) : (
+              tipCards.map((item) => (
+                <div
+                  key={item.id}
+                  onClick={() => setActiveTip(item)}
+                  className={`relative overflow-hidden rounded-[30px] p-6 h-64 transition-all duration-300 cursor-pointer hover:shadow-2xl hover:scale-[1.02] backdrop-blur-xl border border-white/40 shadow-lg ${item.theme.bg}`}
+                >
+                  <div className={`absolute -right-6 -top-6 w-32 h-32 rounded-full opacity-50 blur-2xl ${item.theme.accent}`} />
+                  <div className={`absolute -left-6 -bottom-6 w-24 h-24 rounded-full opacity-50 blur-xl ${item.theme.accent}`} />
+                  <div className="relative z-10 h-full flex flex-col justify-between">
+                    <div className="flex justify-between items-start">
+                      <span className="text-4xl filter drop-shadow-sm">{item.emoji}</span>
+                    </div>
+                    <div>
+                      <h3 className={`text-2xl font-bold mb-1 ${item.theme.text}`}>{item.title}</h3>
+                      <p className={`text-sm font-medium ${item.theme.subtext}`}>{item.desc}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </main>

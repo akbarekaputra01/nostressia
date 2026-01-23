@@ -27,13 +27,31 @@ const bgStyle = {
   fontFamily: "'Manrope', sans-serif"
 };
 
-const INITIAL_CATEGORIES = [
-  { id: 1, name: "Reading & Learning", emoji: "📚", colorClass: "from-blue-50 to-blue-100 text-blue-600 border-blue-100", tipsCount: 7, tips: ["Read for 20-30 minutes before bed to calm your mind", "Join a book club to share insights with others", "Try audiobooks during commutes or workouts", "Explore different genres to broaden perspectives", "Choose books that inspire and motivate you", "Keep a reading journal to track your thoughts", "Set realistic reading goals to avoid pressure"] },
-  { id: 2, name: "Healthy Nutrition", emoji: "🥗", colorClass: "from-emerald-50 to-emerald-100 text-emerald-600 border-emerald-100", tipsCount: 7, tips: ["Drink at least 8 glasses of water daily", "Include fruits and vegetables in every meal", "Limit caffeine intake, especially in the afternoon", "Practice mindful eating without distractions", "Choose whole grains over processed foods", "Prepare healthy snacks in advance", "Listen to your body's hunger and fullness cues"] },
-  { id: 3, name: "Quality Sleep", emoji: "😴", colorClass: "from-indigo-50 to-indigo-100 text-indigo-600 border-indigo-100", tipsCount: 7, tips: ["Maintain a consistent sleep schedule", "Create a relaxing bedtime routine", "Keep your bedroom cool, dark, and quiet", "Avoid screens 1 hour before bedtime", "Limit naps to 20-30 minutes during the day", "Exercise regularly but not close to bedtime", "Use relaxation techniques like deep breathing"] },
-  { id: 4, name: "Meditation & Mindfulness", emoji: "🧘", colorClass: "from-teal-50 to-teal-100 text-teal-600 border-teal-100", tipsCount: 7, tips: ["Start your day with 5 minutes of mindful breathing", "Practice daily gratitude by writing down 3 things", "Engage in body scan meditation to release tension", "Take mindful walks in nature regularly", "Use a meditation app for guided sessions", "Notice the present moment without judgment", "Take short breaks to breathe during the day"] },
-  { id: 5, name: "Social Connection", emoji: "🗣️", colorClass: "from-orange-50 to-orange-100 text-orange-600 border-orange-100", tipsCount: 7, tips: ["Call or meet a friend you haven't talked to in a while", "Practice active listening during conversations", "Volunteer for a cause you care about", "Join a community group or hobby class", "Spend quality time with family without gadgets", "Say hello to your neighbors or coworkers", "Express appreciation to people in your life"] },
-  { id: 6, name: "Positive Mindset", emoji: "🧠", colorClass: "from-gray-50 to-gray-100 text-gray-600 border-gray-200", tipsCount: 7, tips: ["Challenge negative thoughts with positive affirmations", "Focus on things you can control, not the ones you can't", "Celebrate small wins every day", "Surround yourself with positive and supportive people", "Practice self-compassion when things go wrong", "Visualize your success and goals regularly", "Limit exposure to negative news or social media"] },
+const TIP_STYLE_PRESETS = [
+  {
+    emoji: "📚",
+    colorClass: "from-blue-50 to-blue-100 text-blue-600 border-blue-100",
+  },
+  {
+    emoji: "🥗",
+    colorClass: "from-emerald-50 to-emerald-100 text-emerald-600 border-emerald-100",
+  },
+  {
+    emoji: "😴",
+    colorClass: "from-indigo-50 to-indigo-100 text-indigo-600 border-indigo-100",
+  },
+  {
+    emoji: "🧘",
+    colorClass: "from-teal-50 to-teal-100 text-teal-600 border-teal-100",
+  },
+  {
+    emoji: "🗣️",
+    colorClass: "from-orange-50 to-orange-100 text-orange-600 border-orange-100",
+  },
+  {
+    emoji: "🧠",
+    colorClass: "from-gray-50 to-gray-100 text-gray-600 border-gray-200",
+  },
 ];
 
 const containerVariants = {
@@ -47,7 +65,7 @@ const itemVariants = {
 };
 
 export default function Tips() {
-  const [categories, setCategories] = useState(INITIAL_CATEGORIES);
+  const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [syncStatus, setSyncStatus] = useState('updating'); 
@@ -68,15 +86,15 @@ export default function Tips() {
     try {
       const serverData = await getTipCategories();
       
-      const updatedCategories = await Promise.all(serverData.map(async (item) => {
+      const updatedCategories = await Promise.all(serverData.map(async (item, index) => {
         const id = item.tipCategoryId || item.id;
         const tipsData = await getTipsByCategory(id);
-        const existing = INITIAL_CATEGORIES.find(c => c.id === id);
+        const preset = TIP_STYLE_PRESETS[index % TIP_STYLE_PRESETS.length];
         return {
           id: id,
           name: item.categoryName || item.name || "",
-          emoji: existing?.emoji || "💡",
-          colorClass: existing?.colorClass || "from-gray-50 to-gray-100 text-gray-600 border-gray-200",
+          emoji: preset?.emoji || "💡",
+          colorClass: preset?.colorClass || "from-gray-50 to-gray-100 text-gray-600 border-gray-200",
           tipsCount: tipsData.length,
           tips: tipsData.map(t => t.detail)
         };
@@ -85,7 +103,8 @@ export default function Tips() {
       setCategories(updatedCategories);
       setSyncStatus('updated');
     } catch {
-      console.warn("Sync failed, using local/static data.");
+      console.warn("Sync failed, no tips data loaded.");
+      setCategories([]);
       setSyncStatus('error');
     }
   }, []);
@@ -185,33 +204,39 @@ export default function Tips() {
                   ) : (
                     <>
                       <AlertCircle size={14} />
-                      <span>Failed to load tips. Using local data.</span>
+                      <span>Failed to load tips.</span>
                     </>
                   )}
                 </div>
               </Motion.div>
 
               <Motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredCategories.map((cat) => (
-                  <Motion.div 
-                    key={cat.id} 
-                    layoutId={`cat-${cat.id}`} 
-                    onClick={() => openCategory(cat)} 
-                    whileHover={{ y: -5, scale: 1.02 }}
-                    className={`group relative p-8 rounded-[32px] cursor-pointer bg-white/80 backdrop-blur-sm border shadow-sm hover:shadow-md hover:bg-white transition-all h-56 overflow-hidden ${cat.colorClass.split(" ").pop()}`}
-                  >
-                    <div className="flex justify-between items-start z-10 relative">
-                      <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-4xl bg-white/60 border border-white/50">{cat.emoji}</div>
-                      <div className="bg-white/60 text-gray-600 text-[10px] font-bold px-3 py-1.5 rounded-full border border-white/50 flex items-center justify-center">
-                        {cat.tipsCount} Tips
+                {filteredCategories.length === 0 ? (
+                  <div className="col-span-full rounded-2xl border border-white/80 bg-white/70 p-6 text-center text-gray-500">
+                    No tips available yet.
+                  </div>
+                ) : (
+                  filteredCategories.map((cat) => (
+                    <Motion.div 
+                      key={cat.id} 
+                      layoutId={`cat-${cat.id}`} 
+                      onClick={() => openCategory(cat)} 
+                      whileHover={{ y: -5, scale: 1.02 }}
+                      className={`group relative p-8 rounded-[32px] cursor-pointer bg-white/80 backdrop-blur-sm border shadow-sm hover:shadow-md hover:bg-white transition-all h-56 overflow-hidden ${cat.colorClass.split(" ").pop()}`}
+                    >
+                      <div className="flex justify-between items-start z-10 relative">
+                        <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-4xl bg-white/60 border border-white/50">{cat.emoji}</div>
+                        <div className="bg-white/60 text-gray-600 text-[10px] font-bold px-3 py-1.5 rounded-full border border-white/50 flex items-center justify-center">
+                          {cat.tipsCount} Tips
+                        </div>
                       </div>
-                    </div>
-                    <div className="mt-8 relative z-10">
-                      <h3 className="text-2xl font-bold text-gray-800">{cat.name}</h3>
-                      <p className="text-sm text-gray-500 mt-1">Click to explore</p>
-                    </div>
-                  </Motion.div>
-                ))}
+                      <div className="mt-8 relative z-10">
+                        <h3 className="text-2xl font-bold text-gray-800">{cat.name}</h3>
+                        <p className="text-sm text-gray-500 mt-1">Click to explore</p>
+                      </div>
+                    </Motion.div>
+                  ))
+                )}
               </Motion.div>
             </Motion.div>
           ) : (

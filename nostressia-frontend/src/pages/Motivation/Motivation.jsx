@@ -37,43 +37,6 @@ const backgroundStyle = {
 
 const HERO_INDEX = "hero";
 
-const heroQuoteList = [
-  {
-    text: "Every day is a new opportunity to improve yourself.",
-    category: "Self-Development",
-  },
-  {
-    text: "Small steps today can lead to big changes tomorrow.",
-    category: "Progress",
-  },
-  {
-    text: "Focus on the process, not the result — results will follow.",
-    category: "Mindset",
-  },
-  {
-    text: "Motivation starts you, but discipline keeps you going.",
-    category: "Discipline",
-  },
-  {
-    text: "Life isn't about waiting for the storm to pass — learn to dance in the rain.",
-    category: "Resilience",
-  },
-  {
-    text: "If you want change, start with yourself.",
-    category: "Transformation",
-  },
-  {
-    text: "Don't compare your journey to others. Walk your own path.",
-    category: "Confidence",
-  },
-  { text: "When you're tired, rest — don't quit.", category: "Sustainability" },
-  { text: "Miracles happen when you refuse to give up.", category: "Hope" },
-  {
-    text: "Small consistent actions every day beat occasional bursts of motivation.",
-    category: "Consistency",
-  },
-];
-
 const TEMPLATES = [
   { id: "pastel-cream", name: "Cream", color: BG_CREAM },
   { id: "pastel-pink", name: "Pink", color: BG_PINK },
@@ -106,9 +69,10 @@ export default function Motivation() {
   const ITEMS_PER_PAGE = 6;
 
   // MODIFIKASI: Hero Quote harus punya ID null agar konsisten
-  const [heroQuote, setHeroQuote] = useState(() => {
-    const i = Math.floor(Math.random() * heroQuoteList.length);
-    return { text: heroQuoteList[i].text, motivationId: null };
+  const [heroQuote, setHeroQuote] = useState({
+    text: "",
+    motivationId: null,
+    authorName: "",
   });
 
   const [shareOpen, setShareOpen] = useState(false);
@@ -197,6 +161,12 @@ export default function Motivation() {
             motivationId: normalized[0].motivationId,
             authorName: normalized[0].authorName,
           });
+        } else {
+          setHeroQuote({
+            text: "",
+            motivationId: null,
+            authorName: "",
+          });
         }
       } catch (err) {
         console.error("Failed fetching motivations:", err);
@@ -284,10 +254,8 @@ export default function Motivation() {
         motivationId: m.motivationId,
         authorName: m.authorName,
       };
-    } else {
-      const randomIndex = Math.floor(Math.random() * heroQuoteList.length);
-      return { text: heroQuoteList[randomIndex].text, motivationId: null };
     }
+    return { text: "", motivationId: null, authorName: "" };
   };
 
   const openShare = (text) => {
@@ -301,6 +269,8 @@ export default function Motivation() {
     setShareOpen(false);
     document.body.style.overflow = prevBodyOverflow.current || "";
   };
+
+  const hasHeroQuote = Boolean(heroQuote.text);
 
   const downloadShareCard = async () => {
     if (!shareCardRef.current) return;
@@ -486,12 +456,13 @@ export default function Motivation() {
               Featured Motivation
             </h2>
             <p className="text-lg md:text-xl italic text-gray-700 max-w-3xl">
-              "{heroQuote.text}"
+              {hasHeroQuote ? `"${heroQuote.text}"` : "No motivations available yet."}
             </p>
             <div className="flex gap-3 mt-6 flex-wrap justify-end">
               <button
                 onClick={() => setHeroQuote(getRandomHeroQuote())}
-                className="px-4 py-2 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium flex items-center gap-2 shadow hover:scale-105 transition cursor-pointer"
+                disabled={!hasHeroQuote}
+                className="px-4 py-2 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium flex items-center gap-2 shadow hover:scale-105 transition disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 <RefreshCw className="w-4 h-4" />
                 New Quote
@@ -500,7 +471,8 @@ export default function Motivation() {
               {/* MODIFIKASI: Passing ID yang benar ke toggleLike */}
               <button
                 onClick={() => toggleLike(heroQuote.motivationId)}
-                className="px-4 py-2 rounded-lg bg-white border font-medium flex items-center gap-2 shadow hover:scale-105 transition cursor-pointer"
+                disabled={!hasHeroQuote}
+                className="px-4 py-2 rounded-lg bg-white border font-medium flex items-center gap-2 shadow hover:scale-105 transition disabled:opacity-60 disabled:cursor-not-allowed"
                 aria-label="bookmark-hero"
               >
                 <Bookmark
@@ -517,7 +489,8 @@ export default function Motivation() {
 
               <button
                 onClick={() => openShare(heroQuote.text)}
-                className="px-4 py-2 rounded-lg bg-white border flex items-center gap-2 text-gray-700 shadow hover:scale-105 transition cursor-pointer"
+                disabled={!hasHeroQuote}
+                className="px-4 py-2 rounded-lg bg-white border flex items-center gap-2 text-gray-700 shadow hover:scale-105 transition disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 <Share2 className="w-4 h-4" />
                 <span className="hidden sm:inline">Share</span>

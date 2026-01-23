@@ -7,7 +7,7 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { getAdminDiaries, getAdminUsers, deleteAdminDiary, deleteAdminUser, updateAdminUser } from "../../services/adminService";
 import { createMotivation, deleteMotivation, getMotivations } from "../../services/motivationService";
-import { createTip, getTipCategories, getTipsByCategory, deleteTip } from "../../services/tipsService";
+import { createTip, createTipCategory, deleteTip, deleteTipCategory, getTipCategories, getTipsByCategory, updateTip } from "../../services/tipsService";
 
 export default function AdminPage({ skipAuth = false }) {
   const navigate = useNavigate();
@@ -133,6 +133,11 @@ export default function AdminPage({ skipAuth = false }) {
   const [currentTipInput, setCurrentTipInput] = useState("");
   const [loadingCategories, setLoadingCategories] = useState(true);
   const [loadingTips, setLoadingTips] = useState(false);
+  const [editingTipId, setEditingTipId] = useState(null);
+  const [editingTipText, setEditingTipText] = useState("");
+  const [isUpdatingTip, setIsUpdatingTip] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [categoryError, setCategoryError] = useState("");
 
   const iconForCategoryId = (id) => {
     const map = {1:"📚",2:"🥗",3:"😴",4:"🧘",5:"🗣️",6:"🧠"};
@@ -142,6 +147,7 @@ export default function AdminPage({ skipAuth = false }) {
   useEffect(() => {
     const loadCategories = async () => {
       try {
+        setCategoryError("");
         const data = await getTipCategories();
         const mapped = data.map(item => ({ id: item.tipCategoryId, name: item.categoryName || `Category ${item.tipCategoryId}`, icon: item.icon || iconForCategoryId(item.tipCategoryId) }));
         setTipCategories(mapped);
@@ -153,13 +159,18 @@ export default function AdminPage({ skipAuth = false }) {
             } catch { counts[cat.id] = 0; }
         }
         setTipCountByCategory(counts);
-      } catch (err) { setTipCategories([]); } finally { setLoadingCategories(false); }
+      } catch (err) {
+        setTipCategories([]);
+        setCategoryError("Failed to load categories.");
+      } finally { setLoadingCategories(false); }
     };
     loadCategories();
   }, []);
 
   const openCategory = async (catId) => {
     setSelectedTipCategory(catId);
+    setEditingTipId(null);
+    setEditingTipText("");
     if (!tipsByCategory[catId]) {
       setLoadingTips(true);
       try {
@@ -191,7 +202,83 @@ export default function AdminPage({ skipAuth = false }) {
     } catch { alert("Failed to delete tip."); }
   };
 
-  const closeModal = () => { setActiveModal(null); setSelectedTipCategory(null); setCurrentTipInput(""); };
+  const handleStartEditTip = (tip) => {
+    if (!tip) return;
+    setEditingTipId(tip.id);
+    setEditingTipText(tip.tip_text || tip.tipText || "");
+  };
+
+  const handleCancelEditTip = () => {
+    setEditingTipId(null);
+    setEditingTipText("");
+  };
+
+  const handleSaveTipUpdate = async (catId, tipId) => {
+    if (!editingTipText.trim()) return;
+    setIsUpdatingTip(true);
+    try {
+      const updated = await updateTip(tipId, { detail: editingTipText });
+      setTipsByCategory((prev) => ({
+        ...prev,
+        [catId]: (prev[catId] || []).map((tip) =>
+          tip.id === tipId
+            ? {
+                ...tip,
+                tip_text: updated.detail ?? editingTipText,
+              }
+            : tip
+        ),
+      }));
+      handleCancelEditTip();
+    } catch {
+      alert("Failed to update tip.");
+    } finally {
+      setIsUpdatingTip(false);
+    }
+  };
+
+  const handleCreateCategory = async () => {
+    if (!newCategoryName.trim()) return;
+    try {
+      const payload = { categoryName: newCategoryName.trim() };
+      const created = await createTipCategory(payload);
+      const newCategoryId = created.tipCategoryId ?? created.id;
+      const newCategory = {
+        id: newCategoryId,
+        name: created.categoryName || newCategoryName.trim(),
+        icon: iconForCategoryId(newCategoryId),
+      };
+      setTipCategories((prev) => [...prev, newCategory]);
+      setTipCountByCategory((prev) => ({ ...prev, [newCategoryId]: 0 }));
+      setNewCategoryName("");
+    } catch {
+      alert("Failed to create category.");
+    }
+  };
+
+  const handleDeleteCategory = async (categoryId) => {
+    if (!confirm("Delete this category? Tips under it will be removed.")) return;
+    try {
+      await deleteTipCategory(categoryId);
+      setTipCategories((prev) => prev.filter((cat) => cat.id !== categoryId));
+      setTipCountByCategory((prev) => {
+        const next = { ...prev };
+        delete next[categoryId];
+        return next;
+      });
+    } catch {
+      alert("Failed to delete category.");
+    }
+  };
+
+  const closeModal = () => {
+    setActiveModal(null);
+    setSelectedTipCategory(null);
+    setCurrentTipInput("");
+    setEditingTipId(null);
+    setEditingTipText("");
+    setNewCategoryName("");
+  };
   const activeCategoryData = tipCategories.find(c => c.id === selectedTipCategory);
   const currentCategoryTips = tipsByCategory[selectedTipCategory] || [];
 
@@ -529,7 +616,19 @@ export default function AdminPage({ skipAuth = false }) {
           <div className="bg-white rounded-2xl w-full max-w-5xl max-h-[85vh] flex flex-col shadow-2xl">
             <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50 rounded-t-2xl">
               <div className="flex items-center gap-3">
-                {selectedTipCategory && (<button onClick={() => { setSelectedTipCategory(null); setCurrentTipInput(""); }} className="mr-2 p-2 rounded-full hover:bg-gray-200 transition-colors cursor-pointer"><ArrowLeft size={20} className="text-gray-600" /></button>)}
+                {selectedTipCategory && (
+                  <button
+                    onClick={() => {
+                      setSelectedTipCategory(null);
+                      setCurrentTipInput("");
+                      setEditingTipId(null);
+                      setEditingTipText("");
+                    }}
+                    className="mr-2 p-2 rounded-full hover:bg-gray-200 transition-colors cursor-pointer"
+                  >
+                    <ArrowLeft size={20} className="text-gray-600" />
+                  </button>
+                )}
                 <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2"><Lightbulb className="text-blue-600" /> {selectedTipCategory ? activeCategoryData?.name : "Manage Tips (Select Category)"}</h3>
               </div>
               <button onClick={closeModal} className="p-2 hover:bg-gray-200 rounded-full cursor-pointer"><X size={20} className="text-gray-500" /></button>
@@ -538,13 +637,49 @@ export default function AdminPage({ skipAuth = false }) {
               {!selectedTipCategory && (
                 <div>
                   {loadingCategories ? (<div className="flex items-center justify-center py-20"><div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div></div>) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
-                      {tipCategories.map((cat) => (
-                        <div key={cat.id} onClick={() => openCategory(cat.id)} className="bg-white rounded-2xl border border-gray-200 p-6 flex flex-col items-center text-center gap-4 hover:shadow-lg hover:border-blue-300 hover:-translate-y-1 transition-all cursor-pointer group">
-                          <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center text-3xl group-hover:scale-110 transition-transform">{cat.icon}</div>
-                          <div><h4 className="font-bold text-gray-800 text-lg group-hover:text-blue-600 transition-colors">{cat.name}</h4><p className="text-sm text-gray-500 font-medium mt-1">{tipCountByCategory[cat.id] ?? 0} Tips</p></div>
+                    <div className="space-y-6 animate-fade-in">
+                      <div className="bg-white rounded-2xl border border-blue-100 shadow-sm p-4 flex flex-col md:flex-row gap-3 items-center">
+                        <div className="flex-1">
+                          <input
+                            type="text"
+                            placeholder="New category name..."
+                            className="w-full bg-transparent text-gray-800 placeholder-gray-400 focus:outline-none text-base cursor-text"
+                            value={newCategoryName}
+                            onChange={(e) => setNewCategoryName(e.target.value)}
+                          />
                         </div>
-                      ))}
+                        <button
+                          onClick={handleCreateCategory}
+                          disabled={!newCategoryName.trim()}
+                          className="px-6 py-2.5 bg-gray-900 text-white font-bold rounded-xl hover:bg-black disabled:opacity-50 cursor-pointer"
+                        >
+                          Add Category
+                        </button>
+                      </div>
+                      {categoryError && (
+                        <div className="text-sm text-rose-500 bg-rose-50 border border-rose-100 rounded-xl px-4 py-2">
+                          {categoryError}
+                        </div>
+                      )}
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {tipCategories.map((cat) => (
+                          <div key={cat.id} className="relative bg-white rounded-2xl border border-gray-200 p-6 flex flex-col items-center text-center gap-4 hover:shadow-lg hover:border-blue-300 hover:-translate-y-1 transition-all group">
+                            <button
+                              onClick={() => handleDeleteCategory(cat.id)}
+                              className="absolute top-3 right-3 text-gray-300 hover:text-red-500 hover:bg-red-50 p-2 rounded-lg transition-all cursor-pointer"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                            <div onClick={() => openCategory(cat.id)} className="flex flex-col items-center gap-4 cursor-pointer">
+                              <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center text-3xl group-hover:scale-110 transition-transform">{cat.icon}</div>
+                              <div>
+                                <h4 className="font-bold text-gray-800 text-lg group-hover:text-blue-600 transition-colors">{cat.name}</h4>
+                                <p className="text-sm text-gray-500 font-medium mt-1">{tipCountByCategory[cat.id] ?? 0} Tips</p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -559,9 +694,48 @@ export default function AdminPage({ skipAuth = false }) {
                           <li key={tip.id} className="flex justify-between items-start gap-4 p-4 bg-gray-50 rounded-xl border hover:border-blue-100 transition-all">
                             <div className="flex items-start gap-3 w-full">
                               <span className="min-w-[24px] h-[24px] rounded-full bg-blue-100 text-blue-600 text-xs flex items-center justify-center font-bold">{idx + 1}</span>
-                              <div className="flex-1"><p className="text-base text-gray-800 font-medium">{tip.tip_text || tip.tipText}</p><p className="text-xs text-gray-400 mt-1 flex items-center gap-1"><User size={10} /> Added by ({tip.uploader_id ? `ADM${String(tip.uploader_id).padStart(3, "0")}` : "Admin"})</p></div>
+                              <div className="flex-1">
+                                {editingTipId === tip.id ? (
+                                  <>
+                                    <input
+                                      type="text"
+                                      className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                                      value={editingTipText}
+                                      onChange={(e) => setEditingTipText(e.target.value)}
+                                    />
+                                    <div className="flex gap-2 mt-2">
+                                      <button
+                                        onClick={() => handleSaveTipUpdate(selectedTipCategory, tip.id)}
+                                        disabled={!editingTipText.trim() || isUpdatingTip}
+                                        className="px-3 py-1.5 text-xs font-bold rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
+                                      >
+                                        {isUpdatingTip ? "Saving..." : "Save"}
+                                      </button>
+                                      <button
+                                        onClick={handleCancelEditTip}
+                                        className="px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                      >
+                                        Cancel
+                                      </button>
+                                    </div>
+                                  </>
+                                ) : (
+                                  <>
+                                    <p className="text-base text-gray-800 font-medium">{tip.tip_text || tip.tipText}</p>
+                                    <p className="text-xs text-gray-400 mt-1 flex items-center gap-1"><User size={10} /> Added by ({tip.uploader_id ? `ADM${String(tip.uploader_id).padStart(3, "0")}` : "Admin"})</p>
+                                  </>
+                                )}
+                              </div>
                             </div>
-                            <button onClick={() => handleDeleteTipFromCategory(selectedTipCategory, tip.id)} className="text-gray-300 hover:text-red-500 hover:bg-red-50 p-2 rounded-lg transition-all cursor-pointer"><Trash2 size={18} /></button>
+                            <div className="flex flex-col gap-2">
+                              <button
+                                onClick={() => handleStartEditTip(tip)}
+                                className="text-gray-300 hover:text-blue-500 hover:bg-blue-50 p-2 rounded-lg transition-all cursor-pointer"
+                              >
+                                <UserCircle size={18} />
+                              </button>
+                              <button onClick={() => handleDeleteTipFromCategory(selectedTipCategory, tip.id)} className="text-gray-300 hover:text-red-500 hover:bg-red-50 p-2 rounded-lg transition-all cursor-pointer"><Trash2 size={18} /></button>
+                            </div>
                           </li>
                         ))}
                       </ul>
