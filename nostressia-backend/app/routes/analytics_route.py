@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.models.stress_level_model import StressLevel
+from app.models.stress_log_model import StressLevel
 from app.models.diary_model import Diary
 from app.models.user_model import User
 from app.utils.jwt_handler import get_current_user
