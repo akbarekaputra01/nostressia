@@ -41,6 +41,27 @@ class GlobalForecastService:
 
         return self._artifact
 
+    def get_required_history_days(self) -> int | None:
+        artifact_path = self._artifact_path()
+        if not os.path.exists(artifact_path):
+            return None
+
+        try:
+            artifact = self._load_artifact()
+        except Exception:
+            return None
+
+        meta = artifact.get("meta", {}) if isinstance(artifact, dict) else {}
+        try:
+            window = int(meta.get("window", 0))
+        except (TypeError, ValueError):
+            return None
+
+        if window <= 0:
+            return None
+
+        return window + 1
+
     def _build_feature_frame(
         self,
         df: pd.DataFrame,
