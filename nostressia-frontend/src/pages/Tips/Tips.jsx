@@ -54,6 +54,42 @@ const TIP_STYLE_PRESETS = [
   },
 ];
 
+const DUMMY_TIP_CATEGORIES = [
+  {
+    id: "placeholder-focus",
+    name: "Focus Boost",
+    emoji: "📚",
+    colorClass: "from-blue-50 to-blue-100 text-blue-600 border-blue-100",
+    tips: [
+      "Use a 25-minute focus sprint (Pomodoro), then take a 5-minute break.",
+      "Write down the top 3 tasks you must finish today.",
+      "Silence notifications for 30 minutes to reduce distractions.",
+    ],
+  },
+  {
+    id: "placeholder-balance",
+    name: "Mind & Body",
+    emoji: "🧘",
+    colorClass: "from-teal-50 to-teal-100 text-teal-600 border-teal-100",
+    tips: [
+      "Try a 4-7-8 breathing cycle to lower stress quickly.",
+      "Stretch for 3 minutes after long study sessions.",
+      "Drink water before coffee to stay hydrated.",
+    ],
+  },
+  {
+    id: "placeholder-rest",
+    name: "Sleep Reset",
+    emoji: "😴",
+    colorClass: "from-indigo-50 to-indigo-100 text-indigo-600 border-indigo-100",
+    tips: [
+      "Stop screen time 30 minutes before bed.",
+      "Keep your bedroom cool and dim for deeper sleep.",
+      "Aim for consistent sleep and wake times daily.",
+    ],
+  },
+];
+
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.2 } }
@@ -113,6 +149,12 @@ export default function Tips() {
     syncData();
   }, [syncData]);
 
+  useEffect(() => {
+    if (syncStatus === "updated") {
+      setSelectedCategory(null);
+    }
+  }, [syncStatus]);
+
   const openCategory = (cat) => {
     setSelectedCategory(cat);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -139,9 +181,23 @@ export default function Tips() {
     return ordered;
   };
 
+  const fallbackCategories = useMemo(
+    () =>
+      DUMMY_TIP_CATEGORIES.map((item) => ({
+        ...item,
+        tipsCount: item.tips.length,
+      })),
+    []
+  );
+
+  const categorySource =
+    syncStatus === "updated" ? categories : fallbackCategories;
+
   const filteredCategories = useMemo(() => {
-    return categories.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()));
-  }, [categories, searchQuery]);
+    return categorySource.filter((c) =>
+      c.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [categorySource, searchQuery]);
 
   return (
     <div className="min-h-screen text-gray-800 flex flex-col" style={bgStyle}>

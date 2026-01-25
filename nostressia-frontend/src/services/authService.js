@@ -40,6 +40,14 @@ export const resetPasswordConfirm = async (payload) => {
   return unwrapResponse(response);
 };
 
+export const verifyResetPasswordOtp = async (payload) => {
+  const response = await client.post("/auth/reset-password-verify", payload, {
+    auth: false,
+    skipAuthRedirect: true,
+  });
+  return unwrapResponse(response);
+};
+
 export const getProfile = async () => {
   const response = await client.get("/auth/me");
   return unwrapResponse(response);

@@ -24,6 +24,7 @@ from app.schemas.user_auth_schema import (
     VerifyOTP,
     ForgotPasswordRequest,
     ResetPasswordConfirm,
+    ResetPasswordVerify,
     EmailResponse,
     UserTokenResponse,
 )
@@ -261,7 +262,24 @@ def forgot_password(payload: ForgotPasswordRequest, db: Session = Depends(get_db
 
     return success_response(message="Kode OTP reset password telah dikirim ke email Anda.")
 
-# 5. RESET PASSWORD CONFIRM (Updated: Check Expired)
+# 5. RESET PASSWORD VERIFY (Check OTP sebelum input password baru)
+@router.post("/reset-password-verify", status_code=status.HTTP_200_OK, response_model=APIResponse[None])
+def reset_password_verify(payload: ResetPasswordVerify, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == payload.email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User tidak ditemukan")
+
+    if user.otp_code != payload.otp_code:
+        raise HTTPException(status_code=400, detail="Kode OTP salah")
+
+    if user.otp_created_at:
+        time_diff = datetime.utcnow() - user.otp_created_at
+        if time_diff > timedelta(minutes=OTP_EXPIRE_MINUTES):
+             raise HTTPException(status_code=400, detail="Kode OTP sudah kadaluarsa. Silakan minta ulang.")
+
+    return success_response(message="Kode OTP valid. Silakan lanjutkan.")
+
+# 6. RESET PASSWORD CONFIRM (Updated: Check Expired)
 @router.post("/reset-password-confirm", status_code=status.HTTP_200_OK, response_model=APIResponse[None])
 def reset_password_confirm(payload: ResetPasswordConfirm, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == payload.email).first()

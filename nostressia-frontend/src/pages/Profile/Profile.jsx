@@ -19,6 +19,7 @@ import {
   scheduleDailyReminder,
 } from "../../utils/notificationService";
 import { getStoredTheme, setStoredTheme } from "../../utils/theme";
+import { getMyStressLogs } from "../../services/stressService";
 
 // --- IMPORT AVATAR ---
 import avatar1 from "../../assets/images/avatar1.png";
@@ -223,6 +224,11 @@ export default function Profile() {
   // STATE UNTUK BOOKMARK
   const [bookmarks, setBookmarks] = useState([]);
   const [loadingBookmarks, setLoadingBookmarks] = useState(false);
+  const [stressSummary, setStressSummary] = useState({
+    label: "-",
+    textColor: "text-slate-500",
+    bgColor: "bg-slate-100",
+  });
 
   // STATE UNTUK LOCK/UNLOCK FIELD
   const [editableFields, setEditableFields] = useState({
@@ -344,6 +350,73 @@ export default function Profile() {
   const streakVal = contextUser?.streak || 0;
   const streakStyle = getStreakStyle(streakVal);
 
+  const resolveStressLabel = (value) => {
+    if (value === "High" || value === "high" || Number(value) >= 2) return "High";
+    if (value === "Moderate" || value === "moderate" || Number(value) === 1) return "Moderate";
+    return "Low";
+  };
+
+  const resolveStressStyle = (label) => {
+    if (label === "High") return { textColor: "text-rose-600", bgColor: "bg-rose-100" };
+    if (label === "Moderate") return { textColor: "text-amber-600", bgColor: "bg-amber-100" };
+    return { textColor: "text-emerald-600", bgColor: "bg-emerald-100" };
+  };
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchStressSummary = async () => {
+      try {
+        const logs = await getMyStressLogs();
+        const entries = Array.isArray(logs) ? logs : [];
+        if (entries.length === 0) {
+          if (isMounted) {
+            setStressSummary({
+              label: "-",
+              textColor: "text-slate-500",
+              bgColor: "bg-slate-100",
+            });
+          }
+          return;
+        }
+
+        const counts = entries.reduce(
+          (acc, log) => {
+            const label = resolveStressLabel(log?.stressLevel ?? log?.stress_level);
+            acc[label] += 1;
+            return acc;
+          },
+          { Low: 0, Moderate: 0, High: 0 }
+        );
+
+        const priority = ["High", "Moderate", "Low"];
+        const topLabel = priority.reduce((top, label) => {
+          if (counts[label] > counts[top]) return label;
+          if (counts[label] === counts[top]) {
+            return priority.indexOf(label) < priority.indexOf(top) ? label : top;
+          }
+          return top;
+        }, "Low");
+
+        const style = resolveStressStyle(topLabel);
+        if (isMounted) {
+          setStressSummary({
+            label: topLabel,
+            textColor: style.textColor,
+            bgColor: style.bgColor,
+          });
+        }
+      } catch (error) {
+        console.warn("Failed to load stress summary:", error);
+      }
+    };
+
+    fetchStressSummary();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const stats = [
     { 
       label: "Streak", 
@@ -360,9 +433,9 @@ export default function Profile() {
     },
     { 
       label: "Stress", 
-      value: "Low", 
-      icon: <Activity className="w-5 h-5 text-green-500" />, 
-      bg: "bg-green-100" 
+      value: stressSummary.label, 
+      icon: <Activity className={`w-5 h-5 ${stressSummary.textColor}`} />, 
+      bg: stressSummary.bgColor 
     },
   ];
 
