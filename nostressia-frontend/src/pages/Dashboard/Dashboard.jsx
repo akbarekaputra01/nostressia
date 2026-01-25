@@ -133,6 +133,35 @@ function createEmptyTodayData(todayKey) {
   };
 }
 
+function getMissingDateKeys(lastLogDate, todayDate) {
+  if (!lastLogDate) return [];
+  const startDate = new Date(
+    lastLogDate.getFullYear(),
+    lastLogDate.getMonth(),
+    lastLogDate.getDate()
+  );
+  const endDate = new Date(
+    todayDate.getFullYear(),
+    todayDate.getMonth(),
+    todayDate.getDate()
+  );
+  const missing = [];
+  startDate.setDate(startDate.getDate() + 1);
+  while (startDate < endDate) {
+    missing.push(formatDate(startDate));
+    startDate.setDate(startDate.getDate() + 1);
+  }
+  return missing;
+}
+
+function formatDisplayDate(dateKey) {
+  if (!dateKey) return "";
+  const [year, month, day] = dateKey.split("-").map(Number);
+  if (!year || !month || !day) return dateKey;
+  const date = new Date(year, month - 1, day);
+  return date.toLocaleDateString("id-ID", { day: "numeric", month: "short" });
+}
+
 // --- VARIATION ADVICES LIST ---
 const highStressAdvices = [
   "High stress likely. Try the 4-7-8 breathing technique: Inhale for 4s, hold for 7s, exhale for 8s.",
@@ -388,6 +417,11 @@ export default function Dashboard() {
   const [eligibilityData, setEligibilityData] = useState(null);
   const [eligibilityLoading, setEligibilityLoading] = useState(true);
   const [eligibilityError, setEligibilityError] = useState("");
+  const [missingDateKeys, setMissingDateKeys] = useState([]);
+  const [missingRestorePopup, setMissingRestorePopup] = useState(null);
+  const [dismissedMissingPopup, setDismissedMissingPopup] = useState(false);
+  const [pendingTodayReminder, setPendingTodayReminder] = useState(false);
+  const [showTodayReminder, setShowTodayReminder] = useState(false);
 
   // --- FORM STATE ---
   const [gpa, setGpa] = useState(() => {
@@ -446,6 +480,34 @@ export default function Dashboard() {
     if (selectedDayHasData) return "Tanggal ini sudah terisi.";
     return "Tanggal kosong. Kamu bisa restore data.";
   })();
+
+  useEffect(() => {
+    if (missingDateKeys.length === 0) {
+      setMissingRestorePopup(null);
+      setDismissedMissingPopup(false);
+      return;
+    }
+
+    const missingCount = missingDateKeys.length;
+    const shouldPromptRestore =
+      !dismissedMissingPopup &&
+      missingCount > 0 &&
+      missingCount <= restoreRemaining &&
+      missingCount <= 3;
+
+    if (shouldPromptRestore) {
+      setMissingRestorePopup({ dates: missingDateKeys, count: missingCount });
+    } else {
+      setMissingRestorePopup(null);
+    }
+  }, [dismissedMissingPopup, missingDateKeys, restoreRemaining]);
+
+  useEffect(() => {
+    if (!missingRestorePopup && pendingTodayReminder) {
+      setShowTodayReminder(true);
+      setPendingTodayReminder(false);
+    }
+  }, [missingRestorePopup, pendingTodayReminder]);
 
   useEffect(() => {
     let mounted = true;
@@ -662,6 +724,11 @@ export default function Dashboard() {
           setHasSubmittedToday(false);
           setStressScore(0);
           setTodayLogId(null);
+          setMissingDateKeys([]);
+          setMissingRestorePopup(null);
+          setDismissedMissingPopup(false);
+          setPendingTodayReminder(false);
+          setShowTodayReminder(false);
           setIsLoadingLogs(false);
           return;
         }
@@ -669,10 +736,14 @@ export default function Dashboard() {
         const logList = Array.isArray(logs) ? logs : [];
 
         const byDate = new Map();
+        let latestLogDate = null;
         logList.forEach((log) => {
           const dt = log?.date ? new Date(log.date) : null;
           if (!dt || Number.isNaN(dt.getTime())) return;
           const dateKey = formatDate(new Date(dt.getFullYear(), dt.getMonth(), dt.getDate()));
+          if (!latestLogDate || dt > latestLogDate) {
+            latestLogDate = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
+          }
           const prev = byDate.get(dateKey);
           const prevTs = prev?.createdAt ? new Date(prev.createdAt).getTime() : 0;
           const curTs = log?.createdAt ? new Date(log.createdAt).getTime() : 0;
@@ -704,6 +775,8 @@ export default function Dashboard() {
         }
 
         setStressData(updatedData);
+        setMissingDateKeys(getMissingDateKeys(latestLogDate, todayDate));
+        setDismissedMissingPopup(false);
 
         const todayData = updatedData[TODAY_KEY];
         if (todayData && !todayData.isEmpty) {
@@ -712,10 +785,13 @@ export default function Dashboard() {
           setTodayLogId(todayData.logId ?? null);
           const moodIdx = moods.indexOf(todayData.mood);
           setMoodIndex(moodIdx >= 0 ? moodIdx : 2);
+          setPendingTodayReminder(false);
+          setShowTodayReminder(false);
         } else {
           setHasSubmittedToday(false);
           setStressScore(0);
           setTodayLogId(null);
+          setPendingTodayReminder(true);
         }
       } catch (error) {
         if (error?.name === "AbortError") return;
@@ -724,6 +800,11 @@ export default function Dashboard() {
         setHasSubmittedToday(false);
         setStressScore(0);
         setTodayLogId(null);
+        setMissingDateKeys([]);
+        setMissingRestorePopup(null);
+        setDismissedMissingPopup(false);
+        setPendingTodayReminder(false);
+        setShowTodayReminder(false);
         setLoadError("Gagal memuat data dashboard. Silakan coba lagi.");
       } finally {
         setIsLoadingLogs(false);
@@ -859,6 +940,28 @@ export default function Dashboard() {
       resetFormToEmpty();
     }
     setIsFlipped(true);
+  }
+
+  function handleStartRestoreForMissing() {
+    const missingDates = missingRestorePopup?.dates || [];
+    if (missingDates.length === 0) return;
+    const [year, month, day] = missingDates[0].split("-").map(Number);
+    const targetDate = new Date(year, month - 1, day);
+    setSelectedDate(targetDate);
+    setCalendarDate(new Date(targetDate.getFullYear(), targetDate.getMonth(), 1));
+    handleOpenForm({ mode: "restore", dateKey: missingDates[0] });
+    setMissingRestorePopup(null);
+    setDismissedMissingPopup(true);
+  }
+
+  function handleCloseMissingPopup() {
+    setMissingRestorePopup(null);
+    setDismissedMissingPopup(true);
+  }
+
+  function handleTodayReminderAction() {
+    setShowTodayReminder(false);
+    handleOpenForm({ mode: "today" });
   }
 
   // LOGIKA SIMPAN GPA (LOKAL)
@@ -1797,6 +1900,77 @@ export default function Dashboard() {
         </div>
       </main>
       <Footer />
+
+      {missingRestorePopup && (
+        <div className="fixed inset-0 z-[1090] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fadeIn">
+          <div className="absolute inset-0 cursor-pointer" onClick={handleCloseMissingPopup} />
+          <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden animate-modal-slide">
+            <div className="p-8">
+              <h2 className="text-xl font-extrabold text-gray-900 mb-2">
+                Ada tanggal yang terlewat
+              </h2>
+              <p className="text-sm text-gray-600 mb-4">
+                Kamu belum mengisi <span className="font-semibold">{missingRestorePopup.count}</span>{" "}
+                tanggal. Gunakan restore untuk mengisi tanggal berikut:
+              </p>
+              <div className="flex flex-wrap gap-2 mb-6">
+                {missingRestorePopup.dates.map((dateKey) => (
+                  <span
+                    key={dateKey}
+                    className="px-3 py-1 text-xs font-semibold rounded-full bg-blue-50 text-blue-700"
+                  >
+                    {formatDisplayDate(dateKey)}
+                  </span>
+                ))}
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={handleStartRestoreForMissing}
+                  className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold shadow-lg hover:bg-blue-700 transition-transform active:scale-95 cursor-pointer"
+                >
+                  Mulai restore
+                </button>
+                <button
+                  onClick={handleCloseMissingPopup}
+                  className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl font-bold shadow-sm hover:bg-gray-200 transition-transform active:scale-95 cursor-pointer"
+                >
+                  Nanti dulu
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showTodayReminder && (
+        <div className="fixed inset-0 z-[1080] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fadeIn">
+          <div className="absolute inset-0 cursor-pointer" onClick={() => setShowTodayReminder(false)} />
+          <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden animate-modal-slide">
+            <div className="p-8">
+              <h2 className="text-xl font-extrabold text-gray-900 mb-2">
+                Yuk isi data hari ini
+              </h2>
+              <p className="text-sm text-gray-600 mb-6">
+                Kamu belum mengisi data hari ini. Isi sekarang biar streak tetap aman.
+              </p>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={handleTodayReminderAction}
+                  className="flex-1 py-3 bg-emerald-600 text-white rounded-xl font-bold shadow-lg hover:bg-emerald-700 transition-transform active:scale-95 cursor-pointer"
+                >
+                  Isi sekarang
+                </button>
+                <button
+                  onClick={() => setShowTodayReminder(false)}
+                  className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl font-bold shadow-sm hover:bg-gray-200 transition-transform active:scale-95 cursor-pointer"
+                >
+                  Nanti dulu
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
        
       {/* MODAL TIPS */}
       {activeTip && (
