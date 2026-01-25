@@ -99,7 +99,7 @@ export default function AdminPage({ skipAuth = false }) {
             const diaryData = await getAdminDiaries({ limit: 1 });
             setTotalDiariesCount(diaryData.total || 0);
 
-        } catch (error) { console.error("Gagal hitung stats:", error); }
+        } catch (error) { console.error("Failed to calculate stats:", error); }
     };
     
     if(token) fetchStats();
@@ -772,9 +772,9 @@ export default function AdminPage({ skipAuth = false }) {
                 <div className="mt-4 pt-4 border-t border-gray-100">
                   <label className="block text-sm font-bold text-gray-700 mb-1">Reset Password <span className="text-xs font-normal text-gray-400">(Unavailable)</span></label>
                   <div className="w-full border border-gray-200 p-3 rounded-lg bg-gray-100 text-gray-400">
-                    Reset password belum tersedia di backend.
+                    Password reset is not available on the backend yet.
                   </div>
-                  <p className="text-xs text-gray-400 mt-1">Fitur ini akan aktif setelah endpoint reset password tersedia.</p>
+                  <p className="text-xs text-gray-400 mt-1">This will be enabled once the reset endpoint is available.</p>
                 </div>
                 <div className="flex justify-end gap-3 mt-8"><button type="button" onClick={() => setIsEditUserModalOpen(false)} className="px-5 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg font-bold transition-colors cursor-pointer">Cancel</button><button type="submit" className="px-5 py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-bold shadow-md shadow-purple-200 transition-all cursor-pointer">Save Changes</button></div>
             </form>

@@ -378,13 +378,13 @@ function buildForecastEligibilityMessage({
   const safeRemaining = Number.isFinite(Number(restoreRemaining)) ? restoreRemaining : "-";
 
   return [
-    "Forecast belum tersedia karena data belum memenuhi syarat.",
-    reason ? `Alasan: ${reason}` : null,
-    `Data terkumpul: ${safeStreak}/${requiredStreak}.`,
-    `• Butuh ${requiredStreak} data (tidak harus berturut).`,
-    `• Restore boleh dipakai (maks ${restoreLimit}/bulan).`,
-    "• Minimal 4 data asli di window 7.",
-    `Restore terpakai: ${safeUsed} • Sisa: ${safeRemaining}.`
+    "Forecast is not available because your data does not meet the minimum requirement yet.",
+    reason ? `Reason: ${reason}` : null,
+    `Collected data: ${safeStreak}/${requiredStreak}.`,
+    `• Requires ${requiredStreak} logs (not necessarily consecutive).`,
+    `• Restore can be used (max ${restoreLimit}/month).`,
+    "• Minimum 4 original logs within the 7-day window.",
+    `Restore used: ${safeUsed} • Remaining: ${safeRemaining}.`
   ]
     .filter(Boolean)
     .join("\n");
@@ -407,6 +407,7 @@ export default function Dashboard() {
   const [todayLogId, setTodayLogId] = useState(null);
   const [isLoadingLogs, setIsLoadingLogs] = useState(true);
   const [loadError, setLoadError] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
   // Success Modal & Detail
   const [successModal, setSuccessModal] = useState({ visible: false, title: "", text: "" });
@@ -484,12 +485,12 @@ export default function Dashboard() {
   const restoreRemaining = Math.max(restoreLimit - restoreUsed, 0);
   const canRestoreSelectedDay = isSelectedPast && !selectedDayHasData;
   const restoreHint = (() => {
-    if (eligibilityLoading) return "Memuat eligibility restore...";
-    if (eligibilityError) return "Gagal memuat eligibility restore.";
-    if (restoreRemaining <= 0) return "Restore limit bulan ini sudah habis.";
-    if (!isSelectedPast) return "Pilih tanggal sebelum hari ini untuk restore.";
-    if (selectedDayHasData) return "Tanggal ini sudah terisi.";
-    return "Tanggal kosong. Kamu bisa restore data.";
+    if (eligibilityLoading) return "Loading restore eligibility...";
+    if (eligibilityError) return "Failed to load restore eligibility.";
+    if (restoreRemaining <= 0) return "Your restore limit for this month is used up.";
+    if (!isSelectedPast) return "Select a date before today to restore.";
+    if (selectedDayHasData) return "This date already has data.";
+    return "No data found for this date. You can restore it.";
   })();
 
   useEffect(() => {
@@ -745,7 +746,7 @@ export default function Dashboard() {
       const imputed = getImputedInputs(dateKey);
       if (!imputed) {
         resetFormToEmpty();
-        setRestoreImputeInfo("Belum ada data sebelumnya. Isi manual dulu ya.");
+        setRestoreImputeInfo("No previous data found. Please fill it manually first.");
         return;
       }
       setStudyHours(formatImputedValue(imputed.studyHours));
@@ -755,7 +756,9 @@ export default function Dashboard() {
       setPhysicalHours(formatImputedValue(imputed.physicalHours));
       const moodIdx = moods.indexOf(imputed.mood);
       setMoodIndex(moodIdx >= 0 ? moodIdx : 2);
-      setRestoreImputeInfo("Nilai terisi otomatis dari rata-rata data terdekat. Kamu masih bisa mengubahnya.");
+      setRestoreImputeInfo(
+        "Values are auto-filled based on nearby averages. You can still edit them."
+      );
       return;
     }
 
@@ -795,7 +798,7 @@ export default function Dashboard() {
         }
         const detail = error?.payload?.detail || error?.message;
         setEligibilityError(
-          `Gagal memuat eligibility.${detail ? ` ${detail}` : ""}`
+          `Failed to load eligibility.${detail ? ` ${detail}` : ""}`
         );
       } finally {
         setEligibilityLoading(false);
@@ -905,7 +908,7 @@ export default function Dashboard() {
         setDismissedMissingPopup(false);
         setPendingTodayReminder(false);
         setShowTodayReminder(false);
-        setLoadError("Gagal memuat data dashboard. Silakan coba lagi.");
+        setLoadError("Failed to load dashboard data. Please try again.");
       } finally {
         setIsLoadingLogs(false);
       }
@@ -968,7 +971,7 @@ export default function Dashboard() {
         const list = buildForecastList(baseForecast);
         setForecastList(list);
         if (list.length === 0) {
-          setForecastError("Forecast belum tersedia.");
+          setForecastError("Forecast not available yet.");
         }
       } catch (error) {
         if (error?.name === "AbortError") return;
@@ -999,13 +1002,13 @@ export default function Dashboard() {
           return;
         }
         if (error?.status === 400) {
-          setForecastError("Histori belum cukup.");
+          setForecastError("Not enough history to generate a forecast.");
           return;
         }
         const detail =
           error?.payload?.detail || error?.payload?.message || error?.message;
         setForecastError(
-          `Gagal memuat forecast.${detail ? ` ${detail}` : ""}`
+          `Failed to load forecast.${detail ? ` ${detail}` : ""}`
         );
       } finally {
         setForecastLoading(false);
@@ -1066,11 +1069,33 @@ export default function Dashboard() {
     handleOpenForm({ mode: "today" });
   }
 
+  const focusFirstEmptyField = (form) => {
+    const requiredFields = Array.from(
+      form.querySelectorAll("[data-required='true']")
+    );
+    const emptyField = requiredFields.find((field) => !field.value);
+    if (emptyField) {
+      emptyField.focus();
+      return true;
+    }
+    return false;
+  };
+
+  const handleFormKeyDown = (event) => {
+    if (event.key !== "Enter") return;
+    if (event.target?.tagName === "TEXTAREA") return;
+    if (focusFirstEmptyField(event.currentTarget)) {
+      event.preventDefault();
+    }
+  };
+
   // LOGIKA SIMPAN GPA (LOKAL)
   function handleGpaSave(val) {
-    if (val === "") return alert("GPA cannot be empty");
+    if (val === "") return alert("GPA cannot be empty.");
     const num = parseFloat(val);
-    if (Number.isNaN(num) || num < 0 || num > 4) return alert("GPA must be between 0 - 4");
+    if (Number.isNaN(num) || num < 0 || num > 4) {
+      return alert("GPA must be between 0 and 4.");
+    }
     
     setGpa(num);
     localStorage.setItem("user_gpa", num); // Simpan ke browser
@@ -1098,11 +1123,11 @@ export default function Dashboard() {
       return logData?.stressLevelId ?? logData?.id ?? logData?._id ?? null;
     } catch (error) {
       if (error?.status === 409) {
-        alert("Data untuk tanggal ini sudah ada. Update belum tersedia.");
+        alert("Data already exists for this date. Updates are not available yet.");
         return null;
       }
       if (error?.status === 403 && isRestore) {
-        alert("Restore limit bulan ini sudah tercapai.");
+        alert("Your monthly restore limit has been reached.");
         return null;
       }
       console.error("Failed to save stress log:", error);
@@ -1112,16 +1137,21 @@ export default function Dashboard() {
 
   async function handleSaveForm(e) {
     e.preventDefault();
+
+    if (isSaving) return;
     
     // VALIDASI: GPA WAJIB DIISI SEBELUM SUBMIT
     if (gpa === "" || gpa === null) {
       setIsEditingGpa(true); // Otomatis buka mode edit
-      return alert("⚠️ Please set your GPA first before submitting data.");
+      return alert("Please set your GPA before submitting the data.");
     }
 
-    if (sleepHours === "" || sleepHours < 0 || sleepHours > 24) return alert("Please enter valid sleep hours (0-24).");
+    if (sleepHours === "" || sleepHours < 0 || sleepHours > 24) {
+      return alert("Please enter valid sleep hours (0-24).");
+    }
 
     try {
+      setIsSaving(true);
       const targetDateKey = activeLogDate || TODAY_KEY;
       const isTargetToday = targetDateKey === TODAY_KEY;
       const payload = {
@@ -1142,14 +1172,14 @@ export default function Dashboard() {
         isRestore: isRestoreMode,
       });
       if (!savedLogId) return;
-      setSuccessModal({ 
+      setSuccessModal({
         visible: true, 
         title: isRestoreMode
           ? "Restore Complete!"
           : hasSubmittedToday
           ? "Data Updated!"
           : "Analysis Complete!",
-        text: apiData.message // Menggunakan pesan dari Backend
+        text: apiData.message
       });
 
       if (isTargetToday) {
@@ -1185,11 +1215,14 @@ export default function Dashboard() {
 
       if (savedLogId) {
         refreshEligibility();
+        window.dispatchEvent(new Event("nostressia:user-update"));
       }
 
     } catch (error) {
-      console.error("❌ Gagal Konek:", error);
-      alert("Gagal menghubungi server.");
+      console.error("❌ Failed to connect:", error);
+      alert("Failed to reach the server.");
+    } finally {
+      setIsSaving(false);
     }
   }
 
@@ -1296,7 +1329,7 @@ export default function Dashboard() {
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {/* FLIP CARD SECTION */}
-          <section className="col-span-1 md:col-span-2 relative" style={{ minHeight: 640 }}>
+          <section className="col-span-1 md:col-span-2 relative" style={{ minHeight: 600 }}>
             {isLoadingLogs && (
               <div className="absolute inset-0 z-20 rounded-[20px] bg-white/70 backdrop-blur-sm p-6 md:p-8">
                 <div className="relative h-full w-full rounded-[16px] border border-white/40 bg-white/60 p-6 md:p-8 shadow-inner">
@@ -1452,13 +1485,18 @@ export default function Dashboard() {
                   </header>
                   <form
                     onSubmit={handleSaveForm}
+                    onKeyDown={handleFormKeyDown}
                     className="flex-grow overflow-y-auto pr-2 flex flex-col gap-3 transition-all duration-500 custom-scroll"
-                    style={{ opacity: successModal.visible ? 0 : 1, transform: successModal.visible ? "scale(0.95)" : "scale(1)", pointerEvents: successModal.visible ? "none" : "auto" }}
+                    style={{
+                      opacity: successModal.visible ? 0 : 1,
+                      transform: successModal.visible ? "scale(0.95)" : "scale(1)",
+                      pointerEvents: successModal.visible || isSaving ? "none" : "auto",
+                    }}
                   >
                     {isRestoreMode && (
                       <div className="rounded-xl border border-white/40 bg-white/60 p-3 shadow-sm">
                         <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                          Mode isi restore
+                          Restore input mode
                         </p>
                         <div className="mt-2 grid grid-cols-2 gap-2">
                           <button
@@ -1470,7 +1508,7 @@ export default function Dashboard() {
                                 : "bg-white/70 text-gray-600 hover:bg-white"
                             }`}
                           >
-                            Isi manual
+                            Manual entry
                           </button>
                           <button
                             type="button"
@@ -1481,7 +1519,7 @@ export default function Dashboard() {
                                 : "bg-white/70 text-gray-600 hover:bg-white"
                             }`}
                           >
-                            Isi auto (imputasi)
+                            Auto fill (imputed)
                           </button>
                         </div>
                         {restoreImputeInfo && (
@@ -1518,6 +1556,7 @@ export default function Dashboard() {
                             id="gpaInput" 
                             style={{ color: "#333" }} 
                             autoFocus
+                            data-required="true"
                           />
                           <button type="button" className="w-9 h-9 rounded-xl flex items-center justify-center bg-green-100 text-green-600 hover:bg-green-200 transition-colors cursor-pointer" onClick={() => handleGpaSave(document.getElementById("gpaInput").value)}>
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
@@ -1532,7 +1571,7 @@ export default function Dashboard() {
                     <div className="grid grid-cols-2 gap-3">
                       <div><label className="text-sm font-semibold text-gray-800 mb-1 block">Study Hours <span className="text-gray-400 text-xs font-normal">(Hrs)</span></label><input type="number" value={studyHours} onChange={(e) => setStudyHours(e.target.value)} min="0" max="24" step="0.5" placeholder="0" className="w-full p-2.5 border border-white/50 bg-white/50 rounded-lg focus:ring-2 focus:ring-blue-400 placeholder-gray-400"/></div>
                       <div><label className="text-sm font-semibold text-gray-800 mb-1 block">Extracurricular <span className="text-gray-400 text-xs font-normal">(Hrs)</span></label><input type="number" value={extraHours} onChange={(e) => setExtraHours(e.target.value)} min="0" max="24" step="0.5" placeholder="0" className="w-full p-2.5 border border-white/50 bg-white/50 rounded-lg focus:ring-2 focus:ring-blue-400 placeholder-gray-400"/></div>
-                      <div><label className="text-sm font-semibold text-gray-800 mb-1 block">Sleep Hours <span className="text-gray-400 text-xs font-normal">(Hrs)</span></label><input type="number" value={sleepHours} onChange={(e) => setSleepHours(e.target.value)} min="0" max="24" step="0.5" placeholder="0" className="w-full p-2.5 border border-white/50 bg-white/50 rounded-lg focus:ring-2 focus:ring-blue-400 placeholder-gray-400"/></div>
+                      <div><label className="text-sm font-semibold text-gray-800 mb-1 block">Sleep Hours <span className="text-gray-400 text-xs font-normal">(Hrs)</span></label><input type="number" value={sleepHours} onChange={(e) => setSleepHours(e.target.value)} min="0" max="24" step="0.5" placeholder="0" className="w-full p-2.5 border border-white/50 bg-white/50 rounded-lg focus:ring-2 focus:ring-blue-400 placeholder-gray-400" data-required="true"/></div>
                       <div><label className="text-sm font-semibold text-gray-800 mb-1 block">Social Hours <span className="text-gray-400 text-xs font-normal">(Hrs)</span></label><input type="number" value={socialHours} onChange={(e) => setSocialHours(e.target.value)} min="0" max="24" step="0.5" placeholder="0" className="w-full p-2.5 border border-white/50 bg-white/50 rounded-lg focus:ring-2 focus:ring-blue-400 placeholder-gray-400"/></div>
                       <div className="col-span-2"><label className="text-sm font-semibold text-gray-800 mb-1 block">Physical Activity <span className="text-gray-400 text-xs font-normal">(Exercise Hrs)</span></label><input type="number" value={physicalHours} onChange={(e) => setPhysicalHours(e.target.value)} min="0" max="24" step="0.5" placeholder="0" className="w-full p-2.5 border border-white/50 bg-white/50 rounded-lg focus:ring-2 focus:ring-blue-400 placeholder-gray-400"/></div>
                     </div>
@@ -1548,8 +1587,26 @@ export default function Dashboard() {
                         ))}
                       </div>
                     </div>
-                    <button type="submit" className="w-full py-3 rounded-xl font-bold text-white transition-all hover:brightness-110 mt-2 cursor-pointer" style={{ backgroundColor: isRestoreMode ? brandOrange : hasSubmittedToday ? brandOrange : brandBlue }}>
-                      {isRestoreMode ? (
+                    <button
+                      type="submit"
+                      disabled={isSaving}
+                      className={`w-full py-3 rounded-xl font-bold text-white transition-all hover:brightness-110 mt-2 cursor-pointer ${
+                        isSaving ? "opacity-70 cursor-not-allowed" : ""
+                      }`}
+                      style={{
+                        backgroundColor: isRestoreMode
+                          ? brandOrange
+                          : hasSubmittedToday
+                          ? brandOrange
+                          : brandBlue,
+                      }}
+                    >
+                      {isSaving ? (
+                        <span className="flex items-center justify-center gap-2">
+                          <span className="h-4 w-4 rounded-full border-2 border-white/70 border-t-transparent animate-spin" />
+                          Saving data...
+                        </span>
+                      ) : isRestoreMode ? (
                         <span className="flex items-center justify-center">
                           <i className="ph ph-clock-counter-clockwise mr-2" /> Restore Data
                         </span>
@@ -1560,6 +1617,15 @@ export default function Dashboard() {
                       )}
                     </button>
                   </form>
+
+                  {isSaving && (
+                    <div className="absolute inset-0 z-40 flex items-center justify-center rounded-[20px] bg-white/70 backdrop-blur-sm">
+                      <div className="flex items-center gap-3 rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-gray-600 shadow-lg">
+                        <span className="h-5 w-5 rounded-full border-2 border-blue-500 border-t-transparent animate-spin" />
+                        Processing your entry...
+                      </div>
+                    </div>
+                  )}
 
                   {/* INTERNAL SUCCESS OVERLAY */}
                   {successModal.visible && (
@@ -1593,7 +1659,7 @@ export default function Dashboard() {
           </section>
 
           {/* CALENDAR SECTION (FIXED BUTTONS) */}
-          <section className="col-span-1 md:col-span-2 p-6 md:p-8 rounded-[20px] bg-white/40 backdrop-blur-md border border-white/20 shadow-xl relative overflow-hidden" style={{ minHeight: 640 }}>
+          <section className="col-span-1 md:col-span-2 p-6 md:p-8 rounded-[20px] bg-white/40 backdrop-blur-md border border-white/20 shadow-xl relative overflow-hidden" style={{ minHeight: 600 }}>
             {isLoadingLogs && (
               <div className="absolute inset-0 z-20 bg-white/70 backdrop-blur-sm p-6 md:p-8">
                 <div className="relative h-full w-full rounded-[16px] border border-white/40 bg-white/60 p-6 md:p-8 shadow-inner">
@@ -1721,28 +1787,20 @@ export default function Dashboard() {
               </div>
 
               <div className="mt-4 rounded-2xl border border-white/40 bg-white/60 p-4 shadow-sm">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <h4 className="text-sm font-bold text-gray-800 flex items-center gap-2">
-                      <i className="ph ph-fire text-orange-500" />
-                      Restore Streak
-                    </h4>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Gunakan restore untuk mengisi tanggal yang terlewat. Maks{" "}
-                      {restoreLimit} kali per bulan.
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Sisa restore bulan ini:{" "}
-                      <span className="font-semibold text-gray-700">
-                        {restoreRemaining}
-                      </span>
-                      /{restoreLimit}.
-                    </p>
-                    {eligibilityError && (
-                      <p className="text-xs text-red-500 mt-1">
-                        {eligibilityError}
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center">
+                      <i className="ph ph-fire text-lg" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-gray-800">Restore Streak</h4>
+                      <p className="text-xs text-gray-500">
+                        Remaining:{" "}
+                        <span className="font-semibold text-gray-700">
+                          {restoreRemaining}/{restoreLimit}
+                        </span>
                       </p>
-                    )}
+                    </div>
                   </div>
                   <button
                     type="button"
@@ -1766,6 +1824,9 @@ export default function Dashboard() {
                   </button>
                 </div>
                 <p className="text-xs text-gray-500 mt-2">{restoreHint}</p>
+                {eligibilityError && (
+                  <p className="text-xs text-red-500 mt-1">{eligibilityError}</p>
+                )}
               </div>
 
               {/* --- NEW SECTION: 3-DAY FORECAST --- */}
@@ -1800,7 +1861,7 @@ export default function Dashboard() {
                     )}
                     {!forecastLoading && !forecastError && forecastList.length === 0 && (
                       <div className="col-span-3 text-center text-xs font-semibold text-gray-500 bg-white/60 border border-gray-200 rounded-xl px-3 py-4">
-                        Forecast belum tersedia.
+                        Forecast is not available yet.
                       </div>
                     )}
                     {!forecastLoading && !forecastError && forecastList.length > 0 && (
@@ -2050,7 +2111,7 @@ export default function Dashboard() {
             <div className="p-8">
               <div className="flex items-start justify-between gap-4 mb-2">
                 <h2 className="text-xl font-extrabold text-gray-900">
-                  Ada tanggal yang terlewat
+                  You have missed dates
                 </h2>
                 <button
                   type="button"
@@ -2063,8 +2124,8 @@ export default function Dashboard() {
                 </button>
               </div>
               <p className="text-sm text-gray-600 mb-4">
-                Kamu belum mengisi <span className="font-semibold">{missingRestorePopup.count}</span>{" "}
-                tanggal. Gunakan restore untuk mengisi tanggal berikut:
+                You have <span className="font-semibold">{missingRestorePopup.count}</span>{" "}
+                missing dates. Use restore to fill these days:
               </p>
               <div className="flex flex-wrap gap-2 mb-6">
                 {missingRestorePopup.dates.map((dateKey) => (
@@ -2081,17 +2142,17 @@ export default function Dashboard() {
                   onClick={() => handleStartRestoreForMissing("manual")}
                   className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold shadow-lg hover:bg-blue-700 transition-transform active:scale-95 cursor-pointer"
                 >
-                  Isi manual
+                  Manual entry
                 </button>
                 <button
                   onClick={() => handleStartRestoreForMissing("auto")}
                   className="flex-1 py-3 bg-emerald-600 text-white rounded-xl font-bold shadow-lg hover:bg-emerald-700 transition-transform active:scale-95 cursor-pointer"
                 >
-                  Isi auto
+                  Auto fill
                 </button>
               </div>
               <p className="mt-3 text-xs text-gray-500">
-                Isi auto akan mengisi berdasarkan rata-rata data terdekat. Kamu tetap bisa mengubahnya.
+                Auto fill uses nearby averages. You can still edit the data afterward.
               </p>
             </div>
           </div>
@@ -2104,23 +2165,23 @@ export default function Dashboard() {
           <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden animate-modal-slide">
             <div className="p-8">
               <h2 className="text-xl font-extrabold text-gray-900 mb-2">
-                Yuk isi data hari ini
+                Time to log today
               </h2>
               <p className="text-sm text-gray-600 mb-6">
-                Kamu belum mengisi data hari ini. Isi sekarang biar streak tetap aman.
+                You have not logged today yet. Log now to keep your streak safe.
               </p>
               <div className="flex items-center gap-3">
                 <button
                   onClick={handleTodayReminderAction}
                   className="flex-1 py-3 bg-emerald-600 text-white rounded-xl font-bold shadow-lg hover:bg-emerald-700 transition-transform active:scale-95 cursor-pointer"
                 >
-                  Isi sekarang
+                  Log now
                 </button>
                 <button
                   onClick={() => setShowTodayReminder(false)}
                   className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl font-bold shadow-sm hover:bg-gray-200 transition-transform active:scale-95 cursor-pointer"
                 >
-                  Nanti dulu
+                  Later
                 </button>
               </div>
             </div>
