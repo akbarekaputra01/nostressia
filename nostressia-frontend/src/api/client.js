@@ -4,13 +4,22 @@ import { readAuthToken } from "../utils/auth";
 
 const rawBaseUrl = import.meta.env.VITE_API_BASE_URL || "";
 const normalizedBaseUrl = rawBaseUrl.replace(/\/$/, "");
+const isAbsoluteUrl = /^https?:\/\//i.test(normalizedBaseUrl);
 const apiBaseUrl = normalizedBaseUrl
   ? normalizedBaseUrl.endsWith("/api")
     ? normalizedBaseUrl
     : `${normalizedBaseUrl}/api`
-  : "";
+  : "/api";
 
-export const apiOrigin = normalizedBaseUrl ? new URL(normalizedBaseUrl).origin : "";
+export const apiOrigin = normalizedBaseUrl
+  ? isAbsoluteUrl
+    ? new URL(normalizedBaseUrl).origin
+    : typeof window !== "undefined"
+    ? window.location.origin
+    : ""
+  : typeof window !== "undefined"
+  ? window.location.origin
+  : "";
 
 const client = axios.create({
   baseURL: apiBaseUrl,

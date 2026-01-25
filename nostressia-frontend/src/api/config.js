@@ -5,4 +5,4 @@ export const BASE_URL = normalizedBaseUrl
   ? normalizedBaseUrl.endsWith("/api")
     ? normalizedBaseUrl
     : `${normalizedBaseUrl}/api`
-  : "";
+  : "/api";
