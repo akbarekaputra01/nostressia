@@ -43,6 +43,14 @@ class UserResponse(BaseSchema):
     # diary_count: int  <-- (Opsional, pastikan di model ada property ini atau hapus jika error)
     is_verified: bool # ✅ (BARU) Tambahkan ini agar frontend tahu statusnya
 
+class UserTokenResponse(BaseSchema):
+    access_token: str
+    token_type: str
+    user: UserResponse
+
+class EmailResponse(BaseSchema):
+    email: EmailStr
+
 class UserUpdate(BaseSchema):
     name: Optional[str] = None
     username: Optional[str] = Field(default=None, validation_alias=AliasChoices("username", "user_name", "userName"))

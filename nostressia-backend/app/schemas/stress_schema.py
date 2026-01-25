@@ -39,3 +39,19 @@ class EligibilityResponse(BaseSchema):
     restore_limit: int = Field(default=RESTORE_LIMIT)
     missing: int
     note: str
+
+
+class GlobalForecastResult(BaseSchema):
+    user_id: int
+    forecast_date: str
+    probability: float
+    chance_percent: float
+    threshold: float
+    prediction_binary: int
+    prediction_label: str
+    model_type: str
+
+
+class GlobalForecastPayload(BaseSchema):
+    forecast: GlobalForecastResult
+    eligibility: EligibilityResponse

@@ -7,6 +7,7 @@ from app.core.database import get_db
 from app.models.user_model import User
 from app.models.admin_model import Admin
 from app.schemas.user_auth_schema import UserResponse, UserListResponse, AdminUserUpdate
+from app.schemas.response_schema import APIResponse
 
 # ✅ Import Satpam dari auth_route
 from app.routes.auth_route import get_current_admin 
@@ -16,7 +17,7 @@ from app.utils.response import success_response
 router = APIRouter(prefix="/admin/users", tags=["Admin - User Management"])
 
 # --- 1. GET ALL USERS (Search & Pagination) ---
-@router.get("/", response_model=dict)
+@router.get("/", response_model=APIResponse[UserListResponse])
 def get_all_users(
     page: int = 1,
     limit: int = 10,
@@ -52,7 +53,7 @@ def get_all_users(
     )
 
 # --- 2. GET USER DETAIL ---
-@router.get("/{user_id}", response_model=dict)
+@router.get("/{user_id}", response_model=APIResponse[UserResponse])
 def get_user_by_id(
     user_id: int, 
     db: Session = Depends(get_db),
@@ -64,7 +65,7 @@ def get_user_by_id(
     return success_response(data=user, message="User fetched")
 
 # --- 3. UPDATE USER (Edit Profile, DOB, Gender) ---
-@router.put("/{user_id}", response_model=dict)
+@router.put("/{user_id}", response_model=APIResponse[UserResponse])
 def admin_update_user(
     user_id: int,
     user_update: AdminUserUpdate, # ✅ Pakai schema update khusus Admin
@@ -105,7 +106,7 @@ def admin_update_user(
     return success_response(data=user, message="User updated")
 
 # --- 4. DELETE USER ---
-@router.delete("/{user_id}")
+@router.delete("/{user_id}", response_model=APIResponse[None])
 def delete_user(
     user_id: int, 
     db: Session = Depends(get_db),

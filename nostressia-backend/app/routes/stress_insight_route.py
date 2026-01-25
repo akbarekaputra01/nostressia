@@ -4,6 +4,8 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.models.user_model import User
 from app.schemas.predict_schema import PredictRequest, PredictResponse
+from app.schemas.response_schema import APIResponse
+from app.schemas.stress_schema import GlobalForecastPayload
 from app.services import forecast_service, stress_service
 from app.services.ml_service import ml_service
 from app.utils.jwt_handler import get_current_user
@@ -12,7 +14,7 @@ from app.utils.response import success_response
 router = APIRouter(prefix="/stress", tags=["Stress Insights"])
 
 
-@router.post("/current", response_model=dict)
+@router.post("/current", response_model=APIResponse[PredictResponse])
 def predict_current_stress(
     request: PredictRequest,
     db: Session = Depends(get_db),
@@ -31,14 +33,14 @@ def predict_current_stress(
     if result == "Error":
         raise HTTPException(status_code=500, detail="Terjadi kesalahan pada model ML")
 
-    payload = {
-        "result": result,
-        "message": f"Your stress level is detected as: {result}",
-    }
+    payload = PredictResponse(
+        result=result,
+        message=f"Your stress level is detected as: {result}",
+    )
     return success_response(data=payload, message="Prediction created")
 
 
-@router.get("/global-forecast")
+@router.get("/global-forecast", response_model=APIResponse[GlobalForecastPayload])
 def get_global_forecast(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),

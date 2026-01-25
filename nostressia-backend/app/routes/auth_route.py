@@ -3,7 +3,8 @@ from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordBearer
 
 from app.core.database import get_db
-from app.schemas.auth_schema import LoginRequest
+from app.schemas.auth_schema import LoginRequest, LoginResponse
+from app.schemas.response_schema import APIResponse
 from app.services.auth_service import authenticate_admin
 from app.utils.jwt_handler import create_access_token, decode_access_token
 from app.models.admin_model import Admin 
@@ -38,7 +39,7 @@ def get_current_admin(token: str = Depends(oauth2_admin_scheme), db: Session = D
         
     return admin
 
-@router.post("/admin/login", response_model=dict)
+@router.post("/admin/login", response_model=APIResponse[LoginResponse])
 def admin_login(request: LoginRequest, db: Session = Depends(get_db)):
     admin = authenticate_admin(db, request.username, request.password)
     if not admin:

@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, desc
@@ -8,23 +8,14 @@ from app.models.diary_model import Diary
 from app.models.user_model import User
 from app.models.admin_model import Admin
 from app.routes.auth_route import get_current_admin
-from app.schemas.base_schema import BaseSchema
-from datetime import datetime
+from app.schemas.admin_diary_schema import AdminDiaryListResponse
+from app.schemas.response_schema import APIResponse
 from app.utils.response import success_response
 
 router = APIRouter(prefix="/admin/diaries", tags=["Admin - Diary Moderation"])
 
-# Schema Output
-class AdminDiaryResponse(BaseSchema):
-    diary_id: int
-    title: Optional[str] = None # ✅ (1) TAMBAHAN: Field Title
-    content: str
-    created_at: datetime
-    user_id: int
-    username: str 
-
 # 1. GET ALL DIARIES (With Search & Pagination)
-@router.get("/", response_model=dict)
+@router.get("/", response_model=APIResponse[AdminDiaryListResponse])
 def get_all_diaries(
     page: int = 1,
     limit: int = 10,
@@ -75,7 +66,7 @@ def get_all_diaries(
     )
 
 # 2. DELETE DIARY
-@router.delete("/{diary_id}")
+@router.delete("/{diary_id}", response_model=APIResponse[None])
 def delete_diary_by_admin(
     diary_id: int, 
     db: Session = Depends(get_db),

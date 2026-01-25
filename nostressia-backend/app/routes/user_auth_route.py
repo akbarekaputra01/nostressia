@@ -1,10 +1,9 @@
 # app/routes/user_auth_route.py
 
 from datetime import date, datetime, timedelta # ✅ Tambah datetime
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm 
-from pydantic import ValidationError
 
 from app.core.database import get_db
 from app.models.user_model import User
@@ -25,8 +24,11 @@ from app.schemas.user_auth_schema import (
     VerifyOTP,
     ForgotPasswordRequest,
     ResetPasswordConfirm,
+    EmailResponse,
+    UserTokenResponse,
 )
 from app.utils.response import success_response
+from app.schemas.response_schema import APIResponse
 
 router = APIRouter()
 
@@ -37,7 +39,7 @@ def _serialize_user(user: User) -> UserResponse:
     return UserResponse.model_validate(user)
 
 
-def _issue_token_for_user(user: User, db: Session) -> dict:
+def _issue_token_for_user(user: User, db: Session) -> UserTokenResponse:
     today = date.today()
     if user.last_login == today - timedelta(days=1):
         user.streak = (user.streak or 0) + 1
@@ -49,11 +51,11 @@ def _issue_token_for_user(user: User, db: Session) -> dict:
     access_token = create_access_token(
         data={"sub": user.email, "id": user.user_id, "username": user.username}
     )
-    return {
-        "access_token": access_token,
-        "token_type": "bearer",
-        "user": _serialize_user(user),
-    }
+    return UserTokenResponse(
+        access_token=access_token,
+        token_type="bearer",
+        user=_serialize_user(user),
+    )
 
 def _authenticate_user(identifier: str, password: str, db: Session) -> User:
     user = None
@@ -73,7 +75,7 @@ def _authenticate_user(identifier: str, password: str, db: Session) -> User:
 # --- ENDPOINTS ---
 
 # 1. REGISTER (Updated: OTP Expired + Retry Logic)
-@router.post("/register", status_code=status.HTTP_201_CREATED)
+@router.post("/register", status_code=status.HTTP_201_CREATED, response_model=APIResponse[EmailResponse])
 def register(user_in: UserRegister, db: Session = Depends(get_db)):
     # 1. Cek User berdasarkan Email & Username
     existing_user_email = db.query(User).filter(User.email == user_in.email).first()
@@ -113,7 +115,7 @@ def register(user_in: UserRegister, db: Session = Depends(get_db)):
             send_otp_email(existing_user_email.email, otp_code)
             
             return success_response(
-                data={"email": existing_user_email.email},
+                data=EmailResponse(email=existing_user_email.email),
                 message="Registration successful (Retry). Please check your email for new OTP.",
             )
 
@@ -146,12 +148,12 @@ def register(user_in: UserRegister, db: Session = Depends(get_db)):
         print(f"⚠️ Gagal mengirim email OTP ke {new_user.email}: {email_error}")
 
     return success_response(
-        data={"email": new_user.email},
+        data=EmailResponse(email=new_user.email),
         message="Registration successful! Please check your email for OTP verification.",
     )
 
 # 2. VERIFY OTP (Updated: Check Expired)
-@router.post("/verify-otp", status_code=status.HTTP_200_OK)
+@router.post("/verify-otp", status_code=status.HTTP_200_OK, response_model=APIResponse[None])
 def verify_otp_endpoint(payload: VerifyOTP, db: Session = Depends(get_db)):
     # Cari user berdasarkan email
     user = db.query(User).filter(User.email == payload.email).first()
@@ -186,50 +188,25 @@ def verify_otp_endpoint(payload: VerifyOTP, db: Session = Depends(get_db)):
     return success_response(message="Account verified successfully! You can now login.")
 
 # 3. LOGIN (Tetap Sama)
-@router.post("/login", response_model=dict)
-async def login(request: Request, db: Session = Depends(get_db)):
-    content_type = request.headers.get("content-type", "")
-    payload = {}
-    if content_type.startswith("application/x-www-form-urlencoded") or content_type.startswith("multipart/form-data"):
-        form = await request.form()
-        payload = {
-            "identifier": form.get("identifier") or form.get("username") or form.get("email"),
-            "password": form.get("password"),
-        }
-    else:
-        try:
-            body = await request.json()
-        except Exception:
-            body = {}
-        payload = {
-            "identifier": body.get("identifier") or body.get("username") or body.get("email"),
-            "password": body.get("password"),
-        }
-
-    try:
-        if isinstance(payload.get("identifier"), str):
-            payload["identifier"] = payload["identifier"].strip()
-        if isinstance(payload.get("password"), str):
-            payload["password"] = payload["password"].strip()
-        user_in = UserLogin.model_validate(payload)
-    except ValidationError as exc:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=exc.errors())
-
-    user = _authenticate_user(user_in.identifier, user_in.password, db)
+@router.post("/login", response_model=APIResponse[UserTokenResponse])
+def login(payload: UserLogin, db: Session = Depends(get_db)):
+    identifier = payload.identifier.strip() if isinstance(payload.identifier, str) else payload.identifier
+    password = payload.password.strip() if isinstance(payload.password, str) else payload.password
+    user = _authenticate_user(identifier, password, db)
     token_payload = _issue_token_for_user(user, db)
     return success_response(data=token_payload, message="Login successful")
 
-@router.post("/token", response_model=dict)
+@router.post("/token", response_model=APIResponse[UserTokenResponse])
 def login_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = _authenticate_user(form_data.username, form_data.password, db)
     token_payload = _issue_token_for_user(user, db)
     return success_response(data=token_payload, message="Login successful")
 
-@router.get("/me", response_model=dict)
+@router.get("/me", response_model=APIResponse[UserResponse])
 def read_users_me(current_user: User = Depends(get_current_user)):
     return success_response(data=_serialize_user(current_user), message="User profile fetched")
 
-@router.put("/me", response_model=dict)
+@router.put("/me", response_model=APIResponse[UserResponse])
 def update_user_profile(user_update: UserUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     if user_update.username and user_update.username != current_user.username:
         if db.query(User).filter(User.username == user_update.username).first():
@@ -249,7 +226,7 @@ def update_user_profile(user_update: UserUpdate, db: Session = Depends(get_db), 
     db.refresh(current_user)
     return success_response(data=_serialize_user(current_user), message="Profile updated")
 
-@router.put("/change-password", status_code=status.HTTP_200_OK)
+@router.put("/change-password", status_code=status.HTTP_200_OK, response_model=APIResponse[None])
 def change_password(payload: ChangePasswordSchema, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     if not verify_password(payload.current_password, current_user.password):
         raise HTTPException(status_code=400, detail="Password lama salah")
@@ -260,7 +237,7 @@ def change_password(payload: ChangePasswordSchema, db: Session = Depends(get_db)
     return success_response(message="Password updated successfully")
 
 # 4. FORGOT PASSWORD (Updated: Set Created Time)
-@router.post("/forgot-password", status_code=status.HTTP_200_OK)
+@router.post("/forgot-password", status_code=status.HTTP_200_OK, response_model=APIResponse[None])
 def forgot_password(payload: ForgotPasswordRequest, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == payload.email).first()
     if not user:
@@ -285,7 +262,7 @@ def forgot_password(payload: ForgotPasswordRequest, db: Session = Depends(get_db
     return success_response(message="Kode OTP reset password telah dikirim ke email Anda.")
 
 # 5. RESET PASSWORD CONFIRM (Updated: Check Expired)
-@router.post("/reset-password-confirm", status_code=status.HTTP_200_OK)
+@router.post("/reset-password-confirm", status_code=status.HTTP_200_OK, response_model=APIResponse[None])
 def reset_password_confirm(payload: ResetPasswordConfirm, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == payload.email).first()
     if not user:
