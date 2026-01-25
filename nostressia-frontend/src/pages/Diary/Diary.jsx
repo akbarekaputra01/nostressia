@@ -78,7 +78,7 @@ export default function Diary() {
         
         setEntries(formattedEntries);
       } catch (error) {
-        console.error("Gagal mengambil diary:", error);
+        console.error("Failed to fetch diary:", error);
       } finally {
         setTimeout(() => setIsLoading(false), 800);
       }
@@ -101,7 +101,7 @@ export default function Diary() {
       setIsSubmitting(true); 
       const token = localStorage.getItem("token");
       if (!token) {
-        alert("Kamu belum login!");
+        alert("You are not logged in.");
         setIsSubmitting(false);
         return;
       }
@@ -150,8 +150,8 @@ export default function Diary() {
       }, 2500);
 
     } catch (error) {
-      console.error("Gagal menyimpan diary:", error);
-      alert("Gagal menyimpan diary.");
+      console.error("Failed to save diary:", error);
+      alert("Failed to save diary.");
     } finally {
       setIsSubmitting(false); 
     }

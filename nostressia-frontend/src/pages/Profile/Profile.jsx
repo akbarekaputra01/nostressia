@@ -298,6 +298,7 @@ export default function Profile() {
 
   const [notifSettings, setNotifSettings] = useState({ dailyReminder: true, reminderTime: "08:00", emailUpdates: false });
   const [passwordForm, setPasswordForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
+  const [passwordStep, setPasswordStep] = useState(1);
 
   // ✅ LOGIC BARU: STATISTIK DINAMIS & WARNA STREAK
   const getStreakStyle = (streak) => {
@@ -333,6 +334,26 @@ export default function Profile() {
   ];
 
   const handleInputChange = (e) => { const { name, value } = e.target; setFormData({ ...formData, [name]: value }); };
+
+  const focusFirstEmptyField = (form) => {
+    const requiredFields = Array.from(
+      form.querySelectorAll("[data-required='true']")
+    );
+    const emptyField = requiredFields.find((field) => !field.value);
+    if (emptyField) {
+      emptyField.focus();
+      return true;
+    }
+    return false;
+  };
+
+  const handleFormKeyDown = (event) => {
+    if (event.key !== "Enter") return;
+    if (event.target?.tagName === "TEXTAREA") return;
+    if (focusFirstEmptyField(event.currentTarget)) {
+      event.preventDefault();
+    }
+  };
 
   const handleSaveProfile = async () => {
     setIsLoadingSave(true);
@@ -382,11 +403,26 @@ export default function Profile() {
   const saveNotifSettings = () => { setShowNotifModal(false); showNotification("Notification preferences saved!"); };
   
   const handlePasswordChangeInput = (e) => { const { name, value } = e.target; setPasswordForm({ ...passwordForm, [name]: value }); };
+
+  const handlePasswordStepNext = (e) => {
+    e.preventDefault();
+    if (!passwordForm.currentPassword) {
+      showNotification("Please enter your current password.", "error");
+      return;
+    }
+    setPasswordStep(2);
+  };
+
+  const handlePasswordStepBack = () => {
+    setPasswordStep(1);
+  };
   
   const handleClosePasswordModal = () => {
     setShowPasswordModal(false);
     setShowCurrentPassword(false);
     setShowNewPasswords(false);
+    setPasswordStep(1);
+    setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
   };
 
   const handleSubmitPasswordChange = async (e) => {
@@ -428,78 +464,99 @@ export default function Profile() {
       {showNotifModal && (<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in"><div className="bg-white rounded-[24px] p-8 w-full max-w-md shadow-2xl border border-white/50"><div className="flex justify-between items-center mb-6"><h3 className="text-xl font-bold text-gray-800 flex items-center gap-2"><Bell className="w-5 h-5 text-orange-500" /> Notifications</h3><button onClick={() => setShowNotifModal(false)} className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"><X className="w-6 h-6" /></button></div><div className="space-y-6"><div className="flex items-center justify-between"><div className="flex items-center gap-3"><div className="bg-blue-100 p-2 rounded-full text-blue-600"><Smartphone className="w-5 h-5" /></div><div><p className="font-bold text-gray-800">Daily Reminder</p><p className="text-xs text-gray-500">Remind me to check-in</p></div></div><label className="relative inline-flex items-center cursor-pointer"><input type="checkbox" name="dailyReminder" checked={notifSettings.dailyReminder} onChange={handleNotifChange} className="sr-only peer" /><div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div></label></div>{notifSettings.dailyReminder && (<div className="bg-gray-50 p-4 rounded-xl flex items-center justify-between border border-gray-100"><div className="flex items-center gap-2 text-gray-600"><Clock className="w-4 h-4" /><span className="text-sm font-semibold">Time</span></div><input type="time" name="reminderTime" value={notifSettings.reminderTime} onChange={handleNotifChange} className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2"/></div>)}<div className="h-px bg-gray-100"></div><div className="flex items-center justify-between"><div className="flex items-center gap-3"><div className="bg-purple-100 p-2 rounded-full text-purple-600"><Mail className="w-5 h-5" /></div><div><p className="font-bold text-gray-800">Weekly Report</p><p className="text-xs text-gray-500">Receive summary via email</p></div></div><label className="relative inline-flex items-center cursor-pointer"><input type="checkbox" name="emailUpdates" checked={notifSettings.emailUpdates} onChange={handleNotifChange} className="sr-only peer" /><div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div></label></div><button onClick={saveNotifSettings} className="w-full mt-4 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl shadow-lg shadow-orange-200 transition-all cursor-pointer transform active:scale-95">Save Preferences</button></div></div></div>)}
       
       {/* PASSWORD MODAL */}
-      {showPasswordModal && (<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in"><div className="bg-white rounded-[24px] p-8 w-full max-w-md shadow-2xl border border-white/50"><div className="flex justify-between items-center mb-6"><h3 className="text-xl font-bold text-gray-800 flex items-center gap-2"><Lock className="w-5 h-5 text-blue-500" /> Change Password</h3><button onClick={handleClosePasswordModal} className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"><X className="w-6 h-6" /></button></div><form onSubmit={handleSubmitPasswordChange} className="space-y-4">
-        
-        {/* CURRENT PASSWORD (Icon Mata) */}
-        <div className="space-y-2">
-            <label className="text-sm font-bold text-gray-600 ml-1">Current Password</label>
-            <div className="relative">
+      {showPasswordModal && (<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in"><div className="bg-white rounded-[24px] p-8 w-full max-w-md shadow-2xl border border-white/50"><div className="flex justify-between items-center mb-6"><h3 className="text-xl font-bold text-gray-800 flex items-center gap-2"><Lock className="w-5 h-5 text-blue-500" /> Change Password</h3><button onClick={handleClosePasswordModal} className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"><X className="w-6 h-6" /></button></div><form onSubmit={passwordStep === 1 ? handlePasswordStepNext : handleSubmitPasswordChange} onKeyDown={handleFormKeyDown} className="space-y-4">
+        <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-gray-400">
+            <span className={passwordStep === 1 ? "text-blue-600" : ""}>Step 1: Verify</span>
+            <span className={passwordStep === 2 ? "text-blue-600" : ""}>Step 2: New Password</span>
+        </div>
+
+        {passwordStep === 1 ? (
+          <div className="space-y-4">
+            <p className="text-sm text-gray-500">
+              Enter your current password before setting a new one.
+            </p>
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-gray-600 ml-1">Current Password</label>
+              <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input 
-                    type={showCurrentPassword ? "text" : "password"} 
-                    name="currentPassword" 
-                    value={passwordForm.currentPassword} 
-                    onChange={handlePasswordChangeInput} 
-                    placeholder="Enter current password" 
-                    className="w-full pl-12 pr-12 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-blue-400 focus:outline-none transition-all"
+                  type={showCurrentPassword ? "text" : "password"} 
+                  name="currentPassword" 
+                  value={passwordForm.currentPassword} 
+                  onChange={handlePasswordChangeInput} 
+                  placeholder="Enter current password" 
+                  className="w-full pl-12 pr-12 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-blue-400 focus:outline-none transition-all"
+                  data-required="true"
                 />
                 <button type="button" onClick={() => setShowCurrentPassword(!showCurrentPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer">
-                    {showCurrentPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  {showCurrentPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
+              </div>
             </div>
-        </div>
-        
-        <div className="h-px bg-gray-100 my-2"></div>
-        
-        {/* NEW PASSWORD (Checkbox) */}
-        <div className="space-y-2">
-            <label className="text-sm font-bold text-gray-600 ml-1">New Password</label>
-            <div className="relative">
+            <button type="submit" className="w-full mt-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-200 transition-all cursor-pointer transform active:scale-95">
+              Continue
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <p className="text-sm text-gray-500">
+              Create a new password for your account.
+            </p>
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-gray-600 ml-1">New Password</label>
+              <div className="relative">
                 <Key className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input 
-                    type={showNewPasswords ? "text" : "password"} 
-                    name="newPassword" 
-                    value={passwordForm.newPassword} 
-                    onChange={handlePasswordChangeInput} 
-                    placeholder="Enter new password" 
-                    className="w-full pl-12 pr-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-blue-400 focus:outline-none transition-all"
+                  type={showNewPasswords ? "text" : "password"} 
+                  name="newPassword" 
+                  value={passwordForm.newPassword} 
+                  onChange={handlePasswordChangeInput} 
+                  placeholder="Enter new password" 
+                  className="w-full pl-12 pr-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-blue-400 focus:outline-none transition-all"
+                  data-required="true"
                 />
+              </div>
             </div>
-        </div>
-        
-        {/* CONFIRM PASSWORD (Checkbox) */}
-        <div className="space-y-2">
-            <label className="text-sm font-bold text-gray-600 ml-1">Confirm New Password</label>
-            <div className="relative">
+
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-gray-600 ml-1">Confirm New Password</label>
+              <div className="relative">
                 <Key className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input 
-                    type={showNewPasswords ? "text" : "password"} 
-                    name="confirmPassword" 
-                    value={passwordForm.confirmPassword} 
-                    onChange={handlePasswordChangeInput} 
-                    placeholder="Re-enter new password" 
-                    className="w-full pl-12 pr-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-blue-400 focus:outline-none transition-all"
+                  type={showNewPasswords ? "text" : "password"} 
+                  name="confirmPassword" 
+                  value={passwordForm.confirmPassword} 
+                  onChange={handlePasswordChangeInput} 
+                  placeholder="Re-enter new password" 
+                  className="w-full pl-12 pr-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-blue-400 focus:outline-none transition-all"
+                  data-required="true"
                 />
-            </div>
-            
-            {/* CHECKBOX SHOW PASSWORD */}
-            <div className="flex items-center gap-2 mt-2 ml-1">
+              </div>
+
+              <div className="flex items-center gap-2 mt-2 ml-1">
                 <input 
-                    type="checkbox" 
-                    id="showNewPass" 
-                    checked={showNewPasswords} 
-                    onChange={(e) => setShowNewPasswords(e.target.checked)}
-                    className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                  type="checkbox" 
+                  id="showNewPass" 
+                  checked={showNewPasswords} 
+                  onChange={(e) => setShowNewPasswords(e.target.checked)}
+                  className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                 />
                 <label htmlFor="showNewPass" className="text-sm text-gray-600 cursor-pointer select-none">
-                    Show New Passwords
+                  Show New Passwords
                 </label>
+              </div>
             </div>
-        </div>
-        
-        <button type="submit" disabled={isLoadingPassword} className={`w-full mt-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-200 transition-all cursor-pointer transform active:scale-95 flex justify-center items-center gap-2 ${isLoadingPassword ? "opacity-70 cursor-not-allowed" : ""}`}>
-            {isLoadingPassword ? <><Loader2 className="w-5 h-5 animate-spin"/> Updating...</> : "Update Password"}
-        </button>
+
+            <div className="flex items-center gap-3 pt-2">
+              <button type="button" onClick={handlePasswordStepBack} className="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl shadow-sm hover:bg-gray-200 transition-all cursor-pointer">
+                Back
+              </button>
+              <button type="submit" disabled={isLoadingPassword} className={`flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-200 transition-all cursor-pointer transform active:scale-95 flex justify-center items-center gap-2 ${isLoadingPassword ? "opacity-70 cursor-not-allowed" : ""}`}>
+                {isLoadingPassword ? <><Loader2 className="w-5 h-5 animate-spin"/> Updating...</> : "Update Password"}
+              </button>
+            </div>
+          </div>
+        )}
       </form></div></div>)}
 
       <main className="max-w-4xl mx-auto px-4 pt-24 md:pt-28">
@@ -690,7 +747,7 @@ export default function Profile() {
                       <div className="bg-white/60 backdrop-blur-md border border-white/40 rounded-[24px] overflow-hidden shadow-lg p-2">
                         <button onClick={() => setShowNotifModal(true)} className="w-full flex items-center justify-between p-4 hover:bg-white/50 rounded-xl transition-colors cursor-pointer group"><div className="flex items-center gap-4"><div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600"><Bell className="w-5 h-5" /></div><div className="text-left"><h4 className="font-bold text-gray-800">Notifications</h4></div></div><ChevronRight className="w-5 h-5 text-gray-400" /></button>
                         <div className="h-px bg-gray-100 mx-4"></div>
-                        <button onClick={() => setShowPasswordModal(true)} className="w-full flex items-center justify-between p-4 hover:bg-white/50 rounded-xl transition-colors cursor-pointer group"><div className="flex items-center gap-4"><div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600"><Lock className="w-5 h-5" /></div><div className="text-left"><h4 className="font-bold text-gray-800">Change Password</h4></div></div><ChevronRight className="w-5 h-5 text-gray-400" /></button>
+                        <button onClick={() => { setPasswordStep(1); setShowPasswordModal(true); }} className="w-full flex items-center justify-between p-4 hover:bg-white/50 rounded-xl transition-colors cursor-pointer group"><div className="flex items-center gap-4"><div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600"><Lock className="w-5 h-5" /></div><div className="text-left"><h4 className="font-bold text-gray-800">Change Password</h4></div></div><ChevronRight className="w-5 h-5 text-gray-400" /></button>
                       </div>
                       <button onClick={handleLogout} className="w-full bg-white/80 border border-red-100 p-4 rounded-[24px] flex items-center justify-center gap-2 text-red-500 font-bold hover:bg-red-50 cursor-pointer"><LogOut className="w-5 h-5" /> Log Out</button>
                 </div>

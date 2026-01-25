@@ -1,8 +1,8 @@
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { useOutletContext } from "react-router-dom";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
-import { BarChart3 } from "lucide-react";
+import { Activity, BarChart3, BookOpen, Flame, Sparkles, TrendingUp } from "lucide-react";
 import {
   LineChart,
   Line,
@@ -207,7 +207,7 @@ const renderMoodTooltip =
         <div className="mt-1">
           {hasValue
             ? `Mood: ${moodTooltipValue(value)}`
-            : "Tidak ada data pada titik ini."}
+            : "No data available at this point."}
         </div>
       </div>
     );
@@ -228,7 +228,7 @@ const renderStressTooltip =
         <div className="mt-1">
           {hasValue
             ? `Stress: ${getStressLabel(value)}`
-            : "Tidak ada data pada titik ini."}
+            : "No data available at this point."}
         </div>
       </div>
     );
@@ -255,30 +255,36 @@ export default function Analytics() {
     headerRef.current.style.transform = "translateY(0)";
   }, []);
 
+  const fetchAnalytics = useCallback(async () => {
+    try {
+      setLoading(true);
+      setErrorMsg("");
+
+      const data = await getMyStressLogs();
+      setLogs(Array.isArray(data) ? data : []);
+      const summaryData = await getAnalyticsSummary();
+      setSummary(summaryData);
+    } catch (err) {
+      if (err?.name === "AbortError") return;
+      setErrorMsg(err?.message || "Failed to fetch stress logs.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   // Fetch logs (protected endpoint)
   useEffect(() => {
-    const controller = new AbortController();
+    fetchAnalytics();
 
-    const fetchLogs = async () => {
-      try {
-        setLoading(true);
-        setErrorMsg("");
-
-        const data = await getMyStressLogs();
-        setLogs(Array.isArray(data) ? data : []);
-        const summaryData = await getAnalyticsSummary();
-        setSummary(summaryData);
-      } catch (err) {
-        if (err?.name === "AbortError") return;
-        setErrorMsg(err?.message || "Failed to fetch stress logs.");
-      } finally {
-        setLoading(false);
-      }
+    const handleRefresh = () => {
+      fetchAnalytics();
     };
 
-    fetchLogs();
-    return () => controller.abort();
-  }, []);
+    window.addEventListener("nostressia:user-update", handleRefresh);
+    return () => {
+      window.removeEventListener("nostressia:user-update", handleRefresh);
+    };
+  }, [fetchAnalytics]);
 
   // ===== Derived chart data =====
   const weekData = useMemo(() => buildWeekSeries(logs), [logs]);
@@ -298,6 +304,9 @@ export default function Analytics() {
     () => calcSummary(rangeLogs),
     [rangeLogs]
   );
+
+  const streakValue = summary?.streak ?? user?.streak ?? 0;
+  const modeLabel = mode === "week" ? "Weekly" : "Monthly";
 
   return (
     <div
@@ -533,7 +542,7 @@ export default function Analytics() {
               className="text-lg md:text-xl font-semibold mb-4 text-center md:text-left"
               style={{ color: "var(--brand-blue)" }}
             >
-              Mood Trend ({mode})
+              Mood Trend · {modeLabel}
             </h2>
 
             <div
@@ -590,12 +599,86 @@ export default function Analytics() {
         </div>
 
         {summary && (
-          <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-            {[
-              { title: "Stress Logs", value: summary.stressLogsCount ?? 0 },
-              { title: "Diary Entries", value: summary.diaryCount ?? 0 },
-              { title: "Streak", value: summary.streak ?? 0 },
-            ].map((item, i) => (
+          <section className="mb-10">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-5">
+              <div>
+                <h3 className="text-xl font-bold text-gray-800">Analytics Highlights</h3>
+                <p className="text-sm text-gray-500">Real-time metrics based on your latest logs.</p>
+              </div>
+              <div className="inline-flex items-center gap-2 text-xs font-semibold text-gray-600 bg-white/70 border border-white/60 px-3 py-1.5 rounded-full">
+                <Sparkles className="w-4 h-4 text-blue-500" />
+                Live update
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+              {[
+                {
+                  title: "Stress Logs",
+                  value: summary.stressLogsCount ?? 0,
+                  icon: Activity,
+                  gradient: "from-blue-500/15 via-blue-500/5 to-transparent",
+                  accent: "text-blue-600",
+                },
+                {
+                  title: "Diary Entries",
+                  value: summary.diaryCount ?? 0,
+                  icon: BookOpen,
+                  gradient: "from-violet-500/15 via-violet-500/5 to-transparent",
+                  accent: "text-violet-600",
+                },
+                {
+                  title: "Current Streak",
+                  value: streakValue,
+                  icon: Flame,
+                  gradient: "from-orange-500/20 via-orange-500/5 to-transparent",
+                  accent: "text-orange-600",
+                },
+              ].map((item, i) => {
+                const Icon = item.icon;
+                return (
+                  <div
+                    key={i}
+                    className="relative overflow-hidden rounded-2xl p-6 border backdrop-blur-xl text-center md:text-left"
+                    style={{
+                      background: "rgba(255,255,255,0.55)",
+                      borderColor: "var(--glass-border)",
+                      boxShadow: "0 10px 28px rgba(0,0,0,0.08)",
+                    }}
+                  >
+                    <div className={`absolute inset-0 bg-gradient-to-br ${item.gradient}`} />
+                    <div className="relative z-10 flex flex-col gap-3">
+                      <div className={`w-10 h-10 rounded-xl bg-white/80 flex items-center justify-center ${item.accent}`}>
+                        <Icon className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">
+                          {item.title}
+                        </h4>
+                        <p className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] mt-2">
+                          {item.value}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
+        {/* ==== INSIGHTS ==== */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+          {[
+            { title: "Most Common Stress", value: getStressLabel(modeStress), icon: TrendingUp },
+            {
+              title: "Most Common Mood",
+              value: modeMood ? moodEmojis[modeMood - 1] : "-",
+              icon: Sparkles,
+            },
+            { title: "Average Stress Level", value: getStressLabel(avgStress), icon: BarChart3 },
+          ].map((item, i) => {
+            const Icon = item.icon;
+            return (
               <div
                 key={i}
                 className="rounded-2xl p-6 border backdrop-blur-xl flex flex-col items-center md:items-start text-center md:text-left"
@@ -605,57 +688,23 @@ export default function Analytics() {
                   boxShadow: "0 8px 25px rgba(0,0,0,0.06)",
                 }}
               >
-                <h3
-                  className="text-sm md:text-md font-medium mb-2 uppercase tracking-wide opacity-80"
-                  style={{ color: "var(--brand-blue)" }}
-                >
+                <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">
+                  <Icon className="w-4 h-4 text-blue-500" />
                   {item.title}
-                </h3>
-                <p className="text-3xl md:text-4xl font-bold text-[var(--text-primary)]">
-                  {item.value}
-                </p>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* ==== SUMMARY CARDS ==== */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-          {[
-            { title: "Most Common Stress", value: getStressLabel(modeStress) },
-            {
-              title: "Most Common Mood",
-              value: modeMood ? moodEmojis[modeMood - 1] : "-",
-            },
-            { title: "Average Stress Level", value: getStressLabel(avgStress) },
-          ].map((item, i) => (
-            <div
-              key={i}
-              className="rounded-2xl p-6 border backdrop-blur-xl flex flex-col items-center md:items-start text-center md:text-left"
-              style={{
-                background: "rgba(255,255,255,0.45)",
-                borderColor: "var(--glass-border)",
-                boxShadow: "0 8px 25px rgba(0,0,0,0.06)",
-              }}
-            >
-              <h3
-                className="text-sm md:text-md font-medium mb-2 uppercase tracking-wide opacity-80"
-                style={{ color: "var(--brand-blue)" }}
-              >
-                {item.title}
-              </h3>
-              {loading ? (
-                <div className="w-full space-y-2">
-                  <div className="skeleton h-10 w-28 rounded-full" />
-                  <div className="skeleton h-3 w-24 rounded-full" />
                 </div>
-              ) : (
-                <p className="text-3xl md:text-4xl font-bold text-[var(--text-primary)]">
-                  {item.value}
-                </p>
-              )}
-            </div>
-          ))}
+                {loading ? (
+                  <div className="w-full space-y-2 mt-3">
+                    <div className="skeleton h-10 w-28 rounded-full" />
+                    <div className="skeleton h-3 w-24 rounded-full" />
+                  </div>
+                ) : (
+                  <p className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] mt-4">
+                    {item.value}
+                  </p>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 

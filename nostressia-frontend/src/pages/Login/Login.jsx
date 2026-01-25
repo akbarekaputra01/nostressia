@@ -106,6 +106,26 @@ export default function Login() {
     return `${m}:${s < 10 ? '0' : ''}${s}`;
   };
 
+  const focusFirstEmptyField = (form) => {
+    const requiredFields = Array.from(
+      form.querySelectorAll("[data-required='true']")
+    );
+    const emptyField = requiredFields.find((field) => !field.value);
+    if (emptyField) {
+      emptyField.focus();
+      return true;
+    }
+    return false;
+  };
+
+  const handleFormKeyDown = (event) => {
+    if (event.key !== "Enter") return;
+    if (event.target?.tagName === "TEXTAREA") return;
+    if (focusFirstEmptyField(event.currentTarget)) {
+      event.preventDefault();
+    }
+  };
+
   // --- 1. LOGIKA LOGIN ---
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -123,14 +143,14 @@ export default function Login() {
           response?.data?.access_token ||
           response?.data?.token;
         if (!isAuthTokenValid(token)) {
-          alert("Login berhasil, tetapi token tidak valid.");
+          alert("Login succeeded, but the token is invalid.");
           return;
         }
         persistAuthToken(token);
         setIsSuccess(true);
         setTimeout(() => navigate("/dashboard"), 1000); 
     } catch (error) {
-        alert(error?.message || "Login Gagal.");
+        alert(error?.message || "Login failed.");
     } finally { setIsLoading(false); }
   };
 
@@ -138,10 +158,10 @@ export default function Login() {
   const handleSignUp = async (e) => {
     e.preventDefault();
     if (!formData.name || !formData.username || !formData.email || !formData.password || !formData.confirmPassword || !formData.gender || !formData.dob) {
-        alert("Mohon lengkapi semua data!"); return;
+        alert("Please complete all required fields."); return;
     }
     if (formData.password !== formData.confirmPassword) {
-        alert("Password dan Konfirmasi Password tidak cocok!"); return;
+        alert("Password and confirmation do not match."); return;
     }
     if (!window.confirm(`Please confirm your details:\n\nName: ${formData.name}\nEmail: ${formData.email}\n\nCorrect?`)) return;
     
@@ -162,14 +182,14 @@ export default function Login() {
         setCountdown(60);
 
     } catch (error) {
-        alert(error?.message || "Registrasi Gagal.");
+        alert(error?.message || "Registration failed.");
     } finally { setIsLoading(false); }
   };
 
   // --- 3. LOGIKA VERIFIKASI OTP REGISTER ---
   const handleVerifyOTP = async (e) => {
     e.preventDefault(); 
-    if (otp.length !== 6) return alert("Mohon masukkan 6 digit kode OTP!");
+    if (otp.length !== 6) return alert("Please enter the 6-digit OTP code.");
     
     setIsLoading(true);
     try {
@@ -187,7 +207,7 @@ export default function Login() {
         }, 2000);
 
     } catch (error) {
-        alert(error?.message || "Kode OTP Salah.");
+        alert(error?.message || "Invalid OTP code.");
     } finally { setIsLoading(false); }
   };
 
@@ -198,7 +218,7 @@ export default function Login() {
   // Step 1: Request OTP
   const handleForgotRequest = async (e) => {
     e.preventDefault();
-    if(!forgotEmail) return alert("Masukkan email Anda!");
+    if(!forgotEmail) return alert("Please enter your email.");
     setLoadingForgot(true);
     try {
         await forgotPassword({ email: forgotEmail });
@@ -207,7 +227,7 @@ export default function Login() {
         setCountdown(60); 
         setForgotOtpValues(new Array(6).fill("")); // Reset field OTP
     } catch (error) {
-        alert(error?.message || "Email tidak ditemukan.");
+        alert(error?.message || "Email not found.");
     } finally { setLoadingForgot(false); }
   };
 
@@ -239,13 +259,16 @@ export default function Login() {
       
       const code = forgotOtpValues.join("");
       if (code.length !== 6) {
-          alert("Mohon masukkan 6 digit kode OTP!");
+          alert("Please enter the 6-digit OTP code.");
           return;
       }
       
       setLoadingForgot(true);
       try {
+          await verifyOtp({ email: forgotEmail, otpCode: code });
           setForgotStep(3);
+      } catch (error) {
+          alert(error?.message || "Invalid OTP code.");
       } finally {
           setLoadingForgot(false);
       }
@@ -254,8 +277,8 @@ export default function Login() {
   // Step 3: Reset Password
   const handleForgotConfirm = async (e) => {
     e.preventDefault();
-    if(!newPassword || !confirmNewPassword) return alert("Mohon isi password baru!");
-    if(newPassword !== confirmNewPassword) return alert("Konfirmasi password tidak cocok!");
+    if(!newPassword || !confirmNewPassword) return alert("Please enter a new password.");
+    if(newPassword !== confirmNewPassword) return alert("Password confirmation does not match.");
 
     const code = forgotOtpValues.join(""); 
     setLoadingForgot(true);
@@ -264,7 +287,7 @@ export default function Login() {
             email: forgotEmail, otpCode: code, newPassword
         });
         
-        alert("Password berhasil diubah! Silakan login.");
+        alert("Password reset successfully. Please sign in.");
         setCountdown(0);
         setShowForgotModal(false);
         setForgotStep(1);
@@ -276,7 +299,7 @@ export default function Login() {
         setConfirmNewPassword("");
         
     } catch (error) {
-        alert(error?.message || "Gagal mereset password.");
+        alert(error?.message || "Failed to reset password.");
     } finally { setLoadingForgot(false); }
   };
 
@@ -326,12 +349,12 @@ export default function Login() {
                     <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">Welcome Back</h1>
                     <p className="mt-3 text-lg text-gray-500">Sign in to continue your journey.</p>
                 </div>
-                <form onSubmit={handleLogin} className="space-y-6">
+                <form onSubmit={handleLogin} onKeyDown={handleFormKeyDown} className="space-y-6">
                     <div className="space-y-2">
                         <label className="text-sm font-bold text-gray-700 ml-1">Email or Username</label>
                         <div className="relative group">
                             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><Mail className="h-5 w-5 text-gray-400 group-focus-within:text-blue-600 transition-colors" /></div>
-                            <input type="text" placeholder="Username or email@example.com" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-gray-900 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-medium" />
+                            <input type="text" placeholder="Username or email@example.com" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-gray-900 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-medium" data-required="true" />
                         </div>
                     </div>
                     <div className="space-y-2">
@@ -340,7 +363,7 @@ export default function Login() {
                         </div>
                         <div className="relative group">
                             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><Lock className="h-5 w-5 text-gray-400 group-focus-within:text-blue-600 transition-colors" /></div>
-                            <input type={showLoginPassword ? "text" : "password"} placeholder="••••••••" value={formData.password} onChange={(e) => setFormData({...formData, password: e.target.value})} className="w-full pl-12 pr-12 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-gray-900 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-medium" />
+                            <input type={showLoginPassword ? "text" : "password"} placeholder="••••••••" value={formData.password} onChange={(e) => setFormData({...formData, password: e.target.value})} className="w-full pl-12 pr-12 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-gray-900 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all font-medium" data-required="true" />
                             <button type="button" onClick={() => setShowLoginPassword(!showLoginPassword)} className="absolute inset-y-0 right-0 pr-4 flex items-center cursor-pointer text-gray-400 hover:text-blue-600 transition-colors">{showLoginPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}</button>
                         </div>
                     </div>
@@ -429,7 +452,7 @@ export default function Login() {
                                             <Clock size={14} className="animate-pulse" /> Resend in <span className="text-orange-600 font-bold">{formatTime(countdown)}</span>
                                         </p>
                                     ) : (
-                                        <button type="button" onClick={() => { setCountdown(60); alert("Kode dikirim ulang!"); }} className="text-sm font-bold text-orange-600 hover:underline cursor-pointer">
+                                        <button type="button" onClick={() => { setCountdown(60); alert("Code resent!"); }} className="text-sm font-bold text-orange-600 hover:underline cursor-pointer">
                                             Resend Code
                                         </button>
                                     )}
@@ -445,19 +468,19 @@ export default function Login() {
                             <p className="mt-1 text-sm text-gray-500">Join Nostressia for a better life.</p>
                         </div>
                         <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
-                            <form onSubmit={handleSignUp} className="space-y-4 pb-2">
+                            <form onSubmit={handleSignUp} onKeyDown={handleFormKeyDown} className="space-y-4 pb-2">
                                 {/* FORM REGISTER INPUTS (SAME AS BEFORE) */}
-                                <div className="space-y-1"><label className="text-xs font-bold text-gray-700 ml-1">Full Name</label><div className="relative group"><div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><User className="h-4 w-4 text-gray-400 group-focus-within:text-orange-500 transition-colors" /></div><input type="text" placeholder="e.g. John Doe" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:bg-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 outline-none transition-all font-medium" /></div></div>
-                                <div className="space-y-1"><label className="text-xs font-bold text-gray-700 ml-1">Username</label><div className="relative group"><div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><AtSign className="h-4 w-4 text-gray-400 group-focus-within:text-orange-500 transition-colors" /></div><input type="text" placeholder="your_username" value={formData.username} onChange={(e) => setFormData({...formData, username: e.target.value})} className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:bg-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 outline-none transition-all font-medium" /></div></div>
-                                <div className="space-y-1"><label className="text-xs font-bold text-gray-700 ml-1">Email</label><div className="relative group"><div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><Mail className="h-4 w-4 text-gray-400 group-focus-within:text-orange-500 transition-colors" /></div><input type="email" placeholder="name@gmail.com" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:bg-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 outline-none transition-all font-medium" /></div></div>
+                                <div className="space-y-1"><label className="text-xs font-bold text-gray-700 ml-1">Full Name</label><div className="relative group"><div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><User className="h-4 w-4 text-gray-400 group-focus-within:text-orange-500 transition-colors" /></div><input type="text" placeholder="e.g. John Doe" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:bg-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 outline-none transition-all font-medium" data-required="true" /></div></div>
+                                <div className="space-y-1"><label className="text-xs font-bold text-gray-700 ml-1">Username</label><div className="relative group"><div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><AtSign className="h-4 w-4 text-gray-400 group-focus-within:text-orange-500 transition-colors" /></div><input type="text" placeholder="your_username" value={formData.username} onChange={(e) => setFormData({...formData, username: e.target.value})} className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:bg-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 outline-none transition-all font-medium" data-required="true" /></div></div>
+                                <div className="space-y-1"><label className="text-xs font-bold text-gray-700 ml-1">Email</label><div className="relative group"><div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><Mail className="h-4 w-4 text-gray-400 group-focus-within:text-orange-500 transition-colors" /></div><input type="email" placeholder="name@gmail.com" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:bg-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 outline-none transition-all font-medium" data-required="true" /></div></div>
                                 <div className="space-y-3">
-                                    <div className="space-y-1"><label className="text-xs font-bold text-gray-700 ml-1">Password</label><div className="relative group"><div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><Lock className="h-4 w-4 text-gray-400 group-focus-within:text-orange-500 transition-colors" /></div><input type={showSignUpPassword ? "text" : "password"} placeholder="••••••" value={formData.password} onChange={(e) => setFormData({...formData, password: e.target.value})} className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:bg-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 outline-none transition-all font-medium" /></div></div>
-                                    <div className="space-y-1"><label className="text-xs font-bold text-gray-700 ml-1">Confirm Password</label><div className="relative group"><div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><CheckCircle className="h-4 w-4 text-gray-400 group-focus-within:text-orange-500 transition-colors" /></div><input type={showSignUpPassword ? "text" : "password"} placeholder="••••••" value={formData.confirmPassword} onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})} className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:bg-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 outline-none transition-all font-medium" /></div></div>
+                                    <div className="space-y-1"><label className="text-xs font-bold text-gray-700 ml-1">Password</label><div className="relative group"><div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><Lock className="h-4 w-4 text-gray-400 group-focus-within:text-orange-500 transition-colors" /></div><input type={showSignUpPassword ? "text" : "password"} placeholder="••••••" value={formData.password} onChange={(e) => setFormData({...formData, password: e.target.value})} className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:bg-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 outline-none transition-all font-medium" data-required="true" /></div></div>
+                                    <div className="space-y-1"><label className="text-xs font-bold text-gray-700 ml-1">Confirm Password</label><div className="relative group"><div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><CheckCircle className="h-4 w-4 text-gray-400 group-focus-within:text-orange-500 transition-colors" /></div><input type={showSignUpPassword ? "text" : "password"} placeholder="••••••" value={formData.confirmPassword} onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})} className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:bg-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 outline-none transition-all font-medium" data-required="true" /></div></div>
                                     <div className="flex items-center gap-2 pl-1"><div className="relative flex items-center"><input type="checkbox" id="showPw" checked={showSignUpPassword} onChange={() => setShowSignUpPassword(!showSignUpPassword)} className="peer h-4 w-4 cursor-pointer appearance-none rounded border border-gray-300 shadow-sm checked:bg-orange-500 checked:border-orange-500 transition-all" /><Check className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white opacity-0 peer-checked:opacity-100" size={12} strokeWidth={4} /></div><label htmlFor="showPw" className="text-xs font-bold text-gray-600 cursor-pointer select-none">Show Password</label></div>
                                 </div>
                                 <div className="space-y-1"><label className="text-xs font-bold text-gray-700 ml-1">Pick Your Avatar</label><div className="flex justify-between items-center bg-gray-50 border border-gray-200 rounded-xl p-2">{AVATAR_OPTIONS.map((avatarUrl, index) => (<div key={index} onClick={() => setFormData({ ...formData, avatar: avatarUrl })} className={`relative cursor-pointer transition-all duration-300 rounded-full p-0.5 ${formData.avatar === avatarUrl ? 'ring-2 ring-orange-500 scale-110 shadow-sm' : 'hover:scale-105 opacity-70 hover:opacity-100'}`}><img src={avatarUrl} alt={`Avatar ${index + 1}`} className="w-10 h-10 rounded-full object-cover bg-white" />{formData.avatar === avatarUrl && (<div className="absolute -bottom-1 -right-1 bg-orange-500 text-white rounded-full p-0.5 border border-white"><Check size={8} strokeWidth={4} /></div>)}</div>))}</div></div>
-                                <div className="space-y-1"><label className="text-xs font-bold text-gray-700 ml-1">Gender</label><div className="relative group"><div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><Users className="h-4 w-4 text-gray-400 group-focus-within:text-orange-500 transition-colors" /></div><select value={formData.gender} onChange={(e) => setFormData({...formData, gender: e.target.value})} className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:bg-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 outline-none transition-all font-medium appearance-none cursor-pointer"><option value="" disabled>Select Gender</option><option value="male">Male</option><option value="female">Female</option><option value="other">Prefer not say</option></select></div></div>
-                                <div className="space-y-1"><label className="text-xs font-bold text-gray-700 ml-1">Date of Birth</label><div className="relative group"><div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><Calendar className="h-4 w-4 text-gray-400 group-focus-within:text-orange-500 transition-colors" /></div><input type="date" value={formData.dob} onChange={(e) => setFormData({...formData, dob: e.target.value})} onKeyDown={(e) => { if (e.key === 'Enter') handleSignUp(e); }} className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:bg-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 outline-none transition-all font-medium cursor-pointer" /></div></div>
+                                <div className="space-y-1"><label className="text-xs font-bold text-gray-700 ml-1">Gender</label><div className="relative group"><div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><Users className="h-4 w-4 text-gray-400 group-focus-within:text-orange-500 transition-colors" /></div><select value={formData.gender} onChange={(e) => setFormData({...formData, gender: e.target.value})} className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:bg-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 outline-none transition-all font-medium appearance-none cursor-pointer" data-required="true"><option value="" disabled>Select Gender</option><option value="male">Male</option><option value="female">Female</option><option value="other">Prefer not say</option></select></div></div>
+                                <div className="space-y-1"><label className="text-xs font-bold text-gray-700 ml-1">Date of Birth</label><div className="relative group"><div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><Calendar className="h-4 w-4 text-gray-400 group-focus-within:text-orange-500 transition-colors" /></div><input type="date" value={formData.dob} onChange={(e) => setFormData({...formData, dob: e.target.value})} className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:bg-white focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 outline-none transition-all font-medium cursor-pointer" data-required="true" /></div></div>
                             </form>
                         </div>
                         <div className="flex-none pt-4 pb-2 text-center bg-white border-t border-gray-50">
@@ -498,13 +521,13 @@ export default function Login() {
 
                         {/* STEP 1: EMAIL INPUT */}
                         {forgotStep === 1 && (
-                            <form onSubmit={handleForgotRequest} className="space-y-4 animate-fade-in">
+                            <form onSubmit={handleForgotRequest} onKeyDown={handleFormKeyDown} className="space-y-4 animate-fade-in">
                                 <p className="text-sm text-gray-500">Enter your email address to receive a 6-digit verification code.</p>
                                 <div className="space-y-1">
                                     <label className="text-xs font-bold text-gray-700 ml-1">Email</label>
                                     <div className="relative group">
                                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><Mail size={16} className="text-gray-400 group-focus-within:text-blue-600" /></div>
-                                        <input type="email" placeholder="name@email.com" value={forgotEmail} onChange={(e) => setForgotEmail(e.target.value)} className="w-full pl-9 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 outline-none transition-all" required autoFocus />
+                                        <input type="email" placeholder="name@email.com" value={forgotEmail} onChange={(e) => setForgotEmail(e.target.value)} className="w-full pl-9 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 outline-none transition-all" required autoFocus data-required="true" />
                                     </div>
                                 </div>
                                 <button type="submit" disabled={loadingForgot} className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all flex justify-center items-center cursor-pointer shadow-lg shadow-blue-600/20">
@@ -543,7 +566,7 @@ export default function Login() {
                                                 <Clock size={12} className="animate-pulse" /> Resend in <span className="text-blue-600 font-bold">{formatTime(countdown)}</span>
                                             </p>
                                         ) : (
-                                            <button type="button" onClick={() => { setCountdown(60); alert("Kode dikirim ulang!"); }} className="text-sm font-bold text-orange-600 hover:underline cursor-pointer">
+                                            <button type="button" onClick={() => { setCountdown(60); alert("Code resent!"); }} className="text-sm font-bold text-orange-600 hover:underline cursor-pointer">
                                                 Resend Code
                                             </button>
                                         )}
@@ -558,21 +581,21 @@ export default function Login() {
 
                         {/* STEP 3: NEW PASSWORD */}
                         {forgotStep === 3 && (
-                            <form onSubmit={handleForgotConfirm} className="space-y-4 animate-fade-in">
+                            <form onSubmit={handleForgotConfirm} onKeyDown={handleFormKeyDown} className="space-y-4 animate-fade-in">
                                 <p className="text-sm text-gray-500">Create a new password for your account.</p>
                                 <div className="space-y-3">
                                     <div className="space-y-1">
                                         <label className="text-xs font-bold text-gray-700 ml-1">New Password</label>
                                         <div className="relative group">
                                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><Lock size={16} className="text-gray-400 group-focus-within:text-blue-600" /></div>
-                                            <input type={showNewPassword ? "text" : "password"} placeholder="••••••••" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="w-full pl-9 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 outline-none transition-all" required />
+                                            <input type={showNewPassword ? "text" : "password"} placeholder="••••••••" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="w-full pl-9 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 outline-none transition-all" required data-required="true" />
                                         </div>
                                     </div>
                                     <div className="space-y-1">
                                         <label className="text-xs font-bold text-gray-700 ml-1">Confirm Password</label>
                                         <div className="relative group">
                                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><CheckCircle size={16} className="text-gray-400 group-focus-within:text-blue-600" /></div>
-                                            <input type={showNewPassword ? "text" : "password"} placeholder="••••••••" value={confirmNewPassword} onChange={(e) => setConfirmNewPassword(e.target.value)} className="w-full pl-9 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 outline-none transition-all" required />
+                                            <input type={showNewPassword ? "text" : "password"} placeholder="••••••••" value={confirmNewPassword} onChange={(e) => setConfirmNewPassword(e.target.value)} className="w-full pl-9 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 outline-none transition-all" required data-required="true" />
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2 pl-1">

@@ -11,6 +11,25 @@ export default function AdminLogin() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  const focusFirstEmptyField = (form) => {
+    const requiredFields = Array.from(
+      form.querySelectorAll("[data-required='true']")
+    );
+    const emptyField = requiredFields.find((field) => !field.value);
+    if (emptyField) {
+      emptyField.focus();
+      return true;
+    }
+    return false;
+  };
+
+  const handleFormKeyDown = (event) => {
+    if (event.key !== "Enter") return;
+    if (focusFirstEmptyField(event.currentTarget)) {
+      event.preventDefault();
+    }
+  };
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
@@ -55,7 +74,7 @@ export default function AdminLogin() {
       }
 
       // Jika bukan login offline, tampilkan error biasa
-      setError(err.message || "Gagal login, coba lagi.");
+      setError(err.message || "Login failed. Please try again.");
       setIsLoading(false);
     }
   };
@@ -82,7 +101,7 @@ export default function AdminLogin() {
 
         {/* Form Section */}
         <div className="p-8">
-          <form onSubmit={handleLogin} className="space-y-6">
+          <form onSubmit={handleLogin} onKeyDown={handleFormKeyDown} className="space-y-6">
             
             {/* Error Message */}
             {error && (
@@ -99,10 +118,11 @@ export default function AdminLogin() {
                         <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
                         <input
                             type="text"
-                            placeholder="Masukan username admin"
+                            placeholder="Enter admin username"
                             className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
                             value={formData.username}
                             onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                            data-required="true"
                         />
                     </div>
                 </div>
@@ -118,6 +138,7 @@ export default function AdminLogin() {
                             className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
                             value={formData.password}
                             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                            data-required="true"
                         />
                     </div>
                 </div>
@@ -136,14 +157,14 @@ export default function AdminLogin() {
               {isLoading ? (
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
               ) : (
-                  "Masuk Dashboard"
+                  "Enter Dashboard"
               )}
             </button>
           </form>
 
           <div className="mt-8 pt-6 border-t border-gray-100 text-center">
             <Link to="/" className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-gray-600 transition-colors">
-                <ArrowLeft size={16} /> Kembali ke Beranda User
+                <ArrowLeft size={16} /> Back to User Home
             </Link>
           </div>
         </div>
