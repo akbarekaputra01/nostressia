@@ -137,6 +137,27 @@ class GlobalForecastService:
                 return df
         return df
 
+    def _resolve_model_type(self, artifact: Dict[str, Any]) -> str:
+        raw_type = (
+            artifact.get("type")
+            or artifact.get("model_type")
+            or (artifact.get("meta") or {}).get("type")
+        )
+        if isinstance(raw_type, str) and raw_type:
+            return raw_type
+
+        has_pipe = artifact.get("pipe") is not None
+        has_markov = artifact.get("probs") is not None or artifact.get("markov_probs") is not None
+
+        if has_pipe and has_markov:
+            return "global_blend_model"
+        if has_pipe:
+            return "global_ml_model"
+        if has_markov:
+            return "global_markov"
+
+        return "unknown"
+
     def _resolve_feature_cols(
         self, behavior_cols: List[str], window: int, meta: Dict[str, Any]
     ) -> List[str]:
@@ -281,7 +302,7 @@ class GlobalForecastService:
         last_date = pd.to_datetime(last_row[date_col]).date()
         forecast_date = last_date + timedelta(days=1)
 
-        model_type = artifact.get("type", "unknown")
+        model_type = self._resolve_model_type(artifact)
         print(
             "📌 GlobalForecast",
             "| rows=",
