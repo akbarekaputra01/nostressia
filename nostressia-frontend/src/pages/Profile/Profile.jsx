@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Link, useOutletContext } from "react-router-dom";
 import Navbar from "../../components/Navbar";
-import { changePassword, updateProfile, uploadProfileAvatar } from "../../services/authService";
+import { changePassword, updateProfile } from "../../services/authService";
 import { deleteBookmark, getMyBookmarks } from "../../services/bookmarkService";
 import { 
   User, Mail, Heart, Settings, LogOut, 
@@ -12,6 +12,12 @@ import {
   Eye, EyeOff, Moon, Sun
 } from "lucide-react";
 import { resolveAvatarUrl } from "../../utils/avatar";
+import {
+  requestProfilePictureSas,
+  saveProfilePictureUrl,
+  uploadProfilePictureToAzure,
+  validateProfilePictureFile,
+} from "../../api/profilePicture";
 import {
   clearScheduledReminder,
   getSavedNotificationSettings,
@@ -74,7 +80,7 @@ const AvatarSelectionModal = ({ onClose, onSelect, onUpload, currentAvatar, uplo
             {uploading ? "Uploading..." : "Upload your own photo"}
           </label>
           <p className="text-center text-xs text-gray-400">
-            *Select an avatar or upload a custom photo (max 5MB recommended).
+            *Select an avatar or upload a custom photo (max 2MB).
           </p>
         </div>
       </div>
@@ -264,7 +270,9 @@ export default function Profile() {
     avatar: null, birthday: "", gender: "",
   });
   const fallbackAvatar = AVATAR_OPTIONS[0];
-  const displayAvatar = resolveAvatarUrl(formData.avatar) || fallbackAvatar;
+  const [localAvatarPreview, setLocalAvatarPreview] = useState(null);
+  const displayAvatar =
+    resolveAvatarUrl(localAvatarPreview || formData.avatar) || fallbackAvatar;
 
   // --- LOGIC SYNC USER ---
   useEffect(() => {
@@ -354,6 +362,10 @@ export default function Profile() {
   const [passwordForm, setPasswordForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
   const [passwordStep, setPasswordStep] = useState(1);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  useEffect(() => {
+    if (!localAvatarPreview) return;
+    return () => URL.revokeObjectURL(localAvatarPreview);
+  }, [localAvatarPreview]);
 
   // ✅ LOGIC BARU: STATISTIK DINAMIS & WARNA STREAK
   const getStreakStyle = (streak) => {
@@ -505,22 +517,33 @@ export default function Profile() {
   };
 
   const handleAvatarUpload = async (file) => {
-    if (!file) return;
-    if (!file.type?.startsWith("image/")) {
-      showNotification("Please select an image file.", "error");
+    const validation = validateProfilePictureFile(file);
+    if (!validation.ok) {
+      showNotification(validation.message, "error");
       return;
     }
+
+    const previewUrl = URL.createObjectURL(file);
+    setLocalAvatarPreview(previewUrl);
     setIsUploadingAvatar(true);
     try {
-      const data = await uploadProfileAvatar(file);
-      if (data?.avatar) {
-        setFormData((prev) => ({ ...prev, avatar: data.avatar }));
+      const sasPayload = await requestProfilePictureSas(file);
+      if (!sasPayload?.sasUrl || !sasPayload?.blobUrl) {
+        throw new Error("SAS response tidak valid.");
       }
-      showNotification("Avatar uploaded. Click Save Changes to apply.");
+      await uploadProfilePictureToAzure(file, sasPayload?.sasUrl);
+      const updatedUser = await saveProfilePictureUrl(sasPayload?.blobUrl);
+
+      setFormData((prev) => ({
+        ...prev,
+        avatar: updatedUser?.avatar || sasPayload?.blobUrl,
+      }));
+      setLocalAvatarPreview(null);
+      showNotification("Foto profil berhasil diupload.", "success");
       setShowAvatarModal(false);
       window.dispatchEvent(new Event("nostressia:user-update"));
     } catch (error) {
-      showNotification(error?.message || "Failed to upload avatar.", "error");
+      showNotification(error?.message || "Gagal upload foto profil.", "error");
     } finally {
       setIsUploadingAvatar(false);
     }
