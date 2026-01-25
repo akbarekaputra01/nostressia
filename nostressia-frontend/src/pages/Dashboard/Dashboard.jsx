@@ -215,26 +215,29 @@ function getForecastTheme(status) {
   if (status === "High") {
     return {
       color: brandRed,
-      bg: "bg-red-50",
-      panelTheme: "bg-gradient-to-b from-red-50 via-white to-white",
-      border: "border-red-200",
+      bg: "bg-red-50 dark:bg-red-500/20",
+      panelTheme:
+        "bg-gradient-to-b from-red-50 via-white to-white dark:from-red-950 dark:via-slate-900 dark:to-slate-900",
+      border: "border-red-200 dark:border-red-500/40",
       icon: "ph-warning"
     };
   }
   if (status === "Moderate") {
     return {
       color: brandOrange,
-      bg: "bg-orange-50",
-      panelTheme: "bg-gradient-to-b from-orange-50 via-white to-white",
-      border: "border-orange-200",
+      bg: "bg-orange-50 dark:bg-orange-500/20",
+      panelTheme:
+        "bg-gradient-to-b from-orange-50 via-white to-white dark:from-orange-950 dark:via-slate-900 dark:to-slate-900",
+      border: "border-orange-200 dark:border-orange-500/40",
       icon: "ph-activity"
     };
   }
   return {
     color: brandGreen,
-    bg: "bg-green-50",
-    panelTheme: "bg-gradient-to-b from-green-50 via-white to-white",
-    border: "border-green-200",
+    bg: "bg-green-50 dark:bg-emerald-500/20",
+    panelTheme:
+      "bg-gradient-to-b from-green-50 via-white to-white dark:from-emerald-950 dark:via-slate-900 dark:to-slate-900",
+    border: "border-green-200 dark:border-emerald-500/40",
     icon: "ph-plant"
   };
 }
@@ -1378,7 +1381,10 @@ export default function Dashboard() {
                   className="absolute inset-0 rounded-[20px] p-6 md:p-8 backface-hidden flex flex-col border border-white/20 overflow-hidden shadow-[0_18px_45px_rgba(15,23,42,0.12)]"
                   style={{ backgroundColor: "var(--glass-bg)", zIndex: isFlipped ? 0 : 10, pointerEvents: isFlipped ? "none" : "auto" }}
                 >
-                  <div className="absolute inset-0 transition-all duration-1000 ease-in-out" style={{ background: gradientBg, zIndex: -1, opacity: 0.8 }} />
+                  <div
+                    className="absolute inset-0 rounded-[20px] transition-all duration-1000 ease-in-out"
+                    style={{ background: gradientBg, zIndex: -1, opacity: 0.8 }}
+                  />
 
                   {hasSubmittedToday && (
                     <div className="absolute -top-[4.5rem] -right-[4.5rem] text-[11rem] opacity-[0.08] pointer-events-none select-none grayscale filter" style={{ zIndex: 0 }}>
@@ -1760,17 +1766,17 @@ export default function Dashboard() {
                 })}
               </div>
 
-              <div className="mt-4 rounded-2xl border border-white/40 bg-white/60 p-4 shadow-sm">
+              <div className="mt-4 rounded-2xl border border-white/40 bg-white/60 p-4 shadow-sm dark:border-slate-700/70 dark:bg-slate-900/70">
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center">
+                    <div className="h-10 w-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center dark:bg-orange-500/20 dark:text-orange-200">
                       <span className="text-lg">🔥</span>
                     </div>
                     <div>
-                      <h4 className="text-sm font-bold text-gray-800">Restore Streak</h4>
-                      <p className="text-xs text-gray-500">
+                      <h4 className="text-sm font-bold text-gray-800 dark:text-slate-100">Restore Streak</h4>
+                      <p className="text-xs text-gray-500 dark:text-slate-300">
                         Remaining:{" "}
-                        <span className="font-semibold text-gray-700">
+                        <span className="font-semibold text-gray-700 dark:text-slate-200">
                           {restoreRemaining}/{restoreLimit}
                         </span>
                       </p>
@@ -1790,14 +1796,14 @@ export default function Dashboard() {
                       eligibilityLoading ||
                       restoreRemaining <= 0 ||
                       !canRestoreSelectedDay
-                        ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                        ? "bg-gray-200 text-gray-400 cursor-not-allowed dark:bg-slate-800 dark:text-slate-500"
                         : "bg-orange-500 text-white hover:bg-orange-600"
                     }`}
                   >
                     Restore {selectedDateKey}
                   </button>
                 </div>
-                <p className="text-xs text-gray-500 mt-2">{restoreHint}</p>
+                <p className="text-xs text-gray-500 mt-2 dark:text-slate-300">{restoreHint}</p>
                 {eligibilityError && (
                   <p className="text-xs text-red-500 mt-1">{eligibilityError}</p>
                 )}
@@ -1805,20 +1811,20 @@ export default function Dashboard() {
 
               {/* --- NEW SECTION: 3-DAY FORECAST --- */}
               <div className="mt-auto pt-6 pb-2">
-                <div className="w-full h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent mb-4"></div>
+                <div className="w-full h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent mb-4 dark:via-slate-700"></div>
                 <div className="flex items-center justify-between mb-3">
-                   <h4 className="text-sm font-bold text-gray-700 flex items-center gap-2">
+                   <h4 className="text-sm font-bold text-gray-700 dark:text-slate-100 flex items-center gap-2">
                       <i className="ph ph-crystal-ball text-purple-500 text-lg"></i>
                       3-Day Forecast
                    </h4>
                    <div className="relative group">
                       <span
-                        className="text-[10px] bg-purple-50 text-purple-600 px-2 py-0.5 rounded font-bold uppercase tracking-wider cursor-help"
+                        className="text-[10px] bg-purple-50 text-purple-600 px-2 py-0.5 rounded font-bold uppercase tracking-wider cursor-help dark:bg-purple-500/20 dark:text-purple-200"
                         title={forecastModeDescription}
                       >
                         {forecastModeLabel}
                       </span>
-                      <div className="pointer-events-none absolute right-0 mt-2 w-48 rounded-lg border border-purple-100 bg-white/95 p-2 text-[10px] text-purple-700 shadow-lg opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                      <div className="pointer-events-none absolute right-0 mt-2 w-48 rounded-lg border border-purple-100 bg-white/95 p-2 text-[10px] text-purple-700 shadow-lg opacity-0 transition-opacity duration-200 group-hover:opacity-100 dark:border-purple-500/30 dark:bg-slate-900/95 dark:text-purple-100">
                         {forecastModeDescription}
                       </div>
                    </div>
@@ -1829,22 +1835,22 @@ export default function Dashboard() {
                       Array.from({ length: 3 }).map((_, idx) => (
                         <div
                           key={`forecast-loading-${idx}`}
-                          className="relative rounded-xl p-3 flex flex-col items-center text-center border border-white/40 bg-white/50 animate-pulse"
+                          className="relative rounded-xl p-3 flex flex-col items-center text-center border border-white/40 bg-white/50 animate-pulse dark:border-slate-700 dark:bg-slate-900/60"
                         >
-                          <div className="h-3 w-12 bg-gray-200 rounded mb-3" />
-                          <div className="h-6 w-6 bg-gray-200 rounded-full mb-2" />
-                          <div className="h-4 w-14 bg-gray-200 rounded mb-2" />
-                          <div className="h-3 w-16 bg-gray-200 rounded-full" />
+                          <div className="h-3 w-12 bg-gray-200 rounded mb-3 dark:bg-slate-700" />
+                          <div className="h-6 w-6 bg-gray-200 rounded-full mb-2 dark:bg-slate-700" />
+                          <div className="h-4 w-14 bg-gray-200 rounded mb-2 dark:bg-slate-700" />
+                          <div className="h-3 w-16 bg-gray-200 rounded-full dark:bg-slate-700" />
                         </div>
                       ))
                     )}
                     {!forecastLoading && forecastError && (
-                      <div className="col-span-3 text-center text-xs font-semibold text-gray-500 bg-white/60 border border-gray-200 rounded-xl px-3 py-4 whitespace-pre-line">
+                      <div className="col-span-3 text-center text-xs font-semibold text-gray-500 bg-white/60 border border-gray-200 rounded-xl px-3 py-4 whitespace-pre-line dark:bg-slate-900/70 dark:border-slate-700 dark:text-slate-300">
                         {forecastError}
                       </div>
                     )}
                     {!forecastLoading && !forecastError && forecastList.length === 0 && (
-                      <div className="col-span-3 text-center text-xs font-semibold text-gray-500 bg-white/60 border border-gray-200 rounded-xl px-3 py-4">
+                      <div className="col-span-3 text-center text-xs font-semibold text-gray-500 bg-white/60 border border-gray-200 rounded-xl px-3 py-4 dark:bg-slate-900/70 dark:border-slate-700 dark:text-slate-300">
                         Forecast is not available yet.
                       </div>
                     )}
@@ -1856,15 +1862,16 @@ export default function Dashboard() {
                           className={`
                             relative rounded-xl p-3 flex flex-col items-center text-center cursor-pointer 
                             transition-all duration-300 hover:scale-105 hover:shadow-md border border-transparent hover:border-black/5 active:scale-95
+                            dark:hover:border-slate-600/60
                             ${item.bg}
                           `}
                         >
-                           <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">{item.dateStr}</span>
+                           <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 dark:text-slate-400">{item.dateStr}</span>
                            <div className="text-2xl mb-1" style={{ color: item.color }}>
                               <i className={`ph ${item.icon}`}></i>
                            </div>
                            <div className="font-extrabold text-sm uppercase" style={{ color: item.color }}>{item.status}</div>
-                           <div className="text-[10px] font-medium text-gray-500 mt-1 flex items-center gap-1 bg-white/50 px-2 py-0.5 rounded-full">
+                           <div className="text-[10px] font-medium text-gray-500 mt-1 flex items-center gap-1 bg-white/50 px-2 py-0.5 rounded-full dark:bg-slate-900/70 dark:text-slate-200">
                               <i className="ph ph-trend-up"></i> {item.probability}%
                            </div>
                         </div>
@@ -1937,7 +1944,7 @@ export default function Dashboard() {
                 // Disini kita gunakan forecastDetail.panelTheme untuk warna container (tanpa opacity class)
                 // Hapus bg-opacity-95 agar solid, tambahkan shadow-2xl agar lebih kontras dengan background
                 className={`
-                  absolute inset-x-0 bottom-0 z-30 rounded-t-[24px] shadow-2xl border-t border-gray-100 overflow-hidden
+                  absolute inset-x-0 bottom-0 z-30 rounded-t-[24px] shadow-2xl border-t border-gray-100 overflow-hidden dark:border-slate-700
                   ${isClosingPanel ? "animate-slide-down-panel" : "animate-slide-up-panel"}
                   ${forecastDetail.panelTheme}
                 `}
@@ -1945,24 +1952,24 @@ export default function Dashboard() {
               >
                   {/* Handle Bar for aesthetics */}
                   <div className="w-full flex justify-center pt-3 pb-1" onClick={handleCloseForecast}>
-                     <div className="w-12 h-1.5 bg-gray-400/30 rounded-full cursor-pointer hover:bg-gray-400/50 transition-colors" />
+                     <div className="w-12 h-1.5 bg-gray-400/30 rounded-full cursor-pointer hover:bg-gray-400/50 transition-colors dark:bg-slate-500/40 dark:hover:bg-slate-500/60" />
                   </div>
 
                   <div className="p-6 pt-2">
                      <div className="flex justify-between items-start mb-4">
                         <div>
                            <div className="flex items-center gap-2 mb-1">
-                              <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">{forecastDetail.fullDate}</span>
+                              <span className="text-xs font-bold text-gray-500 uppercase tracking-widest dark:text-slate-300">{forecastDetail.fullDate}</span>
                               <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold bg-white/60 border ${forecastDetail.border}`} style={{ color: forecastDetail.color }}>
                                  {forecastDetail.status} Risk
                               </span>
                            </div>
-                           <h3 className="text-xl font-bold text-gray-800">Stress Forecast Advice</h3>
+                           <h3 className="text-xl font-bold text-gray-800 dark:text-slate-100">Stress Forecast Advice</h3>
                         </div>
                         {/* TOMBOL X DIGANTI DENGAN SVG */}
                         <button 
                            onClick={handleCloseForecast} 
-                           className="w-8 h-8 rounded-full bg-white/40 text-gray-600 hover:bg-white/60 hover:text-gray-900 flex items-center justify-center transition-all cursor-pointer"
+                           className="w-8 h-8 rounded-full bg-white/40 text-gray-600 hover:bg-white/60 hover:text-gray-900 flex items-center justify-center transition-all cursor-pointer dark:bg-slate-900/60 dark:text-slate-200 dark:hover:bg-slate-800"
                         >
                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
                               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -1970,17 +1977,17 @@ export default function Dashboard() {
                         </button>
                      </div>
 
-                     <div className={`p-4 rounded-xl border ${forecastDetail.border} bg-white/40 flex items-start gap-3`}>
+                     <div className={`p-4 rounded-xl border ${forecastDetail.border} bg-white/40 flex items-start gap-3 dark:bg-slate-900/60`}>
                         <i className={`ph ${forecastDetail.icon} text-2xl mt-0.5`} style={{ color: forecastDetail.color }}></i>
                         <div>
-                           <p className="text-sm text-gray-800 font-medium leading-relaxed">
+                           <p className="text-sm text-gray-800 font-medium leading-relaxed dark:text-slate-100">
                               {forecastDetail.advice}
                            </p>
                            <div className="mt-2 flex items-center gap-1 text-xs font-bold opacity-70" style={{ color: forecastDetail.color }}>
                               <i className="ph ph-lightning"></i> Confidence: {forecastDetail.probability}%
                            </div>
                            {(forecastDetail.forecastMode || forecastDetail.modelType || typeof forecastDetail.threshold === "number") && (
-                             <div className="mt-1 text-[11px] font-semibold text-gray-500">
+                             <div className="mt-1 text-[11px] font-semibold text-gray-500 dark:text-slate-300">
                                {forecastDetail.forecastMode && (
                                  <span>
                                    Forecast:{" "}
@@ -2006,7 +2013,7 @@ export default function Dashboard() {
                         </div>
                      </div>
                      
-                     <button onClick={handleCloseForecast} className="w-full mt-4 py-3 bg-gray-900 text-white rounded-xl font-bold text-sm shadow-lg hover:bg-black transition-transform active:scale-95 cursor-pointer">
+                     <button onClick={handleCloseForecast} className="w-full mt-4 py-3 bg-gray-900 text-white rounded-xl font-bold text-sm shadow-lg hover:bg-black transition-transform active:scale-95 cursor-pointer dark:bg-slate-200 dark:text-slate-900 dark:hover:bg-white">
                         Got it!
                      </button>
                   </div>
