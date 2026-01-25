@@ -1,9 +1,11 @@
 import logging
+from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy import inspect
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -18,6 +20,10 @@ def create_app() -> FastAPI:
     app = FastAPI(title=settings.app_name)
 
     register_models()
+
+    upload_root = Path(__file__).resolve().parent.parent / "uploads"
+    upload_root.mkdir(parents=True, exist_ok=True)
+    app.mount("/uploads", StaticFiles(directory=upload_root), name="uploads")
 
     app.add_middleware(
         CORSMiddleware,

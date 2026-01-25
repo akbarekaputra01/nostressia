@@ -368,15 +368,15 @@ export default function Diary() {
                         click to open diary
                       </div>
                     </div>
-                    <div className="absolute inset-0 w-full h-full rounded-l-[16px] rounded-r-[4px] shadow-inner bg-[#fcf9f5] dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700" style={{ transform: "rotateY(180deg)", backfaceVisibility: 'hidden' }}>
+                    <div className="absolute inset-0 w-full h-full rounded-l-[16px] rounded-r-[4px] shadow-inner bg-[#fcf9f5] dark:bg-[#fcf9f5] border-r border-slate-200 dark:border-slate-200" style={{ transform: "rotateY(180deg)", backfaceVisibility: 'hidden' }}>
                           <div className="w-full h-full flex flex-col items-center justify-center p-10 opacity-60">
-                            <div className="w-24 h-24 rounded-full bg-slate-200 dark:bg-slate-700 mb-4 flex items-center justify-center border-4 border-white dark:border-slate-600 shadow-sm overflow-hidden">
+                            <div className="w-24 h-24 rounded-full bg-slate-200 dark:bg-slate-200 mb-4 flex items-center justify-center border-4 border-white dark:border-white shadow-sm overflow-hidden">
                                 <img src={user?.avatar || `https://ui-avatars.com/api/?name=${user?.name || "User"}&background=${colors.brandOrange.replace('#','')}&color=fff`} alt="User" className="w-full h-full object-cover" />
                             </div>
-                            <h3 className="font-serif italic text-slate-500 dark:text-slate-300 text-base md:text-lg">This diary belongs to:</h3>
-                            <h2 className="text-xl font-bold text-slate-700 dark:text-slate-100 mt-1">{user?.name || "User"}</h2>
-                            <div className="border-b-2 border-slate-300 dark:border-slate-600 w-full mt-2 mb-6"></div>
-                            <p className="text-center text-xs text-slate-400 dark:text-slate-400 leading-loose italic font-serif">"Keep your face always toward the sunshine—and shadows will fall behind you."</p>
+                            <h3 className="font-serif italic text-slate-500 text-base md:text-lg">This diary belongs to:</h3>
+                            <h2 className="text-xl font-bold text-slate-700 mt-1">{user?.name || "User"}</h2>
+                            <div className="border-b-2 border-slate-300 w-full mt-2 mb-6"></div>
+                            <p className="text-center text-xs text-slate-400 leading-loose italic font-serif">"Keep your face always toward the sunshine—and shadows will fall behind you."</p>
                           </div>
                     </div>
                 </motion.div>
@@ -442,7 +442,7 @@ export default function Diary() {
             <motion.div initial={{ opacity: 0, scale: 0.9, y: 30 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 30 }} 
                 className="relative bg-[#e2e8f0] dark:bg-slate-900 w-full max-w-4xl h-full max-h-[85vh] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col p-2"
             >
-              <div className="relative flex-grow bg-[#fffaf5] dark:bg-slate-800 rounded-xl overflow-hidden flex shadow-inner border border-slate-300 dark:border-slate-700">
+              <div className="relative flex-grow bg-[#fffaf5] dark:bg-[#fffaf5] rounded-xl overflow-hidden flex shadow-inner border border-slate-300 dark:border-slate-300">
                 <div className="spiral-spine">
                   {[...Array(14)].map((_, i) => (
                     <div key={i} className="spiral-ring"><div className="spiral-hole"></div></div>
@@ -451,21 +451,21 @@ export default function Diary() {
                 <div className="flex-grow notebook-lines pl-16 pr-8 md:pl-24 md:pr-12 overflow-y-auto custom-scrollbar pt-[32px]">
                   <div className="pb-16">
                     <div className="flex items-start gap-6 mb-0">
-                        <div className="w-16 h-[64px] bg-white dark:bg-slate-700 rounded-xl shadow-sm border border-slate-200 dark:border-slate-600 flex items-center justify-center text-4xl shrink-0">
+                        <div className="w-16 h-[64px] bg-white dark:bg-white rounded-xl shadow-sm border border-slate-200 dark:border-slate-200 flex items-center justify-center text-4xl shrink-0">
                           {selectedEntry.mood}
                         </div>
                         <div className="flex flex-col justify-end h-[64px]">
-                          <div className="flex items-center gap-2 text-blue-600 dark:text-blue-300 h-[32px] border-b border-transparent">
+                          <div className="flex items-center gap-2 text-blue-600 dark:text-blue-600 h-[32px] border-b border-transparent">
                              <Calendar size={14} />
                              <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest">{selectedEntry.date}</span>
                           </div>
-                          <h2 className="text-lg md:text-3xl font-extrabold text-slate-800 dark:text-slate-100 leading-[32px] h-[32px] truncate" 
+                          <h2 className="text-lg md:text-3xl font-extrabold text-slate-800 dark:text-slate-800 leading-[32px] h-[32px] truncate" 
                               style={{ fontFamily: selectedEntry.font || baseFont }}>
                               {selectedEntry.title}
                           </h2>
                         </div>
                     </div>
-                    <div className="text-slate-700 dark:text-slate-200 text-sm md:text-xl whitespace-pre-wrap mt-0" style={{ fontFamily: selectedEntry.font || baseFont, lineHeight: '32px' }}>
+                    <div className="text-slate-700 dark:text-slate-700 text-sm md:text-xl whitespace-pre-wrap mt-0" style={{ fontFamily: selectedEntry.font || baseFont, lineHeight: '32px' }}>
                         {selectedEntry.content}
                     </div>
                   </div>

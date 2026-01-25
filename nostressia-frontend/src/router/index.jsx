@@ -15,6 +15,7 @@ import Analytics from "../pages/Analytics/Analytics";
 import Profile from "../pages/Profile/Profile"; 
 import Login from "../pages/Login/Login"; 
 import LandingPage from "../pages/LandingPage/LandingPage";
+import NotFound from "../pages/NotFound/NotFound";
 
 // Import Admin Pages
 import AdminPage from "../pages/Admin/AdminPage";
@@ -60,6 +61,8 @@ function AppRouter() {
         <Route element={<AdminRoute />}>
             <Route path="/admin" element={<AdminPage />} />
         </Route>
+
+        <Route path="*" element={<NotFound />} />
       
       </Routes>
     </BrowserRouter>
