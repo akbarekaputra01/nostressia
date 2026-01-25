@@ -8,3 +8,11 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     <App />
   </React.StrictMode>
 );
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/notification-sw.js").catch((error) => {
+      console.warn("Service worker registration failed:", error);
+    });
+  });
+}

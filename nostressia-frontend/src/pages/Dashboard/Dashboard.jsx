@@ -19,9 +19,9 @@ const brandBlue = "#3664BA";
 const brandOrange = "#F2994A";
 const brandGreen = "#27AE60";
 const brandRed = "#E53E3E";
-const bgCream = "#FFF3E0";
-const bgPink = "#eaf2ff";
-const bgLavender = "#e3edff";
+const bgCream = "var(--bg-gradient-cream)";
+const bgPink = "var(--bg-gradient-pink)";
+const bgLavender = "var(--bg-gradient-lavender)";
 const colorGray = "#D1D5DB";
 
 // TRANSLATED: Month Names

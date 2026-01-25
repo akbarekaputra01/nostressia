@@ -10,9 +10,9 @@ import Footer from "../../components/Footer";
 import { getTipCategories, getTipsByCategory } from "../../services/tipsService";
 
 // --- COLOR CONFIGURATION ---
-const bgCream = "#FFF3E0";
-const bgPink = "#eaf2ff";
-const bgLavender = "#e3edff";
+const bgCream = "var(--bg-gradient-cream)";
+const bgPink = "var(--bg-gradient-pink)";
+const bgLavender = "var(--bg-gradient-lavender)";
 
 const bgStyle = {
   minHeight: "100vh",
@@ -151,7 +151,7 @@ export default function Tips() {
         <Navbar activeLink="Tips" user={user} />
       </div>
 
-      <main className="w-full max-w-[1600px] mx-auto px-4 pb-20 pt-32 md:pt-40 flex-grow relative z-10">
+      <main className="w-full max-w-[1400px] mx-auto px-4 pb-20 pt-32 md:pt-40 flex-grow relative z-10">
         <AnimatePresence mode="wait">
           {!selectedCategory ? (
             <Motion.div key="list" variants={containerVariants} initial="hidden" animate="visible" exit="hidden">

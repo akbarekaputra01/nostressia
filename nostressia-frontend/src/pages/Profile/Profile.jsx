@@ -9,9 +9,16 @@ import {
   Edit3, Flame, BookOpen, // [UBAH] Trophy diganti Flame
   ChevronRight, Bell, CheckCircle, X,
   Cake, Smile, Activity, Lock, Key, Clock, Smartphone, Bookmark, Plus, Loader2, AtSign, Check, AlertCircle,
-  Eye, EyeOff
+  Eye, EyeOff, Moon, Sun
 } from "lucide-react";
 import { resolveAvatarUrl } from "../../utils/avatar";
+import {
+  clearScheduledReminder,
+  getSavedNotificationSettings,
+  saveNotificationSettings,
+  scheduleDailyReminder,
+} from "../../utils/notificationService";
+import { getStoredTheme, setStoredTheme } from "../../utils/theme";
 
 // --- IMPORT AVATAR ---
 import avatar1 from "../../assets/images/avatar1.png";
@@ -286,6 +293,15 @@ export default function Profile() {
     }
   }, [activeTab, fetchBookmarks]);
 
+  useEffect(() => {
+    const handleThemeChange = (event) => {
+      const nextTheme = event?.detail?.theme || getStoredTheme();
+      setIsDarkMode(nextTheme === "dark");
+    };
+    window.addEventListener("nostressia:theme-change", handleThemeChange);
+    return () => window.removeEventListener("nostressia:theme-change", handleThemeChange);
+  }, []);
+
   const handleUnsave = async (motivationId) => {
     try {
         await deleteBookmark(motivationId);
@@ -296,7 +312,24 @@ export default function Profile() {
     }
   };
 
-  const [notifSettings, setNotifSettings] = useState({ dailyReminder: true, reminderTime: "08:00", emailUpdates: false });
+  const handleThemeToggle = (enabled) => {
+    setIsDarkMode(enabled);
+    setStoredTheme(enabled ? "dark" : "light");
+    showNotification(enabled ? "Dark mode enabled" : "Dark mode disabled");
+  };
+
+  const [notifSettings, setNotifSettings] = useState(() => {
+    return (
+      getSavedNotificationSettings() || {
+        dailyReminder: true,
+        reminderTime: "08:00",
+        emailUpdates: false,
+      }
+    );
+  });
+  const [isDarkMode, setIsDarkMode] = useState(
+    () => getStoredTheme() === "dark"
+  );
   const [passwordForm, setPasswordForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
   const [passwordStep, setPasswordStep] = useState(1);
 
@@ -400,7 +433,23 @@ export default function Profile() {
     setNotifSettings(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
     if (name === "reminderTime" && value === "04:04") { setShowGameModal(true); }
   };
-  const saveNotifSettings = () => { setShowNotifModal(false); showNotification("Notification preferences saved!"); };
+  const saveNotifSettings = async () => {
+    saveNotificationSettings(notifSettings);
+    setShowNotifModal(false);
+
+    if (notifSettings.dailyReminder) {
+      try {
+        const result = await scheduleDailyReminder(notifSettings.reminderTime);
+        showNotification(result.message || "Notification preferences saved!", result.ok ? "success" : "error");
+      } catch (error) {
+        showNotification(error?.message || "Failed to schedule reminders.", "error");
+      }
+      return;
+    }
+
+    await clearScheduledReminder();
+    showNotification("Notification preferences saved!", "success");
+  };
   
   const handlePasswordChangeInput = (e) => { const { name, value } = e.target; setPasswordForm({ ...passwordForm, [name]: value }); };
 
@@ -452,7 +501,13 @@ export default function Profile() {
   };
 
   return (
-    <div className="min-h-screen pb-24 md:pb-10" style={{ background: `linear-gradient(135deg, #FFF3E0 0%, #eaf2ff 50%, #e3edff 100%)`, backgroundAttachment: "fixed" }}>
+    <div
+      className="min-h-screen pb-24 md:pb-10"
+      style={{
+        background: "linear-gradient(135deg, var(--bg-gradient-cream) 0%, var(--bg-gradient-pink) 50%, var(--bg-gradient-lavender) 100%)",
+        backgroundAttachment: "fixed",
+      }}
+    >
       <Navbar user={contextUser} />
       {showGameModal && <FishGameModal onClose={() => setShowGameModal(false)} />}
       {showAvatarModal && <AvatarSelectionModal onClose={() => setShowAvatarModal(false)} onSelect={handleAvatarSelect} currentAvatar={formData.avatar} />}
@@ -464,14 +519,10 @@ export default function Profile() {
       {showNotifModal && (<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in"><div className="bg-white rounded-[24px] p-8 w-full max-w-md shadow-2xl border border-white/50"><div className="flex justify-between items-center mb-6"><h3 className="text-xl font-bold text-gray-800 flex items-center gap-2"><Bell className="w-5 h-5 text-orange-500" /> Notifications</h3><button onClick={() => setShowNotifModal(false)} className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"><X className="w-6 h-6" /></button></div><div className="space-y-6"><div className="flex items-center justify-between"><div className="flex items-center gap-3"><div className="bg-blue-100 p-2 rounded-full text-blue-600"><Smartphone className="w-5 h-5" /></div><div><p className="font-bold text-gray-800">Daily Reminder</p><p className="text-xs text-gray-500">Remind me to check-in</p></div></div><label className="relative inline-flex items-center cursor-pointer"><input type="checkbox" name="dailyReminder" checked={notifSettings.dailyReminder} onChange={handleNotifChange} className="sr-only peer" /><div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div></label></div>{notifSettings.dailyReminder && (<div className="bg-gray-50 p-4 rounded-xl flex items-center justify-between border border-gray-100"><div className="flex items-center gap-2 text-gray-600"><Clock className="w-4 h-4" /><span className="text-sm font-semibold">Time</span></div><input type="time" name="reminderTime" value={notifSettings.reminderTime} onChange={handleNotifChange} className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2"/></div>)}<div className="h-px bg-gray-100"></div><div className="flex items-center justify-between"><div className="flex items-center gap-3"><div className="bg-purple-100 p-2 rounded-full text-purple-600"><Mail className="w-5 h-5" /></div><div><p className="font-bold text-gray-800">Weekly Report</p><p className="text-xs text-gray-500">Receive summary via email</p></div></div><label className="relative inline-flex items-center cursor-pointer"><input type="checkbox" name="emailUpdates" checked={notifSettings.emailUpdates} onChange={handleNotifChange} className="sr-only peer" /><div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div></label></div><button onClick={saveNotifSettings} className="w-full mt-4 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl shadow-lg shadow-orange-200 transition-all cursor-pointer transform active:scale-95">Save Preferences</button></div></div></div>)}
       
       {/* PASSWORD MODAL */}
-      {showPasswordModal && (<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in"><div className="bg-white rounded-[24px] p-8 w-full max-w-md shadow-2xl border border-white/50"><div className="flex justify-between items-center mb-6"><h3 className="text-xl font-bold text-gray-800 flex items-center gap-2"><Lock className="w-5 h-5 text-blue-500" /> Change Password</h3><button onClick={handleClosePasswordModal} className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"><X className="w-6 h-6" /></button></div><form onSubmit={passwordStep === 1 ? handlePasswordStepNext : handleSubmitPasswordChange} onKeyDown={handleFormKeyDown} className="space-y-4">
-        <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-gray-400">
-            <span className={passwordStep === 1 ? "text-blue-600" : ""}>Step 1: Verify</span>
-            <span className={passwordStep === 2 ? "text-blue-600" : ""}>Step 2: New Password</span>
-        </div>
+      {showPasswordModal && (<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in"><div className="bg-white rounded-[24px] p-8 w-full max-w-md shadow-2xl border border-white/50"><div className="flex justify-between items-start mb-6"><div><h3 className="text-xl font-bold text-gray-800 flex items-center gap-2"><Lock className="w-5 h-5 text-blue-500" /> Change Password</h3><div className="flex gap-2 mt-2">{[1, 2].map((step) => (<div key={step} className={`h-2 rounded-full transition-all duration-300 ${passwordStep >= step ? "w-8 bg-blue-600" : "w-2 bg-gray-200"}`}></div>))}</div></div><button onClick={handleClosePasswordModal} className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"><X className="w-6 h-6" /></button></div><form onSubmit={passwordStep === 1 ? handlePasswordStepNext : handleSubmitPasswordChange} onKeyDown={handleFormKeyDown} className="space-y-4">
 
         {passwordStep === 1 ? (
-          <div className="space-y-4">
+          <div className="space-y-4 animate-fade-in">
             <p className="text-sm text-gray-500">
               Enter your current password before setting a new one.
             </p>
@@ -498,7 +549,7 @@ export default function Profile() {
             </button>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-4 animate-fade-in">
             <p className="text-sm text-gray-500">
               Create a new password for your account.
             </p>
@@ -559,8 +610,8 @@ export default function Profile() {
         )}
       </form></div></div>)}
 
-      <main className="max-w-4xl mx-auto px-4 pt-24 md:pt-28">
-        <div className="relative bg-white/60 backdrop-blur-xl border border-white/40 rounded-[30px] p-6 md:p-10 shadow-xl overflow-hidden mb-8">
+      <main className="max-w-5xl mx-auto px-4 pt-24 md:pt-28">
+        <div className="relative bg-white/60 backdrop-blur-xl border border-white/40 rounded-[30px] p-6 md:p-10 shadow-xl overflow-hidden mb-8 max-w-4xl mx-auto">
             <div className="absolute top-0 right-0 w-64 h-64 bg-blue-400/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-orange-400/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
             <div className="relative z-10 flex flex-col md:flex-row items-center gap-6 md:gap-8">
@@ -746,6 +797,29 @@ export default function Profile() {
                 <div className="space-y-4">
                       <div className="bg-white/60 backdrop-blur-md border border-white/40 rounded-[24px] overflow-hidden shadow-lg p-2">
                         <button onClick={() => setShowNotifModal(true)} className="w-full flex items-center justify-between p-4 hover:bg-white/50 rounded-xl transition-colors cursor-pointer group"><div className="flex items-center gap-4"><div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600"><Bell className="w-5 h-5" /></div><div className="text-left"><h4 className="font-bold text-gray-800">Notifications</h4></div></div><ChevronRight className="w-5 h-5 text-gray-400" /></button>
+                        <div className="h-px bg-gray-100 mx-4"></div>
+                        <div className="w-full flex items-center justify-between p-4 hover:bg-white/50 rounded-xl transition-colors">
+                          <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600">
+                              {isDarkMode ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+                            </div>
+                            <div className="text-left">
+                              <h4 className="font-bold text-gray-800">Dark Mode</h4>
+                              <p className="text-xs text-gray-500">
+                                {isDarkMode ? "Dark theme enabled" : "Switch to dark theme"}
+                              </p>
+                            </div>
+                          </div>
+                          <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={isDarkMode}
+                              onChange={(event) => handleThemeToggle(event.target.checked)}
+                              className="sr-only peer"
+                            />
+                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                          </label>
+                        </div>
                         <div className="h-px bg-gray-100 mx-4"></div>
                         <button onClick={() => { setPasswordStep(1); setShowPasswordModal(true); }} className="w-full flex items-center justify-between p-4 hover:bg-white/50 rounded-xl transition-colors cursor-pointer group"><div className="flex items-center gap-4"><div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600"><Lock className="w-5 h-5" /></div><div className="text-left"><h4 className="font-bold text-gray-800">Change Password</h4></div></div><ChevronRight className="w-5 h-5 text-gray-400" /></button>
                       </div>
