@@ -368,6 +368,19 @@ function normalizeEligibility(payload) {
   };
 }
 
+function isSameEligibility(left, right) {
+  if (!left && !right) return true;
+  if (!left || !right) return false;
+  return (
+    left.streak === right.streak &&
+    left.requiredStreak === right.requiredStreak &&
+    left.restoreUsed === right.restoreUsed &&
+    left.restoreLimit === right.restoreLimit &&
+    left.missing === right.missing &&
+    left.note === right.note
+  );
+}
+
 function resolveForecastMode(eligibility) {
   if (!eligibility) return "global";
   return eligibility.streak >= PERSONALIZED_STREAK_THRESHOLD
@@ -991,7 +1004,9 @@ export default function Dashboard() {
 
         const eligibilityFromForecast = normalizeEligibility(data?.eligibility);
         if (eligibilityFromForecast) {
-          setEligibilityData(data.eligibility);
+          if (!isSameEligibility(eligibilityFromForecast, eligibilitySnapshot)) {
+            setEligibilityData(data.eligibility);
+          }
           setForecastMode(resolveForecastMode(eligibilityFromForecast));
         } else {
           setForecastMode(resolveForecastMode(eligibilitySnapshot));
