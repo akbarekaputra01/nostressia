@@ -87,9 +87,9 @@ class GlobalForecastService:
             if behavior_cols:
                 for col in behavior_cols:
                     if col in group.columns:
-                        group[f"lag1_{col}"] = group[col].shift(1)
+                        group[f"lag1_{col}"] = group[col].shift(1).fillna(0)
                     else:
-                        group[f"lag1_{col}"] = pd.NA
+                        group[f"lag1_{col}"] = 0
 
             sp_shift = group[target_col].shift(1)
 
