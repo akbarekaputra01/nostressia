@@ -209,6 +209,7 @@ export default function Profile() {
   const [notification, setNotification] = useState(null);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showNotifModal, setShowNotifModal] = useState(false); 
+  const [showPermissionPrompt, setShowPermissionPrompt] = useState(false);
   const [showGameModal, setShowGameModal] = useState(false); 
   const [showAvatarModal, setShowAvatarModal] = useState(false); 
   const [isLoadingSave, setIsLoadingSave] = useState(false);
@@ -336,9 +337,8 @@ export default function Profile() {
   // ✅ LOGIC BARU: STATISTIK DINAMIS & WARNA STREAK
   const getStreakStyle = (streak) => {
     const s = streak || 0;
-    if (s >= 70) return { iconColor: "text-purple-600", bgColor: "bg-purple-100" }; // Legendary
-    if (s >= 7) return { iconColor: "text-red-500", bgColor: "bg-red-100" }; // Membara
-    return { iconColor: "text-orange-500", bgColor: "bg-orange-100" }; // Normal
+    if (s >= 60) return { iconColor: "text-purple-600", bgColor: "bg-purple-100" }; // Api 2
+    return { iconColor: "text-orange-500", bgColor: "bg-orange-100" }; // Api 1
   };
 
   const streakVal = contextUser?.streak || 0;
@@ -438,6 +438,15 @@ export default function Profile() {
     setShowNotifModal(false);
 
     if (notifSettings.dailyReminder) {
+      const needsPermissionPrompt =
+        typeof window !== "undefined" &&
+        "Notification" in window &&
+        Notification.permission === "default";
+
+      if (needsPermissionPrompt) {
+        setShowPermissionPrompt(true);
+        return;
+      }
       try {
         const result = await scheduleDailyReminder(notifSettings.reminderTime);
         showNotification(result.message || "Notification preferences saved!", result.ok ? "success" : "error");
@@ -449,6 +458,21 @@ export default function Profile() {
 
     await clearScheduledReminder();
     showNotification("Notification preferences saved!", "success");
+  };
+
+  const handlePermissionAllow = async () => {
+    setShowPermissionPrompt(false);
+    try {
+      const result = await scheduleDailyReminder(notifSettings.reminderTime);
+      showNotification(result.message || "Notification preferences saved!", result.ok ? "success" : "error");
+    } catch (error) {
+      showNotification(error?.message || "Failed to schedule reminders.", "error");
+    }
+  };
+
+  const handlePermissionDismiss = () => {
+    setShowPermissionPrompt(false);
+    showNotification("Notification permission is required to enable reminders.", "info");
   };
   
   const handlePasswordChangeInput = (e) => { const { name, value } = e.target; setPasswordForm({ ...passwordForm, [name]: value }); };
@@ -511,6 +535,35 @@ export default function Profile() {
       <Navbar user={contextUser} />
       {showGameModal && <FishGameModal onClose={() => setShowGameModal(false)} />}
       {showAvatarModal && <AvatarSelectionModal onClose={() => setShowAvatarModal(false)} onSelect={handleAvatarSelect} currentAvatar={formData.avatar} />}
+      {showPermissionPrompt && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-[24px] p-6 w-full max-w-sm shadow-2xl border border-white/60">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="bg-orange-100 text-orange-600 p-2 rounded-full">
+                <Bell className="w-5 h-5" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-800">Allow notifications?</h3>
+            </div>
+            <p className="text-sm text-gray-600 mb-6">
+              Nostressia needs permission to send daily reminder notifications.
+            </p>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handlePermissionAllow}
+                className="flex-1 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl shadow-lg shadow-orange-200 transition-all cursor-pointer"
+              >
+                Allow
+              </button>
+              <button
+                onClick={handlePermissionDismiss}
+                className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition-all cursor-pointer"
+              >
+                Not now
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       
       {/* NOTIFICATIONS */}
       {notification && (<div className="fixed top-24 right-4 z-[100] animate-bounce-in"><div className={`flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl border ${notification.type === "success" ? "bg-white text-green-600 border-green-100" : notification.type === "error" ? "bg-white text-red-600 border-red-100" : "bg-white text-blue-600 border-blue-100"}`}>{notification.type === "success" ? <CheckCircle className="w-5 h-5"/> : notification.type === "error" ? <X className="w-5 h-5"/> : <Heart className="w-5 h-5"/>}<span className="font-bold">{notification.message}</span></div></div>)}

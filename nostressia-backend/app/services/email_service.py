@@ -132,3 +132,63 @@ def send_reset_password_email(to_email: str, otp_code: str) -> Tuple[bool, Optio
         error_detail = f"Unexpected error: {e}"
         print(f"❌ Gagal mengirim email Reset Password: {error_detail}")
         return False, error_detail
+
+
+def send_weekly_report_email(
+    to_email: str,
+    report: dict,
+    user_name: str = "there",
+) -> Tuple[bool, Optional[str]]:
+    api_instance, error_message = _get_brevo_client()
+    if error_message:
+        print(f"❌ {error_message}")
+        return False, error_message
+
+    sender = {"name": "Nostressia", "email": SENDER_EMAIL}
+    to = [{"email": to_email}]
+
+    date_range = report.get("date_range", "the past week")
+    stress_count = report.get("stress_logs", 0)
+    diary_count = report.get("diary_entries", 0)
+    avg_stress = report.get("avg_stress_level", "-")
+    streak = report.get("streak", 0)
+
+    html_content = f"""
+    <html>
+      <body style="font-family: Arial, sans-serif; text-align: center; padding: 20px;">
+        <div style="max-width: 560px; margin: auto; border: 1px solid #e5e7eb; padding: 24px; border-radius: 14px;">
+          <h2 style="color: #2563eb; margin-bottom: 8px;">Weekly Report</h2>
+          <p style="color: #4b5563; margin-top: 0;">Hi {user_name}, here is your summary for {date_range}.</p>
+          <div style="text-align: left; margin-top: 20px;">
+            <p style="margin: 6px 0;"><strong>Stress logs:</strong> {stress_count}</p>
+            <p style="margin: 6px 0;"><strong>Diary entries:</strong> {diary_count}</p>
+            <p style="margin: 6px 0;"><strong>Average stress level:</strong> {avg_stress}</p>
+            <p style="margin: 6px 0;"><strong>Current streak:</strong> {streak} days</p>
+          </div>
+          <p style="margin-top: 18px; font-size: 12px; color: #6b7280;">
+            Keep checking in daily to unlock more insights.
+          </p>
+        </div>
+      </body>
+    </html>
+    """
+
+    send_smtp_email = sib_api_v3_sdk.SendSmtpEmail(
+        to=to,
+        sender=sender,
+        subject="Your Nostressia Weekly Report",
+        html_content=html_content,
+    )
+
+    try:
+        api_instance.send_transac_email(send_smtp_email)
+        print(f"✅ Weekly report terkirim ke {to_email}")
+        return True, None
+    except ApiException as e:
+        error_detail = f"Brevo API error: {e}"
+        print(f"❌ Gagal mengirim weekly report: {error_detail}")
+        return False, error_detail
+    except Exception as e:
+        error_detail = f"Unexpected error: {e}"
+        print(f"❌ Gagal mengirim weekly report: {error_detail}")
+        return False, error_detail

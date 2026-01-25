@@ -338,14 +338,14 @@ export default function Analytics() {
         .skeleton {
           position: relative;
           overflow: hidden;
-          background-color: rgba(255,255,255,0.65);
+          background-color: var(--skeleton-bg);
         }
         .skeleton::after {
           content: "";
           position: absolute;
           inset: 0;
           transform: translateX(-100%);
-          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.7), transparent);
+          background: linear-gradient(90deg, transparent, var(--skeleton-shine), transparent);
           animation: shimmer-slide 1.6s infinite;
         }
         .spin-slow { animation: spin 1.4s linear infinite; }
@@ -443,9 +443,9 @@ export default function Analytics() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 mb-8 md:mb-10">
           {/* Stress Chart */}
           <div
-            className="relative rounded-2xl p-4 md:p-6 border backdrop-blur-xl"
+            className="relative rounded-2xl p-4 md:p-6 border backdrop-blur-xl overflow-hidden"
             style={{
-              background: "rgba(255,255,255,0.45)",
+              background: "var(--glass-bg)",
               borderColor: "var(--glass-border)",
               boxShadow: "0 8px 30px rgba(0,0,0,0.07)",
             }}
@@ -526,9 +526,9 @@ export default function Analytics() {
 
           {/* Mood Chart */}
           <div
-            className="relative rounded-2xl p-4 md:p-6 border backdrop-blur-xl"
+            className="relative rounded-2xl p-4 md:p-6 border backdrop-blur-xl overflow-hidden"
             style={{
-              background: "rgba(255,255,255,0.45)",
+              background: "var(--glass-bg)",
               borderColor: "var(--glass-border)",
               boxShadow: "0 8px 30px rgba(0,0,0,0.07)",
             }}
@@ -584,16 +584,6 @@ export default function Analytics() {
                     padding={{ top: 6, bottom: 6 }}
                   />
                   <Tooltip content={renderMoodTooltip(mode)} filterNull={false} />
-                  <Line
-                    type="linear"
-                    dataKey="moodGap"
-                    stroke="var(--brand-blue-light)"
-                    strokeWidth={2}
-                    strokeDasharray="6 6"
-                    dot={false}
-                    connectNulls
-                    isAnimationActive={false}
-                  />
                   <Line
                     type="linear"
                     dataKey="mood"
@@ -652,7 +642,7 @@ export default function Analytics() {
                     key={i}
                     className="relative overflow-hidden rounded-2xl p-6 border backdrop-blur-xl text-center md:text-left"
                     style={{
-                      background: "rgba(255,255,255,0.55)",
+                      background: "var(--glass-bg)",
                       borderColor: "var(--glass-border)",
                       boxShadow: "0 10px 28px rgba(0,0,0,0.08)",
                     }}
@@ -695,7 +685,7 @@ export default function Analytics() {
                 key={i}
                 className="rounded-2xl p-6 border backdrop-blur-xl flex flex-col items-center md:items-start text-center md:text-left"
                 style={{
-                  background: "rgba(255,255,255,0.45)",
+                  background: "var(--glass-bg)",
                   borderColor: "var(--glass-border)",
                   boxShadow: "0 8px 25px rgba(0,0,0,0.06)",
                 }}

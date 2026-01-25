@@ -1295,14 +1295,14 @@ export default function Dashboard() {
         .skeleton {
           position: relative;
           overflow: hidden;
-          background-color: rgba(255,255,255,0.65);
+          background-color: var(--skeleton-bg);
         }
         .skeleton::after {
           content: "";
           position: absolute;
           inset: 0;
           transform: translateX(-100%);
-          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.7), transparent);
+          background: linear-gradient(90deg, transparent, var(--skeleton-shine), transparent);
           animation: shimmer-slide 1.6s infinite;
         }
         .spin-slow { animation: spin 1.4s linear infinite; }
@@ -1329,7 +1329,7 @@ export default function Dashboard() {
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {/* FLIP CARD SECTION */}
-          <section className="col-span-1 md:col-span-2 relative" style={{ minHeight: 600 }}>
+          <section className="col-span-1 md:col-span-2 relative overflow-hidden" style={{ minHeight: 600 }}>
             {isLoadingLogs && (
               <div className="absolute inset-0 z-20 rounded-[20px] bg-white/70 backdrop-blur-sm p-6 md:p-8">
                 <div className="relative h-full w-full rounded-[16px] border border-white/40 bg-white/60 p-6 md:p-8 shadow-inner">
@@ -1380,7 +1380,7 @@ export default function Dashboard() {
                 {/* FRONT CARD (PREDICTION) */}
                 <div
                   className="absolute inset-0 rounded-[20px] p-6 md:p-8 backface-hidden flex flex-col shadow-xl border border-white/20 overflow-hidden"
-                  style={{ backgroundColor: "rgba(255,255,255,0.45)", zIndex: isFlipped ? 0 : 10, pointerEvents: isFlipped ? "none" : "auto" }}
+                  style={{ backgroundColor: "var(--glass-bg)", zIndex: isFlipped ? 0 : 10, pointerEvents: isFlipped ? "none" : "auto" }}
                 >
                   <div className="absolute inset-0 transition-all duration-1000 ease-in-out" style={{ background: gradientBg, zIndex: -1, opacity: 0.8 }} />
 
@@ -1452,7 +1452,7 @@ export default function Dashboard() {
                 {/* BACK CARD (FORM) */}
                 <div
                   className="absolute inset-0 rounded-[20px] p-6 md:p-8 rotate-y-180 backface-hidden flex flex-col shadow-xl border border-white/20 overflow-hidden"
-                  style={{ backgroundColor: "rgba(255,255,255,0.45)", zIndex: isFlipped ? 10 : 0, pointerEvents: isFlipped ? "auto" : "none" }}
+                  style={{ backgroundColor: "var(--glass-bg)", zIndex: isFlipped ? 10 : 0, pointerEvents: isFlipped ? "auto" : "none" }}
                 >
                   <header className="flex justify-between items-center mb-4 transition-opacity duration-300" style={{ opacity: successModal.visible ? 0 : 1 }}>
                     <div>
@@ -1790,7 +1790,7 @@ export default function Dashboard() {
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
                     <div className="h-10 w-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center">
-                      <i className="ph ph-fire text-lg" />
+                      <span className="text-lg">🔥</span>
                     </div>
                     <div>
                       <h4 className="text-sm font-bold text-gray-800">Restore Streak</h4>
