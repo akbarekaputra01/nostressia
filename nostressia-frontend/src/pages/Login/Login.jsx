@@ -7,6 +7,7 @@ import {
   register,
   resetPasswordConfirm,
   verifyOtp,
+  verifyResetPasswordOtp,
 } from "../../services/authService";
 import { isAuthTokenValid, persistAuthToken } from "../../utils/auth";
 import { Mail, Lock, ArrowRight, Loader2, CheckCircle, User, Calendar, AtSign, Users, Check, Eye, EyeOff, ShieldCheck, ArrowLeft, X, Clock } from "lucide-react"; 
@@ -265,7 +266,7 @@ export default function Login() {
       
       setLoadingForgot(true);
       try {
-          await verifyOtp({ email: forgotEmail, otpCode: code });
+          await verifyResetPasswordOtp({ email: forgotEmail, otpCode: code });
           setForgotStep(3);
       } catch (error) {
           alert(error?.message || "Invalid OTP code.");

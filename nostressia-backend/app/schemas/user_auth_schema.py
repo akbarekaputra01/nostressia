@@ -40,7 +40,7 @@ class UserResponse(BaseSchema):
     avatar: Optional[str] = None
     user_dob: Optional[date] = None
     streak: int
-    # diary_count: int  <-- (Opsional, pastikan di model ada property ini atau hapus jika error)
+    diary_count: int = 0
     is_verified: bool # ✅ (BARU) Tambahkan ini agar frontend tahu statusnya
 
 class UserTokenResponse(BaseSchema):
@@ -83,3 +83,7 @@ class ResetPasswordConfirm(BaseSchema):
     email: EmailStr
     otp_code: str
     new_password: str
+
+class ResetPasswordVerify(BaseSchema):
+    email: EmailStr
+    otp_code: str

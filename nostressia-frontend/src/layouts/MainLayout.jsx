@@ -44,6 +44,12 @@ export default function MainLayout() {
         avatar: backendData.avatar || backendData.profilePicture || null,
         birthday: backendData.birthday || backendData.dob || "",
         gender: backendData.gender || backendData.sex || "",
+        diaryCount:
+          backendData.diaryCount ??
+          backendData.diary_count ??
+          backendData.diariesCount ??
+          backendData.diaries_count ??
+          0,
       };
 
       let streakCount = resolveStreakCount(backendData);

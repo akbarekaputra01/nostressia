@@ -2,6 +2,7 @@ import LogoImage from "../assets/images/Logo-Nostressia.png";
 
 const REMINDER_TAG = "nostressia-daily-reminder";
 const STORAGE_KEY = "nostressia_notification_settings";
+let fallbackTimeoutId = null;
 
 const supportsNotifications = () =>
   typeof window !== "undefined" &&
@@ -50,6 +51,10 @@ export const getSavedNotificationSettings = () => {
 };
 
 export const clearScheduledReminder = async () => {
+  if (fallbackTimeoutId) {
+    clearTimeout(fallbackTimeoutId);
+    fallbackTimeoutId = null;
+  }
   const registration = await getRegistration();
   if (!registration) return false;
   const notifications = await registration.getNotifications({ tag: REMINDER_TAG });
@@ -103,14 +108,28 @@ export const scheduleDailyReminder = async (timeValue) => {
   if (trigger) {
     notificationOptions.showTrigger = trigger;
   }
-
-  await registration.showNotification("Nostressia Daily Reminder", notificationOptions);
+  if (trigger) {
+    await registration.showNotification("Nostressia Daily Reminder", notificationOptions);
+  } else {
+    const delayMs = Math.max(scheduled.getTime() - Date.now(), 0);
+    fallbackTimeoutId = window.setTimeout(async () => {
+      const activeRegistration = await getRegistration();
+      if (!activeRegistration) return;
+      await activeRegistration.showNotification(
+        "Nostressia Daily Reminder",
+        notificationOptions
+      );
+      if (notificationOptions.data?.repeat === "daily") {
+        await scheduleDailyReminder(timeValue);
+      }
+    }, delayMs);
+  }
 
   return {
     ok: true,
     message: trigger
       ? "Daily reminder scheduled even when the app is closed."
-      : "Reminder scheduled, but background scheduling is limited on this browser.",
+      : "Reminder scheduled while this tab is open (background scheduling is limited on this browser).",
     triggerSupported: Boolean(trigger),
   };
 };

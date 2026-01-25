@@ -5,7 +5,6 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.models.stress_log_model import StressLevel
-from app.models.user_model import User
 from app.schemas.stress_schema import (
     EligibilityResponse,
     RESTORE_LIMIT,
@@ -59,20 +58,9 @@ def _resolve_required_streak() -> int:
 def check_global_eligibility(db: Session, user_id: int) -> EligibilityResponse:
     required_streak = _resolve_required_streak()
     log_streak = get_user_streak_count(db, user_id)
-    user_streak = (
-        db.query(User.streak)
-        .filter(User.user_id == user_id)
-        .scalar()
-        or 0
-    )
-    streak = max(log_streak, user_streak)
+    streak = log_streak
     eligible = streak >= required_streak
     today = datetime.now(tz=timezone.utc).date()
-    last_log_date = (
-        db.query(func.max(StressLevel.date))
-        .filter(StressLevel.user_id == user_id)
-        .scalar()
-    )
     restore_used = get_restore_used_in_month(db, user_id, today)
     missing = max(0, required_streak - streak)
     note = (
@@ -80,19 +68,6 @@ def check_global_eligibility(db: Session, user_id: int) -> EligibilityResponse:
         if eligible
         else f"Need {missing} more entries to unlock global forecast."
     )
-
-    if last_log_date:
-        gap_days = (today - last_log_date).days
-        if gap_days > 3:
-            streak = 0
-            eligible = False
-            restore_used = RESTORE_LIMIT
-            missing = required_streak
-            note = "Streak reset karena bolong lebih dari 3 hari."
-            user_record = db.query(User).filter(User.user_id == user_id).first()
-            if user_record and (user_record.streak or 0) != 0:
-                user_record.streak = 0
-                db.commit()
 
     return EligibilityResponse(
         user_id=user_id,

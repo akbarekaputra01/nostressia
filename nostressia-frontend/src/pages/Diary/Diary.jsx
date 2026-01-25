@@ -493,13 +493,13 @@ export default function Diary() {
                     initial={{ opacity: 0, scale: 0.8, y: 20 }} 
                     animate={{ opacity: 1, scale: 1, y: 0 }} 
                     exit={{ opacity: 0, scale: 0.8, y: -20 }}
-                    className="bg-white/90 backdrop-blur-md border border-white/50 shadow-2xl rounded-2xl px-8 py-6 flex flex-col items-center gap-3 pointer-events-auto"
+                    className="bg-white/90 backdrop-blur-md border border-white/50 shadow-2xl rounded-2xl px-8 py-6 flex flex-col items-center gap-3 pointer-events-auto dark:bg-slate-900/90 dark:border-slate-700"
                 >
-                    <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center text-green-600 mb-1">
+                    <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center text-green-600 mb-1 dark:bg-emerald-900/40 dark:text-emerald-300">
                         <CheckCircle size={32} strokeWidth={3} />
                     </div>
-                    <h3 className="text-xl font-bold text-gray-800">Diary Saved!</h3>
-                    <p className="text-gray-500 text-sm">Your memory has been safely recorded.</p>
+                    <h3 className="text-xl font-bold text-gray-800 dark:text-slate-100">Diary Saved!</h3>
+                    <p className="text-gray-500 dark:text-slate-300 text-sm">Your memory has been safely recorded.</p>
                 </motion.div>
             </div>
         )}

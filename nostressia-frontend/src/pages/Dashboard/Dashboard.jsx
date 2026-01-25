@@ -30,6 +30,7 @@ const monthNames = [
   "July", "August", "September", "October", "November", "December",
 ];
 const moods = ["😢", "😕", "😐", "😊", "😄"];
+const PERSONALIZED_STREAK_THRESHOLD = 60;
 
 const tipThemePalette = [
   {
@@ -365,6 +366,13 @@ function normalizeEligibility(payload) {
   };
 }
 
+function resolveForecastMode(eligibility) {
+  if (!eligibility) return "global";
+  return eligibility.streak >= PERSONALIZED_STREAK_THRESHOLD
+    ? "personalized"
+    : "global";
+}
+
 function buildForecastEligibilityMessage({
   reason,
   streakCount,
@@ -422,6 +430,7 @@ export default function Dashboard() {
   const [forecastList, setForecastList] = useState([]); 
   const [forecastLoading, setForecastLoading] = useState(false);
   const [forecastError, setForecastError] = useState("");
+  const [forecastMode, setForecastMode] = useState("global");
   // State khusus untuk animasi tutup panel
   const [isClosingPanel, setIsClosingPanel] = useState(false);
   const [eligibilityData, setEligibilityData] = useState(null);
@@ -492,6 +501,12 @@ export default function Dashboard() {
     if (selectedDayHasData) return "This date already has data.";
     return "No data found for this date. You can restore it.";
   })();
+  const forecastModeLabel =
+    forecastMode === "personalized" ? "Personalized" : "Global";
+  const forecastModeDescription =
+    forecastMode === "personalized"
+      ? "Personalized forecast is trained from your own stress history (60+ logs)."
+      : "Global forecast uses aggregate patterns from all users' stress data.";
 
   useEffect(() => {
     if (missingDateKeys.length === 0) {
@@ -931,6 +946,7 @@ export default function Dashboard() {
         if (!token) {
           setForecastList([]);
           setForecastError("Login untuk melihat forecast.");
+          setForecastMode("global");
           return;
         }
 
@@ -950,6 +966,7 @@ export default function Dashboard() {
         );
 
         if (!eligibilitySnapshot || eligibilitySnapshot.streak < requiredStreak) {
+          setForecastMode(resolveForecastMode(eligibilitySnapshot));
           setForecastList([]);
           setForecastError(
             buildForecastEligibilityMessage({
@@ -966,9 +983,23 @@ export default function Dashboard() {
 
         const data = await getGlobalForecast();
 
+        const eligibilityFromForecast = normalizeEligibility(data?.eligibility);
+        if (eligibilityFromForecast) {
+          setEligibilityData(data.eligibility);
+          setForecastMode(resolveForecastMode(eligibilityFromForecast));
+        } else {
+          setForecastMode(resolveForecastMode(eligibilitySnapshot));
+        }
+
         const baseForecast =
           data?.forecast ?? data?.data ?? data?.forecastData ?? data;
-        const list = buildForecastList(baseForecast);
+        const resolvedMode = resolveForecastMode(
+          eligibilityFromForecast ?? eligibilitySnapshot
+        );
+        const list = buildForecastList(baseForecast).map((item) => ({
+          ...item,
+          forecastMode: resolvedMode,
+        }));
         setForecastList(list);
         if (list.length === 0) {
           setForecastError("Forecast not available yet.");
@@ -984,6 +1015,7 @@ export default function Dashboard() {
           error?.payload?.detail ?? error?.payload
         );
         if (normalizedErrorEligibility) {
+          setForecastMode(resolveForecastMode(normalizedErrorEligibility));
           const restoreRemainingCalc = Math.max(
             (normalizedErrorEligibility.restoreLimit ?? 3) -
               (normalizedErrorEligibility.restoreUsed ?? 0),
@@ -1837,7 +1869,17 @@ export default function Dashboard() {
                       <i className="ph ph-crystal-ball text-purple-500 text-lg"></i>
                       3-Day Forecast
                    </h4>
-                   <span className="text-[10px] bg-purple-50 text-purple-600 px-2 py-0.5 rounded font-bold uppercase tracking-wider">Beta</span>
+                   <div className="relative group">
+                      <span
+                        className="text-[10px] bg-purple-50 text-purple-600 px-2 py-0.5 rounded font-bold uppercase tracking-wider cursor-help"
+                        title={forecastModeDescription}
+                      >
+                        {forecastModeLabel}
+                      </span>
+                      <div className="pointer-events-none absolute right-0 mt-2 w-48 rounded-lg border border-purple-100 bg-white/95 p-2 text-[10px] text-purple-700 shadow-lg opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                        {forecastModeDescription}
+                      </div>
+                   </div>
                 </div>
                 
                 <div className="grid grid-cols-3 gap-3">
@@ -1995,8 +2037,19 @@ export default function Dashboard() {
                            <div className="mt-2 flex items-center gap-1 text-xs font-bold opacity-70" style={{ color: forecastDetail.color }}>
                               <i className="ph ph-lightning"></i> Confidence: {forecastDetail.probability}%
                            </div>
-                           {(forecastDetail.modelType || typeof forecastDetail.threshold === "number") && (
+                           {(forecastDetail.forecastMode || forecastDetail.modelType || typeof forecastDetail.threshold === "number") && (
                              <div className="mt-1 text-[11px] font-semibold text-gray-500">
+                               {forecastDetail.forecastMode && (
+                                 <span>
+                                   Forecast:{" "}
+                                   {forecastDetail.forecastMode === "personalized"
+                                     ? "Personalized"
+                                     : "Global"}
+                                 </span>
+                               )}
+                               {forecastDetail.forecastMode && (forecastDetail.modelType || typeof forecastDetail.threshold === "number") && (
+                                 <span className="mx-1">·</span>
+                               )}
                                {forecastDetail.modelType && (
                                  <span>Model: {forecastDetail.modelType}</span>
                                )}
@@ -2024,30 +2077,30 @@ export default function Dashboard() {
         <div className="mt-8 grid grid-cols-1">
           {/* ... (Section motivasi tetap sama) ... */}
           <section className="col-span-4 relative overflow-hidden rounded-[24px] shadow-2xl group transition-all duration-500 hover:shadow-orange-100">
-            <div className="absolute inset-0 bg-white/60 backdrop-blur-xl border border-white/40 z-0"></div>
+            <div className="absolute inset-0 bg-white/60 backdrop-blur-xl border border-white/40 dark:bg-slate-900/70 dark:border-slate-700/60 z-0"></div>
             <div className="absolute -left-10 -top-10 w-40 h-40 bg-orange-300 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob"></div>
             <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-purple-300 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob animation-delay-2000"></div>
             <div className="relative z-10 p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-6">
               <div className="flex flex-col md:flex-row items-center md:items-start gap-6 text-center md:text-left flex-1">
                 <div className="w-16 h-16 flex-shrink-0 rounded-2xl bg-gradient-to-br from-orange-400 to-red-400 flex items-center justify-center shadow-lg text-white"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" className="w-8 h-8"><path d="M224,128a8,8,0,0,1-8,8c-30.85,0-57.5,12.72-76.32,34.4C120.86,192.11,128,218.85,128,248a8,8,0,0,1-16,0c0-29.15,7.14-55.89-11.68-77.6C81.5,148.72,54.85,136,24,136a8,8,0,0,1,0-16c30.85,0,57.5-12.72,76.32-34.4C119.14,63.89,112,37.15,112,8a8,8,0,0,1,16,0c0,29.15-7.14,55.89,11.68,77.6C158.5,107.28,185.15,120,216,120A8,8,0,0,1,224,128Z" /></svg></div>
                 <div className="flex-1">
-                  <p className="text-xs font-bold tracking-widest text-orange-600 uppercase mb-2">
+                  <p className="text-xs font-bold tracking-widest text-orange-600 dark:text-orange-300 uppercase mb-2">
                     Daily Wisdom
                   </p>
                   <div className={`transition-all duration-500 ${isQuoteAnimating ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"}`}>
                     {quoteLoading ? (
-                      <p className="text-gray-500 font-medium">Loading daily wisdom...</p>
+                      <p className="text-gray-500 dark:text-slate-300 font-medium">Loading daily wisdom...</p>
                     ) : quoteError ? (
                       <p className="text-rose-500 font-medium">{quoteError}</p>
                     ) : quoteData.text ? (
                       <>
-                        <h3 className="text-2xl md:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-gray-800 to-gray-600 leading-tight mb-2">
+                        <h3 className="text-2xl md:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-gray-800 to-gray-600 dark:from-slate-100 dark:to-slate-300 leading-tight mb-2">
                           "{quoteData.text}"
                         </h3>
-                        <p className="text-gray-500 font-medium italic">— {quoteData.author}</p>
+                        <p className="text-gray-500 dark:text-slate-300 font-medium italic">— {quoteData.author}</p>
                       </>
                     ) : (
-                      <p className="text-gray-500 font-medium">No quotes available yet.</p>
+                      <p className="text-gray-500 dark:text-slate-300 font-medium">No quotes available yet.</p>
                     )}
                   </div>
                 </div>
@@ -2055,7 +2108,7 @@ export default function Dashboard() {
               <button
                 onClick={handleNewQuote}
                 disabled={isQuoteAnimating || quoteLoading || quotePool.length === 0}
-                className="flex-shrink-0 group relative px-6 py-3 rounded-xl bg-white border border-gray-200 text-gray-700 font-bold shadow-sm hover:shadow-md hover:border-orange-300 hover:text-orange-600 transition-all active:scale-95 disabled:opacity-70 cursor-pointer"
+                className="flex-shrink-0 group relative px-6 py-3 rounded-xl bg-white border border-gray-200 text-gray-700 font-bold shadow-sm hover:shadow-md hover:border-orange-300 hover:text-orange-600 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 dark:hover:text-orange-300 transition-all active:scale-95 disabled:opacity-70 cursor-pointer"
               >
                 <span className="flex items-center gap-2">
                   <i className={`ph ph-arrows-clockwise text-xl transition-transform duration-700 ${isQuoteAnimating ? "rotate-180" : ""}`}></i>
