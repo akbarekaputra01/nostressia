@@ -14,8 +14,8 @@ class Settings(BaseSettings):
         default_factory=lambda: [
             "http://localhost:5173",
             "http://127.0.0.1:5173",
-            "https://nostressia-frontend-develop.vercel.app",
-            "https://nostressia-frontend-develop.vercel.app/",
+            "https://nostressia.vercel.app",
+            "https://nostressia.vercel.app/",
         ],
         description="CORS allow list",
     )
