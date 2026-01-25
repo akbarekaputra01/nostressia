@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from typing import List
 
 from app.core.database import get_db
 from app.models.user_model import User
@@ -9,6 +8,7 @@ from app.schemas.stress_schema import (
     StressLevelCreate,
     StressLevelResponse,
 )
+from app.schemas.response_schema import APIResponse
 from app.services import stress_service
 from app.utils.jwt_handler import get_current_user # <--- Import fungsi auth kamu
 from app.utils.response import success_response
@@ -19,7 +19,7 @@ router = APIRouter(
 )
 
 # 1. Endpoint Tambah Data (POST)
-@router.post("/", response_model=dict)
+@router.post("/", response_model=APIResponse[StressLevelResponse])
 def add_stress_log(
     log_data: StressLevelCreate,
     db: Session = Depends(get_db),
@@ -35,7 +35,7 @@ def add_stress_log(
     )
 
 # 2. Endpoint Restore Data (POST)
-@router.post("/restore", response_model=dict)
+@router.post("/restore", response_model=APIResponse[StressLevelResponse])
 def restore_stress_log(
     log_data: StressLevelCreate,
     db: Session = Depends(get_db),
@@ -52,7 +52,7 @@ def restore_stress_log(
 
 
 # 3. Endpoint Ambil Data Saya (GET)
-@router.get("/my-logs", response_model=dict)
+@router.get("/my-logs", response_model=APIResponse[list[StressLevelResponse]])
 def read_my_stress_logs(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user) # <--- Proteksi Token
@@ -68,7 +68,7 @@ def read_my_stress_logs(
 
 
 # 4. Endpoint Eligibility Global
-@router.get("/eligibility", response_model=dict)
+@router.get("/eligibility", response_model=APIResponse[EligibilityResponse])
 def get_global_eligibility(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),

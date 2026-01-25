@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from typing import List
 
 from app.core.database import get_db
 from app.models.user_model import User
 from app.utils.jwt_handler import get_current_user
 from app.schemas.diary_schema import DiaryCreate, DiaryUpdate, DiaryResponse
+from app.schemas.response_schema import APIResponse
 from app.services import diary_service
 from app.utils.response import success_response
 
@@ -15,7 +15,7 @@ router = APIRouter(
 )
 
 # POST: Buat Diary
-@router.post("/", response_model=dict)
+@router.post("/", response_model=APIResponse[DiaryResponse])
 def create_diary(
     data: DiaryCreate, 
     db: Session = Depends(get_db), 
@@ -27,7 +27,7 @@ def create_diary(
     )
 
 # GET: Ambil List Diary Saya
-@router.get("/", response_model=dict)
+@router.get("/", response_model=APIResponse[list[DiaryResponse]])
 def get_my_diaries(
     db: Session = Depends(get_db), 
     current_user: User = Depends(get_current_user)
@@ -38,7 +38,7 @@ def get_my_diaries(
     )
 
 # GET: Detail Satu Diary
-@router.get("/{diary_id}", response_model=dict)
+@router.get("/{diary_id}", response_model=APIResponse[DiaryResponse])
 def get_diary_detail(
     diary_id: int,
     db: Session = Depends(get_db),
@@ -50,7 +50,7 @@ def get_diary_detail(
     )
 
 # PUT: Update Diary
-@router.put("/{diary_id}", response_model=dict)
+@router.put("/{diary_id}", response_model=APIResponse[DiaryResponse])
 def update_diary(
     diary_id: int,
     data: DiaryUpdate,

@@ -1,9 +1,12 @@
-from typing import Any, Optional
+from typing import Generic, Optional, TypeVar
 
 from app.schemas.base_schema import BaseSchema
 
 
-class APIResponse(BaseSchema):
+T = TypeVar("T")
+
+
+class APIResponse(BaseSchema, Generic[T]):
     success: bool = True
     message: str = "OK"
-    data: Optional[Any] = None
+    data: Optional[T] = None
