@@ -1,4 +1,5 @@
 import os
+import re
 from datetime import timedelta
 from typing import Any, Dict, List, Optional
 
@@ -120,6 +121,22 @@ class GlobalForecastService:
         feat = feat.dropna(subset=available_cols + ["y_bin"]).reset_index(drop=True)
         return feat
 
+    def _snake_case(self, value: str) -> str:
+        value = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", value)
+        return value.replace("__", "_").lower()
+
+    def _ensure_column_alias(
+        self, df: pd.DataFrame, expected_col: str, fallback_cols: List[str]
+    ) -> pd.DataFrame:
+        if expected_col in df.columns:
+            return df
+
+        for fallback in fallback_cols:
+            if fallback in df.columns:
+                df[expected_col] = df[fallback]
+                return df
+        return df
+
     def _resolve_feature_cols(
         self, behavior_cols: List[str], window: int, meta: Dict[str, Any]
     ) -> List[str]:
@@ -199,6 +216,28 @@ class GlobalForecastService:
         # ✅ Guard: kalau meta user_col beda (mis. "userID"), tetap sediakan kolomnya
         if user_col not in df.columns and "user_id" in df.columns:
             df[user_col] = df["user_id"]
+
+        if date_col not in df.columns:
+            df = self._ensure_column_alias(
+                df,
+                date_col,
+                [self._snake_case(date_col)],
+            )
+
+        if target_col not in df.columns:
+            df = self._ensure_column_alias(
+                df,
+                target_col,
+                ["stress_level", self._snake_case(target_col)],
+            )
+
+        if behavior_cols:
+            for behavior_col in behavior_cols:
+                df = self._ensure_column_alias(
+                    df,
+                    behavior_col,
+                    [self._snake_case(behavior_col)],
+                )
 
         if date_col not in df.columns:
             raise HTTPException(
