@@ -8,9 +8,19 @@ const apiBaseUrl = normalizedBaseUrl
   ? normalizedBaseUrl.endsWith("/api")
     ? normalizedBaseUrl
     : `${normalizedBaseUrl}/api`
-  : "";
+  : "/api";
 
-export const apiOrigin = normalizedBaseUrl ? new URL(normalizedBaseUrl).origin : "";
+const resolveApiOrigin = (baseUrl) => {
+  if (!baseUrl) {
+    return typeof window !== "undefined" ? window.location.origin : "";
+  }
+  if (baseUrl.startsWith("http://") || baseUrl.startsWith("https://")) {
+    return new URL(baseUrl).origin;
+  }
+  return typeof window !== "undefined" ? window.location.origin : "";
+};
+
+export const apiOrigin = resolveApiOrigin(normalizedBaseUrl);
 
 const client = axios.create({
   baseURL: apiBaseUrl,
