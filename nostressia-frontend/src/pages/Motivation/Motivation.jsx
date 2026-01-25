@@ -18,9 +18,9 @@ import Logo from "../../assets/images/Logo-Nostressia.png";
 import { getMotivations } from "../../services/motivationService";
 
 // --- COLOR CONFIGURATION (MATCHING DASHBOARD) ---
-const BG_CREAM = "#FFF3E0";
-const BG_PINK = "#eaf2ff";
-const BG_LAVENDER = "#e3edff";
+const BG_CREAM = "var(--bg-gradient-cream)";
+const BG_PINK = "var(--bg-gradient-pink)";
+const BG_LAVENDER = "var(--bg-gradient-lavender)";
 
 // Style Background dengan Animasi
 const backgroundStyle = {

@@ -412,7 +412,7 @@ export default function AdminPage({ skipAuth = false }) {
           // ✅ PERBAIKAN: Ganti "rose" menjadi "red" di sini
           {title: "Diary Moderation", count: totalDiariesCount, desc: "Delete user diaries.", color: "red", icon: <BookOpen size={24}/>, action: () => setActiveView('diaries'), btn: "Moderate"}
         ].map((card, idx) => (
-          <div key={idx} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all relative overflow-hidden group">
+          <div key={idx} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all relative overflow-hidden group flex flex-col h-full">
             {/* Menggunakan dynamic class yang aman untuk red/orange/blue/purple */}
             <div className={`absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity text-${card.color}-500`}>{React.cloneElement(card.icon, {size: 80})}</div>
             <div className="flex justify-between items-start mb-4 relative z-10">
@@ -420,8 +420,8 @@ export default function AdminPage({ skipAuth = false }) {
               <span className="text-3xl font-bold text-gray-800">{card.count}</span>
             </div>
             <h3 className="text-lg font-bold text-gray-800 mb-1 relative z-10">{card.title}</h3>
-            <p className="text-sm text-gray-500 mb-6 relative z-10">{card.desc}</p>
-            <button onClick={card.action} className={`relative z-10 w-full py-3 bg-${card.color}-500 text-white rounded-xl font-bold hover:bg-${card.color}-600 transition-colors shadow-lg shadow-${card.color}-200 cursor-pointer`}>{card.btn}</button>
+            <p className="text-sm text-gray-500 mb-6 relative z-10 flex-1">{card.desc}</p>
+            <button onClick={card.action} className={`relative z-10 w-full py-3 bg-${card.color}-500 text-white rounded-xl font-bold hover:bg-${card.color}-600 transition-colors shadow-lg shadow-${card.color}-200 cursor-pointer mt-auto`}>{card.btn}</button>
           </div>
         ))}
       </div>

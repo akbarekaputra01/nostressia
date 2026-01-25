@@ -16,9 +16,9 @@ import { getAnalyticsSummary } from "../../services/analyticsService";
 import { getMyStressLogs } from "../../services/stressService";
 
 // --- BACKGROUND CONFIGURATION (SAME AS DASHBOARD) ---
-const bgCream = "#FFF3E0";
-const bgPink = "#eaf2ff";
-const bgLavender = "#e3edff";
+const bgCream = "var(--bg-gradient-cream)";
+const bgPink = "var(--bg-gradient-pink)";
+const bgLavender = "var(--bg-gradient-lavender)";
 const moodEmojis = ["😢", "😕", "😐", "😊", "😄"];
 const stressLabels = ["Low", "Moderate", "High"];
 
@@ -26,6 +26,12 @@ const stressLabels = ["Low", "Moderate", "High"];
 const clampNumber = (v, fallback = 0) => {
   const n = Number(v);
   return Number.isFinite(n) ? n : fallback;
+};
+
+const normalizeAnalyticsValue = (value, max) => {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return null;
+  return Math.min(max, Math.max(0, n) + 1);
 };
 
 const getStressLabel = (value) => {
@@ -92,9 +98,9 @@ const buildWeekSeries = (logs) => {
     return {
       day: weekdayShort(d),
       // stress: 1..3
-      stress: row ? clampNumber(row.stressLevel, 0) : null,
+      stress: row ? normalizeAnalyticsValue(row.stressLevel, 3) : null,
       // mood: from emoji (integer). If you store 1..5 this will work directly.
-      mood: row ? clampNumber(row.emoji, 0) : null,
+      mood: row ? normalizeAnalyticsValue(row.emoji, 5) : null,
       _date: key,
     };
   });
@@ -119,8 +125,10 @@ const buildMonthSeries = (logs) => {
 
     const diffDays = Math.floor((dt.getTime() - start.getTime()) / 86400000);
     const idx = Math.min(3, Math.max(0, Math.floor(diffDays / 7)));
-    buckets[idx].stressSum += clampNumber(it.stressLevel, 0);
-    buckets[idx].moodSum += clampNumber(it.emoji, 0);
+    const stressValue = normalizeAnalyticsValue(it.stressLevel, 3);
+    const moodValue = normalizeAnalyticsValue(it.emoji, 5);
+    if (stressValue !== null) buckets[idx].stressSum += stressValue;
+    if (moodValue !== null) buckets[idx].moodSum += moodValue;
     buckets[idx].count += 1;
   });
 
@@ -145,12 +153,16 @@ const calcMode = (values) => {
 };
 
 const calcSummary = (logsInRange) => {
-  const stressVals = (logsInRange || []).map((d) => d?.stressLevel);
-  const moodVals = (logsInRange || []).map((d) => d?.emoji);
+  const stressVals = (logsInRange || []).map((d) =>
+    normalizeAnalyticsValue(d?.stressLevel, 3)
+  );
+  const moodVals = (logsInRange || []).map((d) =>
+    normalizeAnalyticsValue(d?.emoji, 5)
+  );
 
-  const nonZeroStress = stressVals
-    .map((v) => clampNumber(v, 0))
-    .filter((x) => x > 0);
+  const nonZeroStress = stressVals.filter(
+    (value) => Number.isFinite(value) && value > 0
+  );
 
   const avgStress = nonZeroStress.length
     ? nonZeroStress.reduce((sum, v) => sum + v, 0) / nonZeroStress.length
@@ -305,7 +317,7 @@ export default function Analytics() {
     [rangeLogs]
   );
 
-  const streakValue = summary?.streak ?? user?.streak ?? 0;
+  const streakValue = user?.streak ?? summary?.streak ?? 0;
   const modeLabel = mode === "week" ? "Weekly" : "Monthly";
 
   return (

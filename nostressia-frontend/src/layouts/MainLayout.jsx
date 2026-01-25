@@ -4,6 +4,7 @@ import { Outlet, useNavigate } from "react-router-dom";
 import { getProfile } from "../services/authService";
 import { getStressEligibility } from "../services/stressService";
 import { readAuthToken } from "../utils/auth";
+import { applyTheme, getStoredTheme } from "../utils/theme";
 
 const resolveStreakCount = (payload) => {
   const candidates = [
@@ -72,6 +73,14 @@ export default function MainLayout() {
   }, [navigate]);
 
   useEffect(() => {
+    applyTheme(getStoredTheme());
+
+    const handleThemeChange = (event) => {
+      const theme = event?.detail?.theme || getStoredTheme();
+      applyTheme(theme);
+    };
+
+    window.addEventListener("nostressia:theme-change", handleThemeChange);
     fetchUserData();
 
     const handleRefresh = () => {
@@ -80,6 +89,7 @@ export default function MainLayout() {
 
     window.addEventListener("nostressia:user-update", handleRefresh);
     return () => {
+      window.removeEventListener("nostressia:theme-change", handleThemeChange);
       window.removeEventListener("nostressia:user-update", handleRefresh);
     };
   }, [fetchUserData]);

@@ -8,16 +8,16 @@ import Footer from "../../components/Footer";
 import { createDiary, getMyDiaries, updateDiary } from "../../services/diaryService";
 
 // --- COLOR CONFIGURATION ---
-const bgCream = "#FFF3E0";
-const bgPink = "#eaf2ff";
-const bgLavender = "#e3edff";
+const bgCream = "var(--bg-gradient-cream)";
+const bgPink = "var(--bg-gradient-pink)";
+const bgLavender = "var(--bg-gradient-lavender)";
 const colors = {
     brandBlue: "#3664BA",
     brandOrange: "#F2994A",
     brandBlueLight: "#2F80ED",
     textPrimary: "#333333",
-    bgCream: "#FFF3E0",
-    bgLavender: "#e3edff"
+    bgCream: "var(--bg-gradient-cream)",
+    bgLavender: "var(--bg-gradient-lavender)"
 };
 
 export default function Diary() {
