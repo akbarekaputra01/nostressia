@@ -19,6 +19,8 @@ const brandBlue = "#3664BA";
 const brandOrange = "#F2994A";
 const brandGreen = "#27AE60";
 const brandRed = "#E53E3E";
+
+const TODAY_LOG_STORAGE_KEY = "nostressia_today_log";
 const bgCream = "var(--bg-gradient-cream)";
 const bgPink = "var(--bg-gradient-pink)";
 const bgLavender = "var(--bg-gradient-lavender)";
@@ -842,6 +844,7 @@ export default function Dashboard() {
           setHasSubmittedToday(false);
           setStressScore(0);
           setTodayLogId(null);
+          localStorage.removeItem(TODAY_LOG_STORAGE_KEY);
           setMissingDateKeys([]);
           setMissingRestorePopup(null);
           setDismissedMissingPopup(false);
@@ -905,11 +908,13 @@ export default function Dashboard() {
           setMoodIndex(moodIdx >= 0 ? moodIdx : 2);
           setPendingTodayReminder(false);
           setShowTodayReminder(false);
+          localStorage.setItem(TODAY_LOG_STORAGE_KEY, TODAY_KEY);
         } else {
           setHasSubmittedToday(false);
           setStressScore(0);
           setTodayLogId(null);
           setPendingTodayReminder(true);
+          localStorage.removeItem(TODAY_LOG_STORAGE_KEY);
         }
       } catch (error) {
         if (error?.name === "AbortError") return;
@@ -918,6 +923,7 @@ export default function Dashboard() {
         setHasSubmittedToday(false);
         setStressScore(0);
         setTodayLogId(null);
+        localStorage.removeItem(TODAY_LOG_STORAGE_KEY);
         setMissingDateKeys([]);
         setMissingRestorePopup(null);
         setDismissedMissingPopup(false);
@@ -971,7 +977,7 @@ export default function Dashboard() {
           setForecastError(
             buildForecastEligibilityMessage({
               reason: eligibilitySnapshot?.note,
-              streakCount: eligibilitySnapshot?.streak,
+              streakCount: eligibilitySnapshot?.streak ?? user?.streak,
               restoreUsed: eligibilitySnapshot?.restoreUsed,
               restoreRemaining: restoreRemainingCalc,
               requiredStreak,
@@ -1024,7 +1030,7 @@ export default function Dashboard() {
           setForecastError(
             buildForecastEligibilityMessage({
               reason: normalizedErrorEligibility.note,
-              streakCount: normalizedErrorEligibility.streak,
+              streakCount: normalizedErrorEligibility.streak ?? user?.streak,
               restoreUsed: normalizedErrorEligibility.restoreUsed,
               restoreRemaining: restoreRemainingCalc,
               requiredStreak: normalizedErrorEligibility.requiredStreak,
@@ -1217,6 +1223,7 @@ export default function Dashboard() {
       if (isTargetToday) {
         setStressScore(score);
         setHasSubmittedToday(true);
+        localStorage.setItem(TODAY_LOG_STORAGE_KEY, TODAY_KEY);
       }
       const resolvedLogId = savedLogId ?? todayLogId ?? null;
       if (savedLogId && isTargetToday) setTodayLogId(savedLogId);
@@ -1321,25 +1328,6 @@ export default function Dashboard() {
         @keyframes circle-draw { 0% { stroke-dasharray: 0, 100; } 100% { stroke-dasharray: 100, 100; } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes shimmer-slide { 100% { transform: translateX(100%); } }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes pulse-soft { 0%, 100% { opacity: 0.7; transform: scale(0.98); } 50% { opacity: 1; transform: scale(1); } }
-        .skeleton {
-          position: relative;
-          overflow: hidden;
-          background-color: var(--skeleton-bg);
-        }
-        .skeleton::after {
-          content: "";
-          position: absolute;
-          inset: 0;
-          transform: translateX(-100%);
-          background: linear-gradient(90deg, transparent, var(--skeleton-shine), transparent);
-          animation: shimmer-slide 1.6s infinite;
-        }
-        .spin-slow { animation: spin 1.4s linear infinite; }
-        .spin-reverse { animation: spin 2.1s linear infinite reverse; }
-        .pulse-soft { animation: pulse-soft 1.8s ease-in-out infinite; }
       `}</style>
 
       {/* NAVBAR */}
@@ -1363,47 +1351,8 @@ export default function Dashboard() {
           {/* FLIP CARD SECTION */}
           <section className="col-span-1 md:col-span-2 relative overflow-hidden" style={{ minHeight: 600 }}>
             {isLoadingLogs && (
-              <div className="absolute inset-0 z-20 rounded-[20px] bg-white/70 backdrop-blur-sm p-6 md:p-8">
-                <div className="relative h-full w-full rounded-[16px] border border-white/40 bg-white/60 p-6 md:p-8 shadow-inner">
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-3">
-                      <div className="skeleton h-10 w-10 rounded-full" />
-                      <div className="space-y-2">
-                        <div className="skeleton h-4 w-40 rounded-full" />
-                        <div className="skeleton h-3 w-28 rounded-full" />
-                      </div>
-                    </div>
-                    <div className="skeleton h-8 w-20 rounded-full" />
-                  </div>
-                  <div className="flex flex-col items-center justify-center text-center gap-4 mb-8">
-                    <div className="skeleton h-24 w-24 rounded-full" />
-                    <div className="space-y-2">
-                      <div className="skeleton h-6 w-56 rounded-full mx-auto" />
-                      <div className="skeleton h-4 w-40 rounded-full mx-auto" />
-                    </div>
-                  </div>
-                  <div className="space-y-4 mb-8">
-                    <div className="skeleton h-4 w-32 rounded-full" />
-                    <div className="flex justify-between gap-2">
-                      {Array.from({ length: 7 }).map((_, idx) => (
-                        <div key={`trend-skel-${idx}`} className="flex flex-col items-center gap-2 flex-1">
-                          <div className="skeleton h-4 w-4 rounded-full" />
-                          <div className="skeleton h-3 w-6 rounded-full" />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="skeleton h-12 w-full rounded-xl" />
-                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-center">
-                    <div className="relative flex items-center justify-center">
-                      <div className="h-16 w-16 rounded-full border-4 border-blue-200 border-t-blue-500 spin-slow" />
-                      <div className="absolute h-10 w-10 rounded-full border-4 border-orange-200 border-t-orange-500 spin-reverse" />
-                    </div>
-                    <p className="text-center text-sm font-semibold text-gray-500 pulse-soft">
-                      Preparing your dashboard...
-                    </p>
-                  </div>
-                </div>
+              <div className="absolute inset-0 z-20 flex items-center justify-center rounded-[20px] bg-white/70 backdrop-blur-sm">
+                <div className="h-14 w-14 rounded-full border-4 border-blue-200 border-t-blue-500 animate-spin" />
               </div>
             )}
             <div style={{ perspective: 1500 }} className={`w-full h-full ${isLoadingLogs ? "opacity-0 pointer-events-none" : ""}`}>
@@ -1518,105 +1467,107 @@ export default function Dashboard() {
                   <form
                     onSubmit={handleSaveForm}
                     onKeyDown={handleFormKeyDown}
-                    className="flex-grow overflow-y-auto pr-2 flex flex-col gap-3 transition-all duration-500 custom-scroll"
+                    className="flex h-full flex-col gap-3 transition-all duration-500 custom-scroll"
                     style={{
                       opacity: successModal.visible ? 0 : 1,
                       transform: successModal.visible ? "scale(0.95)" : "scale(1)",
                       pointerEvents: successModal.visible || isSaving ? "none" : "auto",
                     }}
                   >
-                    {isRestoreMode && (
-                      <div className="rounded-xl border border-white/40 bg-white/60 p-3 shadow-sm">
-                        <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                          Restore input mode
-                        </p>
-                        <div className="mt-2 grid grid-cols-2 gap-2">
-                          <button
-                            type="button"
-                            onClick={() => applyRestoreInputMode("manual", activeLogDate)}
-                            className={`rounded-lg px-3 py-2 text-xs font-bold transition-all ${
-                              restoreInputMode === "manual"
-                                ? "bg-blue-600 text-white shadow-md"
-                                : "bg-white/70 text-gray-600 hover:bg-white"
-                            }`}
-                          >
-                            Manual entry
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => applyRestoreInputMode("auto", activeLogDate)}
-                            className={`rounded-lg px-3 py-2 text-xs font-bold transition-all ${
-                              restoreInputMode === "auto"
-                                ? "bg-emerald-600 text-white shadow-md"
-                                : "bg-white/70 text-gray-600 hover:bg-white"
-                            }`}
-                          >
-                            Auto fill (imputed)
-                          </button>
-                        </div>
-                        {restoreImputeInfo && (
-                          <p className="mt-2 text-[11px] font-medium text-gray-500">
-                            {restoreImputeInfo}
+                    <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pr-2">
+                      {isRestoreMode && (
+                        <div className="rounded-xl border border-white/40 bg-white/60 p-3 shadow-sm">
+                          <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                            Restore input mode
                           </p>
-                        )}
-                      </div>
-                    )}
-                    {/* GPA SECTION (UPDATED LOGIC) */}
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-800 mb-2">GPA <span className="text-red-500">*</span></label>
-                      {!isEditingGpa ? (
-                        <div className="flex items-center gap-3">
-                          {/* Tampilan jika GPA kosong vs ada isinya */}
-                          {gpa !== "" ? (
-                             <span className="text-2xl font-bold" style={{ color: brandOrange }}>{Number(gpa).toFixed(2)}</span>
-                          ) : (
-                             <span className="text-lg font-bold text-gray-400 italic border-b-2 border-dashed border-gray-300">Set GPA</span>
+                          <div className="mt-2 grid grid-cols-2 gap-2">
+                            <button
+                              type="button"
+                              onClick={() => applyRestoreInputMode("manual", activeLogDate)}
+                              className={`rounded-lg px-3 py-2 text-xs font-bold transition-all ${
+                                restoreInputMode === "manual"
+                                  ? "bg-blue-600 text-white shadow-md"
+                                  : "bg-white/70 text-gray-600 hover:bg-white"
+                              }`}
+                            >
+                              Manual entry
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => applyRestoreInputMode("auto", activeLogDate)}
+                              className={`rounded-lg px-3 py-2 text-xs font-bold transition-all ${
+                                restoreInputMode === "auto"
+                                  ? "bg-emerald-600 text-white shadow-md"
+                                  : "bg-white/70 text-gray-600 hover:bg-white"
+                              }`}
+                            >
+                              Auto fill (imputed)
+                            </button>
+                          </div>
+                          {restoreImputeInfo && (
+                            <p className="mt-2 text-[11px] font-medium text-gray-500">
+                              {restoreImputeInfo}
+                            </p>
                           )}
-                          
-                          <button type="button" className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors cursor-pointer ${gpa === "" ? "bg-red-100 text-red-600 animate-pulse" : "bg-blue-100 text-blue-600 hover:bg-blue-200"}`} onClick={() => setIsEditingGpa(true)}>
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125"/></svg>
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-3">
-                          <input 
-                            type="number" 
-                            defaultValue={gpa === "" ? "" : gpa} 
-                            placeholder="0.00"
-                            step="0.01" min="0" max="4" 
-                            className="w-24 p-2 border border-gray-300 rounded-lg text-center font-bold focus:outline-none focus:ring-2 focus:ring-blue-500" 
-                            id="gpaInput" 
-                            style={{ color: "#333" }} 
-                            autoFocus
-                            data-required="true"
-                          />
-                          <button type="button" className="w-9 h-9 rounded-xl flex items-center justify-center bg-green-100 text-green-600 hover:bg-green-200 transition-colors cursor-pointer" onClick={() => handleGpaSave(document.getElementById("gpaInput").value)}>
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
-                          </button>
-                          <button type="button" className="w-9 h-9 rounded-xl flex items-center justify-center bg-red-100 text-red-600 hover:bg-red-200 transition-colors cursor-pointer" onClick={() => setIsEditingGpa(false)}>
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-                          </button>
                         </div>
                       )}
-                    </div>
+                      {/* GPA SECTION (UPDATED LOGIC) */}
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-800 mb-2">GPA <span className="text-red-500">*</span></label>
+                        {!isEditingGpa ? (
+                          <div className="flex items-center gap-3">
+                            {/* Tampilan jika GPA kosong vs ada isinya */}
+                            {gpa !== "" ? (
+                              <span className="text-2xl font-bold" style={{ color: brandOrange }}>{Number(gpa).toFixed(2)}</span>
+                            ) : (
+                              <span className="text-lg font-bold text-gray-400 italic border-b-2 border-dashed border-gray-300">Set GPA</span>
+                            )}
+                            
+                            <button type="button" className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors cursor-pointer ${gpa === "" ? "bg-red-100 text-red-600 animate-pulse" : "bg-blue-100 text-blue-600 hover:bg-blue-200"}`} onClick={() => setIsEditingGpa(true)}>
+                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125"/></svg>
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-3">
+                            <input 
+                              type="number" 
+                              defaultValue={gpa === "" ? "" : gpa} 
+                              placeholder="0.00"
+                              step="0.01" min="0" max="4" 
+                              className="w-24 p-2 border border-gray-300 rounded-lg text-center font-bold focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                              id="gpaInput" 
+                              style={{ color: "#333" }} 
+                              autoFocus
+                              data-required="true"
+                            />
+                            <button type="button" className="w-9 h-9 rounded-xl flex items-center justify-center bg-green-100 text-green-600 hover:bg-green-200 transition-colors cursor-pointer" onClick={() => handleGpaSave(document.getElementById("gpaInput").value)}>
+                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+                            </button>
+                            <button type="button" className="w-9 h-9 rounded-xl flex items-center justify-center bg-red-100 text-red-600 hover:bg-red-200 transition-colors cursor-pointer" onClick={() => setIsEditingGpa(false)}>
+                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                            </button>
+                          </div>
+                        )}
+                      </div>
 
-                    <div className="grid grid-cols-2 gap-3">
-                      <div><label className="text-sm font-semibold text-gray-800 mb-1 block">Study Hours <span className="text-gray-400 text-xs font-normal">(Hrs)</span></label><input type="number" value={studyHours} onChange={(e) => setStudyHours(e.target.value)} min="0" max="24" step="0.5" placeholder="0" className="w-full p-2.5 border border-white/50 bg-white/50 rounded-lg focus:ring-2 focus:ring-blue-400 placeholder-gray-400"/></div>
-                      <div><label className="text-sm font-semibold text-gray-800 mb-1 block">Extracurricular <span className="text-gray-400 text-xs font-normal">(Hrs)</span></label><input type="number" value={extraHours} onChange={(e) => setExtraHours(e.target.value)} min="0" max="24" step="0.5" placeholder="0" className="w-full p-2.5 border border-white/50 bg-white/50 rounded-lg focus:ring-2 focus:ring-blue-400 placeholder-gray-400"/></div>
-                      <div><label className="text-sm font-semibold text-gray-800 mb-1 block">Sleep Hours <span className="text-gray-400 text-xs font-normal">(Hrs)</span></label><input type="number" value={sleepHours} onChange={(e) => setSleepHours(e.target.value)} min="0" max="24" step="0.5" placeholder="0" className="w-full p-2.5 border border-white/50 bg-white/50 rounded-lg focus:ring-2 focus:ring-blue-400 placeholder-gray-400" data-required="true"/></div>
-                      <div><label className="text-sm font-semibold text-gray-800 mb-1 block">Social Hours <span className="text-gray-400 text-xs font-normal">(Hrs)</span></label><input type="number" value={socialHours} onChange={(e) => setSocialHours(e.target.value)} min="0" max="24" step="0.5" placeholder="0" className="w-full p-2.5 border border-white/50 bg-white/50 rounded-lg focus:ring-2 focus:ring-blue-400 placeholder-gray-400"/></div>
-                      <div className="col-span-2"><label className="text-sm font-semibold text-gray-800 mb-1 block">Physical Activity <span className="text-gray-400 text-xs font-normal">(Exercise Hrs)</span></label><input type="number" value={physicalHours} onChange={(e) => setPhysicalHours(e.target.value)} min="0" max="24" step="0.5" placeholder="0" className="w-full p-2.5 border border-white/50 bg-white/50 rounded-lg focus:ring-2 focus:ring-blue-400 placeholder-gray-400"/></div>
-                    </div>
+                      <div className="flex flex-col gap-3">
+                        <div><label className="text-sm font-semibold text-gray-800 mb-1 block">Study Hours <span className="text-gray-400 text-xs font-normal">(Hrs)</span></label><input type="number" value={studyHours} onChange={(e) => setStudyHours(e.target.value)} min="0" max="24" step="0.5" placeholder="0" className="w-full p-2.5 border border-white/50 bg-white/50 rounded-lg focus:ring-2 focus:ring-blue-400 placeholder-gray-400"/></div>
+                        <div><label className="text-sm font-semibold text-gray-800 mb-1 block">Extracurricular <span className="text-gray-400 text-xs font-normal">(Hrs)</span></label><input type="number" value={extraHours} onChange={(e) => setExtraHours(e.target.value)} min="0" max="24" step="0.5" placeholder="0" className="w-full p-2.5 border border-white/50 bg-white/50 rounded-lg focus:ring-2 focus:ring-blue-400 placeholder-gray-400"/></div>
+                        <div><label className="text-sm font-semibold text-gray-800 mb-1 block">Sleep Hours <span className="text-gray-400 text-xs font-normal">(Hrs)</span></label><input type="number" value={sleepHours} onChange={(e) => setSleepHours(e.target.value)} min="0" max="24" step="0.5" placeholder="0" className="w-full p-2.5 border border-white/50 bg-white/50 rounded-lg focus:ring-2 focus:ring-blue-400 placeholder-gray-400" data-required="true"/></div>
+                        <div><label className="text-sm font-semibold text-gray-800 mb-1 block">Social Hours <span className="text-gray-400 text-xs font-normal">(Hrs)</span></label><input type="number" value={socialHours} onChange={(e) => setSocialHours(e.target.value)} min="0" max="24" step="0.5" placeholder="0" className="w-full p-2.5 border border-white/50 bg-white/50 rounded-lg focus:ring-2 focus:ring-blue-400 placeholder-gray-400"/></div>
+                        <div><label className="text-sm font-semibold text-gray-800 mb-1 block">Physical Activity <span className="text-gray-400 text-xs font-normal">(Exercise Hrs)</span></label><input type="number" value={physicalHours} onChange={(e) => setPhysicalHours(e.target.value)} min="0" max="24" step="0.5" placeholder="0" className="w-full p-2.5 border border-white/50 bg-white/50 rounded-lg focus:ring-2 focus:ring-blue-400 placeholder-gray-400"/></div>
+                      </div>
 
-                    <hr className="border-t border-white/20 my-2" />
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-800 mb-3 text-center">How are you feeling today?</label>
-                      <div className="flex justify-around">
-                        {moods.map((emo, idx) => (
-                          <button key={idx} type="button" className={`w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center text-2xl md:text-3xl transition-transform cursor-pointer ${moodIndex === idx ? "scale-110 shadow-lg" : "hover:scale-105"}`} onClick={() => setMoodIndex(idx)} style={{ backgroundColor: moodIndex === idx ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.45)" }}>
-                            {emo}
-                          </button>
-                        ))}
+                      <hr className="border-t border-white/20 my-1" />
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-800 mb-3 text-center">How are you feeling today?</label>
+                        <div className="flex justify-around">
+                          {moods.map((emo, idx) => (
+                            <button key={idx} type="button" className={`w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center text-2xl md:text-3xl transition-transform cursor-pointer ${moodIndex === idx ? "scale-110 shadow-lg" : "hover:scale-105"}`} onClick={() => setMoodIndex(idx)} style={{ backgroundColor: moodIndex === idx ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.45)" }}>
+                              {emo}
+                            </button>
+                          ))}
+                        </div>
                       </div>
                     </div>
                     <button
@@ -1652,9 +1603,8 @@ export default function Dashboard() {
 
                   {isSaving && (
                     <div className="absolute inset-0 z-40 flex items-center justify-center rounded-[20px] bg-white/70 backdrop-blur-sm">
-                      <div className="flex items-center gap-3 rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-gray-600 shadow-lg">
+                      <div className="flex items-center justify-center rounded-2xl bg-white px-4 py-3 shadow-lg" aria-label="Processing entry">
                         <span className="h-5 w-5 rounded-full border-2 border-blue-500 border-t-transparent animate-spin" />
-                        Processing your entry...
                       </div>
                     </div>
                   )}
@@ -1693,31 +1643,8 @@ export default function Dashboard() {
           {/* CALENDAR SECTION (FIXED BUTTONS) */}
           <section className="col-span-1 md:col-span-2 p-6 md:p-8 rounded-[20px] bg-white/40 backdrop-blur-md border border-white/20 shadow-xl relative overflow-hidden" style={{ minHeight: 600 }}>
             {isLoadingLogs && (
-              <div className="absolute inset-0 z-20 bg-white/70 backdrop-blur-sm p-6 md:p-8">
-                <div className="relative h-full w-full rounded-[16px] border border-white/40 bg-white/60 p-6 md:p-8 shadow-inner">
-                   <div className="flex items-center justify-between mb-6">
-                      <div className="skeleton h-8 w-8 rounded-full" />
-                      <div className="skeleton h-5 w-40 rounded-full" />
-                      <div className="skeleton h-8 w-8 rounded-full" />
-                   </div>
-                   <div className="grid grid-cols-7 gap-2 mb-4">
-                      {Array.from({ length: 7 }).map((_, idx) => (
-                        <div key={`weekday-skel-${idx}`} className="skeleton h-4 w-full rounded-full" />
-                      ))}
-                   </div>
-                   <div className="grid grid-cols-7 gap-2">
-                      {Array.from({ length: 35 }).map((_, idx) => (
-                        <div key={`day-skel-${idx}`} className="skeleton aspect-square rounded-xl" />
-                      ))}
-                   </div>
-                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-center">
-                      <div className="relative flex items-center justify-center">
-                        <div className="h-14 w-14 rounded-full border-4 border-blue-200 border-t-blue-500 spin-slow" />
-                        <div className="absolute h-9 w-9 rounded-full border-4 border-orange-200 border-t-orange-500 spin-reverse" />
-                      </div>
-                      <p className="text-center text-sm font-semibold text-gray-500 pulse-soft">Loading Calendar...</p>
-                   </div>
-                </div>
+              <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/70 backdrop-blur-sm">
+                <div className="h-12 w-12 rounded-full border-4 border-blue-200 border-t-blue-500 animate-spin" />
               </div>
             )}
 
@@ -2077,7 +2004,7 @@ export default function Dashboard() {
         <div className="mt-8 grid grid-cols-1">
           {/* ... (Section motivasi tetap sama) ... */}
           <section className="col-span-4 relative overflow-hidden rounded-[24px] shadow-2xl group transition-all duration-500 hover:shadow-orange-100">
-            <div className="absolute inset-0 bg-white/60 backdrop-blur-xl border border-white/40 dark:bg-slate-900/70 dark:border-slate-700/60 z-0"></div>
+            <div className="absolute inset-0 bg-white/80 backdrop-blur-xl border border-white/60 dark:bg-slate-900/70 dark:border-slate-700/60 z-0"></div>
             <div className="absolute -left-10 -top-10 w-40 h-40 bg-orange-300 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob"></div>
             <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-purple-300 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob animation-delay-2000"></div>
             <div className="relative z-10 p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-6">
@@ -2094,7 +2021,7 @@ export default function Dashboard() {
                       <p className="text-rose-500 font-medium">{quoteError}</p>
                     ) : quoteData.text ? (
                       <>
-                        <h3 className="text-2xl md:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-gray-800 to-gray-600 dark:from-slate-100 dark:to-slate-300 leading-tight mb-2">
+                        <h3 className="text-2xl md:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-slate-700 to-slate-500 dark:from-slate-100 dark:to-slate-300 leading-tight mb-2">
                           "{quoteData.text}"
                         </h3>
                         <p className="text-gray-500 dark:text-slate-300 font-medium italic">— {quoteData.author}</p>

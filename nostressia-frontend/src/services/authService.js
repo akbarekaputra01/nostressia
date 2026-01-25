@@ -58,6 +58,15 @@ export const updateProfile = async (payload) => {
   return unwrapResponse(response);
 };
 
+export const uploadProfileAvatar = async (file) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  const response = await client.post("/auth/me/avatar", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return unwrapResponse(response);
+};
+
 export const changePassword = async (payload) => {
   const response = await client.put("/auth/change-password", payload);
   return unwrapResponse(response);

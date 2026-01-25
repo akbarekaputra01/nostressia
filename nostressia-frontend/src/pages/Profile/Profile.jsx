@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Link, useOutletContext } from "react-router-dom";
 import Navbar from "../../components/Navbar";
-import { changePassword, updateProfile } from "../../services/authService";
+import { changePassword, updateProfile, uploadProfileAvatar } from "../../services/authService";
 import { deleteBookmark, getMyBookmarks } from "../../services/bookmarkService";
 import { 
   User, Mail, Heart, Settings, LogOut, 
@@ -37,7 +37,7 @@ const AVATAR_OPTIONS = [
 ];
 
 // --- COMPONENT: AVATAR SELECTION MODAL ---
-const AvatarSelectionModal = ({ onClose, onSelect, currentAvatar }) => {
+const AvatarSelectionModal = ({ onClose, onSelect, onUpload, currentAvatar, uploading }) => {
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in">
       <div className="bg-white rounded-[24px] p-6 w-full max-w-lg shadow-2xl border border-white/50 relative">
@@ -62,7 +62,21 @@ const AvatarSelectionModal = ({ onClose, onSelect, currentAvatar }) => {
             );
           })}
         </div>
-        <p className="text-center text-xs text-gray-400 mt-4">*Select an avatar to update your profile picture</p>
+        <div className="mt-5 flex flex-col items-center gap-3">
+          <label className="w-full cursor-pointer rounded-2xl border border-dashed border-gray-300 bg-white px-4 py-3 text-center text-xs font-semibold text-gray-500 transition hover:border-orange-400 hover:text-orange-500">
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(event) => onUpload(event.target.files?.[0])}
+              disabled={uploading}
+            />
+            {uploading ? "Uploading..." : "Upload your own photo"}
+          </label>
+          <p className="text-center text-xs text-gray-400">
+            *Select an avatar or upload a custom photo (max 5MB recommended).
+          </p>
+        </div>
       </div>
     </div>
   );
@@ -339,6 +353,7 @@ export default function Profile() {
   );
   const [passwordForm, setPasswordForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
   const [passwordStep, setPasswordStep] = useState(1);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
   // ✅ LOGIC BARU: STATISTIK DINAMIS & WARNA STREAK
   const getStreakStyle = (streak) => {
@@ -489,6 +504,28 @@ export default function Profile() {
     showNotification("Avatar selected. Click Save Changes to apply.");
   };
 
+  const handleAvatarUpload = async (file) => {
+    if (!file) return;
+    if (!file.type?.startsWith("image/")) {
+      showNotification("Please select an image file.", "error");
+      return;
+    }
+    setIsUploadingAvatar(true);
+    try {
+      const data = await uploadProfileAvatar(file);
+      if (data?.avatar) {
+        setFormData((prev) => ({ ...prev, avatar: data.avatar }));
+      }
+      showNotification("Avatar uploaded. Click Save Changes to apply.");
+      setShowAvatarModal(false);
+      window.dispatchEvent(new Event("nostressia:user-update"));
+    } catch (error) {
+      showNotification(error?.message || "Failed to upload avatar.", "error");
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
+
   const toggleEdit = (field) => {
     setEditableFields(prev => ({ ...prev, [field]: !prev[field] }));
   };
@@ -503,8 +540,20 @@ export default function Profile() {
 
   const handleNotifChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setNotifSettings(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
-    if (name === "reminderTime" && value === "04:04") { setShowGameModal(true); }
+    const nextValue = type === "checkbox" ? checked : value;
+    setNotifSettings((prev) => ({ ...prev, [name]: nextValue }));
+    if (name === "reminderTime" && value === "04:04") {
+      setShowGameModal(true);
+    }
+    if (
+      name === "dailyReminder" &&
+      nextValue &&
+      typeof window !== "undefined" &&
+      "Notification" in window &&
+      Notification.permission === "default"
+    ) {
+      setShowPermissionPrompt(true);
+    }
   };
   const saveNotifSettings = async () => {
     saveNotificationSettings(notifSettings);
@@ -607,7 +656,15 @@ export default function Profile() {
     >
       <Navbar user={contextUser} />
       {showGameModal && <FishGameModal onClose={() => setShowGameModal(false)} />}
-      {showAvatarModal && <AvatarSelectionModal onClose={() => setShowAvatarModal(false)} onSelect={handleAvatarSelect} currentAvatar={formData.avatar} />}
+      {showAvatarModal && (
+        <AvatarSelectionModal
+          onClose={() => setShowAvatarModal(false)}
+          onSelect={handleAvatarSelect}
+          onUpload={handleAvatarUpload}
+          currentAvatar={formData.avatar}
+          uploading={isUploadingAvatar}
+        />
+      )}
       {showPermissionPrompt && (
         <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
           <div className="bg-white rounded-[24px] p-6 w-full max-w-sm shadow-2xl border border-white/60">

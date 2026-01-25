@@ -1,7 +1,7 @@
 # app/routes/user_auth_route.py
 
 from datetime import date, datetime, timedelta # ✅ Tambah datetime
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm 
 
@@ -29,6 +29,7 @@ from app.schemas.user_auth_schema import (
     UserTokenResponse,
 )
 from app.utils.response import success_response
+from app.services.azure_storage_service import upload_avatar
 from app.schemas.response_schema import APIResponse
 
 router = APIRouter()
@@ -226,6 +227,31 @@ def update_user_profile(user_update: UserUpdate, db: Session = Depends(get_db), 
     db.commit()
     db.refresh(current_user)
     return success_response(data=_serialize_user(current_user), message="Profile updated")
+
+
+@router.post("/me/avatar", response_model=APIResponse[UserResponse])
+def upload_user_avatar(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if not file.content_type or not file.content_type.startswith("image/"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Only image uploads are allowed.",
+        )
+    try:
+        avatar_url = upload_avatar(file, current_user.user_id)
+    except RuntimeError as error:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(error),
+        ) from error
+
+    current_user.avatar = avatar_url
+    db.commit()
+    db.refresh(current_user)
+    return success_response(data=_serialize_user(current_user), message="Avatar uploaded")
 
 @router.put("/change-password", status_code=status.HTTP_200_OK, response_model=APIResponse[None])
 def change_password(payload: ChangePasswordSchema, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):

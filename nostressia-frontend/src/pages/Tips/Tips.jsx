@@ -200,7 +200,7 @@ export default function Tips() {
   }, [categorySource, searchQuery]);
 
   return (
-    <div className="min-h-screen text-gray-800 flex flex-col" style={bgStyle}>
+    <div className="min-h-screen text-gray-800 dark:text-slate-100 flex flex-col" style={bgStyle}>
       <style>{`@keyframes gradient-bg { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }`}</style>
       
       <div className="fixed top-0 left-0 right-0 z-50 pt-4">
@@ -219,7 +219,7 @@ export default function Tips() {
                     Tips
                   </h1>
                 </div>
-                <p className="text-gray-600 mt-2 text-base md:text-lg font-medium">
+                <p className="text-gray-600 dark:text-slate-300 mt-2 text-base md:text-lg font-medium">
                   Choose a category to explore helpful tips for managing stress
                 </p>
               </Motion.div>
@@ -231,7 +231,7 @@ export default function Tips() {
                     placeholder="Find topics..." 
                     value={searchQuery} 
                     onChange={(e) => setSearchQuery(e.target.value)} 
-                    className="w-full pl-11 pr-4 py-3 bg-white/60 backdrop-blur-md rounded-xl shadow-sm border border-white/50 focus:bg-white outline-none font-medium text-base transition-all"
+                    className="w-full pl-11 pr-4 py-3 bg-white/60 dark:bg-slate-900/70 dark:text-slate-100 backdrop-blur-md rounded-xl shadow-sm border border-white/50 dark:border-slate-700 focus:bg-white dark:focus:bg-slate-900 outline-none font-medium text-base transition-all"
                   />
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none z-10">
                     <svg width="18" height="18" fill="currentColor" viewBox="0 0 256 256"><path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z" /></svg>
@@ -241,10 +241,10 @@ export default function Tips() {
                 <div 
                   className={`flex items-center gap-2 font-bold text-[10px] md:text-xs px-4 py-3 rounded-xl border backdrop-blur-md shadow-sm whitespace-nowrap transition-all duration-500 min-w-fit h-full ${
                     syncStatus === 'updating' 
-                    ? "text-blue-600 bg-blue-50/90 border-blue-200" 
+                    ? "text-blue-600 bg-blue-50/90 border-blue-200 dark:text-blue-200 dark:bg-blue-500/20 dark:border-blue-400/40" 
                     : syncStatus === 'updated'
-                    ? "text-emerald-600 bg-emerald-50/90 border-emerald-200"
-                    : "text-rose-600 bg-rose-50/90 border-rose-200"
+                    ? "text-emerald-600 bg-emerald-50/90 border-emerald-200 dark:text-emerald-200 dark:bg-emerald-500/20 dark:border-emerald-400/40"
+                    : "text-rose-600 bg-rose-50/90 border-rose-200 dark:text-rose-200 dark:bg-rose-500/20 dark:border-rose-400/40"
                   }`}
                 >
                   {syncStatus === 'updating' ? (
@@ -268,7 +268,7 @@ export default function Tips() {
 
               <Motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredCategories.length === 0 ? (
-                  <div className="col-span-full rounded-2xl border border-white/80 bg-white/70 p-6 text-center text-gray-500">
+                  <div className="col-span-full rounded-2xl border border-white/80 dark:border-slate-700 bg-white/70 dark:bg-slate-900/70 p-6 text-center text-gray-500 dark:text-slate-300">
                     No tips available yet.
                   </div>
                 ) : (
@@ -278,17 +278,17 @@ export default function Tips() {
                       layoutId={`cat-${cat.id}`} 
                       onClick={() => openCategory(cat)} 
                       whileHover={{ y: -5, scale: 1.02 }}
-                      className={`group relative p-8 rounded-[32px] cursor-pointer bg-white/80 backdrop-blur-sm border shadow-sm hover:shadow-md hover:bg-white transition-all h-56 overflow-hidden ${cat.colorClass.split(" ").pop()}`}
+                      className={`group relative p-8 rounded-[32px] cursor-pointer bg-white/80 dark:bg-slate-900/70 backdrop-blur-sm border dark:border-slate-700 shadow-sm hover:shadow-md hover:bg-white dark:hover:bg-slate-900 transition-all h-56 overflow-hidden ${cat.colorClass.split(" ").pop()}`}
                     >
                       <div className="flex justify-between items-start z-10 relative">
-                        <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-4xl bg-white/60 border border-white/50">{cat.emoji}</div>
-                        <div className="bg-white/60 text-gray-600 text-[10px] font-bold px-3 py-1.5 rounded-full border border-white/50 flex items-center justify-center">
+                        <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-4xl bg-white/60 dark:bg-slate-800/70 border border-white/50 dark:border-slate-700">{cat.emoji}</div>
+                        <div className="bg-white/60 dark:bg-slate-800/70 text-gray-600 dark:text-slate-200 text-[10px] font-bold px-3 py-1.5 rounded-full border border-white/50 dark:border-slate-700 flex items-center justify-center">
                           {cat.tipsCount} Tips
                         </div>
                       </div>
                       <div className="mt-8 relative z-10">
-                        <h3 className="text-2xl font-bold text-gray-800">{cat.name}</h3>
-                        <p className="text-sm text-gray-500 mt-1">Click to explore</p>
+                        <h3 className="text-2xl font-bold text-gray-800 dark:text-slate-100">{cat.name}</h3>
+                        <p className="text-sm text-gray-500 dark:text-slate-300 mt-1">Click to explore</p>
                       </div>
                     </Motion.div>
                   ))
@@ -297,14 +297,14 @@ export default function Tips() {
             </Motion.div>
           ) : (
             <Motion.div key="details" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4 }}>
-              <div className="mb-8 bg-white/90 backdrop-blur-xl px-6 py-5 rounded-[24px] shadow-lg border border-white/50 flex items-center justify-between">
+              <div className="mb-8 bg-white/90 dark:bg-slate-900/80 backdrop-blur-xl px-6 py-5 rounded-[24px] shadow-lg border border-white/50 dark:border-slate-700 flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <button onClick={() => setSelectedCategory(null)} className="w-11 h-11 flex items-center justify-center rounded-full bg-white hover:bg-gray-50 border border-gray-100 shadow-sm transition-transform active:scale-90">
+                  <button onClick={() => setSelectedCategory(null)} className="w-11 h-11 flex items-center justify-center rounded-full bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 border border-gray-100 dark:border-slate-700 shadow-sm transition-transform active:scale-90">
                     <ArrowLeft size={22}/>
                   </button>
-                  <h2 className="text-lg md:text-2xl font-bold text-gray-800">{selectedCategory.name}</h2>
+                  <h2 className="text-lg md:text-2xl font-bold text-gray-800 dark:text-slate-100">{selectedCategory.name}</h2>
                 </div>
-                <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center text-xl md:text-3xl bg-white border border-gray-100 shadow-sm">{selectedCategory.emoji}</div>
+                <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center text-xl md:text-3xl bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 shadow-sm">{selectedCategory.emoji}</div>
               </div>
 
               {/* Grid Responsif: md:grid-cols-2 untuk Desktop, grid-cols-1 untuk Mobile */}
@@ -315,12 +315,12 @@ export default function Tips() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: idx * 0.05 }}
-                    className="bg-white/80 px-6 py-4 md:px-8 md:py-5 rounded-[24px] md:rounded-[28px] border border-white/60 shadow-sm relative group hover:bg-white transition-colors overflow-hidden flex items-center min-h-[80px] md:min-h-[90px]"
+                    className="bg-white/80 dark:bg-slate-900/70 px-6 py-4 md:px-8 md:py-5 rounded-[24px] md:rounded-[28px] border border-white/60 dark:border-slate-700 shadow-sm relative group hover:bg-white dark:hover:bg-slate-900 transition-colors overflow-hidden flex items-center min-h-[80px] md:min-h-[90px]"
                   >
-                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-6xl md:text-8xl font-extrabold text-gray-200/40 select-none pointer-events-none group-hover:text-blue-100/50 transition-colors z-0">
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-6xl md:text-8xl font-extrabold text-gray-200/40 dark:text-slate-700/60 select-none pointer-events-none group-hover:text-blue-100/50 dark:group-hover:text-blue-900/40 transition-colors z-0">
                       {tip.displayIndex}
                     </span>
-                    <p className="text-sm md:text-xl font-medium text-gray-700 relative z-10 leading-relaxed pr-10">
+                    <p className="text-sm md:text-xl font-medium text-gray-700 dark:text-slate-200 relative z-10 leading-relaxed pr-10">
                       {tip.text}
                     </p>
                   </Motion.div>

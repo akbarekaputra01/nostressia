@@ -61,6 +61,7 @@ export default function Login() {
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [loadingForgot, setLoadingForgot] = useState(false);
+  const [forgotOtpVerified, setForgotOtpVerified] = useState(false);
 
   // --- STATE COUNTDOWN ---
   const [countdown, setCountdown] = useState(0);
@@ -227,6 +228,7 @@ export default function Login() {
         setForgotStep(2); 
         setCountdown(60); 
         setForgotOtpValues(new Array(6).fill("")); // Reset field OTP
+        setForgotOtpVerified(false);
     } catch (error) {
         alert(error?.message || "Email not found.");
     } finally { setLoadingForgot(false); }
@@ -267,9 +269,11 @@ export default function Login() {
       setLoadingForgot(true);
       try {
           await verifyResetPasswordOtp({ email: forgotEmail, otpCode: code });
+          setForgotOtpVerified(true);
           setForgotStep(3);
       } catch (error) {
           alert(error?.message || "Invalid OTP code.");
+          setForgotOtpVerified(false);
       } finally {
           setLoadingForgot(false);
       }
@@ -278,6 +282,11 @@ export default function Login() {
   // Step 3: Reset Password
   const handleForgotConfirm = async (e) => {
     e.preventDefault();
+    if (!forgotOtpVerified) {
+        alert("Please verify your OTP first.");
+        setForgotStep(2);
+        return;
+    }
     if(!newPassword || !confirmNewPassword) return alert("Please enter a new password.");
     if(newPassword !== confirmNewPassword) return alert("Password confirmation does not match.");
 
@@ -298,6 +307,7 @@ export default function Login() {
         setForgotOtpValues(new Array(6).fill("")); 
         setNewPassword(""); 
         setConfirmNewPassword("");
+        setForgotOtpVerified(false);
         
     } catch (error) {
         alert(error?.message || "Failed to reset password.");
@@ -517,7 +527,7 @@ export default function Login() {
                                     ))}
                                 </div>
                             </div>
-                            <button onClick={() => {setShowForgotModal(false); setForgotStep(1); setCountdown(0);}} className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100"><X size={20} /></button>
+                            <button onClick={() => {setShowForgotModal(false); setForgotStep(1); setCountdown(0); setForgotOtpVerified(false);}} className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100"><X size={20} /></button>
                         </div>
 
                         {/* STEP 1: EMAIL INPUT */}

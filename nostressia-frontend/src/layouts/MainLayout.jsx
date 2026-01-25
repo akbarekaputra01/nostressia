@@ -5,6 +5,7 @@ import { getProfile } from "../services/authService";
 import { getStressEligibility } from "../services/stressService";
 import { readAuthToken } from "../utils/auth";
 import { applyTheme, getStoredTheme } from "../utils/theme";
+import { restoreScheduledReminder } from "../utils/notificationService";
 
 const resolveStreakCount = (payload) => {
   const candidates = [
@@ -88,6 +89,7 @@ export default function MainLayout() {
 
     window.addEventListener("nostressia:theme-change", handleThemeChange);
     fetchUserData();
+    restoreScheduledReminder();
 
     const handleRefresh = () => {
       fetchUserData();
