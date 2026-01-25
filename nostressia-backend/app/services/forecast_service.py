@@ -1,5 +1,8 @@
 from app.schemas.stress_schema import EligibilityResponse
 from app.services.global_forecast_service import global_forecast_service
+from app.services.personalized_forecast_service import personalized_forecast_service
+
+PERSONALIZED_STREAK_THRESHOLD = 60
 
 
 def _normalize_forecast_payload(raw_forecast: dict) -> dict:
@@ -25,5 +28,8 @@ def build_global_forecast_payload(eligibility: EligibilityResponse, forecast: di
 
 
 def get_global_forecast_for_user(user_id: int, eligibility: EligibilityResponse, db) -> dict:
-    forecast = global_forecast_service.predict_next_day_for_user(db, user_id)
+    if eligibility.streak >= PERSONALIZED_STREAK_THRESHOLD:
+        forecast = personalized_forecast_service.predict_next_day_for_user(db, user_id)
+    else:
+        forecast = global_forecast_service.predict_next_day_for_user(db, user_id)
     return build_global_forecast_payload(eligibility, forecast)

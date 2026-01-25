@@ -40,16 +40,12 @@ const Navbar = ({ user }) => {
   // --- LOGIKA WARNA API BERDASARKAN STREAK ---
   const getFlameColor = (streakCount) => {
     const count = streakCount || 0;
-    if (count >= 70) {
-      // Level Tinggi (70+): Ungu (Legendary)
+    if (count >= 60) {
+      // Level Tinggi (60+): Api 2
       return "text-purple-600 fill-purple-600/20";
-    } else if (count >= 7) {
-      // Level Menengah (7-69): Merah/Merah Oren (Membara)
-      return "text-red-500 fill-red-500/20";
-    } else {
-      // Level Awal (< 7): Oranye (Normal)
-      return "text-orange-500 fill-orange-500/20";
     }
+    // Level Awal (0-59): Api 1
+    return "text-orange-500 fill-orange-500/20";
   };
 
   const streakVal = user?.streak || 0;

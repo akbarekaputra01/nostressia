@@ -36,6 +36,8 @@ self.addEventListener("notificationclick", (event) => {
           {
             body: event.notification.body,
             tag: event.notification.tag,
+            icon: event.notification.icon,
+            badge: event.notification.badge,
             data,
             showTrigger: new self.TimestampTrigger(nextTrigger.getTime()),
           }

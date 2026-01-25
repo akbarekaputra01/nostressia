@@ -1,3 +1,5 @@
+import LogoImage from "../assets/images/Logo-Nostressia.png";
+
 const REMINDER_TAG = "nostressia-daily-reminder";
 const STORAGE_KEY = "nostressia_notification_settings";
 
@@ -90,6 +92,8 @@ export const scheduleDailyReminder = async (timeValue) => {
   const notificationOptions = {
     body: "Time to check-in and log your stress level.",
     tag: REMINDER_TAG,
+    icon: LogoImage,
+    badge: LogoImage,
     data: {
       repeat: "daily",
       time: timeValue,
