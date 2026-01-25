@@ -122,7 +122,7 @@ const TipsPagePreview = () => (
 
 // 5. Mockup Diary
 const DiaryBookPreview = () => (
-    <div className="relative w-full max-w-[320px] md:max-w-sm aspect-[4/3] bg-[#fffdf5] rounded-l-2xl rounded-r-2xl shadow-2xl border-l-4 border-r-4 border-gray-300 flex overflow-hidden rotate-[-1deg] hover:rotate-0 transition-transform duration-500 group z-10 mx-auto">
+    <div className="relative w-full max-w-[320px] md:max-w-sm aspect-[4/3] bg-amber-50 dark:bg-slate-800 rounded-l-2xl rounded-r-2xl shadow-2xl border-l-4 border-r-4 border-gray-300 flex overflow-hidden rotate-[-1deg] hover:rotate-0 transition-transform duration-500 group z-10 mx-auto">
        <div className="flex-1 border-r border-gray-200 p-4 relative flex flex-col">
            <h4 className="text-xs md:text-sm font-serif font-bold text-gray-700 mb-3 md:mb-4 opacity-70">Journal</h4>
            <div className="space-y-3 md:space-y-4">
@@ -134,7 +134,7 @@ const DiaryBookPreview = () => (
                </div>
            </div>
        </div>
-       <div className="flex-1 p-4 relative bg-[#fffdf5]">
+       <div className="flex-1 p-4 relative bg-amber-50 dark:bg-slate-800">
            <div className="flex justify-between items-center mb-2 md:mb-3">
                <span className="text-[8px] md:text-[10px] text-gray-400 font-bold uppercase tracking-widest">Today</span>
                <div className="text-lg md:text-xl">😌</div>
@@ -179,7 +179,7 @@ const HeroAppPreview = () => {
                />
                <div>
                   <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wide">Good Morning,</p>
-                  <p className="text-sm font-bold text-[#1A1A1A]">PPTI Student</p>
+                  <p className="text-sm font-bold text-gray-900 dark:text-slate-100">PPTI Student</p>
                </div>
             </div>
             <Motion.div 
@@ -318,7 +318,7 @@ const HeroSimple = () => {
             Available for PPTI Students
           </Motion.div>
 
-          <h1 className="text-6xl md:text-7xl lg:text-8xl font-black tracking-tighter text-[#1A1A1A] leading-[0.95] mb-6">
+          <h1 className="text-6xl md:text-7xl lg:text-8xl font-black tracking-tighter text-gray-900 dark:text-slate-100 leading-[0.95] mb-6">
             NO STRESS<br/>
             {/* Gradient Text */}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#3664BA] via-[#F2994A] to-[#3664BA] animate-gradient-x bg-[length:200%_auto] pr-2 pb-2">
@@ -342,11 +342,11 @@ const HeroSimple = () => {
              className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto"
           >
             {/* LINK GET STARTED */}
-            <Link to="/login" className="px-8 py-4 bg-[#1A1A1A] text-white rounded-full font-bold text-base shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 group hover:bg-[#F2994A] hover:border-[#F2994A] cursor-pointer">
+            <Link to="/login" className="px-8 py-4 bg-gray-900 text-white rounded-full font-bold text-base shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 group hover:bg-[#F2994A] hover:border-[#F2994A] cursor-pointer dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white">
               Get Started Free <ArrowRight className="group-hover:translate-x-1 transition-transform" size={20} />
             </Link>
              {/* BUTTON EXPLORE */}
-             <button onClick={() => document.getElementById('prediction').scrollIntoView({ behavior: 'smooth'})} className="px-8 py-4 bg-white text-[#1A1A1A] border border-gray-200 rounded-full font-bold text-base shadow-sm hover:bg-gray-50 transition-all flex items-center justify-center cursor-pointer">
+             <button onClick={() => document.getElementById('prediction').scrollIntoView({ behavior: 'smooth'})} className="px-8 py-4 bg-white text-gray-900 dark:text-slate-100 border border-gray-200 dark:border-slate-700 rounded-full font-bold text-base shadow-sm hover:bg-gray-50 dark:bg-slate-900 dark:hover:bg-slate-800 transition-all flex items-center justify-center cursor-pointer">
               Explore Features
             </button>
           </Motion.div>
@@ -412,7 +412,7 @@ const SplitNav = ({ scrollToSection, setIsMobileMenuOpen }) => {
                  alt="Logo" 
                  className="h-8 w-auto md:h-9 object-contain group-hover:scale-110 transition-transform" 
                />
-               <span className="font-extrabold text-[#1A1A1A] text-lg tracking-tight group-hover:text-[#3664BA] transition-colors">
+               <span className="font-extrabold text-gray-900 dark:text-slate-100 text-lg tracking-tight group-hover:text-[#3664BA] transition-colors">
                   Nostressia
                </span>
             </Link>
@@ -431,7 +431,7 @@ const SplitNav = ({ scrollToSection, setIsMobileMenuOpen }) => {
                   <button
                      key={item}
                      onClick={() => scrollToSection(item.toLowerCase())}
-                     className="px-4 py-2 text-sm font-semibold text-gray-500 hover:text-[#1A1A1A] hover:bg-white rounded-full transition-all relative group cursor-pointer"
+                     className="px-4 py-2 text-sm font-semibold text-gray-500 dark:text-slate-300 hover:text-gray-900 dark:hover:text-slate-100 hover:bg-white dark:hover:bg-slate-800 rounded-full transition-all relative group cursor-pointer"
                   >
                      {item}
                   </button>
@@ -439,7 +439,7 @@ const SplitNav = ({ scrollToSection, setIsMobileMenuOpen }) => {
             </div>
 
             {/* Login Button Independent */}
-            <Link to="/login" className="px-6 py-3 bg-[#1A1A1A] text-white rounded-full font-bold text-sm shadow-xl hover:shadow-2xl hover:bg-[#3664BA] hover:-translate-y-0.5 transition-all cursor-pointer flex items-center gap-2">
+            <Link to="/login" className="px-6 py-3 bg-gray-900 text-white rounded-full font-bold text-sm shadow-xl hover:shadow-2xl hover:bg-[#3664BA] hover:-translate-y-0.5 transition-all cursor-pointer flex items-center gap-2 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white">
                Login <ArrowRight size={14} />
             </Link>
          </Motion.div>
@@ -448,7 +448,7 @@ const SplitNav = ({ scrollToSection, setIsMobileMenuOpen }) => {
          <div className="md:hidden fixed top-4 right-4 z-50">
             <button 
                onClick={() => setIsMobileMenuOpen(true)}
-               className="p-3 bg-white/80 backdrop-blur-md border border-white/50 rounded-full shadow-sm text-[#1A1A1A] cursor-pointer"
+               className="p-3 bg-white/80 backdrop-blur-md border border-white/50 rounded-full shadow-sm text-gray-900 dark:text-slate-100 cursor-pointer"
             >
                <Menu size={24} />
             </button>
@@ -479,14 +479,14 @@ const MobileMenuOverlay = ({ isOpen, setIsOpen, scrollToSection }) => {
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.9, y: -20 }}
                   transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                  className="fixed top-20 right-4 z-[60] w-64 bg-white/95 backdrop-blur-2xl border border-white/60 rounded-3xl shadow-2xl p-2 flex flex-col gap-1 md:hidden"
+                  className="fixed top-20 right-4 z-[60] w-64 bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border border-white/60 dark:border-slate-700 rounded-3xl shadow-2xl p-2 flex flex-col gap-1 md:hidden"
                >
                   {/* Close Button Header */}
                   <div className="flex justify-between items-center px-4 pt-2 pb-2">
-                     <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Menu</span>
+                     <span className="text-xs font-bold text-gray-400 dark:text-slate-400 uppercase tracking-wider">Menu</span>
                      <button 
                         onClick={() => setIsOpen(false)}
-                        className="p-1.5 bg-gray-100 rounded-full text-gray-500 hover:bg-gray-200 transition-colors"
+                        className="p-1.5 bg-gray-100 dark:bg-slate-800 rounded-full text-gray-500 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors"
                      >
                         <X size={16} />
                      </button>
@@ -500,19 +500,19 @@ const MobileMenuOverlay = ({ isOpen, setIsOpen, scrollToSection }) => {
                            setIsOpen(false);
                            setTimeout(() => scrollToSection(item.toLowerCase()), 300);
                         }}
-                        className="w-full text-left px-4 py-3 text-sm font-bold text-gray-600 hover:text-[#3664BA] hover:bg-white rounded-2xl transition-all active:scale-95"
+                        className="w-full text-left px-4 py-3 text-sm font-bold text-gray-600 dark:text-slate-300 hover:text-[#3664BA] dark:hover:text-blue-300 hover:bg-white dark:hover:bg-slate-800 rounded-2xl transition-all active:scale-95"
                      >
                         {item}
                      </button>
                   ))}
                   
-                  <div className="h-[1px] bg-gray-100 my-1 mx-2"></div>
+                  <div className="h-[1px] bg-gray-100 dark:bg-slate-800 my-1 mx-2"></div>
                   
                   {/* Login Button */}
                   <Link 
                      to="/login"
                      onClick={() => setIsOpen(false)} 
-                     className="w-full flex items-center justify-between px-4 py-3 text-sm font-bold text-white bg-[#1A1A1A] hover:bg-[#3664BA] rounded-2xl transition-colors shadow-lg active:scale-95 mb-1"
+                     className="w-full flex items-center justify-between px-4 py-3 text-sm font-bold text-white bg-gray-900 hover:bg-[#3664BA] rounded-2xl transition-colors shadow-lg active:scale-95 mb-1 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white"
                   >
                      Login App <ArrowRight size={14} />
                   </Link>
@@ -538,7 +538,7 @@ export default function LandingPage() {
   };
   
   return (
-    <div className="min-h-screen font-sans bg-[#F8F9FA] text-[#1A1A1A] overflow-x-hidden selection:bg-[#F2994A] selection:text-white">
+    <div className="min-h-screen font-sans bg-slate-50 dark:bg-slate-950 text-gray-900 dark:text-slate-100 overflow-x-hidden selection:bg-[#F2994A] selection:text-white">
       
       {/* Background Pattern */}
       <div className="fixed inset-0 z-0 opacity-[0.4] pointer-events-none"
@@ -560,7 +560,7 @@ export default function LandingPage() {
       <HeroSimple />
 
       {/* Marquee */}
-      <div className="bg-[#1A1A1A] py-4 md:py-6 border-y-4 border-[#3664BA] relative z-20 rotate-1 scale-105 shadow-2xl my-6 md:my-10 overflow-hidden">
+      <div className="bg-gray-900 dark:bg-slate-950 py-4 md:py-6 border-y-4 border-[#3664BA] relative z-20 rotate-1 scale-105 shadow-2xl my-6 md:my-10 overflow-hidden">
          <div className="whitespace-nowrap flex animate-marquee">
             {[...Array(10)].map((_, i) => (
                <div key={i} className="flex items-center mx-4 md:mx-8">
@@ -591,7 +591,7 @@ export default function LandingPage() {
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 text-[#F2994A] text-xs font-bold mb-2">
                        <Smile size={14} /> Mood Tracker
                     </div>
-                    <h2 className="text-3xl font-bold text-[#1A1A1A]">Don't bottle it up.<br/>Track it.</h2>
+                    <h2 className="text-3xl font-bold text-gray-900 dark:text-slate-100">Don't bottle it up.<br/>Track it.</h2>
                     <p className="text-base text-gray-500 leading-relaxed px-2">
                        Understand your emotional patterns. Our intuitive mood tracker helps you identify what makes you tick.
                     </p>
@@ -628,7 +628,7 @@ export default function LandingPage() {
                  <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center text-[#F2994A] mb-4">
                     <Smile size={24} />
                  </div>
-                 <h2 className="text-5xl font-bold text-[#1A1A1A]">Don't bottle it up. <br/>Track it.</h2>
+                 <h2 className="text-5xl font-bold text-gray-900 dark:text-slate-100">Don't bottle it up. <br/>Track it.</h2>
                  <p className="text-lg text-gray-500 leading-relaxed">
                     Understand your emotional patterns. Our intuitive mood tracker helps you identify what makes you tick (or ticked off).
                  </p>
@@ -652,7 +652,7 @@ export default function LandingPage() {
                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-[#3664BA] text-xs font-bold mb-2">
                         <BarChart3 size={14} /> Analytics
                      </div>
-                     <h2 className="text-3xl font-bold text-[#1A1A1A]">See the big picture.</h2>
+                     <h2 className="text-3xl font-bold text-gray-900 dark:text-slate-100">See the big picture.</h2>
                      <p className="text-base text-gray-500 leading-relaxed px-2">
                         Analyze your monthly progress. Spot patterns in your stress levels and check past records.
                      </p>
@@ -689,7 +689,7 @@ export default function LandingPage() {
                    <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-[#3664BA] mb-4">
                       <BarChart3 size={24} />
                    </div>
-                   <h2 className="text-5xl font-bold text-[#1A1A1A]">See the big picture.</h2>
+                   <h2 className="text-5xl font-bold text-gray-900 dark:text-slate-100">See the big picture.</h2>
                    <p className="text-lg text-gray-500 leading-relaxed">
                       Don't just survive the day. Analyze your monthly progress. Spot patterns in your stress levels and check past records.
                    </p>
@@ -713,7 +713,7 @@ export default function LandingPage() {
                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-50 text-yellow-600 text-xs font-bold mb-2">
                         <Zap size={14} /> Motivation
                      </div>
-                     <h2 className="text-3xl font-bold text-[#1A1A1A]">Find your spark.</h2>
+                     <h2 className="text-3xl font-bold text-gray-900 dark:text-slate-100">Find your spark.</h2>
                      <p className="text-base text-gray-500 leading-relaxed px-2">
                         Get personalized motivational quotes to lift your spirits and keep you going.
                      </p>
@@ -750,7 +750,7 @@ export default function LandingPage() {
                    <div className="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center text-yellow-600 mb-4">
                       <Zap size={24} fill="currentColor" />
                    </div>
-                   <h2 className="text-5xl font-bold text-[#1A1A1A]">Find your spark.</h2>
+                   <h2 className="text-5xl font-bold text-gray-900 dark:text-slate-100">Find your spark.</h2>
                    <p className="text-lg text-gray-500 leading-relaxed">
                       Feeling overwhelmed? Get personalized motivational quotes to lift your spirits and keep you going when things get tough.
                    </p>
@@ -774,7 +774,7 @@ export default function LandingPage() {
                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-50 text-green-600 text-xs font-bold mb-2">
                         <Star size={14} /> Tips & Tricks
                      </div>
-                     <h2 className="text-3xl font-bold text-[#1A1A1A]">Rest & Reset.</h2>
+                     <h2 className="text-3xl font-bold text-gray-900 dark:text-slate-100">Rest & Reset.</h2>
                      <p className="text-base text-gray-500 leading-relaxed px-2">
                         Recharge your mind with daily curated tips. Simple actions for a calmer you.
                      </p>
@@ -811,7 +811,7 @@ export default function LandingPage() {
                    <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-green-600 mb-4">
                       <Star size={24} />
                    </div>
-                   <h2 className="text-5xl font-bold text-[#1A1A1A]">Rest & Reset.</h2>
+                   <h2 className="text-5xl font-bold text-gray-900 dark:text-slate-100">Rest & Reset.</h2>
                    <p className="text-lg text-gray-500 leading-relaxed">
                       Recharge your mind with daily curated tips. Simple actions for a calmer you, from breathing techniques to sleep hygiene.
                    </p>
@@ -836,7 +836,7 @@ export default function LandingPage() {
                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-pink-50 text-pink-600 text-xs font-bold mb-2">
                         <Book size={14} /> Diary
                      </div>
-                     <h2 className="text-3xl font-bold text-[#1A1A1A]">Dear Diary.</h2>
+                     <h2 className="text-3xl font-bold text-gray-900 dark:text-slate-100">Dear Diary.</h2>
                      <p className="text-base text-gray-500 leading-relaxed px-2">
                         Clear your mind by writing it down. A safe, private space to reflect.
                      </p>
@@ -873,7 +873,7 @@ export default function LandingPage() {
                    <div className="w-12 h-12 bg-pink-100 rounded-xl flex items-center justify-center text-pink-600 mb-4">
                       <Book size={24} />
                    </div>
-                   <h2 className="text-5xl font-bold text-[#1A1A1A]">Dear Diary.</h2>
+                   <h2 className="text-5xl font-bold text-gray-900 dark:text-slate-100">Dear Diary.</h2>
                    <p className="text-lg text-gray-500 leading-relaxed">
                       Clear your mind by writing it down. A safe, private space to reflect on your day, gratitude, or anything that's on your mind.
                    </p>
@@ -907,7 +907,7 @@ export default function LandingPage() {
                   <span className="text-[#F2994A]">College Life?</span>
                </h2>
                <div className="flex flex-col sm:flex-row justify-center gap-4 pt-4">
-                  <Link to="/login" className="px-8 py-3 md:px-10 md:py-4 bg-white text-[#1A1A1A] rounded-full font-bold text-base md:text-lg hover:bg-[#F2994A] hover:text-white transition-all shadow-lg transform hover:-translate-y-1 cursor-pointer">
+                  <Link to="/login" className="px-8 py-3 md:px-10 md:py-4 bg-white text-gray-900 dark:text-slate-100 dark:bg-slate-900 dark:hover:bg-[#F2994A] rounded-full font-bold text-base md:text-lg hover:bg-[#F2994A] hover:text-white transition-all shadow-lg transform hover:-translate-y-1 cursor-pointer">
                      Join Now - It's Free
                   </Link>
                </div>
@@ -916,7 +916,7 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="py-8 md:py-12 bg-[#F8F9FA] text-center border-t border-gray-200">
+      <footer className="py-8 md:py-12 bg-slate-50 dark:bg-slate-950 text-center border-t border-gray-200">
          <div className="flex justify-center items-center gap-2 mb-4 opacity-50 grayscale hover:grayscale-0 transition-all">
             <img src={LogoNostressia} alt="Logo" className="h-5 md:h-6 w-auto" />
             <span className="font-bold text-gray-800 text-sm md:text-base">Nostressia</span>
