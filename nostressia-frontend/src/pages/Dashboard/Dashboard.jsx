@@ -162,6 +162,15 @@ function formatDisplayDate(dateKey) {
   return date.toLocaleDateString("id-ID", { day: "numeric", month: "short" });
 }
 
+function parseDateKey(dateKey) {
+  if (!dateKey) return null;
+  const [year, month, day] = dateKey.split("-").map(Number);
+  if (!year || !month || !day) return null;
+  const parsed = new Date(year, month - 1, day);
+  if (Number.isNaN(parsed.getTime())) return null;
+  return parsed;
+}
+
 // --- VARIATION ADVICES LIST ---
 const highStressAdvices = [
   "High stress likely. Try the 4-7-8 breathing technique: Inhale for 4s, hold for 7s, exhale for 8s.",
@@ -449,6 +458,8 @@ export default function Dashboard() {
   const [selectedDate, setSelectedDate] = useState(today);
   const [activeLogDate, setActiveLogDate] = useState(TODAY_KEY);
   const [isRestoreMode, setIsRestoreMode] = useState(false);
+  const [restoreInputMode, setRestoreInputMode] = useState("manual");
+  const [restoreImputeInfo, setRestoreImputeInfo] = useState("");
 
   const month = calendarDate.getMonth();
   const year = calendarDate.getFullYear();
@@ -503,11 +514,14 @@ export default function Dashboard() {
   }, [dismissedMissingPopup, missingDateKeys, restoreRemaining]);
 
   useEffect(() => {
-    if (!missingRestorePopup && pendingTodayReminder) {
+    if (!missingRestorePopup && !forecastDetail && pendingTodayReminder) {
       setShowTodayReminder(true);
       setPendingTodayReminder(false);
     }
-  }, [missingRestorePopup, pendingTodayReminder]);
+    if (forecastDetail) {
+      setShowTodayReminder(false);
+    }
+  }, [missingRestorePopup, pendingTodayReminder, forecastDetail]);
 
   useEffect(() => {
     let mounted = true;
@@ -661,6 +675,92 @@ export default function Dashboard() {
 
   function resetFormToEmpty() {
     setSleepHours(""); setStudyHours(""); setSocialHours(""); setExtraHours(""); setPhysicalHours(""); setMoodIndex(2);
+  }
+
+  function formatImputedValue(value, step = 0.5) {
+    if (!Number.isFinite(value)) return "";
+    const rounded = Math.round(value / step) * step;
+    return String(rounded).replace(/\.0$/, "");
+  }
+
+  function getImputedInputs(dateKey) {
+    const targetDate = parseDateKey(dateKey);
+    if (!targetDate) return null;
+
+    const entries = Object.entries(stressData)
+      .map(([key, value]) => ({
+        key,
+        value,
+        date: parseDateKey(key),
+      }))
+      .filter(
+        (entry) =>
+          entry.date &&
+          entry.key !== dateKey &&
+          entry.value &&
+          !entry.value.isEmpty
+      );
+
+    if (entries.length === 0) return null;
+
+    const pastEntries = entries
+      .filter((entry) => entry.date < targetDate)
+      .sort((a, b) => b.date - a.date);
+    const futureEntries = entries
+      .filter((entry) => entry.date > targetDate)
+      .sort((a, b) => a.date - b.date);
+    const samples = [...pastEntries, ...futureEntries].slice(0, 7);
+    const sampleList = samples.length > 0 ? samples : entries;
+
+    const average = (selector) => {
+      const values = sampleList
+        .map((entry) => Number(selector(entry.value)))
+        .filter((val) => Number.isFinite(val));
+      if (values.length === 0) return 0;
+      return values.reduce((sum, val) => sum + val, 0) / values.length;
+    };
+
+    const moodCounts = sampleList.reduce((acc, entry) => {
+      const mood = entry.value?.mood;
+      if (!mood) return acc;
+      acc[mood] = (acc[mood] || 0) + 1;
+      return acc;
+    }, {});
+    const mostFrequentMood = Object.entries(moodCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
+
+    return {
+      studyHours: average((value) => value.study),
+      extracurricularHours: average((value) => value.extra),
+      sleepHours: average((value) => value.sleep),
+      socialHours: average((value) => value.social),
+      physicalHours: average((value) => value.physical),
+      mood: mostFrequentMood || "😐",
+    };
+  }
+
+  function applyRestoreInputMode(mode, dateKey) {
+    setRestoreInputMode(mode);
+
+    if (mode === "auto") {
+      const imputed = getImputedInputs(dateKey);
+      if (!imputed) {
+        resetFormToEmpty();
+        setRestoreImputeInfo("Belum ada data sebelumnya. Isi manual dulu ya.");
+        return;
+      }
+      setStudyHours(formatImputedValue(imputed.studyHours));
+      setExtraHours(formatImputedValue(imputed.extracurricularHours));
+      setSleepHours(formatImputedValue(imputed.sleepHours));
+      setSocialHours(formatImputedValue(imputed.socialHours));
+      setPhysicalHours(formatImputedValue(imputed.physicalHours));
+      const moodIdx = moods.indexOf(imputed.mood);
+      setMoodIndex(moodIdx >= 0 ? moodIdx : 2);
+      setRestoreImputeInfo("Nilai terisi otomatis dari rata-rata data terdekat. Kamu masih bisa mengubahnya.");
+      return;
+    }
+
+    resetFormToEmpty();
+    setRestoreImputeInfo("");
   }
 
   // --- FUNGSI UNTUK MENUTUP FORECAST DENGAN ANIMASI ---
@@ -916,17 +1016,19 @@ export default function Dashboard() {
     return () => controller.abort();
   }, [navigate, normalizedEligibility]);
 
-  function handleOpenForm({ mode = "today", dateKey = TODAY_KEY } = {}) {
+  function handleOpenForm({ mode = "today", dateKey = TODAY_KEY, restoreMode = "manual" } = {}) {
     if (mode === "restore") {
       setIsRestoreMode(true);
       setActiveLogDate(dateKey);
-      resetFormToEmpty();
+      applyRestoreInputMode(restoreMode, dateKey);
       setIsFlipped(true);
       return;
     }
 
     const todayData = stressData[TODAY_KEY];
     setIsRestoreMode(false);
+    setRestoreInputMode("manual");
+    setRestoreImputeInfo("");
     setActiveLogDate(TODAY_KEY);
     if (hasSubmittedToday && todayData && !todayData.isEmpty) {
       setSleepHours(todayData.sleep);
@@ -942,14 +1044,14 @@ export default function Dashboard() {
     setIsFlipped(true);
   }
 
-  function handleStartRestoreForMissing() {
+  function handleStartRestoreForMissing(mode = "manual") {
     const missingDates = missingRestorePopup?.dates || [];
     if (missingDates.length === 0) return;
     const [year, month, day] = missingDates[0].split("-").map(Number);
     const targetDate = new Date(year, month - 1, day);
     setSelectedDate(targetDate);
     setCalendarDate(new Date(targetDate.getFullYear(), targetDate.getMonth(), 1));
-    handleOpenForm({ mode: "restore", dateKey: missingDates[0] });
+    handleOpenForm({ mode: "restore", dateKey: missingDates[0], restoreMode: mode });
     setMissingRestorePopup(null);
     setDismissedMissingPopup(true);
   }
@@ -1077,6 +1179,8 @@ export default function Dashboard() {
         setIsFlipped(false);
         setIsRestoreMode(false);
         setActiveLogDate(TODAY_KEY);
+        setRestoreInputMode("manual");
+        setRestoreImputeInfo("");
       }, 2500);
 
       if (savedLogId) {
@@ -1339,6 +1443,8 @@ export default function Dashboard() {
                         setIsFlipped(false);
                         setIsRestoreMode(false);
                         setActiveLogDate(TODAY_KEY);
+                        setRestoreInputMode("manual");
+                        setRestoreImputeInfo("");
                       }}
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -1349,6 +1455,42 @@ export default function Dashboard() {
                     className="flex-grow overflow-y-auto pr-2 flex flex-col gap-3 transition-all duration-500 custom-scroll"
                     style={{ opacity: successModal.visible ? 0 : 1, transform: successModal.visible ? "scale(0.95)" : "scale(1)", pointerEvents: successModal.visible ? "none" : "auto" }}
                   >
+                    {isRestoreMode && (
+                      <div className="rounded-xl border border-white/40 bg-white/60 p-3 shadow-sm">
+                        <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                          Mode isi restore
+                        </p>
+                        <div className="mt-2 grid grid-cols-2 gap-2">
+                          <button
+                            type="button"
+                            onClick={() => applyRestoreInputMode("manual", activeLogDate)}
+                            className={`rounded-lg px-3 py-2 text-xs font-bold transition-all ${
+                              restoreInputMode === "manual"
+                                ? "bg-blue-600 text-white shadow-md"
+                                : "bg-white/70 text-gray-600 hover:bg-white"
+                            }`}
+                          >
+                            Isi manual
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => applyRestoreInputMode("auto", activeLogDate)}
+                            className={`rounded-lg px-3 py-2 text-xs font-bold transition-all ${
+                              restoreInputMode === "auto"
+                                ? "bg-emerald-600 text-white shadow-md"
+                                : "bg-white/70 text-gray-600 hover:bg-white"
+                            }`}
+                          >
+                            Isi auto (imputasi)
+                          </button>
+                        </div>
+                        {restoreImputeInfo && (
+                          <p className="mt-2 text-[11px] font-medium text-gray-500">
+                            {restoreImputeInfo}
+                          </p>
+                        )}
+                      </div>
+                    )}
                     {/* GPA SECTION (UPDATED LOGIC) */}
                     <div>
                       <label className="block text-sm font-semibold text-gray-800 mb-2">GPA <span className="text-red-500">*</span></label>
@@ -1906,9 +2048,20 @@ export default function Dashboard() {
           <div className="absolute inset-0 cursor-pointer" onClick={handleCloseMissingPopup} />
           <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden animate-modal-slide">
             <div className="p-8">
-              <h2 className="text-xl font-extrabold text-gray-900 mb-2">
-                Ada tanggal yang terlewat
-              </h2>
+              <div className="flex items-start justify-between gap-4 mb-2">
+                <h2 className="text-xl font-extrabold text-gray-900">
+                  Ada tanggal yang terlewat
+                </h2>
+                <button
+                  type="button"
+                  onClick={handleCloseMissingPopup}
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-gray-500 hover:text-gray-800 hover:bg-gray-100 transition-colors cursor-pointer"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
               <p className="text-sm text-gray-600 mb-4">
                 Kamu belum mengisi <span className="font-semibold">{missingRestorePopup.count}</span>{" "}
                 tanggal. Gunakan restore untuk mengisi tanggal berikut:
@@ -1925,18 +2078,21 @@ export default function Dashboard() {
               </div>
               <div className="flex items-center gap-3">
                 <button
-                  onClick={handleStartRestoreForMissing}
+                  onClick={() => handleStartRestoreForMissing("manual")}
                   className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold shadow-lg hover:bg-blue-700 transition-transform active:scale-95 cursor-pointer"
                 >
-                  Mulai restore
+                  Isi manual
                 </button>
                 <button
-                  onClick={handleCloseMissingPopup}
-                  className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl font-bold shadow-sm hover:bg-gray-200 transition-transform active:scale-95 cursor-pointer"
+                  onClick={() => handleStartRestoreForMissing("auto")}
+                  className="flex-1 py-3 bg-emerald-600 text-white rounded-xl font-bold shadow-lg hover:bg-emerald-700 transition-transform active:scale-95 cursor-pointer"
                 >
-                  Nanti dulu
+                  Isi auto
                 </button>
               </div>
+              <p className="mt-3 text-xs text-gray-500">
+                Isi auto akan mengisi berdasarkan rata-rata data terdekat. Kamu tetap bisa mengubahnya.
+              </p>
             </div>
           </div>
         </div>
