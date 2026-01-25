@@ -11,6 +11,13 @@ const supportsNotifications = () =>
 
 const getRegistration = async () => {
   if (!supportsNotifications()) return null;
+  const existing = await navigator.serviceWorker.getRegistration();
+  if (existing) return existing;
+  try {
+    await navigator.serviceWorker.register("/notification-sw.js");
+  } catch (error) {
+    console.warn("Failed to register notification service worker:", error);
+  }
   return navigator.serviceWorker.ready;
 };
 

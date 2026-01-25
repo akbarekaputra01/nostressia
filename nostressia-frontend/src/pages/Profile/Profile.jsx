@@ -269,6 +269,7 @@ export default function Profile() {
     username: "", fullName: "", email: "",
     avatar: null, birthday: "", gender: "",
   });
+  const [shouldClearProfilePicture, setShouldClearProfilePicture] = useState(false);
   const fallbackAvatar = AVATAR_OPTIONS[0];
   const [localAvatarPreview, setLocalAvatarPreview] = useState(null);
   const displayAvatar =
@@ -285,6 +286,8 @@ export default function Profile() {
         birthday: contextUser.userDob || contextUser.birthday || "", 
         gender: contextUser.gender || "",
       });
+      setLocalAvatarPreview(null);
+      setShouldClearProfilePicture(false);
     }
   }, [contextUser]);
 
@@ -494,6 +497,10 @@ export default function Profile() {
       const token = localStorage.getItem("token");
       if (!token) { showNotification("You are logged out", "error"); return; }
       
+      if (shouldClearProfilePicture) {
+        await saveProfilePictureUrl(null);
+      }
+
       const payload = {
         username: formData.username, 
         name: formData.fullName, 
@@ -504,6 +511,7 @@ export default function Profile() {
       await updateProfile(payload);
       showNotification("Profile updated successfully!");
       setEditableFields({ username: false, fullName: false, email: false });
+      setShouldClearProfilePicture(false);
       setTimeout(() => window.location.reload(), 1000);
     } catch (error) {
       showNotification(error?.message || "Failed to update profile", "error");
@@ -511,6 +519,8 @@ export default function Profile() {
   };
   
   const handleAvatarSelect = (url) => {
+    setLocalAvatarPreview(null);
+    setShouldClearProfilePicture(true);
     setFormData(prev => ({ ...prev, avatar: url }));
     setShowAvatarModal(false);
     showNotification("Avatar selected. Click Save Changes to apply.");
@@ -525,6 +535,7 @@ export default function Profile() {
 
     const previewUrl = URL.createObjectURL(file);
     setLocalAvatarPreview(previewUrl);
+    setShouldClearProfilePicture(false);
     setIsUploadingAvatar(true);
     try {
       const sasPayload = await requestProfilePictureSas(file);
@@ -608,6 +619,7 @@ export default function Profile() {
   const handlePermissionAllow = async () => {
     setShowPermissionPrompt(false);
     try {
+      saveNotificationSettings(notifSettings);
       const result = await scheduleDailyReminder(notifSettings.reminderTime);
       showNotification(result.message || "Notification preferences saved!", result.ok ? "success" : "error");
     } catch (error) {

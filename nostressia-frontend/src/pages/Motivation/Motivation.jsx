@@ -431,7 +431,7 @@ export default function Motivation() {
                 Motivation Hub
               </h1>
             </div>
-            <p className="text-gray-600 mt-2 text-base md:text-lg font-medium">
+            <p className="text-gray-600 mt-2 text-base md:text-lg font-medium dark:text-slate-300">
               Find inspiration and a boost to make your day more productive
             </p>
           </div>
@@ -442,20 +442,20 @@ export default function Motivation() {
           ref={heroRef}
           className="opacity-0 translate-y-6 mt-6 md:mt-8 rounded-2xl p-6 md:p-10 relative overflow-hidden"
           style={{
-            background: "rgba(255,255,255,0.25)",
-            border: "1px solid rgba(255,255,255,0.3)",
+            background: "var(--glass-bg)",
+            border: "1px solid var(--glass-border)",
             backdropFilter: "blur(10px)",
-            boxShadow: "0 8px 32px rgba(0,0,0,0.06)",
+            boxShadow: "0 8px 32px var(--glass-shadow)",
           }}
         >
           <div className="relative z-10">
-            <div className="inline-flex rounded-full bg-white border text-orange-700 text-sm font-medium shadow-sm px-3 py-1 mb-4 cursor-default">
+            <div className="inline-flex rounded-full bg-white border text-orange-700 text-sm font-medium shadow-sm px-3 py-1 mb-4 cursor-default dark:bg-slate-900 dark:border-slate-700 dark:text-orange-300">
               ✨ Today's Quote
             </div>
-            <h2 className="text-2xl md:text-3xl font-bold mb-3 text-gray-800">
+            <h2 className="text-2xl md:text-3xl font-bold mb-3 text-gray-800 dark:text-slate-100">
               Featured Motivation
             </h2>
-            <p className="text-lg md:text-xl italic text-gray-700 max-w-3xl">
+            <p className="text-lg md:text-xl italic text-gray-700 max-w-3xl dark:text-slate-200">
               {hasHeroQuote ? `"${heroQuote.text}"` : "No motivations available yet."}
             </p>
             <div className="flex gap-3 mt-6 flex-wrap justify-end">
@@ -472,7 +472,7 @@ export default function Motivation() {
               <button
                 onClick={() => toggleLike(heroQuote.motivationId)}
                 disabled={!hasHeroQuote}
-                className="px-4 py-2 rounded-lg bg-white border font-medium flex items-center gap-2 shadow hover:scale-105 transition disabled:opacity-60 disabled:cursor-not-allowed"
+                className="px-4 py-2 rounded-lg bg-white border font-medium flex items-center gap-2 shadow hover:scale-105 transition disabled:opacity-60 disabled:cursor-not-allowed dark:bg-slate-900 dark:border-slate-700 dark:text-slate-100"
                 aria-label="bookmark-hero"
               >
                 <Bookmark
@@ -490,7 +490,7 @@ export default function Motivation() {
               <button
                 onClick={() => openShare(heroQuote.text)}
                 disabled={!hasHeroQuote}
-                className="px-4 py-2 rounded-lg bg-white border flex items-center gap-2 text-gray-700 shadow hover:scale-105 transition disabled:opacity-60 disabled:cursor-not-allowed"
+                className="px-4 py-2 rounded-lg bg-white border flex items-center gap-2 text-gray-700 shadow hover:scale-105 transition disabled:opacity-60 disabled:cursor-not-allowed dark:bg-slate-900 dark:border-slate-700 dark:text-slate-100"
               >
                 <Share2 className="w-4 h-4" />
                 <span className="hidden sm:inline">Share</span>
@@ -501,11 +501,11 @@ export default function Motivation() {
 
         {/* Collection */}
         <div className="mt-8 md:mt-10 mb-6 flex items-center justify-between">
-          <h3 className="text-xl md:text-2xl font-bold text-gray-800 flex items-center gap-3">
+          <h3 className="text-xl md:text-2xl font-bold text-gray-800 flex items-center gap-3 dark:text-slate-100">
             <Star className="w-5 h-5 text-yellow-500" />
             Motivation Collection
           </h3>
-          <p className="text-gray-600 text-sm">
+          <p className="text-gray-600 text-sm dark:text-slate-300">
             {loading
               ? "Loading..."
               : error
@@ -524,16 +524,16 @@ export default function Motivation() {
                 ref={(el) => (cardsRef.current[idx] = el)}
                 className="opacity-0 translate-y-6 rounded-2xl p-5 md:p-6 relative transition-all hover:scale-105 hover:shadow-xl"
                 style={{
-                  background: "rgba(255,255,255,0.25)",
-                  border: "1px solid rgba(255,255,255,0.3)",
+                  background: "var(--glass-bg)",
+                  border: "1px solid var(--glass-border)",
                   backdropFilter: "blur(10px)",
-                  boxShadow: "0 4px 18px rgba(0,0,0,0.04)",
+                  boxShadow: "0 4px 18px var(--glass-shadow)",
                 }}
               >
-                <p className="text-md md:text-lg italic text-gray-700 min-h-[72px] md:min-h-[90px]">
+                <p className="text-md md:text-lg italic text-gray-700 min-h-[72px] md:min-h-[90px] dark:text-slate-200">
                   "{quoteObj.quote}"
                 </p>
-                <div className="text-xs text-gray-500 mt-2">
+                <div className="text-xs text-gray-500 mt-2 dark:text-slate-400">
                   Author: {quoteObj.authorName ?? "-"}
                 </div>
                 <div className="mt-4 pt-4 border-t border-black/5 flex justify-end gap-3 items-center">

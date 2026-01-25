@@ -37,6 +37,11 @@
 
     --skeleton-bg: rgba(255, 255, 255, 0.65);
     --skeleton-shine: rgba(255, 255, 255, 0.7);
+
+    --journal-paper: #fcf9f5;
+    --journal-paper-muted: #fffaf5;
+    --journal-line: #e2e8f0;
+    --journal-ink: #334155;
   }
 
   body {
@@ -76,6 +81,11 @@
 
     --skeleton-bg: rgba(30, 41, 59, 0.7);
     --skeleton-shine: rgba(148, 163, 184, 0.25);
+
+    --journal-paper: #111827;
+    --journal-paper-muted: #0f172a;
+    --journal-line: #334155;
+    --journal-ink: #e2e8f0;
   }
 }
 
