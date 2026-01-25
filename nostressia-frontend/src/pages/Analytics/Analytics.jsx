@@ -333,8 +333,6 @@ export default function Analytics() {
       <style>{`
         @keyframes gradient-bg { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         @keyframes shimmer-slide { 100% { transform: translateX(100%); } }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes pulse-soft { 0%, 100% { opacity: 0.7; transform: scale(0.98); } 50% { opacity: 1; transform: scale(1); } }
         .skeleton {
           position: relative;
           overflow: hidden;
@@ -348,9 +346,6 @@ export default function Analytics() {
           background: linear-gradient(90deg, transparent, var(--skeleton-shine), transparent);
           animation: shimmer-slide 1.6s infinite;
         }
-        .spin-slow { animation: spin 1.4s linear infinite; }
-        .spin-reverse { animation: spin 2.1s linear infinite reverse; }
-        .pulse-soft { animation: pulse-soft 1.8s ease-in-out infinite; }
       `}</style>
 
       <Navbar activeLink="Analytics" user={user} />
@@ -451,20 +446,8 @@ export default function Analytics() {
             }}
           >
             {loading && (
-              <div className="absolute inset-0 z-10 rounded-2xl bg-white/70 backdrop-blur-sm p-4 md:p-6">
-                <div className="relative h-full w-full rounded-2xl border border-white/40 bg-white/60 p-4 md:p-6 shadow-inner">
-                  <div className="skeleton h-5 w-40 rounded-full mb-4" />
-                  <div className="skeleton h-full w-full rounded-2xl" />
-                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-center">
-                    <div className="relative flex items-center justify-center">
-                      <div className="h-14 w-14 rounded-full border-4 border-blue-200 border-t-blue-500 spin-slow" />
-                      <div className="absolute h-9 w-9 rounded-full border-4 border-orange-200 border-t-orange-500 spin-reverse" />
-                    </div>
-                    <p className="text-center text-sm font-semibold text-gray-500 pulse-soft">
-                      Loading stress analytics...
-                    </p>
-                  </div>
-                </div>
+              <div className="absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-white/70 backdrop-blur-sm">
+                <div className="h-12 w-12 rounded-full border-4 border-blue-200 border-t-blue-500 animate-spin" />
               </div>
             )}
             <h2
@@ -534,20 +517,8 @@ export default function Analytics() {
             }}
           >
             {loading && (
-              <div className="absolute inset-0 z-10 rounded-2xl bg-white/70 backdrop-blur-sm p-4 md:p-6">
-                <div className="relative h-full w-full rounded-2xl border border-white/40 bg-white/60 p-4 md:p-6 shadow-inner">
-                  <div className="skeleton h-5 w-40 rounded-full mb-4" />
-                  <div className="skeleton h-full w-full rounded-2xl" />
-                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-center">
-                    <div className="relative flex items-center justify-center">
-                      <div className="h-14 w-14 rounded-full border-4 border-blue-200 border-t-blue-500 spin-slow" />
-                      <div className="absolute h-9 w-9 rounded-full border-4 border-orange-200 border-t-orange-500 spin-reverse" />
-                    </div>
-                    <p className="text-center text-sm font-semibold text-gray-500 pulse-soft">
-                      Loading mood analytics...
-                    </p>
-                  </div>
-                </div>
+              <div className="absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-white/70 backdrop-blur-sm">
+                <div className="h-12 w-12 rounded-full border-4 border-blue-200 border-t-blue-500 animate-spin" />
               </div>
             )}
             <h2
@@ -565,9 +536,9 @@ export default function Analytics() {
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
                   data={moodChartData}
-                  margin={{ top: 12, right: 8, left: 12, bottom: 4 }}
+                  margin={{ top: 0, right: 8, left: 12, bottom: 4 }}
                 >
-                  <CartesianGrid stroke="#e5e7eb" strokeDasharray="5 5" />
+                  <CartesianGrid stroke="#e5e7eb" strokeDasharray="5 5" vertical={false} />
                   <XAxis
                     dataKey={mode === "week" ? "day" : "week"}
                     tick={{ fontSize: 12 }}
@@ -575,13 +546,13 @@ export default function Analytics() {
                   <YAxis
                     tick={{ fontSize: 22 }}
                     width={64}
-                    domain={[0, 5]}
+                    domain={[1, 5]}
                     ticks={[1, 2, 3, 4, 5]}
                     interval={0}
                     allowDecimals={false}
                     tickFormatter={(value) => moodTooltipValue(value)}
                     tickMargin={8}
-                    padding={{ top: 6, bottom: 6 }}
+                    padding={{ top: 0, bottom: 0 }}
                   />
                   <Tooltip content={renderMoodTooltip(mode)} filterNull={false} />
                   <Line

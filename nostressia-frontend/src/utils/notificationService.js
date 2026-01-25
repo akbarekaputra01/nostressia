@@ -62,7 +62,10 @@ export const clearScheduledReminder = async () => {
   return true;
 };
 
-export const scheduleDailyReminder = async (timeValue) => {
+export const scheduleDailyReminder = async (
+  timeValue,
+  { skipPermissionPrompt = false } = {}
+) => {
   if (!supportsNotifications()) {
     return {
       ok: false,
@@ -71,7 +74,18 @@ export const scheduleDailyReminder = async (timeValue) => {
     };
   }
 
-  const permission = await Notification.requestPermission();
+  if (skipPermissionPrompt && Notification.permission !== "granted") {
+    return {
+      ok: false,
+      reason: "denied",
+      message: "Notification permission is not granted.",
+    };
+  }
+
+  const permission =
+    Notification.permission === "granted"
+      ? "granted"
+      : await Notification.requestPermission();
   if (permission !== "granted") {
     return {
       ok: false,
@@ -132,4 +146,20 @@ export const scheduleDailyReminder = async (timeValue) => {
       : "Reminder scheduled while this tab is open (background scheduling is limited on this browser).",
     triggerSupported: Boolean(trigger),
   };
+};
+
+export const restoreScheduledReminder = async () => {
+  if (!supportsNotifications()) {
+    return { ok: false, reason: "unsupported" };
+  }
+  const settings = getSavedNotificationSettings();
+  if (!settings?.dailyReminder || !settings?.reminderTime) {
+    return { ok: false, reason: "disabled" };
+  }
+  if (Notification.permission !== "granted") {
+    return { ok: false, reason: "permission" };
+  }
+  return scheduleDailyReminder(settings.reminderTime, {
+    skipPermissionPrompt: true,
+  });
 };

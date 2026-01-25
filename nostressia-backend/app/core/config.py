@@ -30,6 +30,11 @@ class Settings(BaseSettings):
     # ✅ TAMBAHAN BARU: AGAR TIDAK ERROR "EXTRA INPUTS"
     brevo_api_key: str = Field(..., env="BREVO_API_KEY")
 
+    azure_storage_connection_string: str = Field(
+        "", env="AZURE_STORAGE_CONNECTION_STRING"
+    )
+    azure_storage_container: str = Field("profile-avatars", env="AZURE_STORAGE_CONTAINER")
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
