@@ -214,7 +214,7 @@ const renderMoodTooltip =
     const hasValue = Number.isFinite(value) && value > 0;
 
     return (
-      <div className="rounded-xl bg-white/90 px-3 py-2 text-sm shadow-lg">
+      <div className="rounded-xl bg-white/90 dark:bg-slate-900/90 px-3 py-2 text-sm shadow-lg">
         <div className="font-semibold text-gray-700">{label}</div>
         <div className="mt-1">
           {hasValue
@@ -235,7 +235,7 @@ const renderStressTooltip =
     const hasValue = Number.isFinite(value) && value > 0;
 
     return (
-      <div className="rounded-xl bg-white/90 px-3 py-2 text-sm shadow-lg">
+      <div className="rounded-xl bg-white/90 dark:bg-slate-900/90 px-3 py-2 text-sm shadow-lg">
         <div className="font-semibold text-gray-700">{label}</div>
         <div className="mt-1">
           {hasValue

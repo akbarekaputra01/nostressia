@@ -328,9 +328,9 @@ export default function Login() {
   };
 
   return (
-    <div className="h-screen w-full flex font-sans bg-white overflow-hidden">
+    <div className="h-screen w-full flex font-sans bg-[var(--surface-primary)] text-[var(--text-primary)] overflow-hidden">
       {/* BACKGROUND DECORATION */}
-      <div className="hidden lg:flex w-1/2 h-full relative bg-[#f8fbff] items-center justify-center p-10 overflow-hidden">
+      <div className="hidden lg:flex w-1/2 h-full relative bg-slate-50 dark:bg-slate-900 items-center justify-center p-10 overflow-hidden">
         <div className="absolute top-[-20%] left-[-20%] w-[600px] h-[600px] bg-blue-100/50 rounded-full blur-[120px] animate-pulse-slow"></div>
         <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-orange-100/40 rounded-full blur-[100px] animate-pulse-slow animation-delay-2000"></div>
         <div className="relative z-10 w-full max-w-[480px] group">
@@ -339,12 +339,12 @@ export default function Login() {
                 <img src={logoKedip} alt="Nostressia Wink" className="w-full h-auto object-contain relative z-10" />
                 <Motion.img src={logoBuka} alt="Nostressia Open" className="absolute top-0 left-0 w-full h-full object-contain z-20" initial={{ opacity: 1 }} animate={{ opacity: isWinking ? 0 : 1 }} transition={{ duration: 0.1 }} />
             </div>
-            <p className="text-center text-gray-400/60 text-[10px] mt-8 font-medium tracking-widest uppercase animate-pulse">No stress, More success</p>
+            <p className="text-center text-gray-400/60 dark:text-slate-400 text-[10px] mt-8 font-medium tracking-widest uppercase animate-pulse">No stress, More success</p>
         </div>
       </div>
 
       {/* FORM CONTAINER */}
-      <div className="w-full lg:w-1/2 h-full flex items-center justify-center p-4 relative bg-white perspective-[1000px]">
+      <div className="w-full lg:w-1/2 h-full flex items-center justify-center p-4 relative bg-[var(--surface-primary)] perspective-[1000px]">
          <Motion.div 
            className="relative w-full max-w-md h-[85vh] max-h-[850px] min-h-[600px]" 
            animate={{ rotateY: isFlipped ? -180 : 0 }}
