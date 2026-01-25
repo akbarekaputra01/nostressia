@@ -1,5 +1,9 @@
 {
   "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://akbarekaputra01-nostressia-backend.hf.space/api/$1"
+    },
     { "source": "/(.*)", "destination": "/" }
   ]
 }
