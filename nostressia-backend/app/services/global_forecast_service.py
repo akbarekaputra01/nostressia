@@ -296,6 +296,11 @@ class GlobalForecastService:
         for col in feature_cols:
             if col not in input_df.columns:
                 input_df[col] = pd.NA
+        model_input = (
+            input_df[feature_cols]
+            .apply(pd.to_numeric, errors="coerce")
+            .fillna(0)
+        )
 
         if model_type == "global_markov":
             probs = artifact.get("probs")
@@ -315,21 +320,28 @@ class GlobalForecastService:
                     detail="Artifact ML tidak memiliki pipeline.",
                 )
             threshold = float(artifact.get("thr", 0.5))
-            probability = float(pipe.predict_proba(input_df[feature_cols])[:, 1][0])
+            probability = float(pipe.predict_proba(model_input)[:, 1][0])
 
         elif model_type == "global_blend_model":
             pipe = artifact.get("pipe")
             probs = artifact.get("markov_probs")
-            if pipe is None or probs is None:
+            threshold = float(artifact.get("thr", 0.5))
+            alpha = float(artifact.get("alpha", 0.5))
+            if pipe is None and probs is None:
                 raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                     detail="Artifact blend tidak lengkap.",
                 )
-            threshold = float(artifact.get("thr", 0.5))
-            alpha = float(artifact.get("alpha", 0.5))
-            p_ml = float(pipe.predict_proba(input_df[feature_cols])[:, 1][0])
-            p_mk = self._markov_proba(probs, last_row)
-            probability = alpha * p_ml + (1.0 - alpha) * p_mk
+            if pipe is None:
+                probability = self._markov_proba(probs, last_row)
+                model_type = "global_markov"
+            elif probs is None:
+                probability = float(pipe.predict_proba(model_input)[:, 1][0])
+                model_type = "global_ml_model"
+            else:
+                p_ml = float(pipe.predict_proba(model_input)[:, 1][0])
+                p_mk = self._markov_proba(probs, last_row)
+                probability = alpha * p_ml + (1.0 - alpha) * p_mk
 
         else:
             raise HTTPException(

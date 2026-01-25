@@ -10,6 +10,24 @@ from fastapi import UploadFile
 
 from app.core.config import settings
 
+LOCAL_UPLOAD_ROOT = Path(__file__).resolve().parents[2] / "uploads"
+LOCAL_AVATAR_ROOT = LOCAL_UPLOAD_ROOT / "avatars"
+
+
+def _save_local_avatar(file: UploadFile, user_id: int) -> str:
+    extension = Path(file.filename or "").suffix
+    if not extension and file.content_type:
+        extension = mimetypes.guess_extension(file.content_type) or ""
+
+    target_dir = LOCAL_AVATAR_ROOT / str(user_id)
+    target_dir.mkdir(parents=True, exist_ok=True)
+    filename = f"{uuid4().hex}{extension}"
+    target_path = target_dir / filename
+    file.file.seek(0)
+    with target_path.open("wb") as destination:
+        destination.write(file.file.read())
+    return f"/uploads/avatars/{user_id}/{filename}"
+
 
 def _get_container_client() -> ContainerClient:
     if not settings.azure_storage_connection_string:
@@ -27,6 +45,8 @@ def _get_container_client() -> ContainerClient:
 
 
 def upload_avatar(file: UploadFile, user_id: int) -> str:
+    if not settings.azure_storage_connection_string:
+        return _save_local_avatar(file, user_id)
     container_client = _get_container_client()
     extension = Path(file.filename or "").suffix
     if not extension and file.content_type:

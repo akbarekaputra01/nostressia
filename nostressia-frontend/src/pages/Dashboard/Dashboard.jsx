@@ -1360,7 +1360,7 @@ export default function Dashboard() {
                 
                 {/* FRONT CARD (PREDICTION) */}
                 <div
-                  className="absolute inset-0 rounded-[20px] p-6 md:p-8 backface-hidden flex flex-col shadow-xl border border-white/20 overflow-hidden"
+                  className="absolute inset-0 rounded-[20px] p-6 md:p-8 backface-hidden flex flex-col border border-white/20 overflow-hidden shadow-[0_18px_45px_rgba(15,23,42,0.12)]"
                   style={{ backgroundColor: "var(--glass-bg)", zIndex: isFlipped ? 0 : 10, pointerEvents: isFlipped ? "none" : "auto" }}
                 >
                   <div className="absolute inset-0 transition-all duration-1000 ease-in-out" style={{ background: gradientBg, zIndex: -1, opacity: 0.8 }} />
@@ -1432,7 +1432,7 @@ export default function Dashboard() {
 
                 {/* BACK CARD (FORM) */}
                 <div
-                  className="absolute inset-0 rounded-[20px] p-6 md:p-8 rotate-y-180 backface-hidden flex flex-col shadow-xl border border-white/20 overflow-hidden"
+                  className="absolute inset-0 rounded-[20px] p-6 md:p-8 rotate-y-180 backface-hidden flex flex-col border border-white/20 overflow-hidden shadow-[0_18px_45px_rgba(15,23,42,0.12)]"
                   style={{ backgroundColor: "var(--glass-bg)", zIndex: isFlipped ? 10 : 0, pointerEvents: isFlipped ? "auto" : "none" }}
                 >
                   <header className="flex justify-between items-center mb-4 transition-opacity duration-300" style={{ opacity: successModal.visible ? 0 : 1 }}>
@@ -2003,8 +2003,8 @@ export default function Dashboard() {
         {/* MOTIVATION & TIPS SECTIONS */}
         <div className="mt-8 grid grid-cols-1">
           {/* ... (Section motivasi tetap sama) ... */}
-          <section className="col-span-4 relative overflow-hidden rounded-[24px] shadow-2xl group transition-all duration-500 hover:shadow-orange-100">
-            <div className="absolute inset-0 bg-white/80 backdrop-blur-xl border border-white/60 dark:bg-slate-900/70 dark:border-slate-700/60 z-0"></div>
+          <section className="col-span-4 relative overflow-hidden rounded-[24px] shadow-xl group transition-all duration-500 hover:shadow-orange-100">
+            <div className="absolute inset-0 bg-white/60 backdrop-blur-xl border border-white/40 dark:bg-slate-900/80 dark:border-slate-700/60 z-0"></div>
             <div className="absolute -left-10 -top-10 w-40 h-40 bg-orange-300 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob"></div>
             <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-purple-300 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob animation-delay-2000"></div>
             <div className="relative z-10 p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-6">

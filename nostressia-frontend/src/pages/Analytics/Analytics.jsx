@@ -544,14 +544,14 @@ export default function Analytics() {
                     tick={{ fontSize: 12 }}
                   />
                   <YAxis
-                    tick={{ fontSize: 22 }}
-                    width={64}
+                    tick={{ fontSize: 16 }}
+                    width={54}
                     domain={[1, 5]}
                     ticks={[1, 2, 3, 4, 5]}
                     interval={0}
                     allowDecimals={false}
                     tickFormatter={(value) => moodTooltipValue(value)}
-                    tickMargin={8}
+                    tickMargin={6}
                     padding={{ top: 0, bottom: 0 }}
                   />
                   <Tooltip content={renderMoodTooltip(mode)} filterNull={false} />
