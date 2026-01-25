@@ -1,12 +1,12 @@
 import client, { unwrapResponse } from "../api/client";
 
 export const getMotivations = async () => {
-  const response = await client.get("/motivations");
+  const response = await client.get("/motivations/");
   return unwrapResponse(response);
 };
 
 export const createMotivation = async (payload) => {
-  const response = await client.post("/motivations", payload);
+  const response = await client.post("/motivations/", payload);
   return unwrapResponse(response);
 };
 
