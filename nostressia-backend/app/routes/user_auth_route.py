@@ -19,7 +19,6 @@ from app.services.email_service import send_otp_email, send_reset_password_email
 from app.schemas.user_auth_schema import (
     UserRegister,
     UserLogin,
-    Token,
     UserResponse,
     UserUpdate,
     ChangePasswordSchema,
@@ -34,7 +33,11 @@ router = APIRouter()
 # --- KONFIGURASI ---
 OTP_EXPIRE_MINUTES = 5 # ✅ Waktu Kadaluarsa OTP
 
-def _issue_token_for_user(user: User, db: Session) -> Token:
+def _serialize_user(user: User) -> UserResponse:
+    return UserResponse.model_validate(user)
+
+
+def _issue_token_for_user(user: User, db: Session) -> dict:
     today = date.today()
     if user.last_login == today - timedelta(days=1):
         user.streak = (user.streak or 0) + 1
@@ -46,7 +49,11 @@ def _issue_token_for_user(user: User, db: Session) -> Token:
     access_token = create_access_token(
         data={"sub": user.email, "id": user.user_id, "username": user.username}
     )
-    return Token(access_token=access_token, token_type="bearer")
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": _serialize_user(user),
+    }
 
 def _authenticate_user(identifier: str, password: str, db: Session) -> User:
     user = None
@@ -220,7 +227,7 @@ def login_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
 
 @router.get("/me", response_model=dict)
 def read_users_me(current_user: User = Depends(get_current_user)):
-    return success_response(data=current_user, message="User profile fetched")
+    return success_response(data=_serialize_user(current_user), message="User profile fetched")
 
 @router.put("/me", response_model=dict)
 def update_user_profile(user_update: UserUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
@@ -240,7 +247,7 @@ def update_user_profile(user_update: UserUpdate, db: Session = Depends(get_db), 
 
     db.commit()
     db.refresh(current_user)
-    return success_response(data=current_user, message="Profile updated")
+    return success_response(data=_serialize_user(current_user), message="Profile updated")
 
 @router.put("/change-password", status_code=status.HTTP_200_OK)
 def change_password(payload: ChangePasswordSchema, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
