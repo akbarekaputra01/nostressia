@@ -3,13 +3,16 @@ const AVAILABLE_THEMES = ["light", "dark", "system"];
 let mediaQueryList;
 let mediaQueryHandler;
 
+const normalizeTheme = (theme) =>
+  AVAILABLE_THEMES.includes(theme) ? theme : "system";
+
 const getSystemTheme = () => {
   if (typeof window === "undefined") return "light";
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 };
 
 export const getResolvedTheme = (theme) => {
-  const selected = theme || getStoredTheme();
+  const selected = normalizeTheme(theme || getStoredTheme());
   return selected === "system" ? getSystemTheme() : selected;
 };
 
@@ -18,7 +21,6 @@ const applyResolvedTheme = (resolvedTheme) => {
   const root = document.documentElement;
   const isDark = resolvedTheme === "dark";
   root.classList.toggle("dark", isDark);
-  root.style.colorScheme = isDark ? "dark" : "light";
   root.dataset.theme = resolvedTheme;
 };
 
@@ -59,16 +61,20 @@ const removeSystemListener = () => {
 export const getStoredTheme = () => {
   if (typeof window === "undefined") return "system";
   const stored = localStorage.getItem(THEME_KEY) || "system";
-  return AVAILABLE_THEMES.includes(stored) ? stored : "system";
+  return normalizeTheme(stored);
 };
 
 export const applyTheme = (theme) => {
-  const resolvedTheme = getResolvedTheme(theme);
+  const normalizedTheme = normalizeTheme(theme);
+  const resolvedTheme = getResolvedTheme(normalizedTheme);
   applyResolvedTheme(resolvedTheme);
   if (typeof document !== "undefined") {
-    document.documentElement.dataset.themePreference = theme;
+    const root = document.documentElement;
+    root.dataset.themePreference = normalizedTheme;
+    root.style.colorScheme =
+      normalizedTheme === "system" ? "light dark" : resolvedTheme;
   }
-  if (theme === "system") {
+  if (normalizedTheme === "system") {
     ensureSystemListener();
   } else {
     removeSystemListener();
@@ -76,7 +82,7 @@ export const applyTheme = (theme) => {
 };
 
 export const setStoredTheme = (theme) => {
-  const normalizedTheme = AVAILABLE_THEMES.includes(theme) ? theme : "system";
+  const normalizedTheme = normalizeTheme(theme);
   if (typeof window !== "undefined") {
     localStorage.setItem(THEME_KEY, normalizedTheme);
   }
