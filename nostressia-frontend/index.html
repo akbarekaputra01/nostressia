@@ -10,12 +10,12 @@
     <script>
       (() => {
         const themeKey = "nostressia_theme";
-        const storedTheme = localStorage.getItem(themeKey) || "light";
+        const storedTheme = localStorage.getItem(themeKey);
         const normalizedTheme = ["light", "dark", "system"].includes(
           String(storedTheme || "").toLowerCase()
         )
           ? String(storedTheme || "").toLowerCase()
-          : "light";
+          : "system";
         const systemPrefersDark =
           window.matchMedia &&
           window.matchMedia("(prefers-color-scheme: dark)").matches;

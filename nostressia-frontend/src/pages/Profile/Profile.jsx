@@ -24,7 +24,7 @@ import {
   saveNotificationSettings,
   scheduleDailyReminder,
 } from "../../utils/notificationService";
-import { getResolvedTheme, getStoredTheme, setStoredTheme } from "../../utils/theme";
+import { useTheme } from "../../theme/ThemeProvider";
 import { getMyStressLogs } from "../../services/stressService";
 
 // --- IMPORT AVATAR ---
@@ -328,17 +328,7 @@ export default function Profile() {
     }
   }, [activeTab, fetchBookmarks]);
 
-  useEffect(() => {
-    const handleThemeChange = (event) => {
-      const nextTheme = event?.detail?.theme || getStoredTheme();
-      const nextResolvedTheme =
-        event?.detail?.resolvedTheme || getResolvedTheme(nextTheme);
-      setThemePreference(nextTheme);
-      setResolvedTheme(nextResolvedTheme);
-    };
-    window.addEventListener("nostressia:theme-change", handleThemeChange);
-    return () => window.removeEventListener("nostressia:theme-change", handleThemeChange);
-  }, []);
+  const { preference: themePreference, resolvedTheme, setPreference } = useTheme();
 
   const handleUnsave = async (motivationId) => {
     try {
@@ -351,8 +341,7 @@ export default function Profile() {
   };
 
   const handleThemeSelect = (nextTheme) => {
-    setThemePreference(nextTheme);
-    setStoredTheme(nextTheme);
+    setPreference(nextTheme);
     const label = nextTheme === "system" ? "system" : nextTheme === "dark" ? "dark" : "light";
     showNotification(`Theme set to ${label}`);
   };
@@ -366,10 +355,6 @@ export default function Profile() {
       }
     );
   });
-  const [themePreference, setThemePreference] = useState(() => getStoredTheme());
-  const [resolvedTheme, setResolvedTheme] = useState(() =>
-    getResolvedTheme(getStoredTheme())
-  );
   const [passwordForm, setPasswordForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
   const [passwordStep, setPasswordStep] = useState(1);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
