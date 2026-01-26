@@ -40,6 +40,27 @@ const getTimestampTrigger = (timestamp) => {
   return null;
 };
 
+const sendServiceWorkerMessage = async (payload) => {
+  const registration = await getRegistration();
+  if (!registration?.active) {
+    return { ok: false, reason: "inactive" };
+  }
+
+  return new Promise((resolve) => {
+    const channel = new MessageChannel();
+    const timeoutId = window.setTimeout(() => {
+      resolve({ ok: false, reason: "timeout" });
+    }, 2000);
+
+    channel.port1.onmessage = (event) => {
+      clearTimeout(timeoutId);
+      resolve(event.data || { ok: false, reason: "no-response" });
+    };
+
+    registration.active.postMessage(payload, [channel.port2]);
+  });
+};
+
 export const saveNotificationSettings = (settings) => {
   if (typeof window === "undefined") return;
   localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
@@ -129,9 +150,23 @@ export const scheduleDailyReminder = async (
   if (trigger) {
     notificationOptions.showTrigger = trigger;
   }
+
   if (trigger) {
     await registration.showNotification("Nostressia Daily Reminder", notificationOptions);
   } else {
+    const swResult = await sendServiceWorkerMessage({
+      type: "schedule-reminder",
+      title: "Nostressia Daily Reminder",
+      options: notificationOptions,
+    });
+    if (swResult?.ok) {
+      return {
+        ok: true,
+        message: "Daily reminder scheduled even when the app is closed.",
+        triggerSupported: true,
+      };
+    }
+
     const delayMs = Math.max(scheduled.getTime() - Date.now(), 0);
     fallbackTimeoutId = window.setTimeout(async () => {
       const activeRegistration = await getRegistration();
