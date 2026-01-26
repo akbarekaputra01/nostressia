@@ -538,7 +538,7 @@ export default function LandingPage() {
   };
   
   return (
-    <div className="min-h-screen font-sans bg-slate-50 dark:bg-slate-950 text-gray-900 dark:text-slate-100 overflow-x-hidden selection:bg-[#F2994A] selection:text-white">
+    <div className="min-h-screen font-sans bg-[var(--surface-primary)] text-[var(--text-primary)] overflow-x-hidden selection:bg-[#F2994A] selection:text-white">
       
       {/* Background Pattern */}
       <div className="fixed inset-0 z-0 opacity-[0.4] pointer-events-none"
