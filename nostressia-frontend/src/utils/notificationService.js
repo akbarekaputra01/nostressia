@@ -9,6 +9,9 @@ const supportsNotifications = () =>
   "Notification" in window &&
   "serviceWorker" in navigator;
 
+const isSecureNotificationContext = () =>
+  typeof window !== "undefined" && window.isSecureContext;
+
 const getRegistration = async () => {
   if (!supportsNotifications()) return null;
   const existing = await navigator.serviceWorker.getRegistration();
@@ -17,8 +20,14 @@ const getRegistration = async () => {
     await navigator.serviceWorker.register("/notification-sw.js");
   } catch (error) {
     console.warn("Failed to register notification service worker:", error);
+    return null;
   }
-  return navigator.serviceWorker.ready;
+  try {
+    return await navigator.serviceWorker.ready;
+  } catch (error) {
+    console.warn("Failed to wait for service worker readiness:", error);
+    return null;
+  }
 };
 
 const buildNextTriggerDate = (timeValue) => {
@@ -114,12 +123,28 @@ export const scheduleDailyReminder = async (
       message: "Notifications are not supported in this browser.",
     };
   }
+  if (!isSecureNotificationContext()) {
+    return {
+      ok: false,
+      reason: "insecure",
+      message: "Notifications require a secure (HTTPS) connection.",
+    };
+  }
 
   if (skipPermissionPrompt && Notification.permission !== "granted") {
     return {
       ok: false,
       reason: "denied",
       message: "Notification permission is not granted.",
+    };
+  }
+
+  if (Notification.permission === "denied") {
+    return {
+      ok: false,
+      reason: "denied",
+      message:
+        "Notification permission is blocked. Enable it in your browser settings to continue.",
     };
   }
 
@@ -131,7 +156,10 @@ export const scheduleDailyReminder = async (
     return {
       ok: false,
       reason: "denied",
-      message: "Notification permission was denied.",
+      message:
+        permission === "default"
+          ? "Notification permission prompt was dismissed."
+          : "Notification permission was denied.",
     };
   }
 

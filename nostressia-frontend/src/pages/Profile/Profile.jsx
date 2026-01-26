@@ -688,6 +688,10 @@ export default function Profile() {
         setNotifSettings(disabledSettings);
         saveNotificationSettings(disabledSettings);
         await clearScheduledReminder();
+        if (result.reason === "denied") {
+          setPermissionStatus("denied");
+          setShowPermissionPrompt(true);
+        }
         showNotification(
           result.message || "Failed to schedule reminders.",
           "error"
