@@ -13,19 +13,12 @@ import {
 } from "lucide-react";
 import { resolveAvatarUrl } from "../../utils/avatar";
 import {
-  requestProfilePictureSas,
-  saveProfilePictureUrl,
-  uploadProfilePictureToAzure,
-  validateProfilePictureFile,
-} from "../../api/profilePicture";
-import {
   clearScheduledReminder,
   getSavedNotificationSettings,
   saveNotificationSettings,
   scheduleDailyReminder,
 } from "../../utils/notificationService";
 import { getStoredTheme, setStoredTheme } from "../../utils/theme";
-import { getMyStressLogs } from "../../services/stressService";
 
 // --- IMPORT AVATAR ---
 import avatar1 from "../../assets/images/avatar1.png";
@@ -43,7 +36,7 @@ const AVATAR_OPTIONS = [
 ];
 
 // --- COMPONENT: AVATAR SELECTION MODAL ---
-const AvatarSelectionModal = ({ onClose, onSelect, onUpload, currentAvatar, uploading }) => {
+const AvatarSelectionModal = ({ onClose, onSelect, currentAvatar }) => {
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in">
       <div className="bg-white rounded-[24px] p-6 w-full max-w-lg shadow-2xl border border-white/50 relative">
@@ -68,21 +61,7 @@ const AvatarSelectionModal = ({ onClose, onSelect, onUpload, currentAvatar, uplo
             );
           })}
         </div>
-        <div className="mt-5 flex flex-col items-center gap-3">
-          <label className="w-full cursor-pointer rounded-2xl border border-dashed border-gray-300 bg-white px-4 py-3 text-center text-xs font-semibold text-gray-500 transition hover:border-orange-400 hover:text-orange-500">
-            <input
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(event) => onUpload(event.target.files?.[0])}
-              disabled={uploading}
-            />
-            {uploading ? "Uploading..." : "Upload your own photo"}
-          </label>
-          <p className="text-center text-xs text-gray-400">
-            *Select an avatar or upload a custom photo (max 2MB).
-          </p>
-        </div>
+        <p className="text-center text-xs text-gray-400 mt-4">*Select an avatar to update your profile picture</p>
       </div>
     </div>
   );
@@ -244,11 +223,6 @@ export default function Profile() {
   // STATE UNTUK BOOKMARK
   const [bookmarks, setBookmarks] = useState([]);
   const [loadingBookmarks, setLoadingBookmarks] = useState(false);
-  const [stressSummary, setStressSummary] = useState({
-    label: "-",
-    textColor: "text-slate-500",
-    bgColor: "bg-slate-100",
-  });
 
   // STATE UNTUK LOCK/UNLOCK FIELD
   const [editableFields, setEditableFields] = useState({
@@ -269,11 +243,8 @@ export default function Profile() {
     username: "", fullName: "", email: "",
     avatar: null, birthday: "", gender: "",
   });
-  const [shouldClearProfilePicture, setShouldClearProfilePicture] = useState(false);
   const fallbackAvatar = AVATAR_OPTIONS[0];
-  const [localAvatarPreview, setLocalAvatarPreview] = useState(null);
-  const displayAvatar =
-    resolveAvatarUrl(localAvatarPreview || formData.avatar) || fallbackAvatar;
+  const displayAvatar = resolveAvatarUrl(formData.avatar) || fallbackAvatar;
 
   // --- LOGIC SYNC USER ---
   useEffect(() => {
@@ -286,8 +257,6 @@ export default function Profile() {
         birthday: contextUser.userDob || contextUser.birthday || "", 
         gender: contextUser.gender || "",
       });
-      setLocalAvatarPreview(null);
-      setShouldClearProfilePicture(false);
     }
   }, [contextUser]);
 
@@ -364,11 +333,6 @@ export default function Profile() {
   );
   const [passwordForm, setPasswordForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
   const [passwordStep, setPasswordStep] = useState(1);
-  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
-  useEffect(() => {
-    if (!localAvatarPreview) return;
-    return () => URL.revokeObjectURL(localAvatarPreview);
-  }, [localAvatarPreview]);
 
   // ✅ LOGIC BARU: STATISTIK DINAMIS & WARNA STREAK
   const getStreakStyle = (streak) => {
@@ -379,73 +343,6 @@ export default function Profile() {
 
   const streakVal = contextUser?.streak || 0;
   const streakStyle = getStreakStyle(streakVal);
-
-  const resolveStressLabel = (value) => {
-    if (value === "High" || value === "high" || Number(value) >= 2) return "High";
-    if (value === "Moderate" || value === "moderate" || Number(value) === 1) return "Moderate";
-    return "Low";
-  };
-
-  const resolveStressStyle = (label) => {
-    if (label === "High") return { textColor: "text-rose-600", bgColor: "bg-rose-100" };
-    if (label === "Moderate") return { textColor: "text-amber-600", bgColor: "bg-amber-100" };
-    return { textColor: "text-emerald-600", bgColor: "bg-emerald-100" };
-  };
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const fetchStressSummary = async () => {
-      try {
-        const logs = await getMyStressLogs();
-        const entries = Array.isArray(logs) ? logs : [];
-        if (entries.length === 0) {
-          if (isMounted) {
-            setStressSummary({
-              label: "-",
-              textColor: "text-slate-500",
-              bgColor: "bg-slate-100",
-            });
-          }
-          return;
-        }
-
-        const counts = entries.reduce(
-          (acc, log) => {
-            const label = resolveStressLabel(log?.stressLevel ?? log?.stress_level);
-            acc[label] += 1;
-            return acc;
-          },
-          { Low: 0, Moderate: 0, High: 0 }
-        );
-
-        const priority = ["High", "Moderate", "Low"];
-        const topLabel = priority.reduce((top, label) => {
-          if (counts[label] > counts[top]) return label;
-          if (counts[label] === counts[top]) {
-            return priority.indexOf(label) < priority.indexOf(top) ? label : top;
-          }
-          return top;
-        }, "Low");
-
-        const style = resolveStressStyle(topLabel);
-        if (isMounted) {
-          setStressSummary({
-            label: topLabel,
-            textColor: style.textColor,
-            bgColor: style.bgColor,
-          });
-        }
-      } catch (error) {
-        console.warn("Failed to load stress summary:", error);
-      }
-    };
-
-    fetchStressSummary();
-    return () => {
-      isMounted = false;
-    };
-  }, []);
 
   const stats = [
     { 
@@ -463,9 +360,9 @@ export default function Profile() {
     },
     { 
       label: "Stress", 
-      value: stressSummary.label, 
-      icon: <Activity className={`w-5 h-5 ${stressSummary.textColor}`} />, 
-      bg: stressSummary.bgColor 
+      value: "Low", 
+      icon: <Activity className="w-5 h-5 text-green-500" />, 
+      bg: "bg-green-100" 
     },
   ];
 
@@ -497,10 +394,6 @@ export default function Profile() {
       const token = localStorage.getItem("token");
       if (!token) { showNotification("You are logged out", "error"); return; }
       
-      if (shouldClearProfilePicture) {
-        await saveProfilePictureUrl(null);
-      }
-
       const payload = {
         username: formData.username, 
         name: formData.fullName, 
@@ -511,7 +404,6 @@ export default function Profile() {
       await updateProfile(payload);
       showNotification("Profile updated successfully!");
       setEditableFields({ username: false, fullName: false, email: false });
-      setShouldClearProfilePicture(false);
       setTimeout(() => window.location.reload(), 1000);
     } catch (error) {
       showNotification(error?.message || "Failed to update profile", "error");
@@ -519,45 +411,9 @@ export default function Profile() {
   };
   
   const handleAvatarSelect = (url) => {
-    setLocalAvatarPreview(null);
-    setShouldClearProfilePicture(true);
     setFormData(prev => ({ ...prev, avatar: url }));
     setShowAvatarModal(false);
     showNotification("Avatar selected. Click Save Changes to apply.");
-  };
-
-  const handleAvatarUpload = async (file) => {
-    const validation = validateProfilePictureFile(file);
-    if (!validation.ok) {
-      showNotification(validation.message, "error");
-      return;
-    }
-
-    const previewUrl = URL.createObjectURL(file);
-    setLocalAvatarPreview(previewUrl);
-    setShouldClearProfilePicture(false);
-    setIsUploadingAvatar(true);
-    try {
-      const sasPayload = await requestProfilePictureSas(file);
-      if (!sasPayload?.sasUrl || !sasPayload?.blobUrl) {
-        throw new Error("SAS response tidak valid.");
-      }
-      await uploadProfilePictureToAzure(file, sasPayload?.sasUrl);
-      const updatedUser = await saveProfilePictureUrl(sasPayload?.blobUrl);
-
-      setFormData((prev) => ({
-        ...prev,
-        avatar: updatedUser?.avatar || sasPayload?.blobUrl,
-      }));
-      setLocalAvatarPreview(null);
-      showNotification("Foto profil berhasil diupload.", "success");
-      setShowAvatarModal(false);
-      window.dispatchEvent(new Event("nostressia:user-update"));
-    } catch (error) {
-      showNotification(error?.message || "Gagal upload foto profil.", "error");
-    } finally {
-      setIsUploadingAvatar(false);
-    }
   };
 
   const toggleEdit = (field) => {
@@ -566,7 +422,6 @@ export default function Profile() {
 
   const handleLogout = () => { 
     if (window.confirm("Are you sure you want to log out?")) { 
-        setStoredTheme("light");
         localStorage.removeItem("token"); 
         localStorage.removeItem("cache_userData"); 
         window.location.href = "/"; 
@@ -575,20 +430,8 @@ export default function Profile() {
 
   const handleNotifChange = (e) => {
     const { name, value, type, checked } = e.target;
-    const nextValue = type === "checkbox" ? checked : value;
-    setNotifSettings((prev) => ({ ...prev, [name]: nextValue }));
-    if (name === "reminderTime" && value === "04:04") {
-      setShowGameModal(true);
-    }
-    if (
-      name === "dailyReminder" &&
-      nextValue &&
-      typeof window !== "undefined" &&
-      "Notification" in window &&
-      Notification.permission === "default"
-    ) {
-      setShowPermissionPrompt(true);
-    }
+    setNotifSettings(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+    if (name === "reminderTime" && value === "04:04") { setShowGameModal(true); }
   };
   const saveNotifSettings = async () => {
     saveNotificationSettings(notifSettings);
@@ -620,7 +463,6 @@ export default function Profile() {
   const handlePermissionAllow = async () => {
     setShowPermissionPrompt(false);
     try {
-      saveNotificationSettings(notifSettings);
       const result = await scheduleDailyReminder(notifSettings.reminderTime);
       showNotification(result.message || "Notification preferences saved!", result.ok ? "success" : "error");
     } catch (error) {
@@ -692,15 +534,7 @@ export default function Profile() {
     >
       <Navbar user={contextUser} />
       {showGameModal && <FishGameModal onClose={() => setShowGameModal(false)} />}
-      {showAvatarModal && (
-        <AvatarSelectionModal
-          onClose={() => setShowAvatarModal(false)}
-          onSelect={handleAvatarSelect}
-          onUpload={handleAvatarUpload}
-          currentAvatar={formData.avatar}
-          uploading={isUploadingAvatar}
-        />
-      )}
+      {showAvatarModal && <AvatarSelectionModal onClose={() => setShowAvatarModal(false)} onSelect={handleAvatarSelect} currentAvatar={formData.avatar} />}
       {showPermissionPrompt && (
         <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
           <div className="bg-white rounded-[24px] p-6 w-full max-w-sm shadow-2xl border border-white/60">
