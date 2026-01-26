@@ -23,8 +23,7 @@
         root.classList.toggle("dark", resolvedTheme === "dark");
         root.dataset.theme = resolvedTheme;
         root.dataset.themePreference = normalizedTheme;
-        root.style.colorScheme =
-          normalizedTheme === "system" ? "light dark" : resolvedTheme;
+        root.style.colorScheme = resolvedTheme;
       })();
     </script>
   </head>

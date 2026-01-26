@@ -22,6 +22,7 @@ const applyResolvedTheme = (resolvedTheme) => {
   const isDark = resolvedTheme === "dark";
   root.classList.toggle("dark", isDark);
   root.dataset.theme = resolvedTheme;
+  root.style.colorScheme = resolvedTheme;
 };
 
 const ensureSystemListener = () => {
@@ -71,8 +72,6 @@ export const applyTheme = (theme) => {
   if (typeof document !== "undefined") {
     const root = document.documentElement;
     root.dataset.themePreference = normalizedTheme;
-    root.style.colorScheme =
-      normalizedTheme === "system" ? "light dark" : resolvedTheme;
   }
   if (normalizedTheme === "system") {
     ensureSystemListener();
