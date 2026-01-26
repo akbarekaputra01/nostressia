@@ -1,9 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&family=Patrick+Hand&display=swap");
+@config "../tailwind.config.js";
 @import "tailwindcss";
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 
 @layer base {
   :root {
