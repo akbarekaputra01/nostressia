@@ -9,6 +9,7 @@ import {
   ArrowRight, Star, Smile, CheckCircle, 
   BarChart3, Zap, Quote, Book, Menu, X, Search, Bell
 } from "lucide-react";
+import Footer from "../../components/Footer";
 
 // --- Assets ---
 import LogoNostressia from "../../assets/images/Logo-Nostressia.png";
@@ -916,13 +917,7 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="py-8 md:py-12 bg-slate-50 dark:bg-slate-950 text-center border-t border-gray-200">
-         <div className="flex justify-center items-center gap-2 mb-4 opacity-50 grayscale hover:grayscale-0 transition-all">
-            <img src={LogoNostressia} alt="Logo" className="h-5 md:h-6 w-auto" />
-            <span className="font-bold text-gray-800 text-sm md:text-base">Nostressia</span>
-         </div>
-         <p className="text-gray-400 text-xs md:text-sm">© {new Date().getFullYear()} Team 4 PPTI BCA.</p>
-      </footer>
+      <Footer />
 
     </div>
   );

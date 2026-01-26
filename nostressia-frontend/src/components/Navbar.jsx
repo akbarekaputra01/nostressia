@@ -77,6 +77,7 @@ const Navbar = ({ user }) => {
                 border border-white/20 
                 shadow-xl 
                 transition-all duration-300 
+                dark:bg-slate-900/70 dark:border-slate-700/60
             "
     >
       <div className="flex justify-between items-center w-full">
@@ -103,6 +104,7 @@ const Navbar = ({ user }) => {
                                 py-2 px-1 
                                 transition-all duration-200 
                                 hover:text-gray-900
+                                dark:text-slate-200 dark:hover:text-white
                             "
                   >
                     {link.name}
@@ -139,6 +141,7 @@ const Navbar = ({ user }) => {
               hover:bg-gray-50 hover:border-gray-300
               transition-all duration-300
               cursor-pointer
+              dark:text-slate-200 dark:border-slate-600/80 dark:hover:bg-slate-800 dark:hover:border-slate-500
             "
             title={`Current Streak: ${streakVal} days`}
           >
@@ -154,7 +157,7 @@ const Navbar = ({ user }) => {
             <img
               src={avatarSrc}
               alt="Profile"
-              className="w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-white/20 object-cover cursor-pointer hover:border-blue-400 transition-colors"
+              className="w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-white/20 object-cover cursor-pointer hover:border-blue-400 transition-colors dark:border-slate-600"
               onError={(event) => {
                 event.currentTarget.src = fallbackAvatar;
               }}
@@ -163,7 +166,7 @@ const Navbar = ({ user }) => {
 
           {/* HAMBURGER MENU */}
           <button
-            className="lg:hidden p-2 text-gray-600 hover:bg-black/5 rounded-xl transition-all ml-1 cursor-pointer"
+            className="lg:hidden p-2 text-gray-600 hover:bg-black/5 rounded-xl transition-all ml-1 cursor-pointer dark:text-slate-200 dark:hover:bg-white/10"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? (
@@ -182,7 +185,7 @@ const Navbar = ({ user }) => {
                     overflow-hidden transition-all duration-300 ease-in-out
                     ${
                       isMobileMenuOpen
-                        ? "max-h-[400px] mt-4 pt-4 border-t border-gray-200 opacity-100"
+                        ? "max-h-[400px] mt-4 pt-4 border-t border-gray-200 opacity-100 dark:border-slate-700"
                         : "max-h-0 opacity-0"
                     }
                 `}
@@ -196,8 +199,8 @@ const Navbar = ({ user }) => {
                         text-base font-semibold py-2 px-4 rounded-lg w-full text-center transition-colors
                         ${
                           isActive(link.href)
-                            ? "bg-blue-50 text-blue-600"
-                            : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                            ? "bg-blue-50 text-blue-600 dark:bg-blue-500/20 dark:text-blue-200"
+                            : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-white"
                         }
                     `}
           >
@@ -205,22 +208,22 @@ const Navbar = ({ user }) => {
           </Link>
         ))}
 
-        <div className="w-full border-t border-gray-100 mt-2 pt-3 flex flex-col items-center">
+        <div className="w-full border-t border-gray-100 mt-2 pt-3 flex flex-col items-center dark:border-slate-700">
           <Link
             to="/profile"
             onClick={() => setIsMobileMenuOpen(false)}
-            className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer w-full justify-center"
+            className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer w-full justify-center dark:hover:bg-slate-800"
           >
             {/* FOTO PROFIL (MOBILE) */}
             <img
               src={avatarSrc}
               alt="Profile"
-              className="w-9 h-9 rounded-full border border-gray-300 object-cover"
+              className="w-9 h-9 rounded-full border border-gray-300 object-cover dark:border-slate-600"
               onError={(event) => {
                 event.currentTarget.src = fallbackAvatar;
               }}
             />
-            <span className="text-gray-700 font-semibold">My Profile</span>
+            <span className="text-gray-700 font-semibold dark:text-slate-200">My Profile</span>
           </Link>
         </div>
       </div>

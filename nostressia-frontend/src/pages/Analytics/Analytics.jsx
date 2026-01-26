@@ -214,9 +214,9 @@ const renderMoodTooltip =
     const hasValue = Number.isFinite(value) && value > 0;
 
     return (
-      <div className="rounded-xl bg-white/90 dark:bg-slate-900/90 px-3 py-2 text-sm shadow-lg">
-        <div className="font-semibold text-gray-700">{label}</div>
-        <div className="mt-1">
+      <div className="rounded-xl border border-gray-200 bg-white/90 px-3 py-2 text-sm shadow-lg dark:border-slate-700 dark:bg-slate-900/90">
+        <div className="font-semibold text-gray-700 dark:text-slate-100">{label}</div>
+        <div className="mt-1 text-gray-600 dark:text-slate-300">
           {hasValue
             ? `Mood: ${moodTooltipValue(value)}`
             : "No data available at this point."}
@@ -235,9 +235,9 @@ const renderStressTooltip =
     const hasValue = Number.isFinite(value) && value > 0;
 
     return (
-      <div className="rounded-xl bg-white/90 dark:bg-slate-900/90 px-3 py-2 text-sm shadow-lg">
-        <div className="font-semibold text-gray-700">{label}</div>
-        <div className="mt-1">
+      <div className="rounded-xl border border-gray-200 bg-white/90 px-3 py-2 text-sm shadow-lg dark:border-slate-700 dark:bg-slate-900/90">
+        <div className="font-semibold text-gray-700 dark:text-slate-100">{label}</div>
+        <div className="mt-1 text-gray-600 dark:text-slate-300">
           {hasValue
             ? `Stress: ${getStressLabel(value)}`
             : "No data available at this point."}
@@ -546,13 +546,13 @@ export default function Analytics() {
                   <YAxis
                     tick={{ fontSize: 16 }}
                     width={54}
-                    domain={[1, 5]}
+                    domain={[0.5, 5.5]}
                     ticks={[1, 2, 3, 4, 5]}
                     interval={0}
                     allowDecimals={false}
                     tickFormatter={(value) => moodTooltipValue(value)}
-                    tickMargin={6}
-                    padding={{ top: 0, bottom: 0 }}
+                    tickMargin={10}
+                    padding={{ top: 10, bottom: 8 }}
                   />
                   <Tooltip content={renderMoodTooltip(mode)} filterNull={false} />
                   <Line
