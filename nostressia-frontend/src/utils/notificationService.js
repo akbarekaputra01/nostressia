@@ -42,7 +42,20 @@ const getTimestampTrigger = (timestamp) => {
 
 const sendServiceWorkerMessage = async (payload) => {
   const registration = await getRegistration();
-  if (!registration?.active) {
+  if (!registration) {
+    return { ok: false, reason: "unavailable" };
+  }
+
+  let activeRegistration = registration;
+  if (!activeRegistration.active && "serviceWorker" in navigator) {
+    try {
+      activeRegistration = await navigator.serviceWorker.ready;
+    } catch (error) {
+      console.warn("Failed to wait for service worker readiness:", error);
+    }
+  }
+
+  if (!activeRegistration?.active) {
     return { ok: false, reason: "inactive" };
   }
 
@@ -57,7 +70,7 @@ const sendServiceWorkerMessage = async (payload) => {
       resolve(event.data || { ok: false, reason: "no-response" });
     };
 
-    registration.active.postMessage(payload, [channel.port2]);
+    activeRegistration.active.postMessage(payload, [channel.port2]);
   });
 };
 
