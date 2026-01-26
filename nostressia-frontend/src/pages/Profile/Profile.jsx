@@ -9,7 +9,7 @@ import {
   Edit3, Flame, BookOpen, // [UBAH] Trophy diganti Flame
   ChevronRight, Bell, CheckCircle, X,
   Cake, Smile, Activity, Lock, Key, Clock, Smartphone, Bookmark, Plus, Loader2, AtSign, Check, AlertCircle,
-  Eye, EyeOff, Moon, Sun
+  Eye, EyeOff, Moon, Sun, Monitor
 } from "lucide-react";
 import { DEFAULT_AVATAR, resolveAvatarUrl } from "../../utils/avatar";
 import {
@@ -24,7 +24,7 @@ import {
   saveNotificationSettings,
   scheduleDailyReminder,
 } from "../../utils/notificationService";
-import { getStoredTheme, setStoredTheme } from "../../utils/theme";
+import { getResolvedTheme, getStoredTheme, setStoredTheme } from "../../utils/theme";
 import { getMyStressLogs } from "../../services/stressService";
 
 // --- IMPORT AVATAR ---
@@ -331,7 +331,10 @@ export default function Profile() {
   useEffect(() => {
     const handleThemeChange = (event) => {
       const nextTheme = event?.detail?.theme || getStoredTheme();
-      setIsDarkMode(nextTheme === "dark");
+      const nextResolvedTheme =
+        event?.detail?.resolvedTheme || getResolvedTheme(nextTheme);
+      setThemePreference(nextTheme);
+      setResolvedTheme(nextResolvedTheme);
     };
     window.addEventListener("nostressia:theme-change", handleThemeChange);
     return () => window.removeEventListener("nostressia:theme-change", handleThemeChange);
@@ -347,10 +350,11 @@ export default function Profile() {
     }
   };
 
-  const handleThemeToggle = (enabled) => {
-    setIsDarkMode(enabled);
-    setStoredTheme(enabled ? "dark" : "light");
-    showNotification(enabled ? "Dark mode enabled" : "Dark mode disabled");
+  const handleThemeSelect = (nextTheme) => {
+    setThemePreference(nextTheme);
+    setStoredTheme(nextTheme);
+    const label = nextTheme === "system" ? "system" : nextTheme === "dark" ? "dark" : "light";
+    showNotification(`Theme set to ${label}`);
   };
 
   const [notifSettings, setNotifSettings] = useState(() => {
@@ -362,12 +366,39 @@ export default function Profile() {
       }
     );
   });
-  const [isDarkMode, setIsDarkMode] = useState(
-    () => getStoredTheme() === "dark"
+  const [themePreference, setThemePreference] = useState(() => getStoredTheme());
+  const [resolvedTheme, setResolvedTheme] = useState(() =>
+    getResolvedTheme(getStoredTheme())
   );
   const [passwordForm, setPasswordForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
   const [passwordStep, setPasswordStep] = useState(1);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const systemLabel = resolvedTheme === "dark" ? "dark" : "light";
+  const themeLabels = {
+    light: "Light",
+    dark: "Dark",
+    system: "System",
+  };
+  const themeOptions = [
+    {
+      value: "light",
+      label: "Light",
+      description: "Always light",
+      icon: Sun,
+    },
+    {
+      value: "dark",
+      label: "Dark",
+      description: "Always dark",
+      icon: Moon,
+    },
+    {
+      value: "system",
+      label: "System",
+      description: `Follow device (${systemLabel})`,
+      icon: Monitor,
+    },
+  ];
   useEffect(() => {
     if (!localAvatarPreview) return;
     return () => URL.revokeObjectURL(localAvatarPreview);
@@ -1171,27 +1202,50 @@ export default function Profile() {
                       <div className="bg-white/60 backdrop-blur-md border border-white/40 rounded-[24px] overflow-hidden shadow-lg p-2">
                         <button onClick={() => setShowNotifModal(true)} className="w-full flex items-center justify-between p-4 hover:bg-white/50 rounded-xl transition-colors cursor-pointer group"><div className="flex items-center gap-4"><div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600"><Bell className="w-5 h-5" /></div><div className="text-left"><h4 className="font-bold text-gray-800">Notifications</h4></div></div><ChevronRight className="w-5 h-5 text-gray-400" /></button>
                         <div className="h-px bg-gray-100 mx-4"></div>
-                        <div className="w-full flex items-center justify-between p-4 hover:bg-white/50 rounded-xl transition-colors">
+                        <div className="w-full p-4 rounded-xl transition-colors">
                           <div className="flex items-center gap-4">
                             <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600">
-                              {isDarkMode ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+                              {resolvedTheme === "dark" ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
                             </div>
                             <div className="text-left">
-                              <h4 className="font-bold text-gray-800">Dark Mode</h4>
+                              <h4 className="font-bold text-gray-800">Theme</h4>
                               <p className="text-xs text-gray-500">
-                                {isDarkMode ? "Dark theme enabled" : "Switch to dark theme"}
+                                Current: {themeLabels[themePreference] || "System"} ({systemLabel} when system)
                               </p>
                             </div>
                           </div>
-                          <label className="relative inline-flex items-center cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={isDarkMode}
-                              onChange={(event) => handleThemeToggle(event.target.checked)}
-                              className="sr-only peer"
-                            />
-                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                          </label>
+                          <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
+                            {themeOptions.map((option) => {
+                              const isActive = themePreference === option.value;
+                              const Icon = option.icon;
+                              return (
+                                <button
+                                  key={option.value}
+                                  type="button"
+                                  onClick={() => handleThemeSelect(option.value)}
+                                  className={`flex w-full items-center gap-3 rounded-xl border px-3 py-2 text-left text-sm font-semibold transition-all ${
+                                    isActive
+                                      ? "border-blue-200 bg-blue-50 text-blue-700 shadow-sm"
+                                      : "border-gray-200 bg-white hover:border-blue-200 hover:bg-blue-50/60"
+                                  }`}
+                                >
+                                  <span
+                                    className={`flex h-9 w-9 items-center justify-center rounded-full ${
+                                      isActive ? "bg-blue-100 text-blue-600" : "bg-slate-100 text-slate-600"
+                                    }`}
+                                  >
+                                    <Icon className="h-4 w-4" />
+                                  </span>
+                                  <span className="flex flex-col">
+                                    <span>{option.label}</span>
+                                    <span className="text-xs font-medium text-gray-500">
+                                      {option.description}
+                                    </span>
+                                  </span>
+                                </button>
+                              );
+                            })}
+                          </div>
                         </div>
                         <div className="h-px bg-gray-100 mx-4"></div>
                         <button onClick={() => { setPasswordStep(1); setShowPasswordModal(true); }} className="w-full flex items-center justify-between p-4 hover:bg-white/50 rounded-xl transition-colors cursor-pointer group"><div className="flex items-center gap-4"><div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600"><Lock className="w-5 h-5" /></div><div className="text-left"><h4 className="font-bold text-gray-800">Change Password</h4></div></div><ChevronRight className="w-5 h-5 text-gray-400" /></button>
