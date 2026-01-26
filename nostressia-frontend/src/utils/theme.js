@@ -2,7 +2,8 @@ const THEME_KEY = "nostressia_theme";
 
 export const getStoredTheme = () => {
   if (typeof window === "undefined") return "light";
-  return localStorage.getItem(THEME_KEY) || "light";
+  const storedTheme = localStorage.getItem(THEME_KEY);
+  return storedTheme === "dark" ? "dark" : "light";
 };
 
 export const applyTheme = (theme) => {

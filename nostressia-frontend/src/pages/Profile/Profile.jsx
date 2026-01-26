@@ -566,6 +566,7 @@ export default function Profile() {
 
   const handleLogout = () => { 
     if (window.confirm("Are you sure you want to log out?")) { 
+        setStoredTheme("light");
         localStorage.removeItem("token"); 
         localStorage.removeItem("cache_userData"); 
         window.location.href = "/"; 
