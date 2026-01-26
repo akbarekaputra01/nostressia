@@ -231,6 +231,7 @@ const FishGameModal = ({ onClose }) => {
 export default function Profile() {
   const [activeTab, setActiveTab] = useState("personal"); 
   const [notification, setNotification] = useState(null);
+  const [permissionStatus, setPermissionStatus] = useState(null);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showNotifModal, setShowNotifModal] = useState(false); 
   const [showPermissionPrompt, setShowPermissionPrompt] = useState(false);
@@ -615,6 +616,11 @@ export default function Profile() {
     } 
   };
 
+  const getNotificationPermissionStatus = () => {
+    if (typeof window === "undefined" || !("Notification" in window)) return null;
+    return Notification.permission;
+  };
+
   const handleNotifChange = (e) => {
     const { name, value, type, checked } = e.target;
     const nextValue = type === "checkbox" ? checked : value;
@@ -626,10 +632,13 @@ export default function Profile() {
       name === "dailyReminder" &&
       nextValue &&
       typeof window !== "undefined" &&
-      "Notification" in window &&
-      Notification.permission === "default"
+      "Notification" in window
     ) {
-      setShowPermissionPrompt(true);
+      const status = getNotificationPermissionStatus();
+      if (status && status !== "granted") {
+        setPermissionStatus(status);
+        setShowPermissionPrompt(true);
+      }
     }
   };
   const saveNotifSettings = async () => {
@@ -637,12 +646,10 @@ export default function Profile() {
     setShowNotifModal(false);
 
     if (notifSettings.dailyReminder) {
-      const needsPermissionPrompt =
-        typeof window !== "undefined" &&
-        "Notification" in window &&
-        Notification.permission === "default";
+      const permissionState = getNotificationPermissionStatus();
 
-      if (needsPermissionPrompt) {
+      if (permissionState && permissionState !== "granted") {
+        setPermissionStatus(permissionState);
         setShowPermissionPrompt(true);
         return;
       }
@@ -672,6 +679,7 @@ export default function Profile() {
 
   const handlePermissionAllow = async () => {
     setShowPermissionPrompt(false);
+    setPermissionStatus(null);
     try {
       saveNotificationSettings(notifSettings);
       const result = await scheduleDailyReminder(notifSettings.reminderTime);
@@ -694,6 +702,7 @@ export default function Profile() {
 
   const handlePermissionDismiss = async () => {
     setShowPermissionPrompt(false);
+    setPermissionStatus(null);
     const disabledSettings = { ...notifSettings, dailyReminder: false };
     setNotifSettings(disabledSettings);
     saveNotificationSettings(disabledSettings);
@@ -783,6 +792,11 @@ export default function Profile() {
             </div>
             <p className="text-sm text-gray-600 dark:text-slate-300 mb-6">
               Nostressia needs permission to send daily reminder notifications.
+              {permissionStatus === "denied" && (
+                <span className="mt-2 block text-xs text-orange-500 dark:text-orange-300">
+                  Notifications are blocked. Enable them in your browser settings to continue.
+                </span>
+              )}
             </p>
             <div className="flex items-center gap-3">
               <button
