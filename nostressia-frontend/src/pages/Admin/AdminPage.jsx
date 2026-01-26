@@ -525,10 +525,10 @@ export default function AdminPage({ skipAuth = false }) {
   // MAIN RENDER
   // ==============================
   return (
-    <div className="min-h-screen bg-[var(--surface-primary)] font-sans text-[var(--text-primary)]">
+    <div className="min-h-screen bg-gray-50 font-sans text-gray-800">
       
       {/* NAVBAR CANTIK */}
-      <nav className="sticky top-0 z-50 bg-white/90 dark:bg-slate-900/90 backdrop-blur-lg border-b border-gray-200 dark:border-slate-700 shadow-sm px-6 py-4 transition-all duration-300">
+      <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-lg border-b border-gray-200 shadow-sm px-6 py-4 transition-all duration-300">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 md:gap-0">
             {/* Logo Section */}
             <div className="flex items-center gap-3 w-full md:w-auto">
