@@ -342,7 +342,7 @@ const HeroSimple = () => {
              className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto"
           >
             {/* LINK GET STARTED */}
-            <Link to="/login" className="px-8 py-4 bg-gray-900 text-white rounded-full font-bold text-base shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 group hover:bg-[#F2994A] hover:border-[#F2994A] cursor-pointer dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white">
+            <Link to="/login" className="px-8 py-4 bg-slate-100 text-slate-900 rounded-full font-bold text-base shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 group hover:bg-[#F2994A] hover:border-[#F2994A] cursor-pointer dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800">
               Get Started Free <ArrowRight className="group-hover:translate-x-1 transition-transform" size={20} />
             </Link>
              {/* BUTTON EXPLORE */}
@@ -439,7 +439,7 @@ const SplitNav = ({ scrollToSection, setIsMobileMenuOpen }) => {
             </div>
 
             {/* Login Button Independent */}
-            <Link to="/login" className="px-6 py-3 bg-gray-900 text-white rounded-full font-bold text-sm shadow-xl hover:shadow-2xl hover:bg-[#3664BA] hover:-translate-y-0.5 transition-all cursor-pointer flex items-center gap-2 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white">
+            <Link to="/login" className="px-6 py-3 bg-slate-100 text-slate-900 rounded-full font-bold text-sm shadow-xl hover:shadow-2xl hover:bg-[#3664BA] hover:-translate-y-0.5 transition-all cursor-pointer flex items-center gap-2 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800">
                Login <ArrowRight size={14} />
             </Link>
          </Motion.div>
@@ -512,7 +512,7 @@ const MobileMenuOverlay = ({ isOpen, setIsOpen, scrollToSection }) => {
                   <Link 
                      to="/login"
                      onClick={() => setIsOpen(false)} 
-                     className="w-full flex items-center justify-between px-4 py-3 text-sm font-bold text-white bg-gray-900 hover:bg-[#3664BA] rounded-2xl transition-colors shadow-lg active:scale-95 mb-1 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white"
+                    className="w-full flex items-center justify-between px-4 py-3 text-sm font-bold text-slate-900 bg-slate-100 hover:bg-[#3664BA] rounded-2xl transition-colors shadow-lg active:scale-95 mb-1 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
                   >
                      Login App <ArrowRight size={14} />
                   </Link>
@@ -560,7 +560,7 @@ export default function LandingPage() {
       <HeroSimple />
 
       {/* Marquee */}
-      <div className="bg-gray-900 dark:bg-slate-950 py-4 md:py-6 border-y-4 border-[#3664BA] relative z-20 rotate-1 scale-105 shadow-2xl my-6 md:my-10 overflow-hidden">
+      <div className="bg-slate-100 dark:bg-slate-950 py-4 md:py-6 border-y-4 border-[#3664BA] relative z-20 rotate-1 scale-105 shadow-2xl my-6 md:my-10 overflow-hidden">
          <div className="whitespace-nowrap flex animate-marquee">
             {[...Array(10)].map((_, i) => (
                <div key={i} className="flex items-center mx-4 md:mx-8">

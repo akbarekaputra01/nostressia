@@ -304,7 +304,7 @@ export default function Diary() {
                             <textarea value={text} onChange={(e) => setText(e.target.value)} placeholder="Dear diary..." className="flex-grow bg-transparent resize-none focus:outline-none text-sm md:text-lg leading-[40px] custom-scrollbar w-full relative z-10" style={{ fontFamily: selectedFont || baseFont, color: "var(--journal-ink)" }} />
                         </div>
                         <div className="mt-2 flex justify-between items-center pt-2 border-t border-slate-100">
-                             <div className="flex gap-1">{fontOptions.map(f => (<button key={f.name} onClick={() => setSelectedFont(f.value)} className={`w-6 h-6 rounded-full border text-[10px] flex items-center justify-center transition-all ${selectedFont === f.value ? "bg-slate-800 text-white" : "bg-white text-slate-500 dark:bg-slate-900 dark:text-slate-200 dark:border-slate-700"}`}>{f.label}</button>))}</div>
+                             <div className="flex gap-1">{fontOptions.map(f => (<button key={f.name} onClick={() => setSelectedFont(f.value)} className={`w-6 h-6 rounded-full border text-[10px] flex items-center justify-center transition-all ${selectedFont === f.value ? "bg-slate-200 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-white dark:border-slate-700" : "bg-white text-slate-500 dark:bg-slate-900 dark:text-slate-200 dark:border-slate-700"}`}>{f.label}</button>))}</div>
                              
                              {/* TOMBOL SAVE DENGAN LOADING STATE */}
                              <button 
@@ -443,7 +443,7 @@ export default function Diary() {
       <AnimatePresence>
         {selectedEntry && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSelectedEntry(null)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" />
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSelectedEntry(null)} className="absolute inset-0 bg-slate-200/60 dark:bg-slate-900/60 backdrop-blur-sm" />
             
             <motion.div initial={{ opacity: 0, scale: 0.9, y: 30 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 30 }} 
                 className="relative w-full max-w-4xl h-full max-h-[85vh] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col p-2"

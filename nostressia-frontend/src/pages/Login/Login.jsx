@@ -378,7 +378,7 @@ export default function Login() {
                             <button type="button" onClick={() => setShowLoginPassword(!showLoginPassword)} className="absolute inset-y-0 right-0 pr-4 flex items-center cursor-pointer text-gray-400 hover:text-blue-600 transition-colors">{showLoginPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}</button>
                         </div>
                     </div>
-                    <button type="submit" disabled={isLoading || isSuccess} className={`w-full py-4 rounded-2xl font-bold text-white text-lg shadow-lg shadow-blue-500/20 transition-all duration-300 transform flex items-center justify-center gap-2 cursor-pointer mt-6 ${isSuccess ? "bg-green-500 scale-95" : "bg-gray-900 hover:bg-black hover:scale-[1.02] active:scale-95"}`}>
+                    <button type="submit" disabled={isLoading || isSuccess} className={`w-full py-4 rounded-2xl font-bold text-lg shadow-lg shadow-blue-500/20 transition-all duration-300 transform flex items-center justify-center gap-2 cursor-pointer mt-6 ${isSuccess ? "bg-green-500 text-white scale-95" : "bg-slate-100 text-slate-900 hover:bg-white dark:bg-slate-900 dark:text-white dark:hover:bg-slate-800 hover:scale-[1.02] active:scale-95"}`}>
                         {isLoading ? <Loader2 className="w-6 h-6 animate-spin" /> : isSuccess ? <CheckCircle className="w-6 h-6 animate-bounce" /> : <>Sign in <ArrowRight className="w-5 h-5" /></>}
                     </button>
                 </form>
