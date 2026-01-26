@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import LogoImage from "../assets/images/Logo-Nostressia.png"; 
-import { resolveAvatarUrl } from "../utils/avatar";
+import { DEFAULT_AVATAR, resolveAvatarUrl } from "../utils/avatar";
 import { Flame } from "lucide-react"; 
 
 // --- Data Menu Navigasi ---
@@ -36,7 +36,7 @@ const Navbar = ({ user }) => {
     };
   }, []);
 
-  const fallbackAvatar = "https://i.pravatar.cc/40?img=12";
+  const fallbackAvatar = DEFAULT_AVATAR;
   const avatarSrc = resolveAvatarUrl(user?.avatar) || fallbackAvatar;
 
   // --- LOGIKA WARNA API BERDASARKAN STREAK ---

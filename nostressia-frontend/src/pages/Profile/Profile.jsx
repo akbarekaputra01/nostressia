@@ -11,7 +11,7 @@ import {
   Cake, Smile, Activity, Lock, Key, Clock, Smartphone, Bookmark, Plus, Loader2, AtSign, Check, AlertCircle,
   Eye, EyeOff, Moon, Sun
 } from "lucide-react";
-import { resolveAvatarUrl } from "../../utils/avatar";
+import { DEFAULT_AVATAR, resolveAvatarUrl } from "../../utils/avatar";
 import {
   requestProfilePictureSas,
   saveProfilePictureUrl,
@@ -270,7 +270,7 @@ export default function Profile() {
     avatar: null, birthday: "", gender: "",
   });
   const [shouldClearProfilePicture, setShouldClearProfilePicture] = useState(false);
-  const fallbackAvatar = AVATAR_OPTIONS[0];
+  const fallbackAvatar = DEFAULT_AVATAR;
   const [localAvatarPreview, setLocalAvatarPreview] = useState(null);
   const displayAvatar =
     resolveAvatarUrl(localAvatarPreview || formData.avatar) || fallbackAvatar;
@@ -605,7 +605,18 @@ export default function Profile() {
       }
       try {
         const result = await scheduleDailyReminder(notifSettings.reminderTime);
-        showNotification(result.message || "Notification preferences saved!", result.ok ? "success" : "error");
+        if (!result.ok) {
+          const disabledSettings = { ...notifSettings, dailyReminder: false };
+          setNotifSettings(disabledSettings);
+          saveNotificationSettings(disabledSettings);
+          await clearScheduledReminder();
+          showNotification(
+            result.message || "Failed to schedule reminders.",
+            "error"
+          );
+          return;
+        }
+        showNotification(result.message || "Notification preferences saved!", "success");
       } catch (error) {
         showNotification(error?.message || "Failed to schedule reminders.", "error");
       }
@@ -621,15 +632,33 @@ export default function Profile() {
     try {
       saveNotificationSettings(notifSettings);
       const result = await scheduleDailyReminder(notifSettings.reminderTime);
-      showNotification(result.message || "Notification preferences saved!", result.ok ? "success" : "error");
+      if (!result.ok) {
+        const disabledSettings = { ...notifSettings, dailyReminder: false };
+        setNotifSettings(disabledSettings);
+        saveNotificationSettings(disabledSettings);
+        await clearScheduledReminder();
+        showNotification(
+          result.message || "Failed to schedule reminders.",
+          "error"
+        );
+        return;
+      }
+      showNotification(result.message || "Notification preferences saved!", "success");
     } catch (error) {
       showNotification(error?.message || "Failed to schedule reminders.", "error");
     }
   };
 
-  const handlePermissionDismiss = () => {
+  const handlePermissionDismiss = async () => {
     setShowPermissionPrompt(false);
-    showNotification("Notification permission is required to enable reminders.", "info");
+    const disabledSettings = { ...notifSettings, dailyReminder: false };
+    setNotifSettings(disabledSettings);
+    saveNotificationSettings(disabledSettings);
+    await clearScheduledReminder();
+    showNotification(
+      "Notification permission is required to enable reminders.",
+      "info"
+    );
   };
   
   const handlePasswordChangeInput = (e) => { const { name, value } = e.target; setPasswordForm({ ...passwordForm, [name]: value }); };
@@ -702,26 +731,26 @@ export default function Profile() {
       )}
       {showPermissionPrompt && (
         <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white rounded-[24px] p-6 w-full max-w-sm shadow-2xl border border-white/60">
+          <div className="bg-white dark:bg-slate-900 rounded-[24px] p-6 w-full max-w-sm shadow-2xl border border-white/60 dark:border-slate-700">
             <div className="flex items-center gap-3 mb-4">
-              <div className="bg-orange-100 text-orange-600 p-2 rounded-full">
+              <div className="bg-orange-100 text-orange-600 dark:bg-orange-500/20 dark:text-orange-300 p-2 rounded-full">
                 <Bell className="w-5 h-5" />
               </div>
-              <h3 className="text-lg font-bold text-gray-800">Allow notifications?</h3>
+              <h3 className="text-lg font-bold text-gray-800 dark:text-slate-100">Allow notifications?</h3>
             </div>
-            <p className="text-sm text-gray-600 mb-6">
+            <p className="text-sm text-gray-600 dark:text-slate-300 mb-6">
               Nostressia needs permission to send daily reminder notifications.
             </p>
             <div className="flex items-center gap-3">
               <button
                 onClick={handlePermissionAllow}
-                className="flex-1 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl shadow-lg shadow-orange-200 transition-all cursor-pointer"
+                className="flex-1 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl shadow-lg shadow-orange-200/80 dark:shadow-orange-500/20 transition-all cursor-pointer"
               >
                 Allow
               </button>
               <button
                 onClick={handlePermissionDismiss}
-                className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition-all cursor-pointer"
+                className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 font-bold rounded-xl transition-all cursor-pointer"
               >
                 Not now
               </button>
@@ -731,10 +760,113 @@ export default function Profile() {
       )}
       
       {/* NOTIFICATIONS */}
-      {notification && (<div className="fixed top-24 right-4 z-[100] animate-bounce-in"><div className={`flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl border ${notification.type === "success" ? "bg-white text-green-600 border-green-100" : notification.type === "error" ? "bg-white text-red-600 border-red-100" : "bg-white text-blue-600 border-blue-100"}`}>{notification.type === "success" ? <CheckCircle className="w-5 h-5"/> : notification.type === "error" ? <X className="w-5 h-5"/> : <Heart className="w-5 h-5"/>}<span className="font-bold">{notification.message}</span></div></div>)}
+      {notification && (
+        <div className="fixed top-24 right-4 z-[100] animate-bounce-in">
+          <div
+            className={`flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl border ${
+              notification.type === "success"
+                ? "bg-white text-green-600 border-green-100 dark:bg-slate-900 dark:text-green-300 dark:border-green-500/30"
+                : notification.type === "error"
+                ? "bg-white text-red-600 border-red-100 dark:bg-slate-900 dark:text-red-300 dark:border-red-500/30"
+                : "bg-white text-blue-600 border-blue-100 dark:bg-slate-900 dark:text-blue-300 dark:border-blue-500/30"
+            }`}
+          >
+            {notification.type === "success" ? (
+              <CheckCircle className="w-5 h-5" />
+            ) : notification.type === "error" ? (
+              <X className="w-5 h-5" />
+            ) : (
+              <Heart className="w-5 h-5" />
+            )}
+            <span className="font-bold">{notification.message}</span>
+          </div>
+        </div>
+      )}
       
       {/* SETTINGS MODAL */}
-      {showNotifModal && (<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in"><div className="bg-white rounded-[24px] p-8 w-full max-w-md shadow-2xl border border-white/50"><div className="flex justify-between items-center mb-6"><h3 className="text-xl font-bold text-gray-800 flex items-center gap-2"><Bell className="w-5 h-5 text-orange-500" /> Notifications</h3><button onClick={() => setShowNotifModal(false)} className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"><X className="w-6 h-6" /></button></div><div className="space-y-6"><div className="flex items-center justify-between"><div className="flex items-center gap-3"><div className="bg-blue-100 p-2 rounded-full text-blue-600"><Smartphone className="w-5 h-5" /></div><div><p className="font-bold text-gray-800">Daily Reminder</p><p className="text-xs text-gray-500">Remind me to check-in</p></div></div><label className="relative inline-flex items-center cursor-pointer"><input type="checkbox" name="dailyReminder" checked={notifSettings.dailyReminder} onChange={handleNotifChange} className="sr-only peer" /><div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div></label></div>{notifSettings.dailyReminder && (<div className="bg-gray-50 p-4 rounded-xl flex items-center justify-between border border-gray-100"><div className="flex items-center gap-2 text-gray-600"><Clock className="w-4 h-4" /><span className="text-sm font-semibold">Time</span></div><input type="time" name="reminderTime" value={notifSettings.reminderTime} onChange={handleNotifChange} className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2"/></div>)}<div className="h-px bg-gray-100"></div><div className="flex items-center justify-between"><div className="flex items-center gap-3"><div className="bg-purple-100 p-2 rounded-full text-purple-600"><Mail className="w-5 h-5" /></div><div><p className="font-bold text-gray-800">Weekly Report</p><p className="text-xs text-gray-500">Receive summary via email</p></div></div><label className="relative inline-flex items-center cursor-pointer"><input type="checkbox" name="emailUpdates" checked={notifSettings.emailUpdates} onChange={handleNotifChange} className="sr-only peer" /><div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div></label></div><button onClick={saveNotifSettings} className="w-full mt-4 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl shadow-lg shadow-orange-200 transition-all cursor-pointer transform active:scale-95">Save Preferences</button></div></div></div>)}
+      {showNotifModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-[24px] p-8 w-full max-w-md shadow-2xl border border-white/50 dark:border-slate-700">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold text-gray-800 dark:text-slate-100 flex items-center gap-2">
+                <Bell className="w-5 h-5 text-orange-500" /> Notifications
+              </h3>
+              <button
+                onClick={() => setShowNotifModal(false)}
+                className="text-gray-400 hover:text-gray-600 dark:text-slate-400 dark:hover:text-slate-200 transition-colors cursor-pointer"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="bg-blue-100 text-blue-600 dark:bg-blue-500/20 dark:text-blue-300 p-2 rounded-full">
+                    <Smartphone className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-gray-800 dark:text-slate-100">Daily Reminder</p>
+                    <p className="text-xs text-gray-500 dark:text-slate-400">Remind me to check-in</p>
+                  </div>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="dailyReminder"
+                    checked={notifSettings.dailyReminder}
+                    onChange={handleNotifChange}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                </label>
+              </div>
+              {notifSettings.dailyReminder && (
+                <div className="bg-gray-50 dark:bg-slate-800 p-4 rounded-xl flex items-center justify-between border border-gray-100 dark:border-slate-700">
+                  <div className="flex items-center gap-2 text-gray-600 dark:text-slate-300">
+                    <Clock className="w-4 h-4" />
+                    <span className="text-sm font-semibold">Time</span>
+                  </div>
+                  <input
+                    type="time"
+                    name="reminderTime"
+                    value={notifSettings.reminderTime}
+                    onChange={handleNotifChange}
+                    className="bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-slate-100 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2"
+                  />
+                </div>
+              )}
+              <div className="h-px bg-gray-100 dark:bg-slate-700"></div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="bg-purple-100 text-purple-600 dark:bg-purple-500/20 dark:text-purple-300 p-2 rounded-full">
+                    <Mail className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-gray-800 dark:text-slate-100">Weekly Report</p>
+                    <p className="text-xs text-gray-500 dark:text-slate-400">Receive summary via email</p>
+                  </div>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="emailUpdates"
+                    checked={notifSettings.emailUpdates}
+                    onChange={handleNotifChange}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                </label>
+              </div>
+              <button
+                onClick={saveNotifSettings}
+                className="w-full mt-4 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl shadow-lg shadow-orange-200/80 dark:shadow-orange-500/20 transition-all cursor-pointer transform active:scale-95"
+              >
+                Save Preferences
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       
       {/* PASSWORD MODAL */}
       {showPasswordModal && (<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in"><div className="bg-white rounded-[24px] p-8 w-full max-w-md shadow-2xl border border-white/50"><div className="flex justify-between items-start mb-6"><div><h3 className="text-xl font-bold text-gray-800 flex items-center gap-2"><Lock className="w-5 h-5 text-blue-500" /> Change Password</h3><div className="flex gap-2 mt-2">{[1, 2].map((step) => (<div key={step} className={`h-2 rounded-full transition-all duration-300 ${passwordStep >= step ? "w-8 bg-blue-600" : "w-2 bg-gray-200"}`}></div>))}</div></div><button onClick={handleClosePasswordModal} className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"><X className="w-6 h-6" /></button></div><form onSubmit={passwordStep === 1 ? handlePasswordStepNext : handleSubmitPasswordChange} onKeyDown={handleFormKeyDown} className="space-y-4">
@@ -835,18 +967,14 @@ export default function Profile() {
             <div className="relative z-10 flex flex-col md:flex-row items-center gap-6 md:gap-8">
                 <div className="relative group">
                     <div className="w-28 h-28 md:w-32 md:h-32 rounded-full border-4 border-white shadow-lg overflow-hidden bg-white">
-                        {formData.avatar ? (
-                          <img
-                            src={displayAvatar}
-                            alt="Profile"
-                            className="w-full h-full object-cover"
-                            onError={(event) => {
-                              event.currentTarget.src = fallbackAvatar;
-                            }}
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-gray-200 animate-pulse"></div>
-                        )}
+                        <img
+                          src={displayAvatar}
+                          alt="Profile"
+                          className="w-full h-full object-cover"
+                          onError={(event) => {
+                            event.currentTarget.src = fallbackAvatar;
+                          }}
+                        />
                     </div>
                     {/* BUTTON UBAH AVATAR (MEMBUKA MODAL) */}
                     <button onClick={() => setShowAvatarModal(true)} className="absolute bottom-1 right-1 bg-blue-600 text-white p-2 rounded-full shadow-md hover:bg-blue-700 transition-all cursor-pointer"><Edit3 className="w-4 h-4" /></button>
