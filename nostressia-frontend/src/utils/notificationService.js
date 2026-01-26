@@ -159,13 +159,29 @@ export const scheduleDailyReminder = async (
       time: timeValue,
     },
   };
+  let triggerScheduled = false;
 
   if (trigger) {
-    notificationOptions.showTrigger = trigger;
-  }
+    const swResult = await sendServiceWorkerMessage({
+      type: "schedule-reminder",
+      title: "Nostressia Daily Reminder",
+      options: notificationOptions,
+    });
+    if (swResult?.ok) {
+      triggerScheduled = true;
+    }
 
-  if (trigger) {
-    await registration.showNotification("Nostressia Daily Reminder", notificationOptions);
+    if (!triggerScheduled) {
+      try {
+        await registration.showNotification("Nostressia Daily Reminder", {
+          ...notificationOptions,
+          showTrigger: trigger,
+        });
+        triggerScheduled = true;
+      } catch (error) {
+        console.warn("Failed to schedule reminder with trigger:", error);
+      }
+    }
   } else {
     const swResult = await sendServiceWorkerMessage({
       type: "schedule-reminder",
@@ -173,13 +189,11 @@ export const scheduleDailyReminder = async (
       options: notificationOptions,
     });
     if (swResult?.ok) {
-      return {
-        ok: true,
-        message: "Daily reminder scheduled even when the app is closed.",
-        triggerSupported: true,
-      };
+      triggerScheduled = true;
     }
+  }
 
+  if (!triggerScheduled) {
     const delayMs = Math.max(scheduled.getTime() - Date.now(), 0);
     fallbackTimeoutId = window.setTimeout(async () => {
       const activeRegistration = await getRegistration();
@@ -196,10 +210,10 @@ export const scheduleDailyReminder = async (
 
   return {
     ok: true,
-    message: trigger
+    message: triggerScheduled
       ? "Daily reminder scheduled even when the app is closed."
       : "Reminder scheduled while this tab is open (background scheduling is limited on this browser).",
-    triggerSupported: Boolean(trigger),
+    triggerSupported: triggerScheduled,
   };
 };
 
