@@ -651,7 +651,7 @@ export default function AdminPage({ skipAuth = false }) {
                         <button
                           onClick={handleCreateCategory}
                           disabled={!newCategoryName.trim()}
-                          className="px-6 py-2.5 bg-gray-900 text-white font-bold rounded-xl hover:bg-black disabled:opacity-50 cursor-pointer"
+                          className="px-6 py-2.5 bg-slate-100 text-slate-900 font-bold rounded-xl hover:bg-white disabled:opacity-50 cursor-pointer dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
                         >
                           Add Category
                         </button>
@@ -744,7 +744,7 @@ export default function AdminPage({ skipAuth = false }) {
                   <div className="bg-white rounded-2xl border border-blue-100 shadow-lg p-4 flex gap-3 sticky bottom-0">
                     <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white"><Sparkles size={20} /></div>
                     <input type="text" placeholder={`Write new tip for ${activeCategoryData.name}...`} className="flex-1 bg-transparent text-gray-800 placeholder-gray-400 focus:outline-none text-base cursor-text" value={currentTipInput} onChange={(e) => setCurrentTipInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleAddTipToCategory(selectedTipCategory)} />
-                    <button onClick={() => handleAddTipToCategory(selectedTipCategory)} disabled={!currentTipInput.trim()} className="px-6 py-2.5 bg-gray-900 text-white font-bold rounded-xl hover:bg-black disabled:opacity-50 cursor-pointer">Add</button>
+                    <button onClick={() => handleAddTipToCategory(selectedTipCategory)} disabled={!currentTipInput.trim()} className="px-6 py-2.5 bg-slate-100 text-slate-900 font-bold rounded-xl hover:bg-white disabled:opacity-50 cursor-pointer dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800">Add</button>
                   </div>
                 </div>
               )}

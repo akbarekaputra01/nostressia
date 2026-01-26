@@ -21,7 +21,7 @@ export default function NotFound() {
           </Link>
           <Link
             to="/dashboard"
-            className="w-full sm:w-auto rounded-xl bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white"
+            className="w-full sm:w-auto rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-white dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
           >
             Back to Dashboard
           </Link>

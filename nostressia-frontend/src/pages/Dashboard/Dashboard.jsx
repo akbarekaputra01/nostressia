@@ -2013,7 +2013,7 @@ export default function Dashboard() {
                         </div>
                      </div>
                      
-                     <button onClick={handleCloseForecast} className="w-full mt-4 py-3 bg-gray-900 text-white rounded-xl font-bold text-sm shadow-lg hover:bg-black transition-transform active:scale-95 cursor-pointer dark:bg-slate-200 dark:text-slate-900 dark:hover:bg-white">
+                    <button onClick={handleCloseForecast} className="w-full mt-4 py-3 bg-slate-100 text-slate-900 rounded-xl font-bold text-sm shadow-lg hover:bg-white transition-transform active:scale-95 cursor-pointer dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800">
                         Got it!
                      </button>
                   </div>
