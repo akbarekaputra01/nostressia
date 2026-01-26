@@ -42,6 +42,9 @@ const AVATAR_OPTIONS = [
   avatar2
 ];
 
+const FALLBACK_SAS_URL = import.meta.env.VITE_AZURE_BLOB_SAS_URL || "";
+const FALLBACK_CONTAINER = import.meta.env.VITE_AZURE_BLOB_CONTAINER || "";
+
 // --- COMPONENT: AVATAR SELECTION MODAL ---
 const AvatarSelectionModal = ({ onClose, onSelect, onUpload, currentAvatar, uploading }) => {
   return (
@@ -538,16 +541,40 @@ export default function Profile() {
     setShouldClearProfilePicture(false);
     setIsUploadingAvatar(true);
     try {
-      const sasPayload = await requestProfilePictureSas(file);
-      if (!sasPayload?.sasUrl || !sasPayload?.blobUrl) {
+      let sasPayload = null;
+      try {
+        sasPayload = await requestProfilePictureSas(file);
+      } catch (error) {
+        if (!FALLBACK_SAS_URL || !FALLBACK_CONTAINER) {
+          throw error;
+        }
+      }
+      let uploadedUrl = null;
+
+      if (sasPayload?.sasUrl) {
+        const uploadResult = await uploadProfilePictureToAzure(file, {
+          sasUrl: sasPayload.sasUrl,
+        });
+        uploadedUrl = sasPayload?.blobUrl || uploadResult?.url;
+      } else if (FALLBACK_SAS_URL && FALLBACK_CONTAINER) {
+        const uploadResult = await uploadProfilePictureToAzure(file, {
+          sasUrl: FALLBACK_SAS_URL,
+          containerName: FALLBACK_CONTAINER,
+        });
+        uploadedUrl = uploadResult?.url;
+      } else {
         throw new Error("SAS response tidak valid.");
       }
-      await uploadProfilePictureToAzure(file, sasPayload?.sasUrl);
-      const updatedUser = await saveProfilePictureUrl(sasPayload?.blobUrl);
+
+      if (!uploadedUrl) {
+        throw new Error("URL upload tidak tersedia.");
+      }
+
+      const updatedUser = await saveProfilePictureUrl(uploadedUrl);
 
       setFormData((prev) => ({
         ...prev,
-        avatar: updatedUser?.avatar || sasPayload?.blobUrl,
+        avatar: updatedUser?.avatar || uploadedUrl,
       }));
       setLocalAvatarPreview(null);
       showNotification("Foto profil berhasil diupload.", "success");

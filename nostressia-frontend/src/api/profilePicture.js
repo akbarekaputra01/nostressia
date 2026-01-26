@@ -1,4 +1,4 @@
-import { BlockBlobClient } from "@azure/storage-blob";
+import { BlobServiceClient, BlockBlobClient } from "@azure/storage-blob";
 
 import client, { unwrapResponse } from "./client";
 
@@ -14,12 +14,37 @@ export const requestProfilePictureSas = async (file) => {
   return unwrapResponse(response);
 };
 
-export const uploadProfilePictureToAzure = async (file, sasUrl) => {
-  // Upload langsung ke Azure Blob via SAS URL.
+const sanitizeFilename = (fileName) =>
+  fileName.replace(/[^a-zA-Z0-9._-]/g, "_");
+
+export const uploadProfilePictureToAzure = async (
+  file,
+  { sasUrl, containerName, blobName } = {}
+) => {
+  if (!sasUrl) {
+    throw new Error("SAS URL tidak tersedia untuk upload.");
+  }
+
+  if (containerName) {
+    const blobServiceClient = new BlobServiceClient(sasUrl);
+    const containerClient = blobServiceClient.getContainerClient(containerName);
+    const safeName = blobName || `${Date.now()}-${sanitizeFilename(file.name)}`;
+    const blobClient = containerClient.getBlockBlobClient(safeName);
+
+    await blobClient.uploadBrowserData(file, {
+      blobHTTPHeaders: { blobContentType: file.type },
+    });
+
+    return { url: blobClient.url, blobName: safeName };
+  }
+
+  // Upload langsung ke Azure Blob via SAS URL untuk satu blob.
   const blobClient = new BlockBlobClient(sasUrl);
   await blobClient.uploadBrowserData(file, {
     blobHTTPHeaders: { blobContentType: file.type },
   });
+
+  return { url: blobClient.url };
 };
 
 export const saveProfilePictureUrl = async (profileImageUrl) => {
