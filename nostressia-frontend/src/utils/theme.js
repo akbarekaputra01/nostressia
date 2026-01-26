@@ -3,8 +3,10 @@ const AVAILABLE_THEMES = ["light", "dark", "system"];
 let mediaQueryList;
 let mediaQueryHandler;
 
-const normalizeTheme = (theme) =>
-  AVAILABLE_THEMES.includes(theme) ? theme : "system";
+const normalizeTheme = (theme) => {
+  const normalized = String(theme || "").toLowerCase();
+  return AVAILABLE_THEMES.includes(normalized) ? normalized : "light";
+};
 
 const getSystemTheme = () => {
   if (typeof window === "undefined") return "light";
@@ -60,8 +62,8 @@ const removeSystemListener = () => {
 };
 
 export const getStoredTheme = () => {
-  if (typeof window === "undefined") return "system";
-  const stored = localStorage.getItem(THEME_KEY) || "system";
+  if (typeof window === "undefined") return "light";
+  const stored = localStorage.getItem(THEME_KEY) || "light";
   return normalizeTheme(stored);
 };
 
