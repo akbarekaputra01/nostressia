@@ -35,9 +35,7 @@ class Settings(BaseSettings):
     )
     azure_storage_container: str = Field("profile-avatars", env="AZURE_STORAGE_CONTAINER")
     azure_storage_account_name: str = Field("", env="AZURE_STORAGE_ACCOUNT_NAME")
-    azure_storage_container_name: str = Field(
-        "profile-avatars", env="AZURE_STORAGE_CONTAINER_NAME"
-    )
+    azure_storage_container_name: str = Field("", env="AZURE_STORAGE_CONTAINER_NAME")
 
     class Config:
         env_file = ".env"

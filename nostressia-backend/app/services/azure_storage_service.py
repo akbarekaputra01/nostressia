@@ -35,7 +35,11 @@ def _get_container_client() -> ContainerClient:
     blob_service = BlobServiceClient.from_connection_string(
         settings.azure_storage_connection_string
     )
-    container_name = settings.azure_storage_container or "profile-avatars"
+    container_name = (
+        settings.azure_storage_container_name
+        or settings.azure_storage_container
+        or "profile-avatars"
+    )
     container_client = blob_service.get_container_client(container_name)
     try:
         container_client.create_container()
