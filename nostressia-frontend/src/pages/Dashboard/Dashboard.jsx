@@ -19,8 +19,6 @@ const brandBlue = "#3664BA";
 const brandOrange = "#F2994A";
 const brandGreen = "#27AE60";
 const brandRed = "#E53E3E";
-
-const TODAY_LOG_STORAGE_KEY = "nostressia_today_log";
 const bgCream = "var(--bg-gradient-cream)";
 const bgPink = "var(--bg-gradient-pink)";
 const bgLavender = "var(--bg-gradient-lavender)";
@@ -32,7 +30,6 @@ const monthNames = [
   "July", "August", "September", "October", "November", "December",
 ];
 const moods = ["😢", "😕", "😐", "😊", "😄"];
-const PERSONALIZED_STREAK_THRESHOLD = 60;
 
 const tipThemePalette = [
   {
@@ -215,29 +212,26 @@ function getForecastTheme(status) {
   if (status === "High") {
     return {
       color: brandRed,
-      bg: "bg-red-50 dark:bg-red-500/20",
-      panelTheme:
-        "bg-gradient-to-b from-red-50 via-white to-white dark:from-red-950 dark:via-slate-900 dark:to-slate-900",
-      border: "border-red-200 dark:border-red-500/40",
+      bg: "bg-red-50",
+      panelTheme: "bg-gradient-to-b from-red-50 via-white to-white",
+      border: "border-red-200",
       icon: "ph-warning"
     };
   }
   if (status === "Moderate") {
     return {
       color: brandOrange,
-      bg: "bg-orange-50 dark:bg-orange-500/20",
-      panelTheme:
-        "bg-gradient-to-b from-orange-50 via-white to-white dark:from-orange-950 dark:via-slate-900 dark:to-slate-900",
-      border: "border-orange-200 dark:border-orange-500/40",
+      bg: "bg-orange-50",
+      panelTheme: "bg-gradient-to-b from-orange-50 via-white to-white",
+      border: "border-orange-200",
       icon: "ph-activity"
     };
   }
   return {
     color: brandGreen,
-    bg: "bg-green-50 dark:bg-emerald-500/20",
-    panelTheme:
-      "bg-gradient-to-b from-green-50 via-white to-white dark:from-emerald-950 dark:via-slate-900 dark:to-slate-900",
-    border: "border-green-200 dark:border-emerald-500/40",
+    bg: "bg-green-50",
+    panelTheme: "bg-gradient-to-b from-green-50 via-white to-white",
+    border: "border-green-200",
     icon: "ph-plant"
   };
 }
@@ -371,26 +365,6 @@ function normalizeEligibility(payload) {
   };
 }
 
-function isSameEligibility(left, right) {
-  if (!left && !right) return true;
-  if (!left || !right) return false;
-  return (
-    left.streak === right.streak &&
-    left.requiredStreak === right.requiredStreak &&
-    left.restoreUsed === right.restoreUsed &&
-    left.restoreLimit === right.restoreLimit &&
-    left.missing === right.missing &&
-    left.note === right.note
-  );
-}
-
-function resolveForecastMode(eligibility) {
-  if (!eligibility) return "global";
-  return eligibility.streak >= PERSONALIZED_STREAK_THRESHOLD
-    ? "personalized"
-    : "global";
-}
-
 function buildForecastEligibilityMessage({
   reason,
   streakCount,
@@ -448,7 +422,6 @@ export default function Dashboard() {
   const [forecastList, setForecastList] = useState([]); 
   const [forecastLoading, setForecastLoading] = useState(false);
   const [forecastError, setForecastError] = useState("");
-  const [forecastMode, setForecastMode] = useState("global");
   // State khusus untuk animasi tutup panel
   const [isClosingPanel, setIsClosingPanel] = useState(false);
   const [eligibilityData, setEligibilityData] = useState(null);
@@ -519,12 +492,6 @@ export default function Dashboard() {
     if (selectedDayHasData) return "This date already has data.";
     return "No data found for this date. You can restore it.";
   })();
-  const forecastModeLabel =
-    forecastMode === "personalized" ? "Personalized" : "Global";
-  const forecastModeDescription =
-    forecastMode === "personalized"
-      ? "Personalized forecast is trained from your own stress history (60+ logs)."
-      : "Global forecast uses aggregate patterns from all users' stress data.";
 
   useEffect(() => {
     if (missingDateKeys.length === 0) {
@@ -860,7 +827,6 @@ export default function Dashboard() {
           setHasSubmittedToday(false);
           setStressScore(0);
           setTodayLogId(null);
-          localStorage.removeItem(TODAY_LOG_STORAGE_KEY);
           setMissingDateKeys([]);
           setMissingRestorePopup(null);
           setDismissedMissingPopup(false);
@@ -924,13 +890,11 @@ export default function Dashboard() {
           setMoodIndex(moodIdx >= 0 ? moodIdx : 2);
           setPendingTodayReminder(false);
           setShowTodayReminder(false);
-          localStorage.setItem(TODAY_LOG_STORAGE_KEY, TODAY_KEY);
         } else {
           setHasSubmittedToday(false);
           setStressScore(0);
           setTodayLogId(null);
           setPendingTodayReminder(true);
-          localStorage.removeItem(TODAY_LOG_STORAGE_KEY);
         }
       } catch (error) {
         if (error?.name === "AbortError") return;
@@ -939,7 +903,6 @@ export default function Dashboard() {
         setHasSubmittedToday(false);
         setStressScore(0);
         setTodayLogId(null);
-        localStorage.removeItem(TODAY_LOG_STORAGE_KEY);
         setMissingDateKeys([]);
         setMissingRestorePopup(null);
         setDismissedMissingPopup(false);
@@ -968,7 +931,6 @@ export default function Dashboard() {
         if (!token) {
           setForecastList([]);
           setForecastError("Login untuk melihat forecast.");
-          setForecastMode("global");
           return;
         }
 
@@ -988,12 +950,11 @@ export default function Dashboard() {
         );
 
         if (!eligibilitySnapshot || eligibilitySnapshot.streak < requiredStreak) {
-          setForecastMode(resolveForecastMode(eligibilitySnapshot));
           setForecastList([]);
           setForecastError(
             buildForecastEligibilityMessage({
               reason: eligibilitySnapshot?.note,
-              streakCount: eligibilitySnapshot?.streak ?? user?.streak,
+              streakCount: eligibilitySnapshot?.streak,
               restoreUsed: eligibilitySnapshot?.restoreUsed,
               restoreRemaining: restoreRemainingCalc,
               requiredStreak,
@@ -1005,25 +966,9 @@ export default function Dashboard() {
 
         const data = await getGlobalForecast();
 
-        const eligibilityFromForecast = normalizeEligibility(data?.eligibility);
-        if (eligibilityFromForecast) {
-          if (!isSameEligibility(eligibilityFromForecast, eligibilitySnapshot)) {
-            setEligibilityData(data.eligibility);
-          }
-          setForecastMode(resolveForecastMode(eligibilityFromForecast));
-        } else {
-          setForecastMode(resolveForecastMode(eligibilitySnapshot));
-        }
-
         const baseForecast =
           data?.forecast ?? data?.data ?? data?.forecastData ?? data;
-        const resolvedMode = resolveForecastMode(
-          eligibilityFromForecast ?? eligibilitySnapshot
-        );
-        const list = buildForecastList(baseForecast).map((item) => ({
-          ...item,
-          forecastMode: resolvedMode,
-        }));
+        const list = buildForecastList(baseForecast);
         setForecastList(list);
         if (list.length === 0) {
           setForecastError("Forecast not available yet.");
@@ -1039,7 +984,6 @@ export default function Dashboard() {
           error?.payload?.detail ?? error?.payload
         );
         if (normalizedErrorEligibility) {
-          setForecastMode(resolveForecastMode(normalizedErrorEligibility));
           const restoreRemainingCalc = Math.max(
             (normalizedErrorEligibility.restoreLimit ?? 3) -
               (normalizedErrorEligibility.restoreUsed ?? 0),
@@ -1048,7 +992,7 @@ export default function Dashboard() {
           setForecastError(
             buildForecastEligibilityMessage({
               reason: normalizedErrorEligibility.note,
-              streakCount: normalizedErrorEligibility.streak ?? user?.streak,
+              streakCount: normalizedErrorEligibility.streak,
               restoreUsed: normalizedErrorEligibility.restoreUsed,
               restoreRemaining: restoreRemainingCalc,
               requiredStreak: normalizedErrorEligibility.requiredStreak,
@@ -1241,7 +1185,6 @@ export default function Dashboard() {
       if (isTargetToday) {
         setStressScore(score);
         setHasSubmittedToday(true);
-        localStorage.setItem(TODAY_LOG_STORAGE_KEY, TODAY_KEY);
       }
       const resolvedLogId = savedLogId ?? todayLogId ?? null;
       if (savedLogId && isTargetToday) setTodayLogId(savedLogId);
@@ -1346,6 +1289,25 @@ export default function Dashboard() {
         @keyframes circle-draw { 0% { stroke-dasharray: 0, 100; } 100% { stroke-dasharray: 100, 100; } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes shimmer-slide { 100% { transform: translateX(100%); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pulse-soft { 0%, 100% { opacity: 0.7; transform: scale(0.98); } 50% { opacity: 1; transform: scale(1); } }
+        .skeleton {
+          position: relative;
+          overflow: hidden;
+          background-color: var(--skeleton-bg);
+        }
+        .skeleton::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          transform: translateX(-100%);
+          background: linear-gradient(90deg, transparent, var(--skeleton-shine), transparent);
+          animation: shimmer-slide 1.6s infinite;
+        }
+        .spin-slow { animation: spin 1.4s linear infinite; }
+        .spin-reverse { animation: spin 2.1s linear infinite reverse; }
+        .pulse-soft { animation: pulse-soft 1.8s ease-in-out infinite; }
       `}</style>
 
       {/* NAVBAR */}
@@ -1369,8 +1331,47 @@ export default function Dashboard() {
           {/* FLIP CARD SECTION */}
           <section className="col-span-1 md:col-span-2 relative overflow-hidden" style={{ minHeight: 600 }}>
             {isLoadingLogs && (
-              <div className="absolute inset-0 z-20 flex items-center justify-center rounded-[20px] bg-white/70 backdrop-blur-sm">
-                <div className="h-14 w-14 rounded-full border-4 border-blue-200 border-t-blue-500 animate-spin" />
+              <div className="absolute inset-0 z-20 rounded-[20px] bg-white/70 backdrop-blur-sm p-6 md:p-8">
+                <div className="relative h-full w-full rounded-[16px] border border-white/40 bg-white/60 p-6 md:p-8 shadow-inner">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-3">
+                      <div className="skeleton h-10 w-10 rounded-full" />
+                      <div className="space-y-2">
+                        <div className="skeleton h-4 w-40 rounded-full" />
+                        <div className="skeleton h-3 w-28 rounded-full" />
+                      </div>
+                    </div>
+                    <div className="skeleton h-8 w-20 rounded-full" />
+                  </div>
+                  <div className="flex flex-col items-center justify-center text-center gap-4 mb-8">
+                    <div className="skeleton h-24 w-24 rounded-full" />
+                    <div className="space-y-2">
+                      <div className="skeleton h-6 w-56 rounded-full mx-auto" />
+                      <div className="skeleton h-4 w-40 rounded-full mx-auto" />
+                    </div>
+                  </div>
+                  <div className="space-y-4 mb-8">
+                    <div className="skeleton h-4 w-32 rounded-full" />
+                    <div className="flex justify-between gap-2">
+                      {Array.from({ length: 7 }).map((_, idx) => (
+                        <div key={`trend-skel-${idx}`} className="flex flex-col items-center gap-2 flex-1">
+                          <div className="skeleton h-4 w-4 rounded-full" />
+                          <div className="skeleton h-3 w-6 rounded-full" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="skeleton h-12 w-full rounded-xl" />
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-center">
+                    <div className="relative flex items-center justify-center">
+                      <div className="h-16 w-16 rounded-full border-4 border-blue-200 border-t-blue-500 spin-slow" />
+                      <div className="absolute h-10 w-10 rounded-full border-4 border-orange-200 border-t-orange-500 spin-reverse" />
+                    </div>
+                    <p className="text-center text-sm font-semibold text-gray-500 pulse-soft">
+                      Preparing your dashboard...
+                    </p>
+                  </div>
+                </div>
               </div>
             )}
             <div style={{ perspective: 1500 }} className={`w-full h-full ${isLoadingLogs ? "opacity-0 pointer-events-none" : ""}`}>
@@ -1378,13 +1379,10 @@ export default function Dashboard() {
                 
                 {/* FRONT CARD (PREDICTION) */}
                 <div
-                  className="absolute inset-0 rounded-[20px] p-6 md:p-8 backface-hidden flex flex-col border border-white/20 overflow-hidden shadow-[0_18px_45px_rgba(15,23,42,0.12)]"
+                  className="absolute inset-0 rounded-[20px] p-6 md:p-8 backface-hidden flex flex-col shadow-xl border border-white/20 overflow-hidden"
                   style={{ backgroundColor: "var(--glass-bg)", zIndex: isFlipped ? 0 : 10, pointerEvents: isFlipped ? "none" : "auto" }}
                 >
-                  <div
-                    className="absolute inset-0 rounded-[20px] transition-all duration-1000 ease-in-out"
-                    style={{ background: gradientBg, zIndex: -1, opacity: 0.8 }}
-                  />
+                  <div className="absolute inset-0 transition-all duration-1000 ease-in-out" style={{ background: gradientBg, zIndex: -1, opacity: 0.8 }} />
 
                   {hasSubmittedToday && (
                     <div className="absolute -top-[4.5rem] -right-[4.5rem] text-[11rem] opacity-[0.08] pointer-events-none select-none grayscale filter" style={{ zIndex: 0 }}>
@@ -1453,7 +1451,7 @@ export default function Dashboard() {
 
                 {/* BACK CARD (FORM) */}
                 <div
-                  className="absolute inset-0 rounded-[20px] p-6 md:p-8 rotate-y-180 backface-hidden flex flex-col border border-white/20 overflow-hidden shadow-[0_18px_45px_rgba(15,23,42,0.12)]"
+                  className="absolute inset-0 rounded-[20px] p-6 md:p-8 rotate-y-180 backface-hidden flex flex-col shadow-xl border border-white/20 overflow-hidden"
                   style={{ backgroundColor: "var(--glass-bg)", zIndex: isFlipped ? 10 : 0, pointerEvents: isFlipped ? "auto" : "none" }}
                 >
                   <header className="flex justify-between items-center mb-4 transition-opacity duration-300" style={{ opacity: successModal.visible ? 0 : 1 }}>
@@ -1488,107 +1486,105 @@ export default function Dashboard() {
                   <form
                     onSubmit={handleSaveForm}
                     onKeyDown={handleFormKeyDown}
-                    className="flex h-full flex-col gap-3 transition-all duration-500 custom-scroll"
+                    className="flex-grow overflow-y-auto pr-2 flex flex-col gap-3 transition-all duration-500 custom-scroll"
                     style={{
                       opacity: successModal.visible ? 0 : 1,
                       transform: successModal.visible ? "scale(0.95)" : "scale(1)",
                       pointerEvents: successModal.visible || isSaving ? "none" : "auto",
                     }}
                   >
-                    <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pr-2">
-                      {isRestoreMode && (
-                        <div className="rounded-xl border border-white/40 bg-white/60 p-3 shadow-sm">
-                          <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                            Restore input mode
-                          </p>
-                          <div className="mt-2 grid grid-cols-2 gap-2">
-                            <button
-                              type="button"
-                              onClick={() => applyRestoreInputMode("manual", activeLogDate)}
-                              className={`rounded-lg px-3 py-2 text-xs font-bold transition-all ${
-                                restoreInputMode === "manual"
-                                  ? "bg-blue-600 text-white shadow-md"
-                                  : "bg-white/70 text-gray-600 hover:bg-white"
-                              }`}
-                            >
-                              Manual entry
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => applyRestoreInputMode("auto", activeLogDate)}
-                              className={`rounded-lg px-3 py-2 text-xs font-bold transition-all ${
-                                restoreInputMode === "auto"
-                                  ? "bg-emerald-600 text-white shadow-md"
-                                  : "bg-white/70 text-gray-600 hover:bg-white"
-                              }`}
-                            >
-                              Auto fill (imputed)
-                            </button>
-                          </div>
-                          {restoreImputeInfo && (
-                            <p className="mt-2 text-[11px] font-medium text-gray-500">
-                              {restoreImputeInfo}
-                            </p>
-                          )}
+                    {isRestoreMode && (
+                      <div className="rounded-xl border border-white/40 bg-white/60 p-3 shadow-sm">
+                        <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                          Restore input mode
+                        </p>
+                        <div className="mt-2 grid grid-cols-2 gap-2">
+                          <button
+                            type="button"
+                            onClick={() => applyRestoreInputMode("manual", activeLogDate)}
+                            className={`rounded-lg px-3 py-2 text-xs font-bold transition-all ${
+                              restoreInputMode === "manual"
+                                ? "bg-blue-600 text-white shadow-md"
+                                : "bg-white/70 text-gray-600 hover:bg-white"
+                            }`}
+                          >
+                            Manual entry
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => applyRestoreInputMode("auto", activeLogDate)}
+                            className={`rounded-lg px-3 py-2 text-xs font-bold transition-all ${
+                              restoreInputMode === "auto"
+                                ? "bg-emerald-600 text-white shadow-md"
+                                : "bg-white/70 text-gray-600 hover:bg-white"
+                            }`}
+                          >
+                            Auto fill (imputed)
+                          </button>
                         </div>
-                      )}
-                      {/* GPA SECTION (UPDATED LOGIC) */}
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-800 mb-2">GPA <span className="text-red-500">*</span></label>
-                        {!isEditingGpa ? (
-                          <div className="flex items-center gap-3">
-                            {/* Tampilan jika GPA kosong vs ada isinya */}
-                            {gpa !== "" ? (
-                              <span className="text-2xl font-bold" style={{ color: brandOrange }}>{Number(gpa).toFixed(2)}</span>
-                            ) : (
-                              <span className="text-lg font-bold text-gray-400 italic border-b-2 border-dashed border-gray-300">Set GPA</span>
-                            )}
-                            
-                            <button type="button" className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors cursor-pointer ${gpa === "" ? "bg-red-100 text-red-600 animate-pulse" : "bg-blue-100 text-blue-600 hover:bg-blue-200"}`} onClick={() => setIsEditingGpa(true)}>
-                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125"/></svg>
-                            </button>
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-3">
-                            <input 
-                              type="number" 
-                              defaultValue={gpa === "" ? "" : gpa} 
-                              placeholder="0.00"
-                              step="0.01" min="0" max="4" 
-                              className="w-24 p-2 border border-gray-300 rounded-lg text-center font-bold focus:outline-none focus:ring-2 focus:ring-blue-500" 
-                              id="gpaInput" 
-                              style={{ color: "#333" }} 
-                              autoFocus
-                              data-required="true"
-                            />
-                            <button type="button" className="w-9 h-9 rounded-xl flex items-center justify-center bg-green-100 text-green-600 hover:bg-green-200 transition-colors cursor-pointer" onClick={() => handleGpaSave(document.getElementById("gpaInput").value)}>
-                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
-                            </button>
-                            <button type="button" className="w-9 h-9 rounded-xl flex items-center justify-center bg-red-100 text-red-600 hover:bg-red-200 transition-colors cursor-pointer" onClick={() => setIsEditingGpa(false)}>
-                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-                            </button>
-                          </div>
+                        {restoreImputeInfo && (
+                          <p className="mt-2 text-[11px] font-medium text-gray-500">
+                            {restoreImputeInfo}
+                          </p>
                         )}
                       </div>
-
-                      <div className="flex flex-col gap-3">
-                        <div><label className="text-sm font-semibold text-gray-800 mb-1 block">Study Hours <span className="text-gray-400 text-xs font-normal">(Hrs)</span></label><input type="number" value={studyHours} onChange={(e) => setStudyHours(e.target.value)} min="0" max="24" step="0.5" placeholder="0" className="w-full p-2.5 border border-white/50 bg-white/50 rounded-lg focus:ring-2 focus:ring-blue-400 placeholder-gray-400"/></div>
-                        <div><label className="text-sm font-semibold text-gray-800 mb-1 block">Extracurricular <span className="text-gray-400 text-xs font-normal">(Hrs)</span></label><input type="number" value={extraHours} onChange={(e) => setExtraHours(e.target.value)} min="0" max="24" step="0.5" placeholder="0" className="w-full p-2.5 border border-white/50 bg-white/50 rounded-lg focus:ring-2 focus:ring-blue-400 placeholder-gray-400"/></div>
-                        <div><label className="text-sm font-semibold text-gray-800 mb-1 block">Sleep Hours <span className="text-gray-400 text-xs font-normal">(Hrs)</span></label><input type="number" value={sleepHours} onChange={(e) => setSleepHours(e.target.value)} min="0" max="24" step="0.5" placeholder="0" className="w-full p-2.5 border border-white/50 bg-white/50 rounded-lg focus:ring-2 focus:ring-blue-400 placeholder-gray-400" data-required="true"/></div>
-                        <div><label className="text-sm font-semibold text-gray-800 mb-1 block">Social Hours <span className="text-gray-400 text-xs font-normal">(Hrs)</span></label><input type="number" value={socialHours} onChange={(e) => setSocialHours(e.target.value)} min="0" max="24" step="0.5" placeholder="0" className="w-full p-2.5 border border-white/50 bg-white/50 rounded-lg focus:ring-2 focus:ring-blue-400 placeholder-gray-400"/></div>
-                        <div><label className="text-sm font-semibold text-gray-800 mb-1 block">Physical Activity <span className="text-gray-400 text-xs font-normal">(Exercise Hrs)</span></label><input type="number" value={physicalHours} onChange={(e) => setPhysicalHours(e.target.value)} min="0" max="24" step="0.5" placeholder="0" className="w-full p-2.5 border border-white/50 bg-white/50 rounded-lg focus:ring-2 focus:ring-blue-400 placeholder-gray-400"/></div>
-                      </div>
-
-                      <hr className="border-t border-white/20 my-1" />
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-800 mb-3 text-center">How are you feeling today?</label>
-                        <div className="flex justify-around">
-                          {moods.map((emo, idx) => (
-                            <button key={idx} type="button" className={`w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center text-2xl md:text-3xl transition-transform cursor-pointer ${moodIndex === idx ? "scale-110 shadow-lg" : "hover:scale-105"}`} onClick={() => setMoodIndex(idx)} style={{ backgroundColor: moodIndex === idx ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.45)" }}>
-                              {emo}
-                            </button>
-                          ))}
+                    )}
+                    {/* GPA SECTION (UPDATED LOGIC) */}
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-800 mb-2">GPA <span className="text-red-500">*</span></label>
+                      {!isEditingGpa ? (
+                        <div className="flex items-center gap-3">
+                          {/* Tampilan jika GPA kosong vs ada isinya */}
+                          {gpa !== "" ? (
+                             <span className="text-2xl font-bold" style={{ color: brandOrange }}>{Number(gpa).toFixed(2)}</span>
+                          ) : (
+                             <span className="text-lg font-bold text-gray-400 italic border-b-2 border-dashed border-gray-300">Set GPA</span>
+                          )}
+                          
+                          <button type="button" className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors cursor-pointer ${gpa === "" ? "bg-red-100 text-red-600 animate-pulse" : "bg-blue-100 text-blue-600 hover:bg-blue-200"}`} onClick={() => setIsEditingGpa(true)}>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125"/></svg>
+                          </button>
                         </div>
+                      ) : (
+                        <div className="flex items-center gap-3">
+                          <input 
+                            type="number" 
+                            defaultValue={gpa === "" ? "" : gpa} 
+                            placeholder="0.00"
+                            step="0.01" min="0" max="4" 
+                            className="w-24 p-2 border border-gray-300 rounded-lg text-center font-bold focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                            id="gpaInput" 
+                            style={{ color: "#333" }} 
+                            autoFocus
+                            data-required="true"
+                          />
+                          <button type="button" className="w-9 h-9 rounded-xl flex items-center justify-center bg-green-100 text-green-600 hover:bg-green-200 transition-colors cursor-pointer" onClick={() => handleGpaSave(document.getElementById("gpaInput").value)}>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+                          </button>
+                          <button type="button" className="w-9 h-9 rounded-xl flex items-center justify-center bg-red-100 text-red-600 hover:bg-red-200 transition-colors cursor-pointer" onClick={() => setIsEditingGpa(false)}>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div><label className="text-sm font-semibold text-gray-800 mb-1 block">Study Hours <span className="text-gray-400 text-xs font-normal">(Hrs)</span></label><input type="number" value={studyHours} onChange={(e) => setStudyHours(e.target.value)} min="0" max="24" step="0.5" placeholder="0" className="w-full p-2.5 border border-white/50 bg-white/50 rounded-lg focus:ring-2 focus:ring-blue-400 placeholder-gray-400"/></div>
+                      <div><label className="text-sm font-semibold text-gray-800 mb-1 block">Extracurricular <span className="text-gray-400 text-xs font-normal">(Hrs)</span></label><input type="number" value={extraHours} onChange={(e) => setExtraHours(e.target.value)} min="0" max="24" step="0.5" placeholder="0" className="w-full p-2.5 border border-white/50 bg-white/50 rounded-lg focus:ring-2 focus:ring-blue-400 placeholder-gray-400"/></div>
+                      <div><label className="text-sm font-semibold text-gray-800 mb-1 block">Sleep Hours <span className="text-gray-400 text-xs font-normal">(Hrs)</span></label><input type="number" value={sleepHours} onChange={(e) => setSleepHours(e.target.value)} min="0" max="24" step="0.5" placeholder="0" className="w-full p-2.5 border border-white/50 bg-white/50 rounded-lg focus:ring-2 focus:ring-blue-400 placeholder-gray-400" data-required="true"/></div>
+                      <div><label className="text-sm font-semibold text-gray-800 mb-1 block">Social Hours <span className="text-gray-400 text-xs font-normal">(Hrs)</span></label><input type="number" value={socialHours} onChange={(e) => setSocialHours(e.target.value)} min="0" max="24" step="0.5" placeholder="0" className="w-full p-2.5 border border-white/50 bg-white/50 rounded-lg focus:ring-2 focus:ring-blue-400 placeholder-gray-400"/></div>
+                      <div className="col-span-2"><label className="text-sm font-semibold text-gray-800 mb-1 block">Physical Activity <span className="text-gray-400 text-xs font-normal">(Exercise Hrs)</span></label><input type="number" value={physicalHours} onChange={(e) => setPhysicalHours(e.target.value)} min="0" max="24" step="0.5" placeholder="0" className="w-full p-2.5 border border-white/50 bg-white/50 rounded-lg focus:ring-2 focus:ring-blue-400 placeholder-gray-400"/></div>
+                    </div>
+
+                    <hr className="border-t border-white/20 my-2" />
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-800 mb-3 text-center">How are you feeling today?</label>
+                      <div className="flex justify-around">
+                        {moods.map((emo, idx) => (
+                          <button key={idx} type="button" className={`w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center text-2xl md:text-3xl transition-transform cursor-pointer ${moodIndex === idx ? "scale-110 shadow-lg" : "hover:scale-105"}`} onClick={() => setMoodIndex(idx)} style={{ backgroundColor: moodIndex === idx ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.45)" }}>
+                            {emo}
+                          </button>
+                        ))}
                       </div>
                     </div>
                     <button
@@ -1624,15 +1620,16 @@ export default function Dashboard() {
 
                   {isSaving && (
                     <div className="absolute inset-0 z-40 flex items-center justify-center rounded-[20px] bg-white/70 backdrop-blur-sm">
-                      <div className="flex items-center justify-center rounded-2xl bg-white px-4 py-3 shadow-lg" aria-label="Processing entry">
+                      <div className="flex items-center gap-3 rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-gray-600 shadow-lg">
                         <span className="h-5 w-5 rounded-full border-2 border-blue-500 border-t-transparent animate-spin" />
+                        Processing your entry...
                       </div>
                     </div>
                   )}
 
                   {/* INTERNAL SUCCESS OVERLAY */}
                   {successModal.visible && (
-                    <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-[20px]" style={{ animation: "fadeIn 0.3s ease-out" }}>
+                    <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-white/90 backdrop-blur-md rounded-[20px]" style={{ animation: "fadeIn 0.3s ease-out" }}>
                       
                       <div className="w-24 h-24 rounded-full flex items-center justify-center shadow-lg mb-4 animate-success-icon" style={{ backgroundColor: "#fff", border: `4px solid ${brandGreen}` }}>
                         <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke={brandGreen} strokeWidth="3">
@@ -1664,8 +1661,31 @@ export default function Dashboard() {
           {/* CALENDAR SECTION (FIXED BUTTONS) */}
           <section className="col-span-1 md:col-span-2 p-6 md:p-8 rounded-[20px] bg-white/40 backdrop-blur-md border border-white/20 shadow-xl relative overflow-hidden" style={{ minHeight: 600 }}>
             {isLoadingLogs && (
-              <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/70 backdrop-blur-sm">
-                <div className="h-12 w-12 rounded-full border-4 border-blue-200 border-t-blue-500 animate-spin" />
+              <div className="absolute inset-0 z-20 bg-white/70 backdrop-blur-sm p-6 md:p-8">
+                <div className="relative h-full w-full rounded-[16px] border border-white/40 bg-white/60 p-6 md:p-8 shadow-inner">
+                   <div className="flex items-center justify-between mb-6">
+                      <div className="skeleton h-8 w-8 rounded-full" />
+                      <div className="skeleton h-5 w-40 rounded-full" />
+                      <div className="skeleton h-8 w-8 rounded-full" />
+                   </div>
+                   <div className="grid grid-cols-7 gap-2 mb-4">
+                      {Array.from({ length: 7 }).map((_, idx) => (
+                        <div key={`weekday-skel-${idx}`} className="skeleton h-4 w-full rounded-full" />
+                      ))}
+                   </div>
+                   <div className="grid grid-cols-7 gap-2">
+                      {Array.from({ length: 35 }).map((_, idx) => (
+                        <div key={`day-skel-${idx}`} className="skeleton aspect-square rounded-xl" />
+                      ))}
+                   </div>
+                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-center">
+                      <div className="relative flex items-center justify-center">
+                        <div className="h-14 w-14 rounded-full border-4 border-blue-200 border-t-blue-500 spin-slow" />
+                        <div className="absolute h-9 w-9 rounded-full border-4 border-orange-200 border-t-orange-500 spin-reverse" />
+                      </div>
+                      <p className="text-center text-sm font-semibold text-gray-500 pulse-soft">Loading Calendar...</p>
+                   </div>
+                </div>
               </div>
             )}
 
@@ -1766,17 +1786,17 @@ export default function Dashboard() {
                 })}
               </div>
 
-              <div className="mt-4 rounded-2xl border border-white/40 bg-white/60 p-4 shadow-sm dark:border-slate-700/70 dark:bg-slate-900/70">
+              <div className="mt-4 rounded-2xl border border-white/40 bg-white/60 p-4 shadow-sm">
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center dark:bg-orange-500/20 dark:text-orange-200">
+                    <div className="h-10 w-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center">
                       <span className="text-lg">🔥</span>
                     </div>
                     <div>
-                      <h4 className="text-sm font-bold text-gray-800 dark:text-slate-100">Restore Streak</h4>
-                      <p className="text-xs text-gray-500 dark:text-slate-300">
+                      <h4 className="text-sm font-bold text-gray-800">Restore Streak</h4>
+                      <p className="text-xs text-gray-500">
                         Remaining:{" "}
-                        <span className="font-semibold text-gray-700 dark:text-slate-200">
+                        <span className="font-semibold text-gray-700">
                           {restoreRemaining}/{restoreLimit}
                         </span>
                       </p>
@@ -1796,14 +1816,14 @@ export default function Dashboard() {
                       eligibilityLoading ||
                       restoreRemaining <= 0 ||
                       !canRestoreSelectedDay
-                        ? "bg-gray-200 text-gray-400 cursor-not-allowed dark:bg-slate-800 dark:text-slate-500"
+                        ? "bg-gray-200 text-gray-400 cursor-not-allowed"
                         : "bg-orange-500 text-white hover:bg-orange-600"
                     }`}
                   >
                     Restore {selectedDateKey}
                   </button>
                 </div>
-                <p className="text-xs text-gray-500 mt-2 dark:text-slate-300">{restoreHint}</p>
+                <p className="text-xs text-gray-500 mt-2">{restoreHint}</p>
                 {eligibilityError && (
                   <p className="text-xs text-red-500 mt-1">{eligibilityError}</p>
                 )}
@@ -1811,23 +1831,13 @@ export default function Dashboard() {
 
               {/* --- NEW SECTION: 3-DAY FORECAST --- */}
               <div className="mt-auto pt-6 pb-2">
-                <div className="w-full h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent mb-4 dark:via-slate-700"></div>
+                <div className="w-full h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent mb-4"></div>
                 <div className="flex items-center justify-between mb-3">
-                   <h4 className="text-sm font-bold text-gray-700 dark:text-slate-100 flex items-center gap-2">
+                   <h4 className="text-sm font-bold text-gray-700 flex items-center gap-2">
                       <i className="ph ph-crystal-ball text-purple-500 text-lg"></i>
                       3-Day Forecast
                    </h4>
-                   <div className="relative group">
-                      <span
-                        className="text-[10px] bg-purple-50 text-purple-600 px-2 py-0.5 rounded font-bold uppercase tracking-wider cursor-help dark:bg-purple-500/20 dark:text-purple-200"
-                        title={forecastModeDescription}
-                      >
-                        {forecastModeLabel}
-                      </span>
-                      <div className="pointer-events-none absolute right-0 mt-2 w-48 rounded-lg border border-purple-100 bg-white/95 p-2 text-[10px] text-purple-700 shadow-lg opacity-0 transition-opacity duration-200 group-hover:opacity-100 dark:border-purple-500/30 dark:bg-slate-900/95 dark:text-purple-100">
-                        {forecastModeDescription}
-                      </div>
-                   </div>
+                   <span className="text-[10px] bg-purple-50 text-purple-600 px-2 py-0.5 rounded font-bold uppercase tracking-wider">Beta</span>
                 </div>
                 
                 <div className="grid grid-cols-3 gap-3">
@@ -1835,22 +1845,22 @@ export default function Dashboard() {
                       Array.from({ length: 3 }).map((_, idx) => (
                         <div
                           key={`forecast-loading-${idx}`}
-                          className="relative rounded-xl p-3 flex flex-col items-center text-center border border-white/40 bg-white/50 animate-pulse dark:border-slate-700 dark:bg-slate-900/60"
+                          className="relative rounded-xl p-3 flex flex-col items-center text-center border border-white/40 bg-white/50 animate-pulse"
                         >
-                          <div className="h-3 w-12 bg-gray-200 rounded mb-3 dark:bg-slate-700" />
-                          <div className="h-6 w-6 bg-gray-200 rounded-full mb-2 dark:bg-slate-700" />
-                          <div className="h-4 w-14 bg-gray-200 rounded mb-2 dark:bg-slate-700" />
-                          <div className="h-3 w-16 bg-gray-200 rounded-full dark:bg-slate-700" />
+                          <div className="h-3 w-12 bg-gray-200 rounded mb-3" />
+                          <div className="h-6 w-6 bg-gray-200 rounded-full mb-2" />
+                          <div className="h-4 w-14 bg-gray-200 rounded mb-2" />
+                          <div className="h-3 w-16 bg-gray-200 rounded-full" />
                         </div>
                       ))
                     )}
                     {!forecastLoading && forecastError && (
-                      <div className="col-span-3 text-center text-xs font-semibold text-gray-500 bg-white/60 border border-gray-200 rounded-xl px-3 py-4 whitespace-pre-line dark:bg-slate-900/70 dark:border-slate-700 dark:text-slate-300">
+                      <div className="col-span-3 text-center text-xs font-semibold text-gray-500 bg-white/60 border border-gray-200 rounded-xl px-3 py-4 whitespace-pre-line">
                         {forecastError}
                       </div>
                     )}
                     {!forecastLoading && !forecastError && forecastList.length === 0 && (
-                      <div className="col-span-3 text-center text-xs font-semibold text-gray-500 bg-white/60 border border-gray-200 rounded-xl px-3 py-4 dark:bg-slate-900/70 dark:border-slate-700 dark:text-slate-300">
+                      <div className="col-span-3 text-center text-xs font-semibold text-gray-500 bg-white/60 border border-gray-200 rounded-xl px-3 py-4">
                         Forecast is not available yet.
                       </div>
                     )}
@@ -1862,16 +1872,15 @@ export default function Dashboard() {
                           className={`
                             relative rounded-xl p-3 flex flex-col items-center text-center cursor-pointer 
                             transition-all duration-300 hover:scale-105 hover:shadow-md border border-transparent hover:border-black/5 active:scale-95
-                            dark:hover:border-slate-600/60
                             ${item.bg}
                           `}
                         >
-                           <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 dark:text-slate-400">{item.dateStr}</span>
+                           <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">{item.dateStr}</span>
                            <div className="text-2xl mb-1" style={{ color: item.color }}>
                               <i className={`ph ${item.icon}`}></i>
                            </div>
                            <div className="font-extrabold text-sm uppercase" style={{ color: item.color }}>{item.status}</div>
-                           <div className="text-[10px] font-medium text-gray-500 mt-1 flex items-center gap-1 bg-white/50 px-2 py-0.5 rounded-full dark:bg-slate-900/70 dark:text-slate-200">
+                           <div className="text-[10px] font-medium text-gray-500 mt-1 flex items-center gap-1 bg-white/50 px-2 py-0.5 rounded-full">
                               <i className="ph ph-trend-up"></i> {item.probability}%
                            </div>
                         </div>
@@ -1944,7 +1953,7 @@ export default function Dashboard() {
                 // Disini kita gunakan forecastDetail.panelTheme untuk warna container (tanpa opacity class)
                 // Hapus bg-opacity-95 agar solid, tambahkan shadow-2xl agar lebih kontras dengan background
                 className={`
-                  absolute inset-x-0 bottom-0 z-30 rounded-t-[24px] shadow-2xl border-t border-gray-100 overflow-hidden dark:border-slate-700
+                  absolute inset-x-0 bottom-0 z-30 rounded-t-[24px] shadow-2xl border-t border-gray-100 overflow-hidden
                   ${isClosingPanel ? "animate-slide-down-panel" : "animate-slide-up-panel"}
                   ${forecastDetail.panelTheme}
                 `}
@@ -1952,24 +1961,24 @@ export default function Dashboard() {
               >
                   {/* Handle Bar for aesthetics */}
                   <div className="w-full flex justify-center pt-3 pb-1" onClick={handleCloseForecast}>
-                     <div className="w-12 h-1.5 bg-gray-400/30 rounded-full cursor-pointer hover:bg-gray-400/50 transition-colors dark:bg-slate-500/40 dark:hover:bg-slate-500/60" />
+                     <div className="w-12 h-1.5 bg-gray-400/30 rounded-full cursor-pointer hover:bg-gray-400/50 transition-colors" />
                   </div>
 
                   <div className="p-6 pt-2">
                      <div className="flex justify-between items-start mb-4">
                         <div>
                            <div className="flex items-center gap-2 mb-1">
-                              <span className="text-xs font-bold text-gray-500 uppercase tracking-widest dark:text-slate-300">{forecastDetail.fullDate}</span>
+                              <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">{forecastDetail.fullDate}</span>
                               <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold bg-white/60 border ${forecastDetail.border}`} style={{ color: forecastDetail.color }}>
                                  {forecastDetail.status} Risk
                               </span>
                            </div>
-                           <h3 className="text-xl font-bold text-gray-800 dark:text-slate-100">Stress Forecast Advice</h3>
+                           <h3 className="text-xl font-bold text-gray-800">Stress Forecast Advice</h3>
                         </div>
                         {/* TOMBOL X DIGANTI DENGAN SVG */}
                         <button 
                            onClick={handleCloseForecast} 
-                           className="w-8 h-8 rounded-full bg-white/40 text-gray-600 hover:bg-white/60 hover:text-gray-900 flex items-center justify-center transition-all cursor-pointer dark:bg-slate-900/60 dark:text-slate-200 dark:hover:bg-slate-800"
+                           className="w-8 h-8 rounded-full bg-white/40 text-gray-600 hover:bg-white/60 hover:text-gray-900 flex items-center justify-center transition-all cursor-pointer"
                         >
                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
                               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -1977,28 +1986,17 @@ export default function Dashboard() {
                         </button>
                      </div>
 
-                     <div className={`p-4 rounded-xl border ${forecastDetail.border} bg-white/40 flex items-start gap-3 dark:bg-slate-900/60`}>
+                     <div className={`p-4 rounded-xl border ${forecastDetail.border} bg-white/40 flex items-start gap-3`}>
                         <i className={`ph ${forecastDetail.icon} text-2xl mt-0.5`} style={{ color: forecastDetail.color }}></i>
                         <div>
-                           <p className="text-sm text-gray-800 font-medium leading-relaxed dark:text-slate-100">
+                           <p className="text-sm text-gray-800 font-medium leading-relaxed">
                               {forecastDetail.advice}
                            </p>
                            <div className="mt-2 flex items-center gap-1 text-xs font-bold opacity-70" style={{ color: forecastDetail.color }}>
                               <i className="ph ph-lightning"></i> Confidence: {forecastDetail.probability}%
                            </div>
-                           {(forecastDetail.forecastMode || forecastDetail.modelType || typeof forecastDetail.threshold === "number") && (
-                             <div className="mt-1 text-[11px] font-semibold text-gray-500 dark:text-slate-300">
-                               {forecastDetail.forecastMode && (
-                                 <span>
-                                   Forecast:{" "}
-                                   {forecastDetail.forecastMode === "personalized"
-                                     ? "Personalized"
-                                     : "Global"}
-                                 </span>
-                               )}
-                               {forecastDetail.forecastMode && (forecastDetail.modelType || typeof forecastDetail.threshold === "number") && (
-                                 <span className="mx-1">·</span>
-                               )}
+                           {(forecastDetail.modelType || typeof forecastDetail.threshold === "number") && (
+                             <div className="mt-1 text-[11px] font-semibold text-gray-500">
                                {forecastDetail.modelType && (
                                  <span>Model: {forecastDetail.modelType}</span>
                                )}
@@ -2013,7 +2011,7 @@ export default function Dashboard() {
                         </div>
                      </div>
                      
-                     <button onClick={handleCloseForecast} className="w-full mt-4 py-3 bg-gray-900 text-white rounded-xl font-bold text-sm shadow-lg hover:bg-black transition-transform active:scale-95 cursor-pointer dark:bg-slate-200 dark:text-slate-900 dark:hover:bg-white">
+                     <button onClick={handleCloseForecast} className="w-full mt-4 py-3 bg-gray-900 text-white rounded-xl font-bold text-sm shadow-lg hover:bg-black transition-transform active:scale-95 cursor-pointer">
                         Got it!
                      </button>
                   </div>
@@ -2025,31 +2023,31 @@ export default function Dashboard() {
         {/* MOTIVATION & TIPS SECTIONS */}
         <div className="mt-8 grid grid-cols-1">
           {/* ... (Section motivasi tetap sama) ... */}
-          <section className="col-span-4 relative overflow-hidden rounded-[24px] shadow-xl group transition-all duration-500 hover:shadow-orange-100">
-            <div className="absolute inset-0 bg-white/60 backdrop-blur-xl border border-white/40 dark:bg-slate-900/80 dark:border-slate-700/60 z-0"></div>
+          <section className="col-span-4 relative overflow-hidden rounded-[24px] shadow-2xl group transition-all duration-500 hover:shadow-orange-100">
+            <div className="absolute inset-0 bg-white/60 backdrop-blur-xl border border-white/40 z-0"></div>
             <div className="absolute -left-10 -top-10 w-40 h-40 bg-orange-300 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob"></div>
             <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-purple-300 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob animation-delay-2000"></div>
             <div className="relative z-10 p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-6">
               <div className="flex flex-col md:flex-row items-center md:items-start gap-6 text-center md:text-left flex-1">
                 <div className="w-16 h-16 flex-shrink-0 rounded-2xl bg-gradient-to-br from-orange-400 to-red-400 flex items-center justify-center shadow-lg text-white"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" className="w-8 h-8"><path d="M224,128a8,8,0,0,1-8,8c-30.85,0-57.5,12.72-76.32,34.4C120.86,192.11,128,218.85,128,248a8,8,0,0,1-16,0c0-29.15,7.14-55.89-11.68-77.6C81.5,148.72,54.85,136,24,136a8,8,0,0,1,0-16c30.85,0,57.5-12.72,76.32-34.4C119.14,63.89,112,37.15,112,8a8,8,0,0,1,16,0c0,29.15-7.14,55.89,11.68,77.6C158.5,107.28,185.15,120,216,120A8,8,0,0,1,224,128Z" /></svg></div>
                 <div className="flex-1">
-                  <p className="text-xs font-bold tracking-widest text-orange-600 dark:text-orange-300 uppercase mb-2">
+                  <p className="text-xs font-bold tracking-widest text-orange-600 uppercase mb-2">
                     Daily Wisdom
                   </p>
                   <div className={`transition-all duration-500 ${isQuoteAnimating ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"}`}>
                     {quoteLoading ? (
-                      <p className="text-gray-500 dark:text-slate-300 font-medium">Loading daily wisdom...</p>
+                      <p className="text-gray-500 font-medium">Loading daily wisdom...</p>
                     ) : quoteError ? (
                       <p className="text-rose-500 font-medium">{quoteError}</p>
                     ) : quoteData.text ? (
                       <>
-                        <h3 className="text-2xl md:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-slate-700 to-slate-500 dark:from-slate-100 dark:to-slate-300 leading-tight mb-2">
+                        <h3 className="text-2xl md:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-gray-800 to-gray-600 leading-tight mb-2">
                           "{quoteData.text}"
                         </h3>
-                        <p className="text-gray-500 dark:text-slate-300 font-medium italic">— {quoteData.author}</p>
+                        <p className="text-gray-500 font-medium italic">— {quoteData.author}</p>
                       </>
                     ) : (
-                      <p className="text-gray-500 dark:text-slate-300 font-medium">No quotes available yet.</p>
+                      <p className="text-gray-500 font-medium">No quotes available yet.</p>
                     )}
                   </div>
                 </div>
@@ -2057,7 +2055,7 @@ export default function Dashboard() {
               <button
                 onClick={handleNewQuote}
                 disabled={isQuoteAnimating || quoteLoading || quotePool.length === 0}
-                className="flex-shrink-0 group relative px-6 py-3 rounded-xl bg-white border border-gray-200 text-gray-700 font-bold shadow-sm hover:shadow-md hover:border-orange-300 hover:text-orange-600 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 dark:hover:text-orange-300 transition-all active:scale-95 disabled:opacity-70 cursor-pointer"
+                className="flex-shrink-0 group relative px-6 py-3 rounded-xl bg-white border border-gray-200 text-gray-700 font-bold shadow-sm hover:shadow-md hover:border-orange-300 hover:text-orange-600 transition-all active:scale-95 disabled:opacity-70 cursor-pointer"
               >
                 <span className="flex items-center gap-2">
                   <i className={`ph ph-arrows-clockwise text-xl transition-transform duration-700 ${isQuoteAnimating ? "rotate-180" : ""}`}></i>

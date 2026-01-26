@@ -14,8 +14,6 @@ const navLinks = [
   { name: "Diary", href: "/diary" },
 ];
 
-const TODAY_LOG_STORAGE_KEY = "nostressia_today_log";
-
 // --- TERIMA PROPS 'user' DI SINI ---
 const Navbar = ({ user }) => {
   const location = useLocation();
@@ -40,29 +38,18 @@ const Navbar = ({ user }) => {
   const avatarSrc = resolveAvatarUrl(user?.avatar) || fallbackAvatar;
 
   // --- LOGIKA WARNA API BERDASARKAN STREAK ---
-  const getFlameColor = (streakCount, hasLoggedToday) => {
+  const getFlameColor = (streakCount) => {
     const count = streakCount || 0;
-    if (!hasLoggedToday) {
-      return "text-gray-400 fill-gray-300/40";
-    }
     if (count >= 60) {
+      // Level Tinggi (60+): Api 2
       return "text-purple-600 fill-purple-600/20";
     }
-    if (count >= 7) {
-      return "text-orange-500 fill-orange-500/20";
-    }
-    return "text-yellow-500 fill-yellow-400/30";
+    // Level Awal (0-59): Api 1
+    return "text-orange-500 fill-orange-500/20";
   };
 
   const streakVal = user?.streak || 0;
-  const todayKey =
-    typeof window !== "undefined"
-      ? new Date().toISOString().slice(0, 10)
-      : "";
-  const hasLoggedToday =
-    typeof window !== "undefined" &&
-    localStorage.getItem(TODAY_LOG_STORAGE_KEY) === todayKey;
-  const flameClass = getFlameColor(streakVal, hasLoggedToday);
+  const flameClass = getFlameColor(streakVal);
 
   return (
     <header
