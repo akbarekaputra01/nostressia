@@ -22,7 +22,6 @@
         const resolvedTheme =
           normalizedTheme === "system" ? (systemPrefersDark ? "dark" : "light") : normalizedTheme;
         const root = document.documentElement;
-        root.classList.toggle("dark", resolvedTheme === "dark");
         root.dataset.theme = resolvedTheme;
         root.dataset.themePreference = normalizedTheme;
         root.style.colorScheme = resolvedTheme;

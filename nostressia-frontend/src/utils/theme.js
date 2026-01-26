@@ -21,8 +21,6 @@ export const getResolvedTheme = (theme) => {
 const applyResolvedTheme = (resolvedTheme) => {
   if (typeof document === "undefined") return;
   const root = document.documentElement;
-  const isDark = resolvedTheme === "dark";
-  root.classList.toggle("dark", isDark);
   root.dataset.theme = resolvedTheme;
   root.style.colorScheme = resolvedTheme;
 };
