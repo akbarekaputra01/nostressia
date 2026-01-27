@@ -1,7 +1,7 @@
 # nostressia-backend/app/services/notification_scheduler.py
 
 import logging
-from datetime import datetime
+from datetime import datetime, time
 from typing import Optional
 
 import pytz
@@ -25,13 +25,34 @@ def _build_payload() -> dict:
     }
 
 
+def _parse_hhmm(value: str) -> time:
+    """
+    Konversi 'HH:mm' -> datetime.time
+    Aman karena reminder_time kamu sudah dinormalisasi di endpoint subscribe.
+    """
+    hours, minutes = value.split(":")
+    return time(int(hours), int(minutes))
+
+
 def _should_send(subscription: PushSubscription, now: datetime) -> bool:
-    # Kirim hanya jika jam cocok dan belum dikirim hari ini
-    if subscription.reminder_time != now.strftime("%H:%M"):
-        return False
+    """
+    Rule kirim yang lebih 'pas' tanpa harus exact tick di menit yang sama:
+    - Jangan kirim kalau sudah terkirim hari ini (dedupe)
+    - Kirim kalau waktu sekarang sudah melewati jam target user
+    """
     if subscription.last_sent_date == now.date():
         return False
-    return True
+
+    target = _parse_hhmm(subscription.reminder_time)
+    target_dt = now.replace(
+        hour=target.hour,
+        minute=target.minute,
+        second=0,
+        microsecond=0,
+    )
+
+    # Kalau scheduler tick telat (misalnya 13:02:10) tetap kirim untuk target 13:02
+    return now >= target_dt
 
 
 def process_daily_reminders() -> None:
@@ -68,10 +89,10 @@ def process_daily_reminders() -> None:
 
             now = datetime.now(timezone)
 
-            # Debug penting biar kamu lihat scheduler memang jalan dan membandingkan jam
+            # Debug penting biar kamu lihat scheduler jalan dan apa yang dibandingkan
             print(
                 f"🕒 [scheduler] user_id={subscription.user_id} tz={timezone_name} "
-                f"now={now.strftime('%H:%M')} db_time={subscription.reminder_time} "
+                f"now={now.strftime('%H:%M:%S')} db_time={subscription.reminder_time} "
                 f"last_sent={subscription.last_sent_date}",
                 flush=True,
             )
@@ -84,8 +105,10 @@ def process_daily_reminders() -> None:
                     f"🚀 [scheduler] sending push to user_id={subscription.user_id}",
                     flush=True,
                 )
+
                 send_push(subscription, _build_payload())
 
+                # dedupe per hari
                 subscription.last_sent_date = now.date()
                 db.add(subscription)
                 db.commit()
