@@ -15,16 +15,16 @@ import Footer from "../../components/Footer";
 import Navbar from "../../components/Navbar";
 
 // --- COLOR CONFIGURATION ---
-const brandBlue = "#3664BA";
-const brandOrange = "#F2994A";
-const brandGreen = "#27AE60";
-const brandRed = "#E53E3E";
+const brandBlue = "#0162F1";
+const brandOrange = "#FFBF00";
+const brandGreen = "#00A4FF";
+const brandRed = "#FF6700";
 
 const TODAY_LOG_STORAGE_KEY = "nostressia_today_log";
-const bgCream = "var(--bg-gradient-cream)";
-const bgPink = "var(--bg-gradient-pink)";
-const bgLavender = "var(--bg-gradient-lavender)";
-const colorGray = "#D1D5DB";
+const bgCream = "rgb(var(--bg-gradient-cream))";
+const bgPink = "rgb(var(--bg-gradient-pink))";
+const bgLavender = "rgb(var(--bg-gradient-lavender))";
+const colorGray = "rgb(var(--neutral-300))";
 
 // TRANSLATED: Month Names
 const monthNames = [
@@ -129,7 +129,7 @@ function createEmptyTodayData(todayKey) {
       social: 0,
       physical: 0,
       mood: "😐",
-      color: "#ccc",
+      color: colorGray,
       isToday: true,
       isEmpty: true,
     },
@@ -1379,7 +1379,7 @@ export default function Dashboard() {
                 {/* FRONT CARD (PREDICTION) */}
                 <div
                   className="absolute inset-0 rounded-[20px] p-6 md:p-8 backface-hidden flex flex-col border border-white/20 overflow-hidden shadow-[0_18px_45px_rgba(15,23,42,0.12)]"
-                  style={{ backgroundColor: "var(--glass-bg)", zIndex: isFlipped ? 0 : 10, pointerEvents: isFlipped ? "none" : "auto" }}
+                  style={{ backgroundColor: "rgb(var(--glass-bg) / 0.7)", zIndex: isFlipped ? 0 : 10, pointerEvents: isFlipped ? "none" : "auto" }}
                 >
                   <div
                     className="absolute inset-0 rounded-[20px] transition-all duration-1000 ease-in-out"
@@ -1398,7 +1398,7 @@ export default function Dashboard() {
                   </header>
                   <div className="flex-grow flex flex-col items-center justify-center text-center relative z-10">
                     {(() => {
-                      let ui = { label: "NO DATA", sub: "Let's check your status", color: "#9ca3af", icon: "ph-question", anim: "" };
+                      let ui = { label: "NO DATA", sub: "Let's check your status", color: "rgb(var(--neutral-400))", icon: "ph-question", anim: "" };
                       if (hasSubmittedToday) {
                         if (stressScore > 60) ui = { label: "HIGH LEVEL", sub: "Please take a break!", color: brandRed, icon: "ph-warning-octagon", anim: "anim-heartbeat" };
                         else if (stressScore > 30) ui = { label: "MODERATE", sub: "Keep it balanced.", color: brandOrange, icon: "ph-scales", anim: "anim-glow" };
@@ -1454,7 +1454,7 @@ export default function Dashboard() {
                 {/* BACK CARD (FORM) */}
                 <div
                   className="absolute inset-0 rounded-[20px] p-6 md:p-8 rotate-y-180 backface-hidden flex flex-col border border-white/20 overflow-hidden shadow-[0_18px_45px_rgba(15,23,42,0.12)]"
-                  style={{ backgroundColor: "var(--glass-bg)", zIndex: isFlipped ? 10 : 0, pointerEvents: isFlipped ? "auto" : "none" }}
+                  style={{ backgroundColor: "rgb(var(--glass-bg) / 0.7)", zIndex: isFlipped ? 10 : 0, pointerEvents: isFlipped ? "auto" : "none" }}
                 >
                   <header className="flex justify-between items-center mb-4 transition-opacity duration-300" style={{ opacity: successModal.visible ? 0 : 1 }}>
                     <div>
@@ -1557,7 +1557,7 @@ export default function Dashboard() {
                               step="0.01" min="0" max="4" 
                               className="w-24 p-2 border border-gray-300 rounded-lg text-center font-bold focus:outline-none focus:ring-2 focus:ring-blue-500" 
                               id="gpaInput" 
-                              style={{ color: "#333" }} 
+                              style={{ color: "rgb(var(--text-primary))" }} 
                               autoFocus
                               data-required="true"
                             />
@@ -1634,7 +1634,7 @@ export default function Dashboard() {
                   {successModal.visible && (
                     <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-[20px]" style={{ animation: "fadeIn 0.3s ease-out" }}>
                       
-                      <div className="w-24 h-24 rounded-full flex items-center justify-center shadow-lg mb-4 animate-success-icon" style={{ backgroundColor: "#fff", border: `4px solid ${brandGreen}` }}>
+                      <div className="w-24 h-24 rounded-full flex items-center justify-center shadow-lg mb-4 animate-success-icon" style={{ backgroundColor: "rgb(var(--surface-elevated))", border: `4px solid ${brandGreen}` }}>
                         <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke={brandGreen} strokeWidth="3">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" style={{ animation: "circle-draw 0.8s ease-out forwards 0.3s" }} />
                         </svg>
@@ -1751,7 +1751,7 @@ export default function Dashboard() {
                       `}
                       style={{
                         background: isSel ? brandBlue : "transparent",
-                        border: (!isSel && hasData) ? `2px solid ${has.color}40` : (!isSel && isRealToday) ? "2px solid #BFDBFE" : "none"
+                        border: (!isSel && hasData) ? `2px solid ${has.color}40` : (!isSel && isRealToday) ? "2px solid rgba(1, 98, 241, 0.25)" : "none"
                       }}
                     >
                       <span className="relative z-10">{day}</span>

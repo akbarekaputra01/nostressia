@@ -8,16 +8,16 @@ import Footer from "../../components/Footer";
 import { createDiary, getMyDiaries, updateDiary } from "../../services/diaryService";
 
 // --- COLOR CONFIGURATION ---
-const bgCream = "var(--bg-gradient-cream)";
-const bgPink = "var(--bg-gradient-pink)";
-const bgLavender = "var(--bg-gradient-lavender)";
+const bgCream = "rgb(var(--bg-gradient-cream))";
+const bgPink = "rgb(var(--bg-gradient-pink))";
+const bgLavender = "rgb(var(--bg-gradient-lavender))";
 const colors = {
-    brandBlue: "#3664BA",
-    brandOrange: "#F2994A",
-    brandBlueLight: "#2F80ED",
-    textPrimary: "#333333",
-    bgCream: "var(--bg-gradient-cream)",
-    bgLavender: "var(--bg-gradient-lavender)"
+    brandBlue: "#0162F1",
+    brandOrange: "#FF6700",
+    brandBlueLight: "#00A4FF",
+    textPrimary: "rgb(var(--text-primary))",
+    bgCream: "rgb(var(--bg-gradient-cream))",
+    bgLavender: "rgb(var(--bg-gradient-lavender))"
 };
 
 export default function Diary() {
@@ -41,9 +41,7 @@ export default function Diary() {
   const { user } = useOutletContext() || { user: {} }; 
 
   const fontOptions = [
-    { name: "Default", value: baseFont, label: "Aa" },
-    { name: "Handwriting", value: "'Patrick Hand', cursive", label: "✍️" },
-    { name: "Cute", value: "'Fredoka', sans-serif", label: "🧸" },
+    { name: "Manrope", value: baseFont, label: "Aa" },
   ];
 
   const moods = [
@@ -204,11 +202,11 @@ export default function Diary() {
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgb(var(--neutral-300)); border-radius: 10px; }
         
         .notebook-lines {
-            background-color: var(--journal-paper-muted);
-            background-image: linear-gradient(transparent 31px, var(--journal-line) 31px);
+            background-color: rgb(var(--journal-paper-muted));
+            background-image: linear-gradient(transparent 31px, rgb(var(--journal-line)) 31px);
             background-size: 100% 32px;
             background-attachment: local;
         }
@@ -227,7 +225,7 @@ export default function Diary() {
         .spiral-ring {
             width: 25px;
             height: 8px;
-            background: linear-gradient(to bottom, #d1d5db, #9ca3af, #d1d5db);
+            background: linear-gradient(to bottom, rgb(var(--neutral-300)), rgb(var(--neutral-400)), rgb(var(--neutral-300)));
             border-radius: 4px;
             box-shadow: 2px 1px 3px rgba(0,0,0,0.15);
             position: relative;
@@ -239,7 +237,7 @@ export default function Diary() {
             transform: translateY(-50%);
             width: 8px;
             height: 8px;
-            background: var(--journal-line);
+            background: rgb(var(--journal-line));
             border-radius: 50%;
         }
       `}</style>
@@ -289,7 +287,7 @@ export default function Diary() {
                 {/* HALAMAN MENULIS */}
                 <div
                   className="absolute inset-0 w-full h-full rounded-[16px] md:rounded-l-[4px] md:rounded-r-[16px] shadow-xl z-0 flex flex-col overflow-hidden border border-slate-200 dark:border-slate-700"
-                  style={{ backgroundColor: "var(--journal-paper)" }}
+                  style={{ backgroundColor: "rgb(var(--journal-paper))" }}
                 >
                     <div className="flex-grow p-5 md:p-8 flex flex-col relative z-10">
                           <button onClick={handleCloseEditor} className="absolute top-3 right-3 z-30 w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all"><X size={20} /></button>
@@ -299,9 +297,9 @@ export default function Diary() {
                             ))}
                         </div>
                         <div className="flex-grow relative flex flex-col overflow-hidden">
-                            <div className="absolute inset-0 opacity-50 pointer-events-none" style={{ backgroundImage: "linear-gradient(var(--journal-line) 1px, transparent 1px)", backgroundSize: "100% 40px", backgroundPosition: "0px 39px" }}></div>
+                            <div className="absolute inset-0 opacity-50 pointer-events-none" style={{ backgroundImage: "linear-gradient(rgb(var(--journal-line)) 1px, transparent 1px)", backgroundSize: "100% 40px", backgroundPosition: "0px 39px" }}></div>
                             <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title..." className="bg-transparent text-lg md:text-2xl font-bold focus:outline-none w-full h-[40px] leading-[40px] relative z-10" style={{ fontFamily: selectedFont || baseFont, color: colors.brandBlue }} />
-                            <textarea value={text} onChange={(e) => setText(e.target.value)} placeholder="Dear diary..." className="flex-grow bg-transparent resize-none focus:outline-none text-sm md:text-lg leading-[40px] custom-scrollbar w-full relative z-10" style={{ fontFamily: selectedFont || baseFont, color: "var(--journal-ink)" }} />
+                            <textarea value={text} onChange={(e) => setText(e.target.value)} placeholder="Dear diary..." className="flex-grow bg-transparent resize-none focus:outline-none text-sm md:text-lg leading-[40px] custom-scrollbar w-full relative z-10" style={{ fontFamily: selectedFont || baseFont, color: "rgb(var(--journal-ink))" }} />
                         </div>
                         <div className="mt-2 flex justify-between items-center pt-2 border-t border-slate-100">
                              <div className="flex gap-1">{fontOptions.map(f => (<button key={f.name} onClick={() => setSelectedFont(f.value)} className={`w-6 h-6 rounded-full border text-[10px] flex items-center justify-center transition-all ${selectedFont === f.value ? "bg-slate-200 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-white dark:border-slate-700" : "bg-white text-slate-500 dark:bg-slate-900 dark:text-slate-200 dark:border-slate-700"}`}>{f.label}</button>))}</div>
@@ -350,7 +348,7 @@ export default function Diary() {
                         }`}
                       >
                         <span className="text-3xl md:text-4xl">📘</span>
-                        <h2 className="text-xl md:text-3xl font-extrabold text-white mt-4 tracking-widest font-serif">
+                        <h2 className="text-xl md:text-3xl font-extrabold text-white mt-4 tracking-widest font-sans">
                           DIARY
                         </h2>
                         <div 
@@ -373,16 +371,16 @@ export default function Diary() {
                     </div>
                     <div
                       className="absolute inset-0 w-full h-full rounded-l-[16px] rounded-r-[4px] shadow-inner border-r border-slate-200 dark:border-slate-700"
-                      style={{ transform: "rotateY(180deg)", backfaceVisibility: 'hidden', backgroundColor: "var(--journal-paper)" }}
+                      style={{ transform: "rotateY(180deg)", backfaceVisibility: 'hidden', backgroundColor: "rgb(var(--journal-paper))" }}
                     >
                           <div className="w-full h-full flex flex-col items-center justify-center p-10 opacity-60">
                             <div className="w-24 h-24 rounded-full bg-slate-200 dark:bg-slate-700 mb-4 flex items-center justify-center border-4 border-white dark:border-slate-800 shadow-sm overflow-hidden">
                                 <img src={user?.avatar || `https://ui-avatars.com/api/?name=${user?.name || "User"}&background=${colors.brandOrange.replace('#','')}&color=fff`} alt="User" className="w-full h-full object-cover" />
                             </div>
-                            <h3 className="font-serif italic text-slate-500 text-base md:text-lg dark:text-slate-400">This diary belongs to:</h3>
+                            <h3 className="font-sans italic text-slate-500 text-base md:text-lg dark:text-slate-400">This diary belongs to:</h3>
                             <h2 className="text-xl font-bold text-slate-700 mt-1 dark:text-slate-200">{user?.name || "User"}</h2>
                             <div className="border-b-2 border-slate-300 dark:border-slate-600 w-full mt-2 mb-6"></div>
-                            <p className="text-center text-xs text-slate-400 leading-loose italic font-serif dark:text-slate-400">"Keep your face always toward the sunshine—and shadows will fall behind you."</p>
+                            <p className="text-center text-xs text-slate-400 leading-loose italic font-sans dark:text-slate-400">"Keep your face always toward the sunshine—and shadows will fall behind you."</p>
                           </div>
                     </div>
                 </motion.div>
@@ -447,9 +445,9 @@ export default function Diary() {
             
             <motion.div initial={{ opacity: 0, scale: 0.9, y: 30 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 30 }} 
                 className="relative w-full max-w-4xl h-full max-h-[85vh] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col p-2"
-                style={{ backgroundColor: "var(--surface-muted)" }}
+                style={{ backgroundColor: "rgb(var(--surface-muted))" }}
             >
-              <div className="relative flex-grow rounded-xl overflow-hidden flex shadow-inner border border-slate-300 dark:border-slate-700" style={{ backgroundColor: "var(--journal-paper-muted)" }}>
+              <div className="relative flex-grow rounded-xl overflow-hidden flex shadow-inner border border-slate-300 dark:border-slate-700" style={{ backgroundColor: "rgb(var(--journal-paper-muted))" }}>
                 <div className="spiral-spine">
                   {[...Array(14)].map((_, i) => (
                     <div key={i} className="spiral-ring"><div className="spiral-hole"></div></div>
@@ -472,7 +470,7 @@ export default function Diary() {
                           </h2>
                         </div>
                     </div>
-                    <div className="text-sm md:text-xl whitespace-pre-wrap mt-0" style={{ fontFamily: selectedEntry.font || baseFont, lineHeight: '32px', color: "var(--journal-ink)" }}>
+                    <div className="text-sm md:text-xl whitespace-pre-wrap mt-0" style={{ fontFamily: selectedEntry.font || baseFont, lineHeight: '32px', color: "rgb(var(--journal-ink))" }}>
                         {selectedEntry.content}
                     </div>
                   </div>
@@ -482,7 +480,7 @@ export default function Diary() {
                  <button onClick={() => handleEditEntry(selectedEntry)} className="px-6 py-2 bg-orange-500 text-white rounded-lg font-bold text-sm shadow-md hover:bg-orange-600 transition-all active:scale-95">
                    Edit Entry
                  </button>
-                 <button onClick={() => setSelectedEntry(null)} className="px-6 py-2 bg-[#1e293b] text-white rounded-lg font-bold text-sm shadow-md hover:bg-slate-700 transition-all active:scale-95">
+                 <button onClick={() => setSelectedEntry(null)} className="px-6 py-2 bg-brand-neutral text-text-inverse rounded-lg font-bold text-sm shadow-md hover:bg-neutral-800 transition-all active:scale-95">
                    Close Journal
                  </button>
               </div>

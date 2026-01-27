@@ -43,15 +43,15 @@ const Navbar = ({ user }) => {
   const getFlameColor = (streakCount, hasLoggedToday) => {
     const count = streakCount || 0;
     if (!hasLoggedToday) {
-      return "text-gray-400 fill-gray-300/40";
+      return "text-text-muted fill-text-muted/40";
     }
     if (count >= 60) {
-      return "text-purple-600 fill-purple-600/20";
+      return "text-brand-info fill-brand-info/20";
     }
     if (count >= 7) {
-      return "text-orange-500 fill-orange-500/20";
+      return "text-brand-accent fill-brand-accent/20";
     }
-    return "text-yellow-500 fill-yellow-400/30";
+    return "text-brand-warning fill-brand-warning/30";
   };
 
   const streakVal = user?.streak || 0;
@@ -73,11 +73,11 @@ const Navbar = ({ user }) => {
                 z-50 w-[calc(100%-32px)] md:w-[calc(100%-48px)]
                 flex flex-wrap justify-between items-center 
                 rounded-[20px] 
-                bg-white/60 backdrop-blur-md 
-                border border-white/20 
+                bg-surface/70 backdrop-blur-md 
+                border border-border/50 
                 shadow-xl 
                 transition-all duration-300 
-                dark:bg-slate-900/70 dark:border-slate-700/60
+                dark:bg-surface/80 dark:border-border/60
             "
     >
       <div className="flex justify-between items-center w-full">
@@ -100,11 +100,11 @@ const Navbar = ({ user }) => {
                     to={link.href}
                     className="
                                 group relative 
-                                text-gray-600 font-semibold text-[0.95rem]
+                                text-text-secondary font-semibold text-[0.95rem]
                                 py-2 px-1 
                                 transition-all duration-200 
-                                hover:text-gray-900
-                                dark:text-slate-200 dark:hover:text-white
+                                hover:text-text-primary
+                                dark:text-text-secondary dark:hover:text-text-primary
                             "
                   >
                     {link.name}
@@ -114,8 +114,8 @@ const Navbar = ({ user }) => {
                                         transition-all duration-300 
                                         ${
                                           isActive(link.href)
-                                            ? "w-full bg-[#3664BA]"
-                                            : "w-0 bg-transparent group-hover:w-full group-hover:bg-gray-500"
+                                            ? "w-full bg-brand-primary"
+                                            : "w-0 bg-transparent group-hover:w-full group-hover:bg-text-muted"
                                         }
                                     `}
                     ></span>
@@ -135,13 +135,13 @@ const Navbar = ({ user }) => {
             className="
               flex items-center gap-2 
               px-3 py-1.5 md:px-4 md:py-2 
-              text-gray-600 font-semibold text-xs md:text-sm 
+              text-text-secondary font-semibold text-xs md:text-sm 
               rounded-full 
-              border border-gray-200/60
-              hover:bg-gray-50 hover:border-gray-300
+              border border-border/70
+              hover:bg-surface-muted hover:border-border
               transition-all duration-300
               cursor-pointer
-              dark:text-slate-200 dark:border-slate-600/80 dark:hover:bg-slate-800 dark:hover:border-slate-500
+              dark:text-text-secondary dark:border-border/70 dark:hover:bg-surface-muted dark:hover:border-border
             "
             title={`Current Streak: ${streakVal} days`}
           >
@@ -157,7 +157,7 @@ const Navbar = ({ user }) => {
             <img
               src={avatarSrc}
               alt="Profile"
-              className="w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-white/20 object-cover cursor-pointer hover:border-blue-400 transition-colors dark:border-slate-600"
+              className="w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-border/60 object-cover cursor-pointer hover:border-brand-info transition-colors dark:border-border/70"
               onError={(event) => {
                 event.currentTarget.src = fallbackAvatar;
               }}
@@ -166,7 +166,7 @@ const Navbar = ({ user }) => {
 
           {/* HAMBURGER MENU */}
           <button
-            className="lg:hidden p-2 text-gray-600 hover:bg-black/5 rounded-xl transition-all ml-1 cursor-pointer dark:text-slate-200 dark:hover:bg-white/10"
+            className="lg:hidden p-2 text-text-secondary hover:bg-brand-primary/5 rounded-xl transition-all ml-1 cursor-pointer dark:text-text-secondary dark:hover:bg-surface/60"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? (
@@ -185,7 +185,7 @@ const Navbar = ({ user }) => {
                     overflow-hidden transition-all duration-300 ease-in-out
                     ${
                       isMobileMenuOpen
-                        ? "max-h-[400px] mt-4 pt-4 border-t border-gray-200 opacity-100 dark:border-slate-700"
+                        ? "max-h-[400px] mt-4 pt-4 border-t border-border opacity-100 dark:border-border"
                         : "max-h-0 opacity-0"
                     }
                 `}
@@ -199,8 +199,8 @@ const Navbar = ({ user }) => {
                         text-base font-semibold py-2 px-4 rounded-lg w-full text-center transition-colors
                         ${
                           isActive(link.href)
-                            ? "bg-blue-50 text-blue-600 dark:bg-blue-500/20 dark:text-blue-200"
-                            : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-white"
+                            ? "bg-brand-primary/10 text-brand-primary dark:bg-brand-primary/20 dark:text-brand-info"
+                            : "text-text-secondary hover:bg-surface-muted hover:text-text-primary dark:text-text-secondary dark:hover:bg-surface-muted dark:hover:text-text-primary"
                         }
                     `}
           >
@@ -208,22 +208,22 @@ const Navbar = ({ user }) => {
           </Link>
         ))}
 
-        <div className="w-full border-t border-gray-100 mt-2 pt-3 flex flex-col items-center dark:border-slate-700">
+        <div className="w-full border-t border-border-subtle mt-2 pt-3 flex flex-col items-center dark:border-border">
           <Link
             to="/profile"
             onClick={() => setIsMobileMenuOpen(false)}
-            className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer w-full justify-center dark:hover:bg-slate-800"
+            className="flex items-center gap-3 p-2 rounded-xl hover:bg-surface-muted transition-colors cursor-pointer w-full justify-center dark:hover:bg-surface-muted"
           >
             {/* FOTO PROFIL (MOBILE) */}
             <img
               src={avatarSrc}
               alt="Profile"
-              className="w-9 h-9 rounded-full border border-gray-300 object-cover dark:border-slate-600"
+              className="w-9 h-9 rounded-full border border-border object-cover dark:border-border"
               onError={(event) => {
                 event.currentTarget.src = fallbackAvatar;
               }}
             />
-            <span className="text-gray-700 font-semibold dark:text-slate-200">My Profile</span>
+            <span className="text-text-secondary font-semibold dark:text-text-secondary">My Profile</span>
           </Link>
         </div>
       </div>

@@ -128,24 +128,24 @@ const FishGameModal = ({ onClose }) => {
     const showRestart = (show) => { const el = document.getElementById('game-restart'); if(el) el.style.display = show ? 'block' : 'none'; };
 
     function drawFish(x, y, size, polarity, dir) {
-        const color = polarity === "N" ? "#2979ff" : "#ff1744";
-        const glowColor = polarity === "N" ? "#64b5f6" : "#ff5722";
+        const color = polarity === "N" ? "#0162F1" : "#FF6700";
+        const glowColor = polarity === "N" ? "#00A4FF" : "#FFBF00";
         ctx.save(); ctx.translate(x, y); ctx.shadowColor = glowColor; ctx.shadowBlur = 15;
         if (dir === "left") ctx.rotate(Math.PI); else if (dir === "up") ctx.rotate(-Math.PI/2); else if (dir === "down") ctx.rotate(Math.PI/2);
         const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, size);
-        gradient.addColorStop(0, color); gradient.addColorStop(1, polarity === "N" ? "#1565c0" : "#c62828");
+        gradient.addColorStop(0, color); gradient.addColorStop(1, polarity === "N" ? "#0149B3" : "#CC5200");
         ctx.beginPath(); ctx.ellipse(0, 0, size, size * 0.65, 0, 0, Math.PI * 2); ctx.fillStyle = gradient; ctx.fill();
         ctx.strokeStyle = "rgba(255,255,255,0.3)"; ctx.lineWidth = 2; ctx.stroke();
         const tailSwing = Math.sin(frame * 0.2) * size * 0.4;
         ctx.beginPath(); ctx.moveTo(-size, 0); ctx.lineTo(-size - size * 0.8, -size * 0.5 + tailSwing); ctx.lineTo(-size - size * 0.8, size * 0.5 + tailSwing); ctx.closePath(); ctx.fill();
         ctx.shadowBlur = 0; ctx.beginPath(); ctx.arc(size * 0.6, -size * 0.1, size * 0.12, 0, Math.PI * 2); ctx.fillStyle = "#fff"; ctx.fill();
-        ctx.beginPath(); ctx.arc(size * 0.65, -size * 0.1, size * 0.06, 0, Math.PI * 2); ctx.fillStyle = "#111"; ctx.fill();
+        ctx.beginPath(); ctx.arc(size * 0.65, -size * 0.1, size * 0.06, 0, Math.PI * 2); ctx.fillStyle = "#141313"; ctx.fill();
         ctx.beginPath(); ctx.arc(size * 0.62, -size * 0.12, size * 0.03, 0, Math.PI * 2); ctx.fillStyle = "#fff"; ctx.fill();
         ctx.fillStyle = "#fff"; ctx.font = "bold 12px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(polarity, 0, 0);
         ctx.restore();
     }
     function drawWorm(w) {
-        const segCount = 5; const baseColor = w.polarity === "N" ? "#2979ff" : "#ff1744";
+        const segCount = 5; const baseColor = w.polarity === "N" ? "#0162F1" : "#FF6700";
         for (let i = 0; i < segCount; i++){
             let offset = Math.sin(frame * 0.2 + w.phase + i * 0.5) * 4; let alpha = 1 - (i * 0.1);
             ctx.save(); ctx.shadowColor = baseColor; ctx.shadowBlur = 8;
@@ -156,14 +156,15 @@ const FishGameModal = ({ onClose }) => {
     function drawPowerUp(p) {
         ctx.save(); const pulse = Math.sin(frame * 0.3) * 0.2 + 1; ctx.translate(p.x, p.y); ctx.scale(pulse, pulse);
         let color, glowColor, icon;
-        if (p.type==="speed") { color="#ffea00"; glowColor="#fff176"; icon="⚡"; } else if (p.type==="size") { color="#00e676"; glowColor="#69f0ae"; icon="🍀"; } else if (p.type==="poison") { color="#9c27b0"; glowColor="#ba68c8"; icon="☠"; } else { color="#f44336"; glowColor="#ff7043"; icon="💣"; } 
+        if (p.type==="speed") { color="#FFBF00"; glowColor="#FFD34D"; icon="⚡"; } else if (p.type==="size") { color="#00A4FF"; glowColor="#66C7FF"; icon="🍀"; } else if (p.type==="poison") { color="#0162F1"; glowColor="#4D8CFF"; icon="☠"; } else { color="#FF6700"; glowColor="#FF9A4D"; icon="💣"; } 
         ctx.shadowColor = glowColor; ctx.shadowBlur = 20;
         ctx.beginPath(); ctx.arc(0, 0, p.size, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill(); ctx.strokeStyle = "rgba(255,255,255,0.5)"; ctx.lineWidth = 2; ctx.stroke();
-        ctx.shadowBlur = 0; ctx.fillStyle = "#000"; ctx.font = "12px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(icon, 0, 1); ctx.restore();
+        ctx.shadowBlur = 0; ctx.fillStyle = "#141313"; ctx.font = "12px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(icon, 0, 1); ctx.restore();
     }
     function drawExplosion(ex) {
         ctx.save(); ctx.globalAlpha = ex.alpha;
-        for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.arc(ex.x, ex.y, ex.radius - i * 10, 0, Math.PI * 2); ctx.fillStyle = `hsl(${20 + i * 30}, 100%, ${70 - i * 20}%)`; ctx.fill(); }
+        const explosionColors = ["rgba(255, 103, 0, 0.8)", "rgba(255, 191, 0, 0.7)", "rgba(1, 98, 241, 0.6)"];
+        for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.arc(ex.x, ex.y, ex.radius - i * 10, 0, Math.PI * 2); ctx.fillStyle = explosionColors[i]; ctx.fill(); }
         ctx.restore();
     }
     function initGame() {
@@ -208,20 +209,19 @@ const FishGameModal = ({ onClose }) => {
   }, []);
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-md animate-fade-in">
-        <style>{`@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap'); .fish-game-font { font-family: 'Orbitron', monospace; }`}</style>
-        <div className="relative w-full max-w-2xl bg-[#1a1a2e] border-2 border-[#00e5ff] rounded-2xl p-6 text-[#f0f8ff] fish-game-font flex flex-col items-center">
-            <button onClick={onClose} className="absolute top-4 right-4 text-[#00e5ff] hover:text-white cursor-pointer"><X size={24}/></button>
-            <h2 className="text-2xl font-bold bg-gradient-to-r from-[#00e5ff] to-[#ffeb3b] bg-clip-text text-transparent mb-1">🐟 Fish & Worm Polarity</h2>
-            <p className="text-xs text-[#64b5f6] mb-4">Space: Switch Polarity | Arrows: Move | Goal: Eat Opposite Polarity</p>
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-brand-neutral/90 backdrop-blur-md animate-fade-in">
+        <div className="relative w-full max-w-2xl bg-surface border-2 border-brand-info rounded-2xl p-6 text-text-primary font-sans flex flex-col items-center">
+            <button onClick={onClose} className="absolute top-4 right-4 text-brand-info hover:text-text-inverse cursor-pointer"><X size={24}/></button>
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-brand-info to-brand-warning bg-clip-text text-transparent mb-1">🐟 Fish & Worm Polarity</h2>
+            <p className="text-xs text-brand-info/80 mb-4">Space: Switch Polarity | Arrows: Move | Goal: Eat Opposite Polarity</p>
             <div className="flex justify-between w-full max-w-[500px] mb-4 text-sm font-bold">
-                <div className="text-[#ff6b6b]">Lives: <span id="game-lives">❤️❤️❤️</span></div>
-                <div className="text-[#00e5ff]">Score: <span id="game-score">0</span></div>
-                <div className="text-[#ffeb3b]">Time: <span id="game-time">30</span></div>
+                <div className="text-brand-accent">Lives: <span id="game-lives">❤️❤️❤️</span></div>
+                <div className="text-brand-info">Score: <span id="game-score">0</span></div>
+                <div className="text-brand-warning">Time: <span id="game-time">30</span></div>
             </div>
-            <canvas ref={canvasRef} width={500} height={400} className="w-full max-w-[500px] h-auto bg-[#0a0a0a] border-2 border-[#1de9b6] rounded-xl shadow-[0_0_20px_rgba(0,229,255,0.3)] cursor-crosshair"></canvas>
-            <div id="game-status" className="mt-4 text-[#ffeb3b] font-bold text-lg h-6"></div>
-            <button id="game-restart" className="mt-4 px-6 py-2 bg-gradient-to-r from-[#00e5ff] to-[#1de9b6] text-black font-bold rounded-full hover:scale-105 transition-transform hidden cursor-pointer">Restart Game</button>
+            <canvas ref={canvasRef} width={500} height={400} className="w-full max-w-[500px] h-auto bg-brand-neutral border-2 border-brand-info rounded-xl shadow-[0_0_20px_rgba(0,164,255,0.3)] cursor-crosshair"></canvas>
+            <div id="game-status" className="mt-4 text-brand-warning font-bold text-lg h-6"></div>
+            <button id="game-restart" className="mt-4 px-6 py-2 bg-gradient-to-r from-brand-info to-brand-primary text-text-inverse font-bold rounded-full hover:scale-105 transition-transform hidden cursor-pointer">Restart Game</button>
         </div>
     </div>
   );
@@ -768,7 +768,7 @@ export default function Profile() {
     <div
       className="min-h-screen pb-24 md:pb-10"
       style={{
-        background: "linear-gradient(135deg, var(--bg-gradient-cream) 0%, var(--bg-gradient-pink) 50%, var(--bg-gradient-lavender) 100%)",
+        background: "linear-gradient(135deg, rgb(var(--bg-gradient-cream)) 0%, rgb(var(--bg-gradient-pink)) 50%, rgb(var(--bg-gradient-lavender)) 100%)",
         backgroundAttachment: "fixed",
       }}
     >
@@ -1166,7 +1166,7 @@ export default function Profile() {
                         </div>
 
                         <div className="pt-4 flex justify-end">
-                            <button onClick={handleSaveProfile} disabled={isLoadingSave} className={`px-8 py-3 bg-[#F2994A] hover:bg-[#e08a3e] text-white font-bold rounded-xl shadow-lg hover:shadow-orange-200 transition-all cursor-pointer transform active:scale-95 ${isLoadingSave ? "opacity-50 cursor-not-allowed" : ""}`}>{isLoadingSave ? "Saving..." : "Save Changes"}</button>
+                            <button onClick={handleSaveProfile} disabled={isLoadingSave} className={`px-8 py-3 bg-brand-accent hover:bg-brand-accent/90 text-text-inverse font-bold rounded-xl shadow-lg hover:shadow-brand-accent/30 transition-all cursor-pointer transform active:scale-95 ${isLoadingSave ? "opacity-50 cursor-not-allowed" : ""}`}>{isLoadingSave ? "Saving..." : "Save Changes"}</button>
                         </div>
                     </form>
                 </div>

@@ -16,9 +16,9 @@ import { getAnalyticsSummary } from "../../services/analyticsService";
 import { getMyStressLogs } from "../../services/stressService";
 
 // --- BACKGROUND CONFIGURATION (SAME AS DASHBOARD) ---
-const bgCream = "var(--bg-gradient-cream)";
-const bgPink = "var(--bg-gradient-pink)";
-const bgLavender = "var(--bg-gradient-lavender)";
+const bgCream = "rgb(var(--bg-gradient-cream))";
+const bgPink = "rgb(var(--bg-gradient-pink))";
+const bgLavender = "rgb(var(--bg-gradient-lavender))";
 const moodEmojis = ["😢", "😕", "😐", "😊", "😄"];
 const stressLabels = ["Low", "Moderate", "High"];
 
@@ -336,14 +336,14 @@ export default function Analytics() {
         .skeleton {
           position: relative;
           overflow: hidden;
-          background-color: var(--skeleton-bg);
+          background-color: rgb(var(--skeleton-bg));
         }
         .skeleton::after {
           content: "";
           position: absolute;
           inset: 0;
           transform: translateX(-100%);
-          background: linear-gradient(90deg, transparent, var(--skeleton-shine), transparent);
+          background: linear-gradient(90deg, transparent, rgb(var(--skeleton-shine)), transparent);
           animation: shimmer-slide 1.6s infinite;
         }
       `}</style>
@@ -358,13 +358,10 @@ export default function Analytics() {
         >
           <div className="mb-10 md:mb-14 text-center">
             <div className="flex items-center gap-3 mb-3 justify-center">
-              <BarChart3 className="w-8 h-8 md:w-10 md:h-10 text-[var(--brand-blue)] drop-shadow-lg" />
+              <BarChart3 className="w-8 h-8 md:w-10 md:h-10 text-brand-primary drop-shadow-lg" />
 
               <h1
-                className="text-3xl md:text-5xl font-extrabold bg-gradient-to-r
-                from-[var(--brand-blue)]
-                to-[var(--brand-blue-light)]
-                bg-clip-text text-transparent drop-shadow-md"
+                className="text-3xl md:text-5xl font-extrabold bg-gradient-to-r from-brand-primary to-brand-info bg-clip-text text-transparent drop-shadow-md"
               >
                 Analytics
               </h1>
@@ -372,7 +369,7 @@ export default function Analytics() {
 
             <p
               className="text-sm md:text-lg font-medium drop-shadow-sm px-4"
-              style={{ color: "var(--text-secondary)" }}
+              style={{ color: "rgb(var(--text-secondary))" }}
             >
               Track your stress and mood patterns in weekly or monthly views.
             </p>
@@ -382,25 +379,25 @@ export default function Analytics() {
         {/* INFO STATE */}
         <div className="max-w-3xl mx-auto mb-6">
           {!loading && errorMsg && (
-            <div className="bg-white/60 border border-white/30 rounded-2xl p-4 text-center shadow-sm backdrop-blur">
+            <div className="bg-surface/60 border border-border/30 rounded-2xl p-4 text-center shadow-sm backdrop-blur">
               <p className="text-sm md:text-base font-medium text-red-600">
                 {errorMsg}
               </p>
               <p
                 className="text-xs md:text-sm mt-1"
-                style={{ color: "var(--text-secondary)" }}
+                style={{ color: "rgb(var(--text-secondary))" }}
               >
                 Endpoint:{" "}
-                <span className="font-mono">/api/stress-levels/my-logs</span>
+                <span className="font-sans">/api/stress-levels/my-logs</span>
               </p>
             </div>
           )}
 
           {!loading && !errorMsg && logs?.length === 0 && (
-            <div className="bg-white/50 border border-white/30 rounded-2xl p-4 text-center shadow-sm backdrop-blur">
+            <div className="bg-surface/50 border border-border/30 rounded-2xl p-4 text-center shadow-sm backdrop-blur">
               <p
                 className="text-sm md:text-base"
-                style={{ color: "var(--text-secondary)" }}
+                style={{ color: "rgb(var(--text-secondary))" }}
               >
                 No stress logs yet. Try running a prediction or saving a log 🙂
               </p>
@@ -410,13 +407,13 @@ export default function Analytics() {
 
         {/* TOGGLE BUTTONS */}
         <div className="flex justify-center mb-8 md:mb-10">
-          <div className="bg-white/40 backdrop-blur-lg p-1.5 md:p-2 rounded-full shadow-lg border border-white/30 flex gap-2">
+          <div className="bg-surface/40 backdrop-blur-lg p-1.5 md:p-2 rounded-full shadow-lg border border-border/30 flex gap-2">
             <button
               onClick={() => setMode("week")}
               className={`px-4 md:px-5 py-2 rounded-full text-xs md:text-sm font-medium transition cursor-pointer ${
                 mode === "week"
-                  ? "bg-[var(--brand-orange)] text-white shadow-md"
-                  : "text-[var(--text-secondary)] hover:bg-white/30"
+                  ? "bg-brand-accent text-text-inverse shadow-md"
+                  : "text-text-secondary hover:bg-surface/40"
               }`}
             >
               Weekly
@@ -425,8 +422,8 @@ export default function Analytics() {
               onClick={() => setMode("month")}
               className={`px-4 md:px-5 py-2 rounded-full text-xs md:text-sm font-medium transition cursor-pointer ${
                 mode === "month"
-                  ? "bg-[var(--brand-orange)] text-white shadow-md"
-                  : "text-[var(--text-secondary)] hover:bg-white/30"
+                  ? "bg-brand-accent text-text-inverse shadow-md"
+                  : "text-text-secondary hover:bg-surface/40"
               }`}
             >
               Monthly
@@ -440,19 +437,19 @@ export default function Analytics() {
           <div
             className="relative rounded-2xl p-4 md:p-6 border backdrop-blur-xl overflow-hidden"
             style={{
-              background: "var(--glass-bg)",
-              borderColor: "var(--glass-border)",
+              background: "rgb(var(--glass-bg) / 0.7)",
+              borderColor: "rgb(var(--glass-border) / 0.5)",
               boxShadow: "0 8px 30px rgba(0,0,0,0.07)",
             }}
           >
             {loading && (
-              <div className="absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-white/70 backdrop-blur-sm">
-                <div className="h-12 w-12 rounded-full border-4 border-blue-200 border-t-blue-500 animate-spin" />
+              <div className="absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-surface/70 backdrop-blur-sm">
+                <div className="h-12 w-12 rounded-full border-4 border-brand-primary/30 border-t-brand-primary animate-spin" />
               </div>
             )}
             <h2
               className="text-lg md:text-xl font-semibold mb-4 text-center md:text-left"
-              style={{ color: "var(--brand-blue)" }}
+              style={{ color: "rgb(var(--brand-primary))" }}
             >
               Stress Trend ({mode})
             </h2>
@@ -464,7 +461,7 @@ export default function Analytics() {
             >
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={stressChartData}>
-                  <CartesianGrid stroke="#e5e7eb" strokeDasharray="5 5" />
+                  <CartesianGrid stroke="rgb(var(--neutral-200))" strokeDasharray="5 5" />
                   <XAxis
                     dataKey={mode === "week" ? "day" : "week"}
                     tick={{ fontSize: 12 }}
@@ -485,7 +482,7 @@ export default function Analytics() {
                   <Line
                     type="linear"
                     dataKey="stressGap"
-                    stroke="var(--brand-blue)"
+                    stroke="rgb(var(--brand-primary))"
                     strokeWidth={2}
                     strokeDasharray="6 6"
                     dot={false}
@@ -495,7 +492,7 @@ export default function Analytics() {
                   <Line
                     type="linear"
                     dataKey="stress"
-                    stroke="var(--brand-blue)"
+                    stroke="rgb(var(--brand-primary))"
                     strokeWidth={3}
                     dot={{ r: 4, strokeWidth: 2 }}
                     activeDot={{ r: 6 }}
@@ -511,19 +508,19 @@ export default function Analytics() {
           <div
             className="relative rounded-2xl p-4 md:p-6 border backdrop-blur-xl overflow-hidden"
             style={{
-              background: "var(--glass-bg)",
-              borderColor: "var(--glass-border)",
+              background: "rgb(var(--glass-bg) / 0.7)",
+              borderColor: "rgb(var(--glass-border) / 0.5)",
               boxShadow: "0 8px 30px rgba(0,0,0,0.07)",
             }}
           >
             {loading && (
-              <div className="absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-white/70 backdrop-blur-sm">
-                <div className="h-12 w-12 rounded-full border-4 border-blue-200 border-t-blue-500 animate-spin" />
+              <div className="absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-surface/70 backdrop-blur-sm">
+                <div className="h-12 w-12 rounded-full border-4 border-brand-primary/30 border-t-brand-primary animate-spin" />
               </div>
             )}
             <h2
               className="text-lg md:text-xl font-semibold mb-4 text-center md:text-left"
-              style={{ color: "var(--brand-blue)" }}
+              style={{ color: "rgb(var(--brand-primary))" }}
             >
               Mood Trend · {modeLabel}
             </h2>
@@ -538,7 +535,7 @@ export default function Analytics() {
                   data={moodChartData}
                   margin={{ top: 0, right: 8, left: 12, bottom: 4 }}
                 >
-                  <CartesianGrid stroke="#e5e7eb" strokeDasharray="5 5" vertical={false} />
+                  <CartesianGrid stroke="rgb(var(--neutral-200))" strokeDasharray="5 5" vertical={false} />
                   <XAxis
                     dataKey={mode === "week" ? "day" : "week"}
                     tick={{ fontSize: 12 }}
@@ -558,7 +555,7 @@ export default function Analytics() {
                   <Line
                     type="linear"
                     dataKey="mood"
-                    stroke="var(--brand-blue-light)"
+                    stroke="rgb(var(--brand-info))"
                     strokeWidth={3}
                     dot={{ r: 4, strokeWidth: 2 }}
                     activeDot={{ r: 6 }}
@@ -575,11 +572,11 @@ export default function Analytics() {
           <section className="mb-10">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-5">
               <div>
-                <h3 className="text-xl font-bold text-gray-800">Analytics Highlights</h3>
-                <p className="text-sm text-gray-500">Real-time metrics based on your latest logs.</p>
+                <h3 className="text-xl font-bold text-text-primary">Analytics Highlights</h3>
+                <p className="text-sm text-text-muted">Real-time metrics based on your latest logs.</p>
               </div>
-              <div className="inline-flex items-center gap-2 text-xs font-semibold text-gray-600 bg-white/70 border border-white/60 px-3 py-1.5 rounded-full">
-                <Sparkles className="w-4 h-4 text-blue-500" />
+              <div className="inline-flex items-center gap-2 text-xs font-semibold text-text-secondary bg-surface/70 border border-border/60 px-3 py-1.5 rounded-full">
+                <Sparkles className="w-4 h-4 text-brand-primary" />
                 Live update
               </div>
             </div>
@@ -589,22 +586,22 @@ export default function Analytics() {
                   title: "Stress Logs",
                   value: summary.stressLogsCount ?? 0,
                   icon: Activity,
-                  gradient: "from-blue-500/15 via-blue-500/5 to-transparent",
-                  accent: "text-blue-600",
+                  gradient: "from-brand-primary/15 via-brand-primary/5 to-transparent",
+                  accent: "text-brand-primary",
                 },
                 {
                   title: "Diary Entries",
                   value: summary.diaryCount ?? 0,
                   icon: BookOpen,
-                  gradient: "from-violet-500/15 via-violet-500/5 to-transparent",
-                  accent: "text-violet-600",
+                  gradient: "from-brand-info/15 via-brand-info/5 to-transparent",
+                  accent: "text-brand-info",
                 },
                 {
                   title: "Current Streak",
                   value: streakValue,
                   icon: Flame,
-                  gradient: "from-orange-500/20 via-orange-500/5 to-transparent",
-                  accent: "text-orange-600",
+                  gradient: "from-brand-accent/20 via-brand-accent/5 to-transparent",
+                  accent: "text-brand-accent",
                 },
               ].map((item, i) => {
                 const Icon = item.icon;
@@ -613,21 +610,21 @@ export default function Analytics() {
                     key={i}
                     className="relative overflow-hidden rounded-2xl p-6 border backdrop-blur-xl text-center md:text-left"
                     style={{
-                      background: "var(--glass-bg)",
-                      borderColor: "var(--glass-border)",
+                      background: "rgb(var(--glass-bg) / 0.7)",
+                      borderColor: "rgb(var(--glass-border) / 0.5)",
                       boxShadow: "0 10px 28px rgba(0,0,0,0.08)",
                     }}
                   >
                     <div className={`absolute inset-0 bg-gradient-to-br ${item.gradient}`} />
                     <div className="relative z-10 flex flex-col gap-3">
-                      <div className={`w-10 h-10 rounded-xl bg-white/80 flex items-center justify-center ${item.accent}`}>
+                      <div className={`w-10 h-10 rounded-xl bg-surface-elevated/80 flex items-center justify-center ${item.accent}`}>
                         <Icon className="w-5 h-5" />
                       </div>
                       <div>
-                        <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">
+                        <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
                           {item.title}
                         </h4>
-                        <p className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] mt-2">
+                        <p className="text-3xl md:text-4xl font-bold text-text-primary mt-2">
                           {item.value}
                         </p>
                       </div>
@@ -656,13 +653,13 @@ export default function Analytics() {
                 key={i}
                 className="rounded-2xl p-6 border backdrop-blur-xl flex flex-col items-center md:items-start text-center md:text-left"
                 style={{
-                  background: "var(--glass-bg)",
-                  borderColor: "var(--glass-border)",
+                  background: "rgb(var(--glass-bg) / 0.7)",
+                  borderColor: "rgb(var(--glass-border) / 0.5)",
                   boxShadow: "0 8px 25px rgba(0,0,0,0.06)",
                 }}
               >
-                <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">
-                  <Icon className="w-4 h-4 text-blue-500" />
+                <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
+                  <Icon className="w-4 h-4 text-brand-primary" />
                   {item.title}
                 </div>
                 {loading ? (
@@ -671,7 +668,7 @@ export default function Analytics() {
                     <div className="skeleton h-3 w-24 rounded-full" />
                   </div>
                 ) : (
-                  <p className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] mt-4">
+                  <p className="text-3xl md:text-4xl font-bold text-text-primary mt-4">
                     {item.value}
                   </p>
                 )}

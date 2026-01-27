@@ -328,7 +328,7 @@ export default function Login() {
   };
 
   return (
-    <div className="h-screen w-full flex font-sans bg-[var(--surface-primary)] text-[var(--text-primary)] overflow-hidden">
+    <div className="h-screen w-full flex font-sans bg-surface text-text-primary overflow-hidden">
       {/* BACKGROUND DECORATION */}
       <div className="hidden lg:flex w-1/2 h-full relative bg-slate-50 dark:bg-slate-900 items-center justify-center p-10 overflow-hidden">
         <div className="absolute top-[-20%] left-[-20%] w-[600px] h-[600px] bg-blue-100/50 rounded-full blur-[120px] animate-pulse-slow"></div>
@@ -344,7 +344,7 @@ export default function Login() {
       </div>
 
       {/* FORM CONTAINER */}
-      <div className="w-full lg:w-1/2 h-full flex items-center justify-center p-4 relative bg-[var(--surface-primary)] perspective-[1000px]">
+      <div className="w-full lg:w-1/2 h-full flex items-center justify-center p-4 relative bg-surface perspective-[1000px]">
          <Motion.div 
            className="relative w-full max-w-md h-[85vh] max-h-[850px] min-h-[600px]" 
            animate={{ rotateY: isFlipped ? -180 : 0 }}
@@ -632,8 +632,8 @@ export default function Login() {
         .backface-hidden { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
         .custom-scrollbar::-webkit-scrollbar { width: 5px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #d1d5db; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgb(var(--neutral-200)); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgb(var(--neutral-300)); }
         .animate-fade-in { animation: fadeIn 0.5s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
