@@ -8,7 +8,7 @@ export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="relative z-30 mt-6 border-t border-border/50 bg-surface/70 backdrop-blur-md dark:border-border/60 dark:bg-surface/80">
+    <footer className="relative z-30 mt-6 glass-surface glass-glow shadow-glass-soft border-t border-border/50">
       <div className="max-w-[1400px] mx-auto px-6 pt-6 pb-3 md:pt-8 md:pb-4">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8">
           
@@ -53,7 +53,7 @@ export default function Footer() {
                 href="https://mail.google.com/mail/?view=cm&fs=1&to=nostressia.official@gmail.com" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 w-fit px-4 py-2 rounded-lg bg-surface-elevated border border-border text-text-secondary hover:text-brand-accent hover:border-brand-accent/40 hover:shadow-sm transition-all group dark:bg-surface-muted dark:border-border dark:text-text-secondary dark:hover:text-brand-accent"
+                className="flex items-center gap-2 w-fit px-4 py-2 rounded-lg glass-button text-text-secondary hover:text-brand-accent hover:border-brand-accent/40 hover:shadow-sm transition-all group"
               >
                 <Mail size={16} className="text-text-muted group-hover:text-brand-accent dark:text-text-secondary" />
                 <span className="text-xs font-semibold">Contact Support</span>
@@ -65,7 +65,7 @@ export default function Footer() {
                   href="https://www.instagram.com/nostressia" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="w-8 h-8 flex items-center justify-center rounded-full bg-surface-elevated border border-border/60 text-text-muted hover:text-brand-accent transition-all dark:bg-surface-muted dark:border-border dark:text-text-secondary dark:hover:text-brand-accent"
+                  className="w-8 h-8 flex items-center justify-center rounded-full glass-button text-text-muted hover:text-brand-accent transition-all"
                 >
                   <Instagram size={16} />
                 </a>
@@ -74,7 +74,7 @@ export default function Footer() {
                   href="https://x.com/nostressia" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="w-8 h-8 flex items-center justify-center rounded-full bg-surface-elevated border border-border/60 text-text-muted hover:text-brand-info transition-all dark:bg-surface-muted dark:border-border dark:text-text-secondary dark:hover:text-brand-info"
+                  className="w-8 h-8 flex items-center justify-center rounded-full glass-button text-text-muted hover:text-brand-info transition-all"
                 >
                   <Twitter size={16} />
                 </a>

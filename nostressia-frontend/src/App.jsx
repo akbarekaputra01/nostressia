@@ -52,17 +52,17 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-surface text-text-primary">
+    <div className="min-h-screen bg-app text-text-primary">
       {isAuthorized ? (
         <Router />
       ) : (
         <div className="min-h-screen flex items-center justify-center px-6">
-          <div className="w-full max-w-sm text-center bg-surface-elevated dark:bg-surface p-6 rounded-2xl shadow-lg">
-            <div className="mb-6 rounded-2xl border border-border dark:border-border bg-surface-muted dark:bg-surface-muted px-4 py-3 text-sm font-semibold text-text-secondary dark:text-text-secondary">
+          <div className="w-full max-w-sm text-center p-6 rounded-2xl glass-card shadow-glass-soft">
+            <div className="mb-6 rounded-2xl glass-surface px-4 py-3 text-sm font-semibold text-text-secondary">
               Internal access required. Please enter the credentials to continue.
             </div>
-            <h1 className="text-2xl font-bold text-text-primary dark:text-text-primary">Internal Access</h1>
-            <p className="text-sm text-text-muted dark:text-text-muted mt-2">
+            <h1 className="text-2xl font-bold text-text-primary">Internal Access</h1>
+            <p className="text-sm text-text-muted mt-2">
               This environment is restricted to internal users only.
             </p>
             <form
@@ -71,7 +71,7 @@ function App() {
               className="mt-6 space-y-3 text-left"
             >
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-text-secondary dark:text-text-secondary">Username</label>
+                <label className="text-xs font-semibold text-text-secondary">Username</label>
                 <input
                   type="text"
                   value={credentials.username}
@@ -82,12 +82,12 @@ function App() {
                       username: event.target.value,
                     }))
                   }
-                  className="w-full rounded-lg border border-border dark:border-border bg-surface-elevated dark:bg-surface-muted px-3 py-2 text-sm text-text-primary dark:text-text-primary focus:border-border focus:outline-none"
+                  className="w-full rounded-lg glass-input px-3 py-2 text-sm text-text-primary focus:border-focus focus:outline-none"
                   placeholder="Enter internal username"
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-text-secondary dark:text-text-secondary">Password</label>
+                <label className="text-xs font-semibold text-text-secondary">Password</label>
                 <input
                   type="password"
                   value={credentials.password}
@@ -98,7 +98,7 @@ function App() {
                       password: event.target.value,
                     }))
                   }
-                  className="w-full rounded-lg border border-border dark:border-border bg-surface-elevated dark:bg-surface-muted px-3 py-2 text-sm text-text-primary dark:text-text-primary focus:border-border focus:outline-none"
+                  className="w-full rounded-lg glass-input px-3 py-2 text-sm text-text-primary focus:border-focus focus:outline-none"
                   placeholder="Enter internal password"
                 />
               </div>
@@ -107,7 +107,7 @@ function App() {
               )}
               <button
                 type="submit"
-                className="mt-2 w-full rounded-lg bg-surface-muted px-4 py-2 text-sm font-semibold text-text-primary transition hover:bg-surface-elevated dark:bg-surface dark:text-text-primary dark:hover:bg-surface-muted"
+                className="mt-2 w-full rounded-lg glass-button px-4 py-2 text-sm font-semibold text-text-primary transition hover:bg-surface-elevated"
               >
                 Continue
               </button>

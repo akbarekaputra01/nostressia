@@ -18,18 +18,20 @@ import Logo from "../../assets/images/Logo-Nostressia.png";
 import { getMotivations } from "../../services/motivationService";
 
 // --- COLOR CONFIGURATION (MATCHING DASHBOARD) ---
-const BG_CREAM = "rgb(var(--bg-gradient-cream))";
-const BG_PINK = "rgb(var(--bg-gradient-pink))";
-const BG_LAVENDER = "rgb(var(--bg-gradient-lavender))";
+const BG_SUN = "rgb(var(--bg-gradient-sun))";
+const BG_ORANGE = "rgb(var(--bg-gradient-orange))";
+const BG_SKY = "rgb(var(--bg-gradient-sky))";
+const BG_OCEAN = "rgb(var(--bg-gradient-ocean))";
+const BG_INK = "rgb(var(--bg-gradient-ink))";
 
 // Style Background dengan Animasi
 const backgroundStyle = {
   minHeight: "100vh",
-  backgroundColor: BG_CREAM,
+  backgroundColor: BG_SUN,
   backgroundImage: `
-    radial-gradient(at 10% 10%, ${BG_CREAM} 0%, transparent 50%),
-    radial-gradient(at 90% 20%, ${BG_PINK} 0%, transparent 50%),
-    radial-gradient(at 50% 80%, ${BG_LAVENDER} 0%, transparent 50%)
+    radial-gradient(at 10% 10%, ${BG_SUN} 0%, transparent 50%),
+    radial-gradient(at 90% 20%, ${BG_ORANGE} 0%, transparent 50%),
+    radial-gradient(at 50% 80%, ${BG_SKY} 0%, transparent 50%)
   `,
   backgroundSize: "200% 200%",
   animation: "gradient-bg 20s ease infinite",
@@ -38,13 +40,30 @@ const backgroundStyle = {
 const HERO_INDEX = "hero";
 
 const TEMPLATES = [
-  { id: "pastel-cream", name: "Cream", color: BG_CREAM },
-  { id: "pastel-pink", name: "Pink", color: BG_PINK },
-  { id: "pastel-lavender", name: "Lavender", color: BG_LAVENDER },
   {
-    id: "pastel-gradient",
-    name: "Peach",
-    color: "linear-gradient(135deg, rgb(var(--brand-warning)), rgb(var(--brand-accent)))",
+    id: "sun",
+    name: "Sun",
+    color: `linear-gradient(135deg, ${BG_SUN}, rgb(var(--brand-warning)))`,
+  },
+  {
+    id: "orange",
+    name: "Orange",
+    color: `linear-gradient(135deg, ${BG_ORANGE}, rgb(var(--brand-accent)))`,
+  },
+  {
+    id: "sky",
+    name: "Sky",
+    color: `linear-gradient(135deg, ${BG_SKY}, rgb(var(--brand-info)))`,
+  },
+  {
+    id: "ocean",
+    name: "Ocean",
+    color: `linear-gradient(135deg, ${BG_OCEAN}, rgb(var(--brand-primary)))`,
+  },
+  {
+    id: "ink",
+    name: "Ink",
+    color: `linear-gradient(135deg, ${BG_INK}, rgb(var(--neutral-800)))`,
   },
 ];
 
@@ -317,27 +336,47 @@ export default function Motivation() {
       .catch(() => showToast("Copy failed."));
   };
 
-  const SharePreview = ({ text, templateBg }) => {
+  const SharePreview = ({ text, templateBg, templateId }) => {
+    const isDarkTemplate = templateId === "ink";
     return (
       <div
         className="rounded-2xl overflow-hidden relative w-full h-full flex items-center justify-center"
         style={{
           background: templateBg,
           borderRadius: 16,
-          boxShadow: "0 10px 28px rgba(0,0,0,0.08)",
+          boxShadow: "0 16px 30px rgba(0,0,0,0.2)",
           position: "relative",
         }}
       >
         <div
           style={{
+            position: "absolute",
+            inset: 12,
+            borderRadius: 20,
+            border: `1px solid rgba(${isDarkTemplate ? "255,255,255" : "20,19,19"}, 0.15)`,
+            background:
+              "linear-gradient(135deg, rgba(255,255,255,0.18), rgba(255,255,255,0.05))",
+            backdropFilter: "blur(14px)",
+            WebkitBackdropFilter: "blur(14px)",
+            zIndex: 1,
+          }}
+        />
+        <div
+          style={{
             width: "82%",
             maxWidth: 900,
-            background: "rgb(var(--surface-elevated))",
+            background: isDarkTemplate
+              ? "rgba(20,19,19,0.82)"
+              : "rgba(255,255,255,0.78)",
             padding: 20,
             borderRadius: 12,
             textAlign: "center",
-            boxShadow: "0 6px 18px rgba(0,0,0,0.06)",
+            boxShadow: "0 8px 22px rgba(0,0,0,0.12)",
             zIndex: 2,
+            border: `1px solid rgba(${isDarkTemplate ? "255,255,255" : "20,19,19"}, 0.12)`,
+            color: isDarkTemplate
+              ? "rgb(var(--text-inverse))"
+              : "rgb(var(--text-primary))",
           }}
         >
           <div
@@ -360,16 +399,35 @@ export default function Motivation() {
               }}
             />
             <div style={{ textAlign: "left" }}>
-              <div style={{ fontSize: 13, color: "rgb(var(--brand-accent))", fontWeight: 700 }}>
+              <div
+                style={{
+                  fontSize: 13,
+                  color: isDarkTemplate
+                    ? "rgb(var(--brand-warning))"
+                    : "rgb(var(--brand-accent))",
+                  fontWeight: 700,
+                }}
+              >
                 Motivation
               </div>
-              <div style={{ fontSize: 11, color: "rgb(var(--text-muted))" }}>Share Card</div>
+              <div
+                style={{
+                  fontSize: 11,
+                  color: isDarkTemplate
+                    ? "rgba(255,255,255,0.7)"
+                    : "rgb(var(--text-muted))",
+                }}
+              >
+                Share Card
+              </div>
             </div>
           </div>
           <p
             style={{
               fontSize: 18,
-              color: "rgb(var(--text-primary))",
+              color: isDarkTemplate
+                ? "rgba(255,255,255,0.92)"
+                : "rgb(var(--text-primary))",
               fontStyle: "italic",
               margin: "6px 0 12px",
             }}
@@ -381,7 +439,9 @@ export default function Motivation() {
               display: "flex",
               justifyContent: "space-between",
               fontSize: 12,
-              color: "rgb(var(--text-muted))",
+              color: isDarkTemplate
+                ? "rgba(255,255,255,0.7)"
+                : "rgb(var(--text-muted))",
               marginTop: 8,
             }}
           >
@@ -627,6 +687,7 @@ export default function Motivation() {
                     >
                       <SharePreview
                         text={shareText}
+                        templateId={selectedTemplate}
                         templateBg={
                           TEMPLATES.find((t) => t.id === selectedTemplate)
                             ?.color || TEMPLATES[0].color
@@ -640,7 +701,7 @@ export default function Motivation() {
                 {/* UBAHANNYA: w-full di mobile, fixed width di desktop */}
                 <div className="w-full md:w-[360px] space-y-4">
                   <div>
-                    <h4 className="font-semibold mb-2 text-white md:text-gray-800">
+                    <h4 className="font-semibold mb-2 text-text-primary">
                       Choose template
                     </h4>
                     <div className="grid grid-cols-2 gap-3">
@@ -650,14 +711,14 @@ export default function Motivation() {
                           onClick={() => setSelectedTemplate(t.id)}
                           className={`p-2 rounded-lg border ${
                             selectedTemplate === t.id
-                              ? "ring-2 ring-orange-400"
-                              : "border-black/5"
-                          } cursor-pointer`}
+                              ? "ring-2 ring-brand-warning"
+                              : "border-border/60"
+                          } cursor-pointer glass-surface`}
                           style={{ background: t.color }}
                         >
                           <div
                             style={{
-                              background: "rgb(var(--surface-elevated))",
+                              background: "rgba(255,255,255,0.78)",
                               padding: 6,
                               borderRadius: 8,
                             }}
@@ -666,7 +727,7 @@ export default function Motivation() {
                               style={{
                                 fontSize: 12,
                                 fontWeight: 700,
-                                color: "rgb(var(--brand-accent))",
+                                color: "rgb(var(--text-primary))",
                               }}
                             >
                               {t.name}
@@ -679,19 +740,19 @@ export default function Motivation() {
                   <div className="mt-4 flex flex-col gap-3">
                     <button
                       onClick={downloadShareCard}
-                      className="px-4 py-3 bg-orange-500 text-white rounded-xl cursor-pointer shadow"
+                      className="px-4 py-3 rounded-xl cursor-pointer shadow glass-button text-text-primary bg-brand-warning/80 hover:bg-brand-warning transition"
                     >
                       Download PNG
                     </button>
                     <button
                       onClick={copyText}
-                      className="px-4 py-3 bg-white border rounded-xl cursor-pointer"
+                      className="px-4 py-3 rounded-xl cursor-pointer glass-button text-text-primary hover:bg-surface-muted transition"
                     >
                       Copy Text
                     </button>
-                    <div className="text-xs text-black mt-2">
-                      Tip: center white card keeps text readable while outer
-                      background
+                    <div className="text-xs text-text-secondary mt-2">
+                      Tip: the inner glass card keeps text readable while the
+                      outer gradient stays vibrant.
                     </div>
                   </div>
                 </div>

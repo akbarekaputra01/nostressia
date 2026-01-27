@@ -73,11 +73,9 @@ const Navbar = ({ user }) => {
                 z-50 w-[calc(100%-32px)] md:w-[calc(100%-48px)]
                 flex flex-wrap justify-between items-center 
                 rounded-[20px] 
-                bg-surface/70 backdrop-blur-md 
-                border border-border/50 
-                shadow-xl 
-                transition-all duration-300 
-                dark:bg-surface/80 dark:border-border/60
+                glass-surface glass-glow
+                shadow-glass-soft 
+                transition-all duration-300
             "
     >
       <div className="flex justify-between items-center w-full">
@@ -137,11 +135,10 @@ const Navbar = ({ user }) => {
               px-3 py-1.5 md:px-4 md:py-2 
               text-text-secondary font-semibold text-xs md:text-sm 
               rounded-full 
-              border border-border/70
-              hover:bg-surface-muted hover:border-border
+              glass-button
+              hover:bg-surface-muted/70 hover:border-border
               transition-all duration-300
               cursor-pointer
-              dark:text-text-secondary dark:border-border/70 dark:hover:bg-surface-muted dark:hover:border-border
             "
             title={`Current Streak: ${streakVal} days`}
           >
@@ -166,7 +163,7 @@ const Navbar = ({ user }) => {
 
           {/* HAMBURGER MENU */}
           <button
-            className="lg:hidden p-2 text-text-secondary hover:bg-brand-primary/5 rounded-xl transition-all ml-1 cursor-pointer dark:text-text-secondary dark:hover:bg-surface/60"
+            className="lg:hidden p-2 text-text-secondary hover:bg-brand-primary/10 rounded-xl transition-all ml-1 cursor-pointer glass-button"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? (

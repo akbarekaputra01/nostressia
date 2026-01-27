@@ -359,7 +359,7 @@ export default function Profile() {
   const [passwordForm, setPasswordForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
   const [passwordStep, setPasswordStep] = useState(1);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
-  const systemLabel = resolvedTheme === "dark" ? "dark" : "light";
+  const systemLabel = resolvedTheme === "dark" ? "Always dark" : "Always light";
   const themeLabels = {
     light: "Light",
     dark: "Dark",
@@ -381,7 +381,7 @@ export default function Profile() {
     {
       value: "system",
       label: "System",
-      description: `Follow device (${systemLabel})`,
+      description: systemLabel,
       icon: Monitor,
     },
   ];
