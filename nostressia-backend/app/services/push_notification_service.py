@@ -1,3 +1,4 @@
+# nostressia-backend/app/services/push_notification_service.py
 import json
 import logging
 
@@ -8,8 +9,12 @@ from app.models.push_subscription_model import PushSubscription
 
 logger = logging.getLogger(__name__)
 
-
 def send_push(subscription: PushSubscription, payload: dict) -> None:
+    if not settings.vapid_private_key:
+        raise RuntimeError("VAPID_PRIVATE_KEY belum di-set.")
+    if not settings.vapid_subject:
+        raise RuntimeError("VAPID_SUBJECT belum di-set (format: mailto:email@domain.com).")
+
     webpush(
         subscription_info={
             "endpoint": subscription.endpoint,
@@ -19,6 +24,5 @@ def send_push(subscription: PushSubscription, payload: dict) -> None:
         vapid_private_key=settings.vapid_private_key,
         vapid_claims={"sub": settings.vapid_subject},
     )
-
 
 __all__ = ["send_push", "WebPushException"]
