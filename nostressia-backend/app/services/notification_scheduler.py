@@ -9,6 +9,8 @@ from app.core.config import settings
 from app.models.push_subscription_model import PushSubscription
 from app.services.push_notification_service import WebPushException, send_push
 
+from typing import Optional
+
 logger = logging.getLogger(__name__)
 
 DEFAULT_TIMEZONE = "Asia/Jakarta"
@@ -81,7 +83,7 @@ def start_notification_scheduler() -> BackgroundScheduler:
     return scheduler
 
 
-def stop_notification_scheduler(scheduler: BackgroundScheduler | None) -> None:
+def stop_notification_scheduler(scheduler: Optional[BackgroundScheduler]) -> None:
     if scheduler:
         scheduler.shutdown(wait=False)
         logger.info("Scheduler notifikasi harian dihentikan.")
