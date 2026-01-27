@@ -33,6 +33,8 @@ def _should_send(subscription: PushSubscription, now: datetime) -> bool:
 
 
 def process_daily_reminders() -> None:
+    logger.info("Scheduler tick: process_daily_reminders running")
+
     if not settings.vapid_private_key:
         logger.warning("VAPID private key belum diisi, scheduler notifikasi dilewati.")
         return

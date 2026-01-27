@@ -39,7 +39,7 @@ class Settings(BaseSettings):
 
     vapid_public_key: str = Field("", env="VAPID_PUBLIC_KEY")
     vapid_private_key: str = Field("", env="VAPID_PRIVATE_KEY")
-    vapid_subject: str = Field("mailto:admin@nostressia.app", env="VAPID_SUBJECT")
+    vapid_subject: str = Field("mailto:nostressia.official@gmail.com", env="VAPID_SUBJECT")
 
     class Config:
         env_file = ".env"

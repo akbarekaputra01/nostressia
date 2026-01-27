@@ -15,8 +15,8 @@ const buildNotificationPayload = (payload) => {
     title,
     options: {
       body,
-      icon: "/src/assets/images/Logo-Nostressia.png",
-      badge: "/src/assets/images/Logo-Nostressia.png",
+      icon: "/Logo-Nostressia.png",
+      badge: "/Logo-Nostressia.png",
       data: { url },
     },
   };
