@@ -6,53 +6,35 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(self.clients.claim());
 });
 
-const buildNextTriggerDate = (timeValue) => {
-  const [hours, minutes] = timeValue.split(":").map((value) => Number(value));
-  const scheduled = new Date();
-  scheduled.setHours(hours, minutes || 0, 0, 0);
-  if (scheduled <= new Date()) {
-    scheduled.setDate(scheduled.getDate() + 1);
-  }
-  return scheduled;
+const buildNotificationPayload = (payload) => {
+  const title = payload?.title || "Nostressia Daily Reminder";
+  const body = payload?.body || "Time to check-in dan log stress level kamu.";
+  const url = payload?.url || "/";
+
+  return {
+    title,
+    options: {
+      body,
+      icon: "/src/assets/images/Logo-Nostressia.png",
+      badge: "/src/assets/images/Logo-Nostressia.png",
+      data: { url },
+    },
+  };
 };
 
-const scheduleNotificationWithTrigger = async (title, options) => {
-  if (!("TimestampTrigger" in self)) {
-    return { ok: false, reason: "unsupported" };
-  }
-  if (!options?.data?.time) {
-    return { ok: false, reason: "missing-time" };
-  }
-  const scheduled = buildNextTriggerDate(options.data.time);
-  await self.registration.showNotification(title, {
-    ...options,
-    showTrigger: new self.TimestampTrigger(scheduled.getTime()),
-  });
-  return { ok: true };
-};
+self.addEventListener("push", (event) => {
+  const payload = (() => {
+    if (!event?.data) return {};
+    try {
+      return event.data.json();
+    } catch (error) {
+      return { body: event.data.text() };
+    }
+  })();
 
-self.addEventListener("message", (event) => {
-  const { data } = event;
-  if (data?.type !== "schedule-reminder") return;
+  const notification = buildNotificationPayload(payload);
   event.waitUntil(
-    (async () => {
-      const result = await scheduleNotificationWithTrigger(data.title, data.options);
-      event.ports?.[0]?.postMessage(result);
-    })()
-  );
-});
-
-self.addEventListener("notificationclose", (event) => {
-  const { data } = event.notification;
-  if (data?.repeat !== "daily" || !data?.time) return;
-  event.waitUntil(
-    scheduleNotificationWithTrigger(event.notification.title, {
-      body: event.notification.body,
-      tag: event.notification.tag,
-      icon: event.notification.icon,
-      badge: event.notification.badge,
-      data,
-    })
+    self.registration.showNotification(notification.title, notification.options)
   );
 });
 
@@ -61,25 +43,16 @@ self.addEventListener("notificationclick", (event) => {
 
   event.waitUntil(
     (async () => {
+      const url = event.notification?.data?.url || "/";
       const allClients = await self.clients.matchAll({
         includeUncontrolled: true,
         type: "window",
       });
-      if (allClients.length > 0) {
-        allClients[0].focus();
+      const matchingClient = allClients.find((client) => client.url.includes(url));
+      if (matchingClient) {
+        await matchingClient.focus();
       } else {
-        await self.clients.openWindow("/");
-      }
-
-      const { data } = event.notification;
-      if (data?.repeat === "daily" && data?.time) {
-        await scheduleNotificationWithTrigger(event.notification.title, {
-          body: event.notification.body,
-          tag: event.notification.tag,
-          icon: event.notification.icon,
-          badge: event.notification.badge,
-          data,
-        });
+        await self.clients.openWindow(url);
       }
     })()
   );

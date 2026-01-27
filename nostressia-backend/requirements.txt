@@ -4,6 +4,8 @@ sqlalchemy
 mysql-connector-python
 pydantic
 pydantic-settings
+apscheduler
+pywebpush
 python-multipart
 python-jose
 passlib

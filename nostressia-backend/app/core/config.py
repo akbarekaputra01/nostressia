@@ -37,6 +37,10 @@ class Settings(BaseSettings):
     azure_storage_account_name: str = Field("", env="AZURE_STORAGE_ACCOUNT_NAME")
     azure_storage_container_name: str = Field("", env="AZURE_STORAGE_CONTAINER_NAME")
 
+    vapid_public_key: str = Field("", env="VAPID_PUBLIC_KEY")
+    vapid_private_key: str = Field("", env="VAPID_PRIVATE_KEY")
+    vapid_subject: str = Field("mailto:admin@nostressia.app", env="VAPID_SUBJECT")
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
