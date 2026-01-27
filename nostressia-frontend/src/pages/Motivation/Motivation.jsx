@@ -38,13 +38,25 @@ const backgroundStyle = {
 const HERO_INDEX = "hero";
 
 const TEMPLATES = [
-  { id: "pastel-cream", name: "Cream", color: BG_CREAM },
-  { id: "pastel-pink", name: "Pink", color: BG_PINK },
-  { id: "pastel-lavender", name: "Lavender", color: BG_LAVENDER },
   {
-    id: "pastel-gradient",
+    id: "palette-cream",
+    name: "Cream",
+    color: "linear-gradient(135deg, rgb(var(--brand-warning) / 0.22), rgb(var(--brand-accent) / 0.2))",
+  },
+  {
+    id: "palette-pink",
+    name: "Pink",
+    color: "linear-gradient(135deg, rgb(var(--brand-accent) / 0.2), rgb(var(--brand-primary) / 0.18))",
+  },
+  {
+    id: "palette-lavender",
+    name: "Lavender",
+    color: "linear-gradient(135deg, rgb(var(--brand-info) / 0.2), rgb(var(--brand-primary) / 0.18))",
+  },
+  {
+    id: "palette-peach",
     name: "Peach",
-    color: "linear-gradient(135deg, rgb(var(--brand-warning)), rgb(var(--brand-accent)))",
+    color: "linear-gradient(135deg, rgb(var(--brand-warning) / 0.2), rgb(var(--brand-info) / 0.18))",
   },
 ];
 

@@ -330,6 +330,10 @@ export default function Profile() {
   }, [activeTab, fetchBookmarks]);
 
   const { preference: themePreference, resolvedTheme, setPreference } = useTheme();
+  const [systemTheme, setSystemTheme] = useState(() => {
+    if (typeof window === "undefined") return "light";
+    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  });
 
   const handleUnsave = async (motivationId) => {
     try {
@@ -359,7 +363,27 @@ export default function Profile() {
   const [passwordForm, setPasswordForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
   const [passwordStep, setPasswordStep] = useState(1);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
-  const systemLabel = resolvedTheme === "dark" ? "dark" : "light";
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+    const mediaQueryList = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleChange = (event) => {
+      setSystemTheme(event.matches ? "dark" : "light");
+    };
+    if (mediaQueryList.addEventListener) {
+      mediaQueryList.addEventListener("change", handleChange);
+    } else {
+      mediaQueryList.addListener(handleChange);
+    }
+    return () => {
+      if (mediaQueryList.removeEventListener) {
+        mediaQueryList.removeEventListener("change", handleChange);
+      } else {
+        mediaQueryList.removeListener(handleChange);
+      }
+    };
+  }, []);
+
+  const systemLabel = systemTheme === "dark" ? "Always dark" : "Always light";
   const themeLabels = {
     light: "Light",
     dark: "Dark",
@@ -381,7 +405,7 @@ export default function Profile() {
     {
       value: "system",
       label: "System",
-      description: `Follow device (${systemLabel})`,
+      description: systemLabel,
       icon: Monitor,
     },
   ];
@@ -1216,7 +1240,7 @@ export default function Profile() {
                             <div className="text-left">
                               <h4 className="font-bold text-gray-800">Theme</h4>
                               <p className="text-xs text-gray-500">
-                                Current: {themeLabels[themePreference] || "System"} ({systemLabel} when system)
+                                Current: {themeLabels[themePreference] || "System"} ({systemLabel})
                               </p>
                             </div>
                           </div>
