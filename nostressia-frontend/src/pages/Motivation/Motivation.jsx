@@ -18,18 +18,20 @@ import Logo from "../../assets/images/Logo-Nostressia.png";
 import { getMotivations } from "../../services/motivationService";
 
 // --- COLOR CONFIGURATION (MATCHING DASHBOARD) ---
-const BG_CREAM = "rgb(var(--bg-gradient-cream))";
-const BG_PINK = "rgb(var(--bg-gradient-pink))";
-const BG_LAVENDER = "rgb(var(--bg-gradient-lavender))";
+const BG_SUN = "rgb(var(--bg-gradient-sun))";
+const BG_ORANGE = "rgb(var(--bg-gradient-orange))";
+const BG_SKY = "rgb(var(--bg-gradient-sky))";
+const BG_OCEAN = "rgb(var(--bg-gradient-ocean))";
+const BG_INK = "rgb(var(--bg-gradient-ink))";
 
 // Style Background dengan Animasi
 const backgroundStyle = {
   minHeight: "100vh",
-  backgroundColor: BG_CREAM,
+  backgroundColor: BG_SUN,
   backgroundImage: `
-    radial-gradient(at 10% 10%, ${BG_CREAM} 0%, transparent 50%),
-    radial-gradient(at 90% 20%, ${BG_PINK} 0%, transparent 50%),
-    radial-gradient(at 50% 80%, ${BG_LAVENDER} 0%, transparent 50%)
+    radial-gradient(at 10% 10%, ${BG_SUN} 0%, transparent 50%),
+    radial-gradient(at 90% 20%, ${BG_ORANGE} 0%, transparent 50%),
+    radial-gradient(at 50% 80%, ${BG_SKY} 0%, transparent 50%)
   `,
   backgroundSize: "200% 200%",
   animation: "gradient-bg 20s ease infinite",
@@ -38,13 +40,18 @@ const backgroundStyle = {
 const HERO_INDEX = "hero";
 
 const TEMPLATES = [
-  { id: "pastel-cream", name: "Cream", color: BG_CREAM },
-  { id: "pastel-pink", name: "Pink", color: BG_PINK },
-  { id: "pastel-lavender", name: "Lavender", color: BG_LAVENDER },
+  { id: "sun", name: "Sun", color: BG_SUN },
+  { id: "orange", name: "Orange", color: BG_ORANGE },
+  { id: "sky", name: "Sky", color: BG_SKY },
   {
-    id: "pastel-gradient",
-    name: "Peach",
-    color: "linear-gradient(135deg, rgb(var(--brand-warning)), rgb(var(--brand-accent)))",
+    id: "ocean",
+    name: "Ocean",
+    color: `linear-gradient(135deg, ${BG_OCEAN}, ${BG_SKY})`,
+  },
+  {
+    id: "ink",
+    name: "Ink",
+    color: `linear-gradient(135deg, ${BG_INK}, ${BG_OCEAN})`,
   },
 ];
 
@@ -324,7 +331,7 @@ export default function Motivation() {
         style={{
           background: templateBg,
           borderRadius: 16,
-          boxShadow: "0 10px 28px rgba(0,0,0,0.08)",
+          boxShadow: "0 14px 32px rgba(0,0,0,0.16)",
           position: "relative",
         }}
       >
@@ -332,11 +339,13 @@ export default function Motivation() {
           style={{
             width: "82%",
             maxWidth: 900,
-            background: "rgb(var(--surface-elevated))",
+            background: "rgb(var(--surface-elevated) / 0.82)",
+            border: "1px solid rgb(var(--glass-border) / 0.7)",
+            backdropFilter: "blur(12px)",
             padding: 20,
             borderRadius: 12,
             textAlign: "center",
-            boxShadow: "0 6px 18px rgba(0,0,0,0.06)",
+            boxShadow: "0 6px 18px rgba(0,0,0,0.12)",
             zIndex: 2,
           }}
         >
@@ -360,7 +369,7 @@ export default function Motivation() {
               }}
             />
             <div style={{ textAlign: "left" }}>
-              <div style={{ fontSize: 13, color: "rgb(var(--brand-accent))", fontWeight: 700 }}>
+              <div style={{ fontSize: 13, color: "rgb(var(--brand-primary))", fontWeight: 700 }}>
                 Motivation
               </div>
               <div style={{ fontSize: 11, color: "rgb(var(--text-muted))" }}>Share Card</div>
@@ -412,7 +421,7 @@ export default function Motivation() {
       `}</style>
 
       {toastMessage && (
-        <div className="fixed top-6 right-6 z-[9999] bg-orange-500 text-white px-4 py-2 rounded-xl shadow-lg">
+        <div className="fixed top-6 right-6 z-[9999] bg-brand-accent/90 text-text-inverse glass-panel px-4 py-2 rounded-xl shadow-lg">
           {toastMessage}
         </div>
       )}
@@ -431,7 +440,7 @@ export default function Motivation() {
                 Motivation Hub
               </h1>
             </div>
-            <p className="text-gray-600 mt-2 text-base md:text-lg font-medium dark:text-slate-300">
+            <p className="text-text-secondary mt-2 text-base md:text-lg font-medium dark:text-text-muted">
               Find inspiration and a boost to make your day more productive
             </p>
           </div>
@@ -449,13 +458,13 @@ export default function Motivation() {
           }}
         >
           <div className="relative z-10">
-            <div className="inline-flex rounded-full bg-white border text-orange-700 text-sm font-medium shadow-sm px-3 py-1 mb-4 cursor-default dark:bg-slate-900 dark:border-slate-700 dark:text-orange-300">
+            <div className="inline-flex rounded-full bg-surface-elevated glass-panel border text-orange-700 text-sm font-medium shadow-sm px-3 py-1 mb-4 cursor-default dark:bg-surface dark:border-border dark:text-orange-300">
               ✨ Today's Quote
             </div>
-            <h2 className="text-2xl md:text-3xl font-bold mb-3 text-gray-800 dark:text-slate-100">
+            <h2 className="text-2xl md:text-3xl font-bold mb-3 text-text-primary dark:text-text-primary">
               Featured Motivation
             </h2>
-            <p className="text-lg md:text-xl italic text-gray-700 max-w-3xl dark:text-slate-200">
+            <p className="text-lg md:text-xl italic text-text-secondary max-w-3xl dark:text-text-primary">
               {hasHeroQuote ? `"${heroQuote.text}"` : "No motivations available yet."}
             </p>
             <div className="flex gap-3 mt-6 flex-wrap justify-end">
@@ -472,14 +481,14 @@ export default function Motivation() {
               <button
                 onClick={() => toggleLike(heroQuote.motivationId)}
                 disabled={!hasHeroQuote}
-                className="px-4 py-2 rounded-lg bg-white border font-medium flex items-center gap-2 shadow hover:scale-105 transition disabled:opacity-60 disabled:cursor-not-allowed dark:bg-slate-900 dark:border-slate-700 dark:text-slate-100"
+                className="px-4 py-2 rounded-lg bg-surface-elevated glass-panel border font-medium flex items-center gap-2 shadow hover:scale-105 transition disabled:opacity-60 disabled:cursor-not-allowed dark:bg-surface dark:border-border dark:text-text-primary"
                 aria-label="bookmark-hero"
               >
                 <Bookmark
                   className={`w-4 h-4 ${
                     likedIndex.includes(heroQuote.motivationId)
                       ? "fill-orange-500 text-orange-600"
-                      : "text-gray-500"
+                      : "text-text-muted"
                   }`}
                 />
                 <span className="hidden sm:inline">
@@ -490,7 +499,7 @@ export default function Motivation() {
               <button
                 onClick={() => openShare(heroQuote.text)}
                 disabled={!hasHeroQuote}
-                className="px-4 py-2 rounded-lg bg-white border flex items-center gap-2 text-gray-700 shadow hover:scale-105 transition disabled:opacity-60 disabled:cursor-not-allowed dark:bg-slate-900 dark:border-slate-700 dark:text-slate-100"
+                className="px-4 py-2 rounded-lg bg-surface-elevated glass-panel border flex items-center gap-2 text-text-secondary shadow hover:scale-105 transition disabled:opacity-60 disabled:cursor-not-allowed dark:bg-surface dark:border-border dark:text-text-primary"
               >
                 <Share2 className="w-4 h-4" />
                 <span className="hidden sm:inline">Share</span>
@@ -501,11 +510,11 @@ export default function Motivation() {
 
         {/* Collection */}
         <div className="mt-8 md:mt-10 mb-6 flex items-center justify-between">
-          <h3 className="text-xl md:text-2xl font-bold text-gray-800 flex items-center gap-3 dark:text-slate-100">
+          <h3 className="text-xl md:text-2xl font-bold text-text-primary flex items-center gap-3 dark:text-text-primary">
             <Star className="w-5 h-5 text-yellow-500" />
             Motivation Collection
           </h3>
-          <p className="text-gray-600 text-sm dark:text-slate-300">
+          <p className="text-text-secondary text-sm dark:text-text-muted">
             {loading
               ? "Loading..."
               : error
@@ -530,13 +539,13 @@ export default function Motivation() {
                   boxShadow: "0 4px 18px rgb(var(--shadow-color) / 0.1)",
                 }}
               >
-                <p className="text-md md:text-lg italic text-gray-700 min-h-[72px] md:min-h-[90px] dark:text-slate-200">
+                <p className="text-md md:text-lg italic text-text-secondary min-h-[72px] md:min-h-[90px] dark:text-text-primary">
                   "{quoteObj.quote}"
                 </p>
-                <div className="text-xs text-gray-500 mt-2 dark:text-slate-400">
+                <div className="text-xs text-text-muted mt-2 dark:text-text-muted">
                   Author: {quoteObj.authorName ?? "-"}
                 </div>
-                <div className="mt-4 pt-4 border-t border-black/5 flex justify-end gap-3 items-center">
+                <div className="mt-4 pt-4 border-t border-border/60 flex justify-end gap-3 items-center">
                   
                   {/* MODIFIKASI: Tombol Bookmark pada List */}
                   <button
@@ -548,14 +557,14 @@ export default function Motivation() {
                       className={`w-6 h-6 ${
                         likedIndex.includes(id)
                           ? "fill-orange-500 text-orange-600"
-                          : "text-gray-400 hover:text-orange-400"
+                          : "text-text-muted hover:text-orange-400"
                       }`}
                     />
                   </button>
 
                   <button
                     onClick={() => openShare(quoteObj.quote)}
-                    className="text-xs sm:text-sm text-orange-500 hover:text-orange-600 font-medium flex items-center gap-1 cursor-pointer"
+                    className="text-xs sm:text-sm text-brand-primary hover:text-brand-primary/80 font-medium flex items-center gap-1 cursor-pointer"
                     aria-label={`share-${id}`}
                   >
                     <Share2 className="w-4 h-4" />{" "}
@@ -588,7 +597,7 @@ export default function Motivation() {
           aria-modal="true"
         >
           <div
-            className="absolute inset-0 bg-black/30 backdrop-blur-sm transition-opacity"
+            className="absolute inset-0 bg-neutral-950/30 backdrop-blur-sm transition-opacity"
             onClick={closeShare}
           />
           <div
@@ -599,7 +608,7 @@ export default function Motivation() {
               <div className="flex justify-end mb-2">
                 <button
                   onClick={closeShare}
-                  className="px-3 py-1 rounded-md bg-white/30 backdrop-blur text-sm cursor-pointer"
+                  className="px-3 py-1 rounded-md bg-surface-elevated/30 glass-chip text-sm cursor-pointer"
                 >
                   Close
                 </button>
@@ -640,7 +649,7 @@ export default function Motivation() {
                 {/* UBAHANNYA: w-full di mobile, fixed width di desktop */}
                 <div className="w-full md:w-[360px] space-y-4">
                   <div>
-                    <h4 className="font-semibold mb-2 text-white md:text-gray-800">
+                    <h4 className="font-semibold mb-2 text-text-primary">
                       Choose template
                     </h4>
                     <div className="grid grid-cols-2 gap-3">
@@ -650,14 +659,14 @@ export default function Motivation() {
                           onClick={() => setSelectedTemplate(t.id)}
                           className={`p-2 rounded-lg border ${
                             selectedTemplate === t.id
-                              ? "ring-2 ring-orange-400"
-                              : "border-black/5"
+                              ? "ring-2 ring-brand-primary"
+                              : "border-border"
                           } cursor-pointer`}
                           style={{ background: t.color }}
                         >
                           <div
                             style={{
-                              background: "rgb(var(--surface-elevated))",
+                              background: "rgb(var(--surface-elevated) / 0.85)",
                               padding: 6,
                               borderRadius: 8,
                             }}
@@ -666,7 +675,7 @@ export default function Motivation() {
                               style={{
                                 fontSize: 12,
                                 fontWeight: 700,
-                                color: "rgb(var(--brand-accent))",
+                                color: "rgb(var(--brand-primary))",
                               }}
                             >
                               {t.name}
@@ -679,17 +688,17 @@ export default function Motivation() {
                   <div className="mt-4 flex flex-col gap-3">
                     <button
                       onClick={downloadShareCard}
-                      className="px-4 py-3 bg-orange-500 text-white rounded-xl cursor-pointer shadow"
+                      className="px-4 py-3 bg-brand-primary text-text-inverse rounded-xl cursor-pointer shadow"
                     >
                       Download PNG
                     </button>
                     <button
                       onClick={copyText}
-                      className="px-4 py-3 bg-white border rounded-xl cursor-pointer"
+                      className="px-4 py-3 bg-surface-elevated glass-panel border rounded-xl cursor-pointer"
                     >
                       Copy Text
                     </button>
-                    <div className="text-xs text-black mt-2">
+                    <div className="text-xs text-text-primary mt-2">
                       Tip: center white card keeps text readable while outer
                       background
                     </div>

@@ -42,16 +42,19 @@ const Navbar = ({ user }) => {
   // --- LOGIKA WARNA API BERDASARKAN STREAK ---
   const getFlameColor = (streakCount, hasLoggedToday) => {
     const count = streakCount || 0;
-    if (!hasLoggedToday) {
+    if (!hasLoggedToday || count <= 1) {
       return "text-text-muted fill-text-muted/40";
     }
     if (count >= 60) {
-      return "text-brand-info fill-brand-info/20";
+      return "text-brand-info fill-brand-info/25";
     }
     if (count >= 7) {
-      return "text-brand-accent fill-brand-accent/20";
+      return "text-brand-warning fill-brand-warning/30";
     }
-    return "text-brand-warning fill-brand-warning/30";
+    if (count >= 2) {
+      return "text-brand-primary fill-brand-primary/20";
+    }
+    return "text-text-muted fill-text-muted/40";
   };
 
   const streakVal = user?.streak || 0;
@@ -78,6 +81,7 @@ const Navbar = ({ user }) => {
                 shadow-xl 
                 transition-all duration-300 
                 dark:bg-surface/80 dark:border-border/60
+            glass-panel
             "
     >
       <div className="flex justify-between items-center w-full">

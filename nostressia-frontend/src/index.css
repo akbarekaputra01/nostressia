@@ -29,7 +29,7 @@
     /* ===== Core Tokens ===== */
     --bg: var(--neutral-50);
     --surface: var(--neutral-50);
-    --surface-elevated: 255 255 255;
+    --surface-elevated: var(--neutral-50);
     --surface-muted: var(--neutral-100);
     --text-primary: var(--neutral-950);
     --text-secondary: var(--neutral-700);
@@ -51,13 +51,16 @@
     --shadow-color: var(--neutral-950);
 
     /* ===== Glassmorphism ===== */
-    --glass-bg: var(--surface);
+    --glass-bg: var(--neutral-50);
     --glass-border: var(--neutral-200);
+    --glass-highlight: var(--brand-info);
 
     /* ===== Background Gradients ===== */
-    --bg-gradient-cream: 255 244 214;
-    --bg-gradient-pink: 255 232 214;
-    --bg-gradient-lavender: 224 245 255;
+    --bg-gradient-sun: 255 231 173;
+    --bg-gradient-orange: 255 190 148;
+    --bg-gradient-sky: 189 232 255;
+    --bg-gradient-ocean: 175 206 255;
+    --bg-gradient-ink: 36 32 32;
 
     --skeleton-bg: var(--neutral-100);
     --skeleton-shine: var(--neutral-50);
@@ -109,10 +112,13 @@
 
     --glass-bg: 28 25 25;
     --glass-border: 60 54 54;
+    --glass-highlight: var(--brand-primary);
 
-    --bg-gradient-cream: 32 29 29;
-    --bg-gradient-pink: 36 32 32;
-    --bg-gradient-lavender: 40 35 35;
+    --bg-gradient-sun: 63 52 16;
+    --bg-gradient-orange: 78 44 24;
+    --bg-gradient-sky: 20 46 66;
+    --bg-gradient-ocean: 19 34 72;
+    --bg-gradient-ink: 20 19 19;
 
     --skeleton-bg: 40 35 35;
     --skeleton-shine: 72 66 66;
@@ -139,5 +145,41 @@
 
   .bg-surface-muted {
     background-color: rgb(var(--surface-muted));
+  }
+
+  .glass-panel {
+    background: linear-gradient(
+        135deg,
+        rgb(var(--glass-bg) / 0.78),
+        rgb(var(--surface-elevated) / 0.65)
+      );
+    border: 1px solid rgb(var(--glass-border) / 0.7);
+    box-shadow: 0 12px 30px rgb(var(--shadow-color) / 0.18);
+    backdrop-filter: blur(16px);
+  }
+
+  .glass-panel-strong {
+    background: linear-gradient(
+        160deg,
+        rgb(var(--glass-bg) / 0.82),
+        rgb(var(--surface-elevated) / 0.72)
+      );
+    border: 1px solid rgb(var(--glass-border) / 0.85);
+    box-shadow: 0 18px 45px rgb(var(--shadow-color) / 0.22);
+    backdrop-filter: blur(20px);
+  }
+
+  .glass-chip {
+    background: rgb(var(--surface-muted) / 0.85);
+    border: 1px solid rgb(var(--glass-border) / 0.7);
+    box-shadow: inset 0 1px 0 rgb(var(--glass-highlight) / 0.2);
+    backdrop-filter: blur(12px);
+  }
+
+  .glass-input {
+    background: rgb(var(--surface-elevated) / 0.75);
+    border: 1px solid rgb(var(--glass-border) / 0.7);
+    box-shadow: inset 0 1px 0 rgb(var(--glass-highlight) / 0.15);
+    backdrop-filter: blur(12px);
   }
 }

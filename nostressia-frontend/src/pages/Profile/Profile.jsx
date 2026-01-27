@@ -48,22 +48,22 @@ const FALLBACK_CONTAINER = import.meta.env.VITE_AZURE_BLOB_CONTAINER || "";
 // --- COMPONENT: AVATAR SELECTION MODAL ---
 const AvatarSelectionModal = ({ onClose, onSelect, onUpload, currentAvatar, uploading }) => {
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white rounded-[24px] p-6 w-full max-w-lg shadow-2xl border border-white/50 relative">
-        <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-neutral-950/60 backdrop-blur-sm animate-fade-in">
+      <div className="bg-surface-elevated glass-panel rounded-[24px] p-6 w-full max-w-lg shadow-2xl border border-white/50 relative">
+        <button onClick={onClose} className="absolute top-4 right-4 text-text-muted hover:text-text-secondary transition-colors">
           <X size={24} />
         </button>
-        <h3 className="text-xl font-bold text-gray-800 mb-6 text-center">Pick Your Avatar</h3>
-        <div className="flex justify-center items-center gap-3 md:gap-4 flex-wrap bg-gray-50 border border-gray-200 rounded-2xl p-4">
+        <h3 className="text-xl font-bold text-text-primary mb-6 text-center">Pick Your Avatar</h3>
+        <div className="flex justify-center items-center gap-3 md:gap-4 flex-wrap bg-surface-muted border border-border rounded-2xl p-4">
           {AVATAR_OPTIONS.map((avatarImg, index) => {
             const isSelected = currentAvatar === avatarImg;
             return (
               <div 
                 key={index} 
                 onClick={() => onSelect(avatarImg)}
-                className={`relative cursor-pointer transition-all duration-300 rounded-full p-1 ${isSelected ? "scale-110 ring-4 ring-orange-500 shadow-lg bg-white" : "hover:scale-105 opacity-70 hover:opacity-100"}`}
+                className={`relative cursor-pointer transition-all duration-300 rounded-full p-1 ${isSelected ? "scale-110 ring-4 ring-orange-500 shadow-lg bg-surface-elevated" : "hover:scale-105 opacity-70 hover:opacity-100"}`}
               >
-                <img src={avatarImg} alt={`Avatar ${index}`} className="w-14 h-14 md:w-16 md:h-16 rounded-full object-cover bg-white border border-gray-200" />
+                <img src={avatarImg} alt={`Avatar ${index}`} className="w-14 h-14 md:w-16 md:h-16 rounded-full object-cover bg-surface-elevated glass-panel border border-border" />
                 {isSelected && (
                   <div className="absolute -bottom-1 -right-1 bg-orange-500 text-white rounded-full p-1 border-2 border-white shadow-sm"><Check size={10} strokeWidth={4}/></div>
                 )}
@@ -72,7 +72,7 @@ const AvatarSelectionModal = ({ onClose, onSelect, onUpload, currentAvatar, uplo
           })}
         </div>
         <div className="mt-5 flex flex-col items-center gap-3">
-          <label className="w-full cursor-pointer rounded-2xl border border-dashed border-gray-300 bg-white px-4 py-3 text-center text-xs font-semibold text-gray-500 transition hover:border-orange-400 hover:text-orange-500">
+          <label className="w-full cursor-pointer rounded-2xl border border-dashed border-border bg-surface-elevated glass-panel px-4 py-3 text-center text-xs font-semibold text-text-muted transition hover:border-orange-400 hover:text-orange-500">
             <input
               type="file"
               accept="image/*"
@@ -82,7 +82,7 @@ const AvatarSelectionModal = ({ onClose, onSelect, onUpload, currentAvatar, uplo
             />
             {uploading ? "Uploading..." : "Upload your own photo"}
           </label>
-          <p className="text-center text-xs text-gray-400">
+          <p className="text-center text-xs text-text-muted">
             *Select an avatar or upload a custom photo (max 2MB).
           </p>
         </div>
@@ -250,8 +250,8 @@ export default function Profile() {
   const [loadingBookmarks, setLoadingBookmarks] = useState(false);
   const [stressSummary, setStressSummary] = useState({
     label: "-",
-    textColor: "text-slate-500",
-    bgColor: "bg-slate-100",
+    textColor: "text-text-muted",
+    bgColor: "bg-surface-muted",
   });
 
   // STATE UNTUK LOCK/UNLOCK FIELD
@@ -359,7 +359,7 @@ export default function Profile() {
   const [passwordForm, setPasswordForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
   const [passwordStep, setPasswordStep] = useState(1);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
-  const systemLabel = resolvedTheme === "dark" ? "dark" : "light";
+  const systemLabel = resolvedTheme === "dark" ? "Always dark" : "Always light";
   const themeLabels = {
     light: "Light",
     dark: "Dark",
@@ -381,7 +381,7 @@ export default function Profile() {
     {
       value: "system",
       label: "System",
-      description: `Follow device (${systemLabel})`,
+      description: systemLabel,
       icon: Monitor,
     },
   ];
@@ -393,8 +393,10 @@ export default function Profile() {
   // ✅ LOGIC BARU: STATISTIK DINAMIS & WARNA STREAK
   const getStreakStyle = (streak) => {
     const s = streak || 0;
-    if (s >= 60) return { iconColor: "text-purple-600", bgColor: "bg-purple-100" }; // Api 2
-    return { iconColor: "text-orange-500", bgColor: "bg-orange-100" }; // Api 1
+    if (s >= 60) return { iconColor: "text-brand-info", bgColor: "bg-brand-info/15" };
+    if (s >= 7) return { iconColor: "text-brand-warning", bgColor: "bg-brand-warning/15" };
+    if (s >= 2) return { iconColor: "text-brand-primary", bgColor: "bg-brand-primary/15" };
+    return { iconColor: "text-text-muted", bgColor: "bg-surface-muted" };
   };
 
   const streakVal = contextUser?.streak || 0;
@@ -407,9 +409,9 @@ export default function Profile() {
   };
 
   const resolveStressStyle = (label) => {
-    if (label === "High") return { textColor: "text-rose-600", bgColor: "bg-rose-100" };
-    if (label === "Moderate") return { textColor: "text-amber-600", bgColor: "bg-amber-100" };
-    return { textColor: "text-emerald-600", bgColor: "bg-emerald-100" };
+    if (label === "High") return { textColor: "text-brand-accent", bgColor: "bg-brand-accent/15" };
+    if (label === "Moderate") return { textColor: "text-brand-warning", bgColor: "bg-brand-warning/15" };
+    return { textColor: "text-brand-info", bgColor: "bg-brand-info/15" };
   };
 
   useEffect(() => {
@@ -423,8 +425,8 @@ export default function Profile() {
           if (isMounted) {
             setStressSummary({
               label: "-",
-              textColor: "text-slate-500",
-              bgColor: "bg-slate-100",
+              textColor: "text-text-muted",
+              bgColor: "bg-surface-muted",
             });
           }
           return;
@@ -768,7 +770,7 @@ export default function Profile() {
     <div
       className="min-h-screen pb-24 md:pb-10"
       style={{
-        background: "linear-gradient(135deg, rgb(var(--bg-gradient-cream)) 0%, rgb(var(--bg-gradient-pink)) 50%, rgb(var(--bg-gradient-lavender)) 100%)",
+        background: "linear-gradient(135deg, rgb(var(--bg-gradient-sun)) 0%, rgb(var(--bg-gradient-orange)) 50%, rgb(var(--bg-gradient-sky)) 100%)",
         backgroundAttachment: "fixed",
       }}
     >
@@ -784,15 +786,15 @@ export default function Profile() {
         />
       )}
       {showPermissionPrompt && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white dark:bg-slate-900 rounded-[24px] p-6 w-full max-w-sm shadow-2xl border border-white/60 dark:border-slate-700">
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-neutral-950/40 backdrop-blur-sm animate-fade-in">
+          <div className="bg-surface-elevated glass-panel dark:bg-surface rounded-[24px] p-6 w-full max-w-sm shadow-2xl border border-white/60 dark:border-border">
             <div className="flex items-center gap-3 mb-4">
               <div className="bg-orange-100 text-orange-600 dark:bg-orange-500/20 dark:text-orange-300 p-2 rounded-full">
                 <Bell className="w-5 h-5" />
               </div>
-              <h3 className="text-lg font-bold text-gray-800 dark:text-slate-100">Allow notifications?</h3>
+              <h3 className="text-lg font-bold text-text-primary dark:text-text-primary">Allow notifications?</h3>
             </div>
-            <p className="text-sm text-gray-600 dark:text-slate-300 mb-6">
+            <p className="text-sm text-text-secondary dark:text-text-muted mb-6">
               Nostressia needs permission to send daily reminder notifications.
               {permissionStatus === "denied" && (
                 <span className="mt-2 block text-xs text-orange-500 dark:text-orange-300">
@@ -809,7 +811,7 @@ export default function Profile() {
               </button>
               <button
                 onClick={handlePermissionDismiss}
-                className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 font-bold rounded-xl transition-all cursor-pointer"
+                className="flex-1 py-2.5 bg-surface-muted hover:bg-surface-muted text-text-secondary dark:bg-surface dark:hover:bg-surface-muted dark:text-text-primary font-bold rounded-xl transition-all cursor-pointer"
               >
                 Not now
               </button>
@@ -824,10 +826,10 @@ export default function Profile() {
           <div
             className={`flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl border ${
               notification.type === "success"
-                ? "bg-white text-green-600 border-green-100 dark:bg-slate-900 dark:text-green-300 dark:border-green-500/30"
+                ? "bg-surface-elevated glass-panel text-brand-info border-brand-info/20 dark:bg-surface dark:text-brand-info dark:border-brand-info/30"
                 : notification.type === "error"
-                ? "bg-white text-red-600 border-red-100 dark:bg-slate-900 dark:text-red-300 dark:border-red-500/30"
-                : "bg-white text-blue-600 border-blue-100 dark:bg-slate-900 dark:text-blue-300 dark:border-blue-500/30"
+                ? "bg-surface-elevated glass-panel text-brand-accent border-brand-accent/20 dark:bg-surface dark:text-brand-accent dark:border-brand-accent/30"
+                : "bg-surface-elevated glass-panel text-brand-primary border-brand-primary/20 dark:bg-surface dark:text-brand-primary dark:border-brand-primary/30"
             }`}
           >
             {notification.type === "success" ? (
@@ -844,15 +846,15 @@ export default function Profile() {
       
       {/* SETTINGS MODAL */}
       {showNotifModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white dark:bg-slate-900 rounded-[24px] p-8 w-full max-w-md shadow-2xl border border-white/50 dark:border-slate-700">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-950/40 backdrop-blur-sm animate-fade-in">
+          <div className="bg-surface-elevated glass-panel dark:bg-surface rounded-[24px] p-8 w-full max-w-md shadow-2xl border border-white/50 dark:border-border">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold text-gray-800 dark:text-slate-100 flex items-center gap-2">
+              <h3 className="text-xl font-bold text-text-primary dark:text-text-primary flex items-center gap-2">
                 <Bell className="w-5 h-5 text-orange-500" /> Notifications
               </h3>
               <button
                 onClick={() => setShowNotifModal(false)}
-                className="text-gray-400 hover:text-gray-600 dark:text-slate-400 dark:hover:text-slate-200 transition-colors cursor-pointer"
+                className="text-text-muted hover:text-text-secondary dark:text-text-muted dark:hover:text-text-primary transition-colors cursor-pointer"
               >
                 <X className="w-6 h-6" />
               </button>
@@ -864,8 +866,8 @@ export default function Profile() {
                     <Smartphone className="w-5 h-5" />
                   </div>
                   <div>
-                    <p className="font-bold text-gray-800 dark:text-slate-100">Daily Reminder</p>
-                    <p className="text-xs text-gray-500 dark:text-slate-400">Remind me to check-in</p>
+                    <p className="font-bold text-text-primary dark:text-text-primary">Daily Reminder</p>
+                    <p className="text-xs text-text-muted dark:text-text-muted">Remind me to check-in</p>
                   </div>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
@@ -876,13 +878,13 @@ export default function Profile() {
                     onChange={handleNotifChange}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-gray-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                  <div className="w-11 h-6 bg-surface-muted dark:bg-surface-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-surface-elevated glass-panel after:border-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-primary"></div>
                 </label>
               </div>
               {notifSettings.dailyReminder && (
                 <div className="space-y-3">
-                  <div className="bg-gray-50 dark:bg-slate-800 p-4 rounded-xl flex items-center justify-between border border-gray-100 dark:border-slate-700">
-                    <div className="flex items-center gap-2 text-gray-600 dark:text-slate-300">
+                  <div className="bg-surface-muted dark:bg-surface p-4 rounded-xl flex items-center justify-between border border-border-subtle dark:border-border">
+                    <div className="flex items-center gap-2 text-text-secondary dark:text-text-muted">
                       <Clock className="w-4 h-4" />
                       <span className="text-sm font-semibold">Time</span>
                     </div>
@@ -891,23 +893,23 @@ export default function Profile() {
                       name="reminderTime"
                       value={notifSettings.reminderTime}
                       onChange={handleNotifChange}
-                      className="bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-slate-100 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2"
+                      className="bg-surface-elevated glass-panel dark:bg-surface border border-border dark:border-border text-text-primary dark:text-text-primary text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2"
                     />
                   </div>
-                  <p className="text-[11px] text-gray-500 dark:text-slate-400">
+                  <p className="text-[11px] text-text-muted dark:text-text-muted">
                     Scheduled reminder menggunakan push (jika device/browser mendukung).
                   </p>
                 </div>
               )}
-              <div className="h-px bg-gray-100 dark:bg-slate-700"></div>
+              <div className="h-px bg-surface-muted dark:bg-surface-muted"></div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="bg-purple-100 text-purple-600 dark:bg-purple-500/20 dark:text-purple-300 p-2 rounded-full">
                     <Mail className="w-5 h-5" />
                   </div>
                   <div>
-                    <p className="font-bold text-gray-800 dark:text-slate-100">Weekly Report</p>
-                    <p className="text-xs text-gray-500 dark:text-slate-400">Receive summary via email</p>
+                    <p className="font-bold text-text-primary dark:text-text-primary">Weekly Report</p>
+                    <p className="text-xs text-text-muted dark:text-text-muted">Receive summary via email</p>
                   </div>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
@@ -918,7 +920,7 @@ export default function Profile() {
                     onChange={handleNotifChange}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-gray-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                  <div className="w-11 h-6 bg-surface-muted dark:bg-surface-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-surface-elevated glass-panel after:border-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-info"></div>
                 </label>
               </div>
               <button
@@ -933,27 +935,27 @@ export default function Profile() {
       )}
       
       {/* PASSWORD MODAL */}
-      {showPasswordModal && (<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in"><div className="bg-white rounded-[24px] p-8 w-full max-w-md shadow-2xl border border-white/50"><div className="flex justify-between items-start mb-6"><div><h3 className="text-xl font-bold text-gray-800 flex items-center gap-2"><Lock className="w-5 h-5 text-blue-500" /> Change Password</h3><div className="flex gap-2 mt-2">{[1, 2].map((step) => (<div key={step} className={`h-2 rounded-full transition-all duration-300 ${passwordStep >= step ? "w-8 bg-blue-600" : "w-2 bg-gray-200"}`}></div>))}</div></div><button onClick={handleClosePasswordModal} className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"><X className="w-6 h-6" /></button></div><form onSubmit={passwordStep === 1 ? handlePasswordStepNext : handleSubmitPasswordChange} onKeyDown={handleFormKeyDown} className="space-y-4">
+      {showPasswordModal && (<div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-950/40 backdrop-blur-sm animate-fade-in"><div className="bg-surface-elevated glass-panel rounded-[24px] p-8 w-full max-w-md shadow-2xl border border-white/50"><div className="flex justify-between items-start mb-6"><div><h3 className="text-xl font-bold text-text-primary flex items-center gap-2"><Lock className="w-5 h-5 text-blue-500" /> Change Password</h3><div className="flex gap-2 mt-2">{[1, 2].map((step) => (<div key={step} className={`h-2 rounded-full transition-all duration-300 ${passwordStep >= step ? "w-8 bg-blue-600" : "w-2 bg-surface-muted"}`}></div>))}</div></div><button onClick={handleClosePasswordModal} className="text-text-muted hover:text-text-secondary transition-colors cursor-pointer"><X className="w-6 h-6" /></button></div><form onSubmit={passwordStep === 1 ? handlePasswordStepNext : handleSubmitPasswordChange} onKeyDown={handleFormKeyDown} className="space-y-4">
 
         {passwordStep === 1 ? (
           <div className="space-y-4 animate-fade-in">
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-text-muted">
               Enter your current password before setting a new one.
             </p>
             <div className="space-y-2">
-              <label className="text-sm font-bold text-gray-600 ml-1">Current Password</label>
+              <label className="text-sm font-bold text-text-secondary ml-1">Current Password</label>
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
                 <input 
                   type={showCurrentPassword ? "text" : "password"} 
                   name="currentPassword" 
                   value={passwordForm.currentPassword} 
                   onChange={handlePasswordChangeInput} 
                   placeholder="Enter current password" 
-                  className="w-full pl-12 pr-12 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-blue-400 focus:outline-none transition-all"
+                  className="w-full pl-12 pr-12 py-3 rounded-xl bg-surface-muted border border-border focus:ring-2 focus:ring-blue-400 focus:outline-none transition-all"
                   data-required="true"
                 />
-                <button type="button" onClick={() => setShowCurrentPassword(!showCurrentPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer">
+                <button type="button" onClick={() => setShowCurrentPassword(!showCurrentPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary cursor-pointer">
                   {showCurrentPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
@@ -964,36 +966,36 @@ export default function Profile() {
           </div>
         ) : (
           <div className="space-y-4 animate-fade-in">
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-text-muted">
               Create a new password for your account.
             </p>
             <div className="space-y-2">
-              <label className="text-sm font-bold text-gray-600 ml-1">New Password</label>
+              <label className="text-sm font-bold text-text-secondary ml-1">New Password</label>
               <div className="relative">
-                <Key className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Key className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
                 <input 
                   type={showNewPasswords ? "text" : "password"} 
                   name="newPassword" 
                   value={passwordForm.newPassword} 
                   onChange={handlePasswordChangeInput} 
                   placeholder="Enter new password" 
-                  className="w-full pl-12 pr-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-blue-400 focus:outline-none transition-all"
+                  className="w-full pl-12 pr-4 py-3 rounded-xl bg-surface-muted border border-border focus:ring-2 focus:ring-blue-400 focus:outline-none transition-all"
                   data-required="true"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-bold text-gray-600 ml-1">Confirm New Password</label>
+              <label className="text-sm font-bold text-text-secondary ml-1">Confirm New Password</label>
               <div className="relative">
-                <Key className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Key className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
                 <input 
                   type={showNewPasswords ? "text" : "password"} 
                   name="confirmPassword" 
                   value={passwordForm.confirmPassword} 
                   onChange={handlePasswordChangeInput} 
                   placeholder="Re-enter new password" 
-                  className="w-full pl-12 pr-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-blue-400 focus:outline-none transition-all"
+                  className="w-full pl-12 pr-4 py-3 rounded-xl bg-surface-muted border border-border focus:ring-2 focus:ring-blue-400 focus:outline-none transition-all"
                   data-required="true"
                 />
               </div>
@@ -1004,16 +1006,16 @@ export default function Profile() {
                   id="showNewPass" 
                   checked={showNewPasswords} 
                   onChange={(e) => setShowNewPasswords(e.target.checked)}
-                  className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                  className="w-4 h-4 rounded border-border text-blue-600 focus:ring-blue-500 cursor-pointer"
                 />
-                <label htmlFor="showNewPass" className="text-sm text-gray-600 cursor-pointer select-none">
+                <label htmlFor="showNewPass" className="text-sm text-text-secondary cursor-pointer select-none">
                   Show New Passwords
                 </label>
               </div>
             </div>
 
             <div className="flex items-center gap-3 pt-2">
-              <button type="button" onClick={handlePasswordStepBack} className="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl shadow-sm hover:bg-gray-200 transition-all cursor-pointer">
+              <button type="button" onClick={handlePasswordStepBack} className="flex-1 py-3 bg-surface-muted text-text-secondary font-bold rounded-xl shadow-sm hover:bg-surface-muted transition-all cursor-pointer">
                 Back
               </button>
               <button type="submit" disabled={isLoadingPassword} className={`flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-200 transition-all cursor-pointer transform active:scale-95 flex justify-center items-center gap-2 ${isLoadingPassword ? "opacity-70 cursor-not-allowed" : ""}`}>
@@ -1025,12 +1027,12 @@ export default function Profile() {
       </form></div></div>)}
 
       <main className="max-w-5xl mx-auto px-4 pt-24 md:pt-28">
-        <div className="relative bg-white/60 backdrop-blur-xl border border-white/40 rounded-[30px] p-6 md:p-10 shadow-xl overflow-hidden mb-8 max-w-4xl mx-auto">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-blue-400/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-            <div className="absolute bottom-0 left-0 w-64 h-64 bg-orange-400/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
+        <div className="relative bg-surface-elevated/60 glass-panel backdrop-blur-xl border border-white/40 rounded-[30px] p-6 md:p-10 shadow-xl overflow-hidden mb-8 max-w-4xl mx-auto">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-brand-info/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+            <div className="absolute bottom-0 left-0 w-64 h-64 bg-brand-warning/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
             <div className="relative z-10 flex flex-col md:flex-row items-center gap-6 md:gap-8">
                 <div className="relative group">
-                    <div className="w-28 h-28 md:w-32 md:h-32 rounded-full border-4 border-white shadow-lg overflow-hidden bg-white">
+                    <div className="w-28 h-28 md:w-32 md:h-32 rounded-full border-4 border-white shadow-lg overflow-hidden bg-surface-elevated">
                         <img
                           src={displayAvatar}
                           alt="Profile"
@@ -1044,47 +1046,47 @@ export default function Profile() {
                     <button onClick={() => setShowAvatarModal(true)} className="absolute bottom-1 right-1 bg-blue-600 text-white p-2 rounded-full shadow-md hover:bg-blue-700 transition-all cursor-pointer"><Edit3 className="w-4 h-4" /></button>
                 </div>
                 <div className="text-center md:text-left flex-1">
-                    <h1 className="text-3xl font-extrabold text-gray-800">{formData.fullName || "Your Name"}</h1>
-                    <p className="text-gray-500 font-medium mb-1">@{formData.username || "username"}</p>
+                    <h1 className="text-3xl font-extrabold text-text-primary">{formData.fullName || "Your Name"}</h1>
+                    <p className="text-text-muted font-medium mb-1">@{formData.username || "username"}</p>
                 </div>
             </div>
-            <div className="grid grid-cols-3 gap-4 mt-8 pt-8 border-t border-gray-200/60">
+            <div className="grid grid-cols-3 gap-4 mt-8 pt-8 border-t border-border/60">
                 {stats.map((stat, idx) => (
                     <div key={idx} className="flex flex-col items-center justify-center p-2">
                         <div className={`w-10 h-10 ${stat.bg} rounded-full flex items-center justify-center mb-2`}>{stat.icon}</div>
-                        <span className="text-lg font-bold text-gray-800">{stat.value}</span><span className="text-xs text-gray-500 uppercase tracking-wide">{stat.label}</span>
+                        <span className="text-lg font-bold text-text-primary">{stat.value}</span><span className="text-xs text-text-muted uppercase tracking-wide">{stat.label}</span>
                     </div>
                 ))}
             </div>
         </div>
 
         <div className="flex justify-center mb-6">
-            <div className="bg-white/40 backdrop-blur-md p-1.5 rounded-2xl flex gap-2 border border-white/30 shadow-sm overflow-x-auto">
+            <div className="bg-surface-elevated/40 glass-panel backdrop-blur-md p-1.5 rounded-2xl flex gap-2 border border-white/30 shadow-sm overflow-x-auto">
                 {[{ id: "personal", label: "Personal", icon: <User className="w-4 h-4" /> },{ id: "bookmark", label: "Bookmark", icon: <Bookmark className="w-4 h-4" /> }, { id: "settings", label: "Settings", icon: <Settings className="w-4 h-4" /> }].map((tab) => (
-                    <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap ${activeTab === tab.id ? "bg-white text-blue-600 shadow-md scale-105" : "text-gray-500 hover:text-gray-700 hover:bg-white/30"}`}>{tab.icon} {tab.label}</button>
+                    <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap ${activeTab === tab.id ? "bg-surface-elevated glass-panel text-blue-600 shadow-md scale-105" : "text-text-muted hover:text-text-secondary hover:bg-surface-elevated/30"}`}>{tab.icon} {tab.label}</button>
                 ))}
             </div>
         </div>
 
         <div className="animate-fade-in-up pb-20">
             {activeTab === "personal" && (
-                <div className="bg-white/60 backdrop-blur-md border border-white/40 rounded-[24px] p-6 md:p-8 shadow-lg">
-                    <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2"><User className="w-5 h-5 text-blue-500" /> Personal Details</h3>
+                <div className="bg-surface-elevated/60 glass-panel backdrop-blur-md border border-white/40 rounded-[24px] p-6 md:p-8 shadow-lg">
+                    <h3 className="text-xl font-bold text-text-primary mb-6 flex items-center gap-2"><User className="w-5 h-5 text-blue-500" /> Personal Details</h3>
                     <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
                         
                         {/* USERNAME (Editable) */}
                         <div className="space-y-2">
-                            <label className="text-sm font-bold text-gray-600 ml-1">Username</label>
+                            <label className="text-sm font-bold text-text-secondary ml-1">Username</label>
                             <div className="flex gap-2">
                                 <div className="relative flex-1">
-                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">@</span>
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted font-bold">@</span>
                                     <input 
                                         type="text" 
                                         name="username" 
                                         value={formData.username} 
                                         onChange={handleInputChange} 
                                         disabled={!editableFields.username}
-                                        className={`w-full pl-10 pr-4 py-3 rounded-xl bg-white border ${editableFields.username ? "border-blue-400 ring-2 ring-blue-100" : "border-gray-200 bg-gray-50 text-gray-500"} focus:outline-none transition-all`} 
+                                        className={`w-full pl-10 pr-4 py-3 rounded-xl bg-surface-elevated glass-panel border ${editableFields.username ? "border-blue-400 ring-2 ring-blue-100" : "border-border bg-surface-muted text-text-muted"} focus:outline-none transition-all`} 
                                     />
                                 </div>
                                 <button onClick={() => toggleEdit('username')} className="px-4 py-3 rounded-xl border border-blue-200 text-blue-600 font-bold text-sm hover:bg-blue-50 transition-colors cursor-pointer whitespace-nowrap">
@@ -1095,17 +1097,17 @@ export default function Profile() {
 
                         {/* FULL NAME (Editable) */}
                         <div className="space-y-2">
-                            <label className="text-sm font-bold text-gray-600 ml-1">Full Name</label>
+                            <label className="text-sm font-bold text-text-secondary ml-1">Full Name</label>
                             <div className="flex gap-2">
                                 <div className="relative flex-1">
-                                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
                                     <input 
                                         name="fullName" 
                                         type="text" 
                                         value={formData.fullName} 
                                         onChange={handleInputChange}
                                         disabled={!editableFields.fullName}
-                                        className={`w-full pl-12 pr-4 py-3 rounded-xl bg-white border ${editableFields.fullName ? "border-blue-400 ring-2 ring-blue-100" : "border-gray-200 bg-gray-50 text-gray-500"} focus:outline-none transition-all`} 
+                                        className={`w-full pl-12 pr-4 py-3 rounded-xl bg-surface-elevated glass-panel border ${editableFields.fullName ? "border-blue-400 ring-2 ring-blue-100" : "border-border bg-surface-muted text-text-muted"} focus:outline-none transition-all`} 
                                     />
                                 </div>
                                 <button onClick={() => toggleEdit('fullName')} className="px-4 py-3 rounded-xl border border-blue-200 text-blue-600 font-bold text-sm hover:bg-blue-50 transition-colors cursor-pointer whitespace-nowrap">
@@ -1116,17 +1118,17 @@ export default function Profile() {
 
                         {/* EMAIL (Editable) */}
                         <div className="space-y-2">
-                            <label className="text-sm font-bold text-gray-600 ml-1">Email Address</label>
+                            <label className="text-sm font-bold text-text-secondary ml-1">Email Address</label>
                             <div className="flex gap-2">
                                 <div className="relative flex-1">
-                                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
                                     <input 
                                         name="email" 
                                         type="email" 
                                         value={formData.email} 
                                         onChange={handleInputChange} 
                                         disabled={!editableFields.email}
-                                        className={`w-full pl-12 pr-4 py-3 rounded-xl bg-white border ${editableFields.email ? "border-blue-400 ring-2 ring-blue-100" : "border-gray-200 bg-gray-50 text-gray-500"} focus:outline-none transition-all`} 
+                                        className={`w-full pl-12 pr-4 py-3 rounded-xl bg-surface-elevated glass-panel border ${editableFields.email ? "border-blue-400 ring-2 ring-blue-100" : "border-border bg-surface-muted text-text-muted"} focus:outline-none transition-all`} 
                                     />
                                 </div>
                                 <button onClick={() => toggleEdit('email')} className="px-4 py-3 rounded-xl border border-blue-200 text-blue-600 font-bold text-sm hover:bg-blue-50 transition-colors cursor-pointer whitespace-nowrap">
@@ -1138,28 +1140,28 @@ export default function Profile() {
                         {/* BIRTHDAY & GENDER (READ ONLY) */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <label className="text-sm font-bold text-gray-600 ml-1">Birthday</label>
+                                <label className="text-sm font-bold text-text-secondary ml-1">Birthday</label>
                                 <div className="relative">
-                                    <Cake className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                    <Cake className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
                                     <input 
                                         name="birthday" 
                                         type="date" 
                                         value={formData.birthday} 
                                         disabled={true} 
-                                        className="w-full pl-12 pr-4 py-3 rounded-xl bg-gray-100 border border-gray-200 text-gray-500 cursor-not-allowed focus:outline-none" 
+                                        className="w-full pl-12 pr-4 py-3 rounded-xl bg-surface-muted border border-border text-text-muted cursor-not-allowed focus:outline-none" 
                                     />
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <label className="text-sm font-bold text-gray-600 ml-1">Gender</label>
+                                <label className="text-sm font-bold text-text-secondary ml-1">Gender</label>
                                 <div className="relative">
-                                    <Smile className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                    <Smile className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
                                     <input 
                                         name="gender" 
                                         type="text" 
                                         value={formData.gender} 
                                         disabled={true} 
-                                        className="w-full pl-12 pr-4 py-3 rounded-xl bg-gray-100 border border-gray-200 text-gray-500 cursor-not-allowed focus:outline-none" 
+                                        className="w-full pl-12 pr-4 py-3 rounded-xl bg-surface-muted border border-border text-text-muted cursor-not-allowed focus:outline-none" 
                                     />
                                 </div>
                             </div>
@@ -1177,22 +1179,22 @@ export default function Profile() {
                     {loadingBookmarks ? (
                         <div className="flex justify-center py-10"><Loader2 className="w-8 h-8 text-orange-500 animate-spin" /></div>
                     ) : bookmarks.length === 0 ? (
-                        <div className="text-center py-10 text-gray-500">
+                        <div className="text-center py-10 text-text-muted">
                            <p>No bookmarks yet.</p>
                            <Link to="/motivation" className="text-orange-500 font-bold hover:underline">Go to Motivation Page</Link>
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
                            {bookmarks.map((bm) => (
-                             <div key={bm.bookmarkId} className="bg-white/70 backdrop-blur-sm p-6 rounded-[24px] border border-white/50 shadow-sm hover:shadow-md transition-all relative group">
+                             <div key={bm.bookmarkId} className="bg-surface-elevated/70 glass-panel backdrop-blur-sm p-6 rounded-[24px] border border-white/50 shadow-sm hover:shadow-md transition-all relative group">
                                 <div className="flex justify-between items-start mb-3">
                                    <span className="bg-blue-100 text-blue-600 text-[10px] font-bold px-2 py-1 rounded-lg uppercase tracking-wider">Motivation</span>
-                                   <button onClick={() => handleUnsave(bm.motivationId)} className="text-orange-500 hover:scale-110 transition-transform cursor-pointer bg-white rounded-full p-1 shadow-sm" title="Remove Bookmark">
+                                   <button onClick={() => handleUnsave(bm.motivationId)} className="text-orange-500 hover:scale-110 transition-transform cursor-pointer bg-surface-elevated glass-panel rounded-full p-1 shadow-sm" title="Remove Bookmark">
                                       <Bookmark className="w-4 h-4 fill-current" />
                                    </button>
                                 </div>
-                                <p className="text-gray-800 font-medium italic text-lg mb-2">"{bm.motivation?.quote}"</p>
-                                <p className="text-xs text-gray-500 text-right">- {bm.motivation?.authorName || "Anonymous"}</p>
+                                <p className="text-text-primary font-medium italic text-lg mb-2">"{bm.motivation?.quote}"</p>
+                                <p className="text-xs text-text-muted text-right">- {bm.motivation?.authorName || "Anonymous"}</p>
                              </div>
                            ))}
                         </div>
@@ -1205,17 +1207,17 @@ export default function Profile() {
 
             {activeTab === "settings" && (
                 <div className="space-y-4">
-                      <div className="bg-white/60 backdrop-blur-md border border-white/40 rounded-[24px] overflow-hidden shadow-lg p-2">
-                        <button onClick={() => setShowNotifModal(true)} className="w-full flex items-center justify-between p-4 hover:bg-white/50 rounded-xl transition-colors cursor-pointer group"><div className="flex items-center gap-4"><div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600"><Bell className="w-5 h-5" /></div><div className="text-left"><h4 className="font-bold text-gray-800">Notifications</h4></div></div><ChevronRight className="w-5 h-5 text-gray-400" /></button>
-                        <div className="h-px bg-gray-100 mx-4"></div>
+                      <div className="bg-surface-elevated/60 glass-panel backdrop-blur-md border border-white/40 rounded-[24px] overflow-hidden shadow-lg p-2">
+                        <button onClick={() => setShowNotifModal(true)} className="w-full flex items-center justify-between p-4 hover:bg-surface-elevated/50 glass-panel rounded-xl transition-colors cursor-pointer group"><div className="flex items-center gap-4"><div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600"><Bell className="w-5 h-5" /></div><div className="text-left"><h4 className="font-bold text-text-primary">Notifications</h4></div></div><ChevronRight className="w-5 h-5 text-text-muted" /></button>
+                        <div className="h-px bg-surface-muted mx-4"></div>
                         <div className="w-full p-4 rounded-xl transition-colors">
                           <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600">
+                            <div className="w-10 h-10 rounded-full bg-surface-muted flex items-center justify-center text-text-secondary">
                               {resolvedTheme === "dark" ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
                             </div>
                             <div className="text-left">
-                              <h4 className="font-bold text-gray-800">Theme</h4>
-                              <p className="text-xs text-gray-500">
+                              <h4 className="font-bold text-text-primary">Theme</h4>
+                              <p className="text-xs text-text-muted">
                                 Current: {themeLabels[themePreference] || "System"} ({systemLabel} when system)
                               </p>
                             </div>
@@ -1232,19 +1234,19 @@ export default function Profile() {
                                   className={`flex w-full items-center gap-3 rounded-xl border px-3 py-2 text-left text-sm font-semibold transition-all ${
                                     isActive
                                       ? "border-blue-200 bg-blue-50 text-blue-700 shadow-sm"
-                                      : "border-gray-200 bg-white hover:border-blue-200 hover:bg-blue-50/60"
+                                      : "border-border bg-surface-elevated glass-panel hover:border-blue-200 hover:bg-blue-50/60"
                                   }`}
                                 >
                                   <span
                                     className={`flex h-9 w-9 items-center justify-center rounded-full ${
-                                      isActive ? "bg-blue-100 text-blue-600" : "bg-slate-100 text-slate-600"
+                                      isActive ? "bg-blue-100 text-blue-600" : "bg-surface-muted text-text-secondary"
                                     }`}
                                   >
                                     <Icon className="h-4 w-4" />
                                   </span>
                                   <span className="flex flex-col">
                                     <span>{option.label}</span>
-                                    <span className="text-xs font-medium text-gray-500">
+                                    <span className="text-xs font-medium text-text-muted">
                                       {option.description}
                                     </span>
                                   </span>
@@ -1253,10 +1255,10 @@ export default function Profile() {
                             })}
                           </div>
                         </div>
-                        <div className="h-px bg-gray-100 mx-4"></div>
-                        <button onClick={() => { setPasswordStep(1); setShowPasswordModal(true); }} className="w-full flex items-center justify-between p-4 hover:bg-white/50 rounded-xl transition-colors cursor-pointer group"><div className="flex items-center gap-4"><div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600"><Lock className="w-5 h-5" /></div><div className="text-left"><h4 className="font-bold text-gray-800">Change Password</h4></div></div><ChevronRight className="w-5 h-5 text-gray-400" /></button>
+                        <div className="h-px bg-surface-muted mx-4"></div>
+                        <button onClick={() => { setPasswordStep(1); setShowPasswordModal(true); }} className="w-full flex items-center justify-between p-4 hover:bg-surface-elevated/50 glass-panel rounded-xl transition-colors cursor-pointer group"><div className="flex items-center gap-4"><div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600"><Lock className="w-5 h-5" /></div><div className="text-left"><h4 className="font-bold text-text-primary">Change Password</h4></div></div><ChevronRight className="w-5 h-5 text-text-muted" /></button>
                       </div>
-                      <button onClick={handleLogout} className="w-full bg-white/80 border border-red-100 p-4 rounded-[24px] flex items-center justify-center gap-2 text-red-500 font-bold hover:bg-red-50 cursor-pointer"><LogOut className="w-5 h-5" /> Log Out</button>
+                      <button onClick={handleLogout} className="w-full bg-surface-elevated/80 glass-panel border border-red-100 p-4 rounded-[24px] flex items-center justify-center gap-2 text-red-500 font-bold hover:bg-red-50 cursor-pointer"><LogOut className="w-5 h-5" /> Log Out</button>
                 </div>
             )}
         </div>

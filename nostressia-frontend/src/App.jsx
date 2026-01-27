@@ -57,7 +57,7 @@ function App() {
         <Router />
       ) : (
         <div className="min-h-screen flex items-center justify-center px-6">
-          <div className="w-full max-w-sm text-center bg-surface-elevated dark:bg-surface p-6 rounded-2xl shadow-lg">
+          <div className="w-full max-w-sm text-center bg-surface-elevated glass-panel-strong p-6 rounded-2xl shadow-lg">
             <div className="mb-6 rounded-2xl border border-border dark:border-border bg-surface-muted dark:bg-surface-muted px-4 py-3 text-sm font-semibold text-text-secondary dark:text-text-secondary">
               Internal access required. Please enter the credentials to continue.
             </div>

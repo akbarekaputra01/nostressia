@@ -8,16 +8,16 @@ import Footer from "../../components/Footer";
 import { createDiary, getMyDiaries, updateDiary } from "../../services/diaryService";
 
 // --- COLOR CONFIGURATION ---
-const bgCream = "rgb(var(--bg-gradient-cream))";
-const bgPink = "rgb(var(--bg-gradient-pink))";
-const bgLavender = "rgb(var(--bg-gradient-lavender))";
+const bgSun = "rgb(var(--bg-gradient-sun))";
+const bgOrange = "rgb(var(--bg-gradient-orange))";
+const bgSky = "rgb(var(--bg-gradient-sky))";
 const colors = {
     brandBlue: "#0162F1",
     brandOrange: "#FF6700",
     brandBlueLight: "#00A4FF",
     textPrimary: "rgb(var(--text-primary))",
-    bgCream: "rgb(var(--bg-gradient-cream))",
-    bgLavender: "rgb(var(--bg-gradient-lavender))"
+    bgCream: "rgb(var(--bg-gradient-sun))",
+    bgLavender: "rgb(var(--bg-gradient-sky))"
 };
 
 export default function Diary() {
@@ -188,8 +188,8 @@ export default function Diary() {
     <div
       className="min-h-screen relative overflow-x-hidden flex flex-col font-sans transition-colors duration-500 custom-scrollbar"
       style={{
-        backgroundColor: bgCream,
-        backgroundImage: `radial-gradient(at 10% 10%, ${bgCream} 0%, transparent 50%), radial-gradient(at 90% 20%, ${bgPink} 0%, transparent 50%), radial-gradient(at 50% 80%, ${bgLavender} 0%, transparent 50%)`,
+        backgroundColor: bgSun,
+        backgroundImage: `radial-gradient(at 10% 10%, ${bgSun} 0%, transparent 50%), radial-gradient(at 90% 20%, ${bgOrange} 0%, transparent 50%), radial-gradient(at 50% 80%, ${bgSky} 0%, transparent 50%)`,
         backgroundSize: "200% 200%",
         animation: "gradient-bg 20s ease infinite",
         fontFamily: baseFont,
@@ -275,7 +275,7 @@ export default function Diary() {
                 Diary Nostressia
               </h1>
             </div>
-            <p className="text-gray-600 mt-2 text-base md:text-lg font-medium dark:text-slate-300">
+            <p className="text-text-secondary mt-2 text-base md:text-lg font-medium dark:text-text-muted">
               Write your story today.
             </p>
         </motion.div>
@@ -286,12 +286,12 @@ export default function Diary() {
                 
                 {/* HALAMAN MENULIS */}
                 <div
-                  className="absolute inset-0 w-full h-full rounded-[16px] md:rounded-l-[4px] md:rounded-r-[16px] shadow-xl z-0 flex flex-col overflow-hidden border border-slate-200 dark:border-slate-700"
+                  className="absolute inset-0 w-full h-full rounded-[16px] md:rounded-l-[4px] md:rounded-r-[16px] shadow-xl z-0 flex flex-col overflow-hidden border border-border dark:border-border"
                   style={{ backgroundColor: "rgb(var(--journal-paper))" }}
                 >
                     <div className="flex-grow p-5 md:p-8 flex flex-col relative z-10">
-                          <button onClick={handleCloseEditor} className="absolute top-3 right-3 z-30 w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all"><X size={20} /></button>
-                        <div className="flex items-center gap-2 mb-2 overflow-x-auto py-2 border-b border-slate-200 no-scrollbar">
+                          <button onClick={handleCloseEditor} className="absolute top-3 right-3 z-30 w-8 h-8 flex items-center justify-center rounded-full text-text-muted hover:text-red-500 hover:bg-red-50 transition-all"><X size={20} /></button>
+                        <div className="flex items-center gap-2 mb-2 overflow-x-auto py-2 border-b border-border no-scrollbar">
                             {moods.map((m) => (
                                 <button key={m.label} onClick={() => setSelectedMood(m.emoji)} className={`text-xl md:text-2xl hover:scale-110 transition-transform p-1 rounded-lg ${selectedMood === m.emoji ? "bg-blue-50 scale-110" : "opacity-60 grayscale"}`}>{m.emoji}</button>
                             ))}
@@ -301,8 +301,8 @@ export default function Diary() {
                             <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title..." className="bg-transparent text-lg md:text-2xl font-bold focus:outline-none w-full h-[40px] leading-[40px] relative z-10" style={{ fontFamily: selectedFont || baseFont, color: colors.brandBlue }} />
                             <textarea value={text} onChange={(e) => setText(e.target.value)} placeholder="Dear diary..." className="flex-grow bg-transparent resize-none focus:outline-none text-sm md:text-lg leading-[40px] custom-scrollbar w-full relative z-10" style={{ fontFamily: selectedFont || baseFont, color: "rgb(var(--journal-ink))" }} />
                         </div>
-                        <div className="mt-2 flex justify-between items-center pt-2 border-t border-slate-100">
-                             <div className="flex gap-1">{fontOptions.map(f => (<button key={f.name} onClick={() => setSelectedFont(f.value)} className={`w-6 h-6 rounded-full border text-[10px] flex items-center justify-center transition-all ${selectedFont === f.value ? "bg-slate-200 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-white dark:border-slate-700" : "bg-white text-slate-500 dark:bg-slate-900 dark:text-slate-200 dark:border-slate-700"}`}>{f.label}</button>))}</div>
+                        <div className="mt-2 flex justify-between items-center pt-2 border-t border-border-subtle">
+                             <div className="flex gap-1">{fontOptions.map(f => (<button key={f.name} onClick={() => setSelectedFont(f.value)} className={`w-6 h-6 rounded-full border text-[10px] flex items-center justify-center transition-all ${selectedFont === f.value ? "bg-surface-muted text-text-secondary border-border dark:bg-surface dark:text-white dark:border-border" : "bg-surface-elevated glass-panel text-text-muted dark:bg-surface dark:text-text-primary dark:border-border"}`}>{f.label}</button>))}</div>
                              
                              {/* TOMBOL SAVE DENGAN LOADING STATE */}
                              <button 
@@ -341,7 +341,7 @@ export default function Diary() {
 
                       {/* Konten Utama */}
                       <div 
-                        className={`z-10 text-center p-4 md:p-8 bg-black/10 backdrop-blur-sm rounded-xl border border-white/10 shadow-inner transition-all duration-700 ease-in-out ${
+                        className={`z-10 text-center p-4 md:p-8 bg-neutral-950/10 backdrop-blur-sm rounded-xl border border-white/10 shadow-inner transition-all duration-700 ease-in-out ${
                           isBookOpen 
                           ? 'opacity-0 invisible scale-95' 
                           : 'opacity-100 visible scale-100'
@@ -370,17 +370,17 @@ export default function Diary() {
                       </div>
                     </div>
                     <div
-                      className="absolute inset-0 w-full h-full rounded-l-[16px] rounded-r-[4px] shadow-inner border-r border-slate-200 dark:border-slate-700"
+                      className="absolute inset-0 w-full h-full rounded-l-[16px] rounded-r-[4px] shadow-inner border-r border-border dark:border-border"
                       style={{ transform: "rotateY(180deg)", backfaceVisibility: 'hidden', backgroundColor: "rgb(var(--journal-paper))" }}
                     >
                           <div className="w-full h-full flex flex-col items-center justify-center p-10 opacity-60">
-                            <div className="w-24 h-24 rounded-full bg-slate-200 dark:bg-slate-700 mb-4 flex items-center justify-center border-4 border-white dark:border-slate-800 shadow-sm overflow-hidden">
+                            <div className="w-24 h-24 rounded-full bg-surface-muted dark:bg-surface-muted mb-4 flex items-center justify-center border-4 border-white dark:border-border shadow-sm overflow-hidden">
                                 <img src={user?.avatar || `https://ui-avatars.com/api/?name=${user?.name || "User"}&background=${colors.brandOrange.replace('#','')}&color=fff`} alt="User" className="w-full h-full object-cover" />
                             </div>
-                            <h3 className="font-sans italic text-slate-500 text-base md:text-lg dark:text-slate-400">This diary belongs to:</h3>
-                            <h2 className="text-xl font-bold text-slate-700 mt-1 dark:text-slate-200">{user?.name || "User"}</h2>
-                            <div className="border-b-2 border-slate-300 dark:border-slate-600 w-full mt-2 mb-6"></div>
-                            <p className="text-center text-xs text-slate-400 leading-loose italic font-sans dark:text-slate-400">"Keep your face always toward the sunshine—and shadows will fall behind you."</p>
+                            <h3 className="font-sans italic text-text-muted text-base md:text-lg dark:text-text-muted">This diary belongs to:</h3>
+                            <h2 className="text-xl font-bold text-text-secondary mt-1 dark:text-text-primary">{user?.name || "User"}</h2>
+                            <div className="border-b-2 border-border dark:border-border w-full mt-2 mb-6"></div>
+                            <p className="text-center text-xs text-text-muted leading-loose italic font-sans dark:text-text-muted">"Keep your face always toward the sunshine—and shadows will fall behind you."</p>
                           </div>
                     </div>
                 </motion.div>
@@ -400,8 +400,8 @@ export default function Diary() {
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
                         <div className="flex items-center gap-2 mb-6">
                             <div className="h-8 w-1 rounded-full" style={{ backgroundColor: colors.brandOrange }}></div>
-                            <h3 className="font-bold text-lg md:text-xl dark:text-slate-100">Your Memories</h3>
-                            <span className="text-xs font-normal text-gray-400 ml-2 bg-white px-2 py-1 rounded-full shadow-sm dark:bg-slate-900 dark:text-slate-300">Synced</span>
+                            <h3 className="font-bold text-lg md:text-xl dark:text-text-primary">Your Memories</h3>
+                            <span className="text-xs font-normal text-text-muted ml-2 bg-surface-elevated glass-panel px-2 py-1 rounded-full shadow-sm dark:bg-surface dark:text-text-muted">Synced</span>
                         </div>
                         <div className="relative group">
                             <div ref={scrollRef} className="flex gap-4 md:gap-5 overflow-x-auto pb-8 pt-2 no-scrollbar snap-x snap-mandatory">
@@ -413,13 +413,13 @@ export default function Diary() {
                                             initial={{ opacity: 0, scale: 0.9, y: 20 }} 
                                             animate={{ opacity: 1, scale: 1, y: 0 }} 
                                             exit={{ opacity: 0, scale: 0.5 }} 
-                                            className="flex-shrink-0 snap-center group/card bg-white rounded-2xl shadow-sm border border-slate-100 cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all p-5 md:p-6 w-[85vw] sm:w-[320px] h-[220px] md:h-[240px] dark:bg-slate-900/80 dark:border-slate-700" 
+                                            className="flex-shrink-0 snap-center group/card bg-surface-elevated glass-panel rounded-2xl shadow-sm border border-border-subtle cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all p-5 md:p-6 w-[85vw] sm:w-[320px] h-[220px] md:h-[240px] dark:bg-surface/80 dark:border-border" 
                                             onClick={() => setSelectedEntry(entry)}
                                         >
                                             <div className="flex justify-between mb-3"><span className="text-2xl md:text-3xl">{entry.mood}</span></div>
-                                            <h4 className="font-bold text-base md:text-lg mb-1 truncate dark:text-slate-100" style={{ fontFamily: entry.font || baseFont }}>{entry.title}</h4>
+                                            <h4 className="font-bold text-base md:text-lg mb-1 truncate dark:text-text-primary" style={{ fontFamily: entry.font || baseFont }}>{entry.title}</h4>
                                             <p className="text-[10px] font-bold uppercase tracking-widest opacity-40 mb-3">{entry.date}</p>
-                                            <p className="text-slate-500 text-xs md:text-sm line-clamp-3 dark:text-slate-300" style={{ fontFamily: entry.font || baseFont }}>{entry.content}</p>
+                                            <p className="text-text-muted text-xs md:text-sm line-clamp-3 dark:text-text-muted" style={{ fontFamily: entry.font || baseFont }}>{entry.content}</p>
                                             <div className="mt-2 text-right"><span className="text-xs font-semibold text-blue-400">Read more →</span></div>
                                         </motion.div>
                                     ))}
@@ -428,9 +428,9 @@ export default function Diary() {
                         </div>
                     </motion.div>
                 ) : ( 
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center py-12 md:py-16 opacity-50 border-2 border-dashed border-slate-200 rounded-3xl w-full dark:border-slate-700">
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center py-12 md:py-16 opacity-50 border-2 border-dashed border-border rounded-3xl w-full dark:border-border">
                         <span className="text-3xl md:text-4xl mb-2">📝</span>
-                        <p className="text-xs md:text-sm font-bold uppercase tracking-widest text-slate-400">No stories recorded yet</p>
+                        <p className="text-xs md:text-sm font-bold uppercase tracking-widest text-text-muted">No stories recorded yet</p>
                     </motion.div> 
                 )
              )}
@@ -441,13 +441,13 @@ export default function Diary() {
       <AnimatePresence>
         {selectedEntry && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSelectedEntry(null)} className="absolute inset-0 bg-slate-200/60 dark:bg-slate-900/60 backdrop-blur-sm" />
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSelectedEntry(null)} className="absolute inset-0 bg-surface-muted/60 dark:bg-surface/60 backdrop-blur-sm" />
             
             <motion.div initial={{ opacity: 0, scale: 0.9, y: 30 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 30 }} 
                 className="relative w-full max-w-4xl h-full max-h-[85vh] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col p-2"
                 style={{ backgroundColor: "rgb(var(--surface-muted))" }}
             >
-              <div className="relative flex-grow rounded-xl overflow-hidden flex shadow-inner border border-slate-300 dark:border-slate-700" style={{ backgroundColor: "rgb(var(--journal-paper-muted))" }}>
+              <div className="relative flex-grow rounded-xl overflow-hidden flex shadow-inner border border-border dark:border-border" style={{ backgroundColor: "rgb(var(--journal-paper-muted))" }}>
                 <div className="spiral-spine">
                   {[...Array(14)].map((_, i) => (
                     <div key={i} className="spiral-ring"><div className="spiral-hole"></div></div>
@@ -456,7 +456,7 @@ export default function Diary() {
                 <div className="flex-grow notebook-lines pl-16 pr-8 md:pl-24 md:pr-12 overflow-y-auto custom-scrollbar pt-[32px]">
                   <div className="pb-16">
                     <div className="flex items-start gap-6 mb-0">
-                        <div className="w-16 h-[64px] bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 flex items-center justify-center text-4xl shrink-0">
+                        <div className="w-16 h-[64px] bg-surface-elevated glass-panel dark:bg-surface rounded-xl shadow-sm border border-border dark:border-border flex items-center justify-center text-4xl shrink-0">
                           {selectedEntry.mood}
                         </div>
                         <div className="flex flex-col justify-end h-[64px]">
@@ -464,7 +464,7 @@ export default function Diary() {
                              <Calendar size={14} />
                              <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest">{selectedEntry.date}</span>
                           </div>
-                          <h2 className="text-lg md:text-3xl font-extrabold text-slate-800 dark:text-slate-100 leading-[32px] h-[32px] truncate" 
+                          <h2 className="text-lg md:text-3xl font-extrabold text-text-primary dark:text-text-primary leading-[32px] h-[32px] truncate" 
                               style={{ fontFamily: selectedEntry.font || baseFont }}>
                               {selectedEntry.title}
                           </h2>
@@ -476,7 +476,7 @@ export default function Diary() {
                   </div>
                 </div>
               </div>
-              <div className="px-6 py-4 flex justify-end items-center gap-3 bg-white/50 dark:bg-slate-900/60">
+              <div className="px-6 py-4 flex justify-end items-center gap-3 bg-surface-elevated/50 glass-panel dark:bg-surface/60">
                  <button onClick={() => handleEditEntry(selectedEntry)} className="px-6 py-2 bg-orange-500 text-white rounded-lg font-bold text-sm shadow-md hover:bg-orange-600 transition-all active:scale-95">
                    Edit Entry
                  </button>
@@ -497,13 +497,13 @@ export default function Diary() {
                     initial={{ opacity: 0, scale: 0.8, y: 20 }} 
                     animate={{ opacity: 1, scale: 1, y: 0 }} 
                     exit={{ opacity: 0, scale: 0.8, y: -20 }}
-                    className="bg-white/90 backdrop-blur-md border border-white/50 shadow-2xl rounded-2xl px-8 py-6 flex flex-col items-center gap-3 pointer-events-auto dark:bg-slate-900/90 dark:border-slate-700"
+                    className="bg-surface-elevated/90 backdrop-blur-md border border-white/50 shadow-2xl rounded-2xl px-8 py-6 flex flex-col items-center gap-3 pointer-events-auto dark:bg-surface/90 dark:border-border"
                 >
                     <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center text-green-600 mb-1 dark:bg-emerald-900/40 dark:text-emerald-300">
                         <CheckCircle size={32} strokeWidth={3} />
                     </div>
-                    <h3 className="text-xl font-bold text-gray-800 dark:text-slate-100">Diary Saved!</h3>
-                    <p className="text-gray-500 dark:text-slate-300 text-sm">Your memory has been safely recorded.</p>
+                    <h3 className="text-xl font-bold text-text-primary dark:text-text-primary">Diary Saved!</h3>
+                    <p className="text-text-muted dark:text-text-muted text-sm">Your memory has been safely recorded.</p>
                 </motion.div>
             </div>
         )}

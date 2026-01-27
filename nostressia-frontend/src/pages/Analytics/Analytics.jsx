@@ -16,9 +16,9 @@ import { getAnalyticsSummary } from "../../services/analyticsService";
 import { getMyStressLogs } from "../../services/stressService";
 
 // --- BACKGROUND CONFIGURATION (SAME AS DASHBOARD) ---
-const bgCream = "rgb(var(--bg-gradient-cream))";
-const bgPink = "rgb(var(--bg-gradient-pink))";
-const bgLavender = "rgb(var(--bg-gradient-lavender))";
+const bgSun = "rgb(var(--bg-gradient-sun))";
+const bgOrange = "rgb(var(--bg-gradient-orange))";
+const bgSky = "rgb(var(--bg-gradient-sky))";
 const moodEmojis = ["😢", "😕", "😐", "😊", "😄"];
 const stressLabels = ["Low", "Moderate", "High"];
 
@@ -214,9 +214,9 @@ const renderMoodTooltip =
     const hasValue = Number.isFinite(value) && value > 0;
 
     return (
-      <div className="rounded-xl border border-gray-200 bg-white/90 px-3 py-2 text-sm shadow-lg dark:border-slate-700 dark:bg-slate-900/90">
-        <div className="font-semibold text-gray-700 dark:text-slate-100">{label}</div>
-        <div className="mt-1 text-gray-600 dark:text-slate-300">
+      <div className="rounded-xl border border-border bg-surface-elevated/90 px-3 py-2 text-sm shadow-lg dark:border-border dark:bg-surface/90">
+        <div className="font-semibold text-text-secondary dark:text-text-primary">{label}</div>
+        <div className="mt-1 text-text-secondary dark:text-text-muted">
           {hasValue
             ? `Mood: ${moodTooltipValue(value)}`
             : "No data available at this point."}
@@ -235,9 +235,9 @@ const renderStressTooltip =
     const hasValue = Number.isFinite(value) && value > 0;
 
     return (
-      <div className="rounded-xl border border-gray-200 bg-white/90 px-3 py-2 text-sm shadow-lg dark:border-slate-700 dark:bg-slate-900/90">
-        <div className="font-semibold text-gray-700 dark:text-slate-100">{label}</div>
-        <div className="mt-1 text-gray-600 dark:text-slate-300">
+      <div className="rounded-xl border border-border bg-surface-elevated/90 px-3 py-2 text-sm shadow-lg dark:border-border dark:bg-surface/90">
+        <div className="font-semibold text-text-secondary dark:text-text-primary">{label}</div>
+        <div className="mt-1 text-text-secondary dark:text-text-muted">
           {hasValue
             ? `Stress: ${getStressLabel(value)}`
             : "No data available at this point."}
@@ -324,8 +324,8 @@ export default function Analytics() {
     <div
       className="min-h-screen relative flex flex-col"
       style={{
-        backgroundColor: bgCream,
-        backgroundImage: `radial-gradient(at 10% 10%, ${bgCream} 0%, transparent 50%), radial-gradient(at 90% 20%, ${bgPink} 0%, transparent 50%), radial-gradient(at 50% 80%, ${bgLavender} 0%, transparent 50%)`,
+    backgroundColor: bgSun,
+    backgroundImage: `radial-gradient(at 10% 10%, ${bgSun} 0%, transparent 50%), radial-gradient(at 90% 20%, ${bgOrange} 0%, transparent 50%), radial-gradient(at 50% 80%, ${bgSky} 0%, transparent 50%)`,
         backgroundSize: "200% 200%",
         animation: "gradient-bg 20s ease infinite",
       }}
@@ -617,7 +617,7 @@ export default function Analytics() {
                   >
                     <div className={`absolute inset-0 bg-gradient-to-br ${item.gradient}`} />
                     <div className="relative z-10 flex flex-col gap-3">
-                      <div className={`w-10 h-10 rounded-xl bg-surface-elevated/80 flex items-center justify-center ${item.accent}`}>
+                      <div className={`w-10 h-10 rounded-xl bg-surface-elevated/80 glass-panel flex items-center justify-center ${item.accent}`}>
                         <Icon className="w-5 h-5" />
                       </div>
                       <div>
