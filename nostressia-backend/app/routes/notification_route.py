@@ -12,6 +12,10 @@ from app.schemas.response_schema import APIResponse
 from app.utils.jwt_handler import get_current_user
 from app.utils.response import success_response
 
+# ✅ TAMBAHAN: push sender
+from app.services.push_notification_service import WebPushException, send_push
+from app.core.config import settings
+
 router = APIRouter(prefix="/notifications", tags=["Notifications"])
 
 
@@ -134,3 +138,64 @@ def notification_status(
         timezone=active_subscription.timezone if active_subscription else None,
     )
     return success_response(data=response, message="Status notifikasi")
+
+
+@router.post(
+    "/test-send",
+    status_code=status.HTTP_200_OK,
+    response_model=APIResponse[dict],
+)
+def test_send_notification(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Endpoint test untuk memastikan:
+    - subscription tersimpan di DB
+    - VAPID private key terisi
+    - pywebpush bisa ngirim
+    - service worker bisa nampilin notifikasi
+    """
+    if not settings.vapid_private_key:
+        raise HTTPException(
+            status_code=500,
+            detail="VAPID_PRIVATE_KEY belum diisi di environment backend.",
+        )
+
+    subscription = (
+        db.query(PushSubscription)
+        .filter(
+            PushSubscription.user_id == current_user.user_id,
+            PushSubscription.is_active.is_(True),
+        )
+        .order_by(PushSubscription.created_at.desc())
+        .first()
+    )
+
+    if not subscription:
+        raise HTTPException(
+            status_code=404,
+            detail="Tidak ada push subscription aktif untuk user ini. Pastikan sudah subscribe dari frontend.",
+        )
+
+    payload = {
+        "title": "Nostressia Push Test",
+        "body": "Kalau kamu lihat ini, berarti backend berhasil kirim web push ✅",
+        "url": "/",
+    }
+
+    try:
+        send_push(subscription, payload)
+    except WebPushException as exc:
+        status_code = exc.response.status_code if exc.response else None
+        raise HTTPException(
+            status_code=500,
+            detail=f"Gagal kirim push. status={status_code}, error={str(exc)}",
+        ) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Push error: {str(exc)}") from exc
+
+    return success_response(
+        data={"sent": True},
+        message="Push test terkirim (cek notifikasi device/browser).",
+    )
