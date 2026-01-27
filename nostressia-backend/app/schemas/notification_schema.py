@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic import BaseModel, Field
 
 
@@ -19,5 +21,5 @@ class NotificationSubscribeRequest(BaseModel):
 
 class NotificationStatusResponse(BaseModel):
     dailyReminder: bool
-    reminderTime: str | None = None
-    timezone: str | None = None
+    reminderTime: Optional[str] = None
+    timezone: Optional[str] = None
