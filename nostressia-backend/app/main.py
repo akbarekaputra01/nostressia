@@ -13,6 +13,10 @@ from app.api.api_router import api_router
 from app.core.config import settings
 from app.core.database import Base, engine
 from app.models import register_models
+from app.services.notification_scheduler import (
+    start_notification_scheduler,
+    stop_notification_scheduler,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -77,6 +81,12 @@ def create_app() -> FastAPI:
         except SQLAlchemyError as exc:
             logger.exception("Startup check failed due to database error.")
             raise RuntimeError("Startup check failed due to database error.") from exc
+
+        app.state.notification_scheduler = start_notification_scheduler()
+
+    @app.on_event("shutdown")
+    def on_shutdown() -> None:
+        stop_notification_scheduler(getattr(app.state, "notification_scheduler", None))
 
     app.include_router(api_router, prefix=settings.api_prefix)
 

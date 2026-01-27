@@ -4,7 +4,7 @@ import { Outlet, useNavigate } from "react-router-dom";
 import { getProfile } from "../services/authService";
 import { getStressEligibility } from "../services/stressService";
 import { readAuthToken } from "../utils/auth";
-import { restoreScheduledReminder } from "../utils/notificationService";
+import { restoreDailyReminderSubscription } from "../utils/notificationService";
 
 const resolveStreakCount = (payload) => {
   const candidates = [
@@ -80,7 +80,7 @@ export default function MainLayout() {
 
   useEffect(() => {
     fetchUserData();
-    restoreScheduledReminder();
+    restoreDailyReminderSubscription();
 
     const handleRefresh = () => {
       fetchUserData();

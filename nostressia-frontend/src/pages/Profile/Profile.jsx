@@ -19,10 +19,10 @@ import {
   validateProfilePictureFile,
 } from "../../api/profilePicture";
 import {
-  clearScheduledReminder,
   getSavedNotificationSettings,
   saveNotificationSettings,
-  scheduleDailyReminder,
+  subscribeDailyReminder,
+  unsubscribeDailyReminder,
 } from "../../utils/notificationService";
 import { useTheme } from "../../theme/ThemeProvider";
 import { getMyStressLogs } from "../../services/stressService";
@@ -654,12 +654,11 @@ export default function Profile() {
         return;
       }
       try {
-        const result = await scheduleDailyReminder(notifSettings.reminderTime);
+        const result = await subscribeDailyReminder(notifSettings.reminderTime);
         if (!result.ok) {
           const disabledSettings = { ...notifSettings, dailyReminder: false };
           setNotifSettings(disabledSettings);
           saveNotificationSettings(disabledSettings);
-          await clearScheduledReminder();
           showNotification(
             result.message || "Failed to schedule reminders.",
             "error"
@@ -673,7 +672,7 @@ export default function Profile() {
       return;
     }
 
-    await clearScheduledReminder();
+    await unsubscribeDailyReminder();
     showNotification("Notification preferences saved!", "success");
   };
 
@@ -682,12 +681,11 @@ export default function Profile() {
     setPermissionStatus(null);
     try {
       saveNotificationSettings(notifSettings);
-      const result = await scheduleDailyReminder(notifSettings.reminderTime);
+      const result = await subscribeDailyReminder(notifSettings.reminderTime);
       if (!result.ok) {
         const disabledSettings = { ...notifSettings, dailyReminder: false };
         setNotifSettings(disabledSettings);
         saveNotificationSettings(disabledSettings);
-        await clearScheduledReminder();
         if (result.reason === "denied") {
           setPermissionStatus("denied");
           setShowPermissionPrompt(true);
@@ -710,7 +708,7 @@ export default function Profile() {
     const disabledSettings = { ...notifSettings, dailyReminder: false };
     setNotifSettings(disabledSettings);
     saveNotificationSettings(disabledSettings);
-    await clearScheduledReminder();
+    await unsubscribeDailyReminder();
     showNotification(
       "Notification permission is required to enable reminders.",
       "info"
@@ -882,18 +880,23 @@ export default function Profile() {
                 </label>
               </div>
               {notifSettings.dailyReminder && (
-                <div className="bg-gray-50 dark:bg-slate-800 p-4 rounded-xl flex items-center justify-between border border-gray-100 dark:border-slate-700">
-                  <div className="flex items-center gap-2 text-gray-600 dark:text-slate-300">
-                    <Clock className="w-4 h-4" />
-                    <span className="text-sm font-semibold">Time</span>
+                <div className="space-y-3">
+                  <div className="bg-gray-50 dark:bg-slate-800 p-4 rounded-xl flex items-center justify-between border border-gray-100 dark:border-slate-700">
+                    <div className="flex items-center gap-2 text-gray-600 dark:text-slate-300">
+                      <Clock className="w-4 h-4" />
+                      <span className="text-sm font-semibold">Time</span>
+                    </div>
+                    <input
+                      type="time"
+                      name="reminderTime"
+                      value={notifSettings.reminderTime}
+                      onChange={handleNotifChange}
+                      className="bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-slate-100 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2"
+                    />
                   </div>
-                  <input
-                    type="time"
-                    name="reminderTime"
-                    value={notifSettings.reminderTime}
-                    onChange={handleNotifChange}
-                    className="bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-slate-100 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2"
-                  />
+                  <p className="text-[11px] text-gray-500 dark:text-slate-400">
+                    Scheduled reminder menggunakan push (jika device/browser mendukung).
+                  </p>
                 </div>
               )}
               <div className="h-px bg-gray-100 dark:bg-slate-700"></div>
