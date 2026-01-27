@@ -1,7 +1,10 @@
+# nostressia-backend/app/routes/notification_route.py
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.core.config import settings
 from app.models.push_subscription_model import PushSubscription
 from app.models.user_model import User
 from app.schemas.notification_schema import (
@@ -12,9 +15,14 @@ from app.schemas.response_schema import APIResponse
 from app.utils.jwt_handler import get_current_user
 from app.utils.response import success_response
 
-# ✅ TAMBAHAN: push sender
+# push sender (buat test-send)
 from app.services.push_notification_service import WebPushException, send_push
-from app.core.config import settings
+
+# ✅ scheduler: pasang/remove job cron
+from app.services.notification_scheduler import (
+    upsert_daily_reminder_job,
+    remove_daily_reminder_job,
+)
 
 router = APIRouter(prefix="/notifications", tags=["Notifications"])
 
@@ -68,6 +76,16 @@ def subscribe_notification(
         existing.timezone = payload.timezone
         existing.is_active = True
         db.add(existing)
+        db.commit()
+        db.refresh(existing)
+
+        # ✅ pasang job cron (tepat detik 00) untuk subscription ini
+        upsert_daily_reminder_job(
+            subscription_id=existing.subscription_id,
+            reminder_time=reminder_time,
+            timezone=payload.timezone,
+        )
+
     else:
         new_subscription = PushSubscription(
             user_id=current_user.user_id,
@@ -79,8 +97,15 @@ def subscribe_notification(
             is_active=True,
         )
         db.add(new_subscription)
+        db.commit()
+        db.refresh(new_subscription)
 
-    db.commit()
+        # ✅ pasang job cron (tepat detik 00) untuk subscription ini
+        upsert_daily_reminder_job(
+            subscription_id=new_subscription.subscription_id,
+            reminder_time=reminder_time,
+            timezone=payload.timezone,
+        )
 
     response = NotificationStatusResponse(
         dailyReminder=True,
@@ -99,6 +124,21 @@ def unsubscribe_notification(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    # ✅ ambil semua subscription aktif user ini dulu (buat remove job)
+    active_subs = (
+        db.query(PushSubscription)
+        .filter(
+            PushSubscription.user_id == current_user.user_id,
+            PushSubscription.is_active.is_(True),
+        )
+        .all()
+    )
+
+    # ✅ remove job scheduler untuk semua subscription aktif
+    for sub in active_subs:
+        remove_daily_reminder_job(sub.subscription_id)
+
+    # ✅ matikan di DB
     db.query(PushSubscription).filter(
         PushSubscription.user_id == current_user.user_id,
         PushSubscription.is_active.is_(True),

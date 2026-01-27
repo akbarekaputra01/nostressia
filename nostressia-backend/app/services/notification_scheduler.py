@@ -1,20 +1,23 @@
 # nostressia-backend/app/services/notification_scheduler.py
 
 import logging
-from datetime import datetime, time
+from datetime import datetime, date
 from typing import Optional
 
 import pytz
 from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.cron import CronTrigger
 
-from app.core.config import settings
 from app.core.database import SessionLocal
 from app.models.push_subscription_model import PushSubscription
 from app.services.push_notification_service import WebPushException, send_push
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_TIMEZONE = "Asia/Jakarta"
+DEFAULT_TZ = "Asia/Jakarta"
+
+# scheduler global biar bisa dipanggil dari route
+_scheduler: Optional[BackgroundScheduler] = None
 
 
 def _build_payload() -> dict:
@@ -25,157 +28,198 @@ def _build_payload() -> dict:
     }
 
 
-def _parse_hhmm(value: str) -> time:
+def _normalize_tz(tz_name: str) -> str:
+    if not tz_name:
+        return DEFAULT_TZ
+    try:
+        pytz.timezone(tz_name)
+        return tz_name
+    except pytz.UnknownTimeZoneError:
+        return DEFAULT_TZ
+
+
+def _parse_hhmm(reminder_time: str) -> tuple[int, int]:
+    # reminder_time sudah distandarkan "HH:mm" dari route
+    h, m = reminder_time.split(":")
+    return int(h), int(m)
+
+
+def _job_id_for_subscription(subscription_id: int) -> str:
+    return f"daily-reminder-sub-{subscription_id}"
+
+
+def _send_daily_reminder(subscription_id: int) -> None:
     """
-    Konversi 'HH:mm' -> datetime.time
-    Aman karena reminder_time kamu sudah dinormalisasi di endpoint subscribe.
+    Ini yang dipanggil APScheduler tepat di detik 00.
     """
-    hours, minutes = value.split(":")
-    return time(int(hours), int(minutes))
-
-
-def _should_send(subscription: PushSubscription, now: datetime) -> bool:
-    """
-    Rule kirim yang lebih 'pas' tanpa harus exact tick di menit yang sama:
-    - Jangan kirim kalau sudah terkirim hari ini (dedupe)
-    - Kirim kalau waktu sekarang sudah melewati jam target user
-    """
-    if subscription.last_sent_date == now.date():
-        return False
-
-    target = _parse_hhmm(subscription.reminder_time)
-    target_dt = now.replace(
-        hour=target.hour,
-        minute=target.minute,
-        second=0,
-        microsecond=0,
-    )
-
-    # Kalau scheduler tick telat (misalnya 13:02:10) tetap kirim untuk target 13:02
-    return now >= target_dt
-
-
-def process_daily_reminders() -> None:
-    # NOTE:
-    # HF Space kadang tidak menampilkan logger.info. Jadi pakai print + flush.
-    print("⏰ [scheduler] tick process_daily_reminders()", flush=True)
-    logger.info("Scheduler tick: process_daily_reminders running")
-
-    if not settings.vapid_private_key:
-        print("⚠️ [scheduler] VAPID_PRIVATE_KEY kosong. Skip.", flush=True)
-        logger.warning("VAPID private key belum diisi, scheduler notifikasi dilewati.")
-        return
-
     db = SessionLocal()
     try:
-        subscriptions = (
+        sub = (
             db.query(PushSubscription)
-            .filter(PushSubscription.is_active.is_(True))
-            .all()
+            .filter(
+                PushSubscription.subscription_id == subscription_id,
+                PushSubscription.is_active.is_(True),
+            )
+            .first()
         )
-
-        print(f"📌 [scheduler] active_subscriptions={len(subscriptions)}", flush=True)
-
-        if not subscriptions:
+        if not sub:
+            print(f"ℹ️ [scheduler] subscription_id={subscription_id} inactive/not found", flush=True)
             return
 
-        for subscription in subscriptions:
-            timezone_name = subscription.timezone or DEFAULT_TIMEZONE
-            try:
-                timezone = pytz.timezone(timezone_name)
-            except pytz.UnknownTimeZoneError:
-                timezone = pytz.timezone(DEFAULT_TIMEZONE)
-                timezone_name = DEFAULT_TIMEZONE
+        tz_name = _normalize_tz(sub.timezone or DEFAULT_TZ)
+        tz = pytz.timezone(tz_name)
+        now = datetime.now(tz)
 
-            now = datetime.now(timezone)
-
-            # Debug penting biar kamu lihat scheduler jalan dan apa yang dibandingkan
+        # dedupe: jangan double-send dalam tanggal yang sama
+        if sub.last_sent_date == now.date():
             print(
-                f"🕒 [scheduler] user_id={subscription.user_id} tz={timezone_name} "
-                f"now={now.strftime('%H:%M:%S')} db_time={subscription.reminder_time} "
-                f"last_sent={subscription.last_sent_date}",
+                f"⏭️ [scheduler] skip already sent today sub_id={sub.subscription_id} date={sub.last_sent_date}",
                 flush=True,
             )
+            return
 
-            if not _should_send(subscription, now):
-                continue
+        print(
+            f"🚀 [scheduler] sending sub_id={sub.subscription_id} user_id={sub.user_id} now={now.strftime('%H:%M:%S')} tz={tz_name}",
+            flush=True,
+        )
 
+        send_push(sub, _build_payload())
+
+        sub.last_sent_date = now.date()
+        db.add(sub)
+        db.commit()
+
+        print(
+            f"✅ [scheduler] sent OK sub_id={sub.subscription_id} user_id={sub.user_id}",
+            flush=True,
+        )
+
+    except WebPushException as exc:
+        status_code = exc.response.status_code if exc.response else None
+        print(
+            f"❌ [scheduler] WebPushException sub_id={subscription_id} status={status_code} err={exc}",
+            flush=True,
+        )
+        # expired subscription -> matiin
+        if status_code in {404, 410}:
             try:
-                print(
-                    f"🚀 [scheduler] sending push to user_id={subscription.user_id}",
-                    flush=True,
+                sub = (
+                    db.query(PushSubscription)
+                    .filter(PushSubscription.subscription_id == subscription_id)
+                    .first()
                 )
-
-                send_push(subscription, _build_payload())
-
-                # dedupe per hari
-                subscription.last_sent_date = now.date()
-                db.add(subscription)
-                db.commit()
-
-                print(
-                    f"✅ [scheduler] push sent ok user_id={subscription.user_id}",
-                    flush=True,
-                )
-
-            except WebPushException as exc:
-                status_code = exc.response.status_code if exc.response else None
-                print(
-                    f"❌ [scheduler] WebPushException status={status_code} err={exc}",
-                    flush=True,
-                )
-
-                # Kalau subscription sudah expired/hilang, matikan
-                if status_code in {404, 410}:
-                    subscription.is_active = False
-                    db.add(subscription)
+                if sub:
+                    sub.is_active = False
+                    db.add(sub)
                     db.commit()
-                    print(
-                        f"🧹 [scheduler] deactivated expired subscription user_id={subscription.user_id}",
-                        flush=True,
-                    )
+                    print(f"🧹 [scheduler] deactivated expired sub_id={subscription_id}", flush=True)
+            except Exception:
+                logger.exception("Failed to deactivate expired subscription.")
+        logger.warning("Push gagal sub_id=%s: %s", subscription_id, exc)
 
-                logger.warning("Push gagal untuk %s: %s", subscription.endpoint, exc)
-
-            except Exception as exc:
-                # Jangan biarkan error bikin job mati diam-diam
-                print(f"💥 [scheduler] unexpected error: {exc}", flush=True)
-                logger.exception("Push scheduler gagal: %s", exc)
+    except Exception as exc:
+        print(f"💥 [scheduler] unexpected error sub_id={subscription_id}: {exc}", flush=True)
+        logger.exception("Scheduler job error: %s", exc)
 
     finally:
         db.close()
 
 
-def start_notification_scheduler() -> BackgroundScheduler:
-    # Pastikan log muncul saat scheduler mulai
-    print("✅ [scheduler] starting BackgroundScheduler...", flush=True)
+def _ensure_scheduler_started() -> BackgroundScheduler:
+    global _scheduler
+    if _scheduler and _scheduler.running:
+        return _scheduler
 
-    scheduler = BackgroundScheduler(timezone=DEFAULT_TIMEZONE)
+    print("✅ [scheduler] starting BackgroundScheduler (cron mode)...", flush=True)
+    _scheduler = BackgroundScheduler(timezone=DEFAULT_TZ)
+    _scheduler.start()
+    return _scheduler
+
+
+def upsert_daily_reminder_job(subscription_id: int, reminder_time: str, timezone: str) -> None:
+    """
+    Buat/update job agar jalan tepat di HH:mm:00 sesuai timezone.
+    """
+    scheduler = _ensure_scheduler_started()
+
+    tz_name = _normalize_tz(timezone or DEFAULT_TZ)
+    hour, minute = _parse_hhmm(reminder_time)
+
+    # CronTrigger => exact di detik 00
+    trigger = CronTrigger(hour=hour, minute=minute, second=0, timezone=pytz.timezone(tz_name))
+
+    job_id = _job_id_for_subscription(subscription_id)
+
     scheduler.add_job(
-        process_daily_reminders,
-        "interval",
-        minutes=1,
-        id="daily-reminder",
+        _send_daily_reminder,
+        trigger=trigger,
+        args=[subscription_id],
+        id=job_id,
         replace_existing=True,
         max_instances=1,
         coalesce=True,
         misfire_grace_time=30,
     )
 
-    scheduler.start()
-    print("✅ [scheduler] BackgroundScheduler started.", flush=True)
-    logger.info("Scheduler notifikasi harian dimulai.")
+    print(
+        f"🧩 [scheduler] upsert job_id={job_id} time={reminder_time}:00 tz={tz_name}",
+        flush=True,
+    )
+
+
+def remove_daily_reminder_job(subscription_id: int) -> None:
+    scheduler = _ensure_scheduler_started()
+    job_id = _job_id_for_subscription(subscription_id)
+    try:
+        scheduler.remove_job(job_id)
+        print(f"🧹 [scheduler] removed job_id={job_id}", flush=True)
+    except Exception:
+        # kalau job belum ada, aman
+        pass
+
+
+def load_jobs_from_db() -> None:
+    """
+    Saat startup, ambil semua subscription aktif lalu pasang job cron-nya.
+    Ini penting karena HF restart = scheduler kosong.
+    """
+    scheduler = _ensure_scheduler_started()
+
+    db = SessionLocal()
+    try:
+        subs = db.query(PushSubscription).filter(PushSubscription.is_active.is_(True)).all()
+        print(f"📌 [scheduler] loading active subs={len(subs)}", flush=True)
+
+        for sub in subs:
+            try:
+                upsert_daily_reminder_job(
+                    subscription_id=sub.subscription_id,
+                    reminder_time=sub.reminder_time,
+                    timezone=sub.timezone or DEFAULT_TZ,
+                )
+            except Exception as exc:
+                print(f"⚠️ [scheduler] failed load job sub_id={sub.subscription_id}: {exc}", flush=True)
+
+    finally:
+        db.close()
+
+
+def start_notification_scheduler() -> BackgroundScheduler:
+    """
+    Dipanggil dari app startup.
+    """
+    scheduler = _ensure_scheduler_started()
+    load_jobs_from_db()
+    print("✅ [scheduler] cron jobs ready.", flush=True)
     return scheduler
 
 
 def stop_notification_scheduler(scheduler: Optional[BackgroundScheduler]) -> None:
-    if not scheduler:
-        return
-
-    try:
-        scheduler.shutdown(wait=False)
-        print("🛑 [scheduler] BackgroundScheduler stopped.", flush=True)
-        logger.info("Scheduler notifikasi harian dihentikan.")
-    except Exception as exc:
-        print(f"⚠️ [scheduler] error while stopping scheduler: {exc}", flush=True)
-        logger.exception("Error stopping scheduler: %s", exc)
+    global _scheduler
+    if scheduler:
+        try:
+            scheduler.shutdown(wait=False)
+        except Exception:
+            pass
+    _scheduler = None
+    print("🛑 [scheduler] stopped.", flush=True)
