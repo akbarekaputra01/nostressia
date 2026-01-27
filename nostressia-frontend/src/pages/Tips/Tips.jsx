@@ -10,17 +10,17 @@ import Footer from "../../components/Footer";
 import { getTipCategories, getTipsByCategory } from "../../services/tipsService";
 
 // --- COLOR CONFIGURATION ---
-const bgCream = "rgb(var(--bg-gradient-cream))";
-const bgPink = "rgb(var(--bg-gradient-pink))";
-const bgLavender = "rgb(var(--bg-gradient-lavender))";
+const bgSun = "rgb(var(--bg-gradient-sun))";
+const bgOrange = "rgb(var(--bg-gradient-orange))";
+const bgSky = "rgb(var(--bg-gradient-sky))";
 
 const bgStyle = {
   minHeight: "100vh",
-  backgroundColor: bgCream,
+  backgroundColor: bgSun,
   backgroundImage: `
-    radial-gradient(at 10% 10%, ${bgCream} 0%, transparent 50%), 
-    radial-gradient(at 90% 20%, ${bgPink} 0%, transparent 50%), 
-    radial-gradient(at 50% 80%, ${bgLavender} 0%, transparent 50%)
+    radial-gradient(at 10% 10%, ${bgSun} 0%, transparent 50%), 
+    radial-gradient(at 90% 20%, ${bgOrange} 0%, transparent 50%), 
+    radial-gradient(at 50% 80%, ${bgSky} 0%, transparent 50%)
   `,
   backgroundSize: "200% 200%",
   animation: "gradient-bg 20s ease infinite",
@@ -130,7 +130,7 @@ export default function Tips() {
           id: id,
           name: item.categoryName || item.name || "",
           emoji: preset?.emoji || "💡",
-          colorClass: preset?.colorClass || "from-gray-50 to-gray-100 text-gray-600 border-gray-200",
+          colorClass: preset?.colorClass || "from-gray-50 to-gray-100 text-text-secondary border-border",
           tipsCount: tipsData.length,
           tips: tipsData.map(t => t.detail)
         };
@@ -231,7 +231,7 @@ export default function Tips() {
                     placeholder="Find topics..." 
                     value={searchQuery} 
                     onChange={(e) => setSearchQuery(e.target.value)} 
-                    className="w-full pl-11 pr-4 py-3 bg-surface-elevated text-text-secondary dark:bg-surface/80 dark:text-text-primary backdrop-blur-md rounded-xl shadow-sm border border-border dark:border-border focus:bg-surface-elevated dark:focus:bg-surface outline-none font-medium text-base transition-all"
+                    className="w-full pl-11 pr-4 py-3 bg-surface-elevated glass-panel text-text-secondary dark:bg-surface/80 dark:text-text-primary backdrop-blur-md rounded-xl shadow-sm border border-border dark:border-border focus:bg-surface-elevated glass-panel dark:focus:bg-surface outline-none font-medium text-base transition-all"
                   />
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none z-10">
                     <svg width="18" height="18" fill="currentColor" viewBox="0 0 256 256"><path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z" /></svg>
@@ -268,7 +268,7 @@ export default function Tips() {
 
               <Motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredCategories.length === 0 ? (
-                  <div className="col-span-full rounded-2xl border border-white/80 dark:border-slate-700 bg-white/70 dark:bg-slate-900/70 p-6 text-center text-gray-500 dark:text-slate-300">
+                  <div className="col-span-full rounded-2xl border border-white/80 dark:border-border bg-surface-elevated/70 glass-panel dark:bg-surface/70 p-6 text-center text-text-muted dark:text-text-muted">
                     No tips available yet.
                   </div>
                 ) : (
@@ -278,17 +278,17 @@ export default function Tips() {
                       layoutId={`cat-${cat.id}`} 
                       onClick={() => openCategory(cat)} 
                       whileHover={{ y: -5, scale: 1.02 }}
-                      className={`group relative p-8 rounded-[32px] cursor-pointer bg-white dark:bg-slate-900/80 backdrop-blur-sm border border-gray-200 dark:border-slate-700 shadow-sm hover:shadow-md hover:bg-white dark:hover:bg-slate-900 transition-all h-56 overflow-hidden ${cat.colorClass.split(" ").pop()}`}
+                      className={`group relative p-8 rounded-[32px] cursor-pointer bg-surface-elevated glass-panel dark:bg-surface/80 backdrop-blur-sm border border-border dark:border-border shadow-sm hover:shadow-md hover:bg-surface-elevated glass-panel dark:hover:bg-surface transition-all h-56 overflow-hidden ${cat.colorClass.split(" ").pop()}`}
                     >
                       <div className="flex justify-between items-start z-10 relative">
-                        <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-4xl bg-white/70 dark:bg-slate-800/70 border border-white/60 dark:border-slate-700">{cat.emoji}</div>
-                        <div className="bg-white/70 dark:bg-slate-800/70 text-gray-600 dark:text-slate-200 text-[10px] font-bold px-3 py-1.5 rounded-full border border-white/60 dark:border-slate-700 flex items-center justify-center">
+                        <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-4xl bg-surface-elevated/70 glass-panel dark:bg-surface/70 border border-white/60 dark:border-border">{cat.emoji}</div>
+                        <div className="bg-surface-elevated/70 glass-panel dark:bg-surface/70 text-text-secondary dark:text-text-primary text-[10px] font-bold px-3 py-1.5 rounded-full border border-white/60 dark:border-border flex items-center justify-center">
                           {cat.tipsCount} Tips
                         </div>
                       </div>
                       <div className="mt-8 relative z-10">
-                        <h3 className="text-2xl font-bold text-gray-800 dark:text-slate-100">{cat.name}</h3>
-                        <p className="text-sm text-gray-500 dark:text-slate-300 mt-1">Click to explore</p>
+                        <h3 className="text-2xl font-bold text-text-primary dark:text-text-primary">{cat.name}</h3>
+                        <p className="text-sm text-text-muted dark:text-text-muted mt-1">Click to explore</p>
                       </div>
                     </Motion.div>
                   ))
@@ -297,14 +297,14 @@ export default function Tips() {
             </Motion.div>
           ) : (
             <Motion.div key="details" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.4 }}>
-              <div className="mb-8 bg-white dark:bg-slate-900/80 backdrop-blur-xl px-6 py-5 rounded-[24px] shadow-lg border border-gray-200 dark:border-slate-700 flex items-center justify-between">
+              <div className="mb-8 bg-surface-elevated glass-panel dark:bg-surface/80 backdrop-blur-xl px-6 py-5 rounded-[24px] shadow-lg border border-border dark:border-border flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <button onClick={() => setSelectedCategory(null)} className="w-11 h-11 flex items-center justify-center rounded-full bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 border border-gray-100 dark:border-slate-700 shadow-sm transition-transform active:scale-90">
+                  <button onClick={() => setSelectedCategory(null)} className="w-11 h-11 flex items-center justify-center rounded-full bg-surface-elevated glass-panel dark:bg-surface hover:bg-surface-muted dark:hover:bg-surface-muted border border-border-subtle dark:border-border shadow-sm transition-transform active:scale-90">
                     <ArrowLeft size={22}/>
                   </button>
-                  <h2 className="text-lg md:text-2xl font-bold text-gray-800 dark:text-slate-100">{selectedCategory.name}</h2>
+                  <h2 className="text-lg md:text-2xl font-bold text-text-primary dark:text-text-primary">{selectedCategory.name}</h2>
                 </div>
-                <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center text-xl md:text-3xl bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 shadow-sm">{selectedCategory.emoji}</div>
+                <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center text-xl md:text-3xl bg-surface-elevated glass-panel dark:bg-surface border border-border-subtle dark:border-border shadow-sm">{selectedCategory.emoji}</div>
               </div>
 
               {/* Grid Responsif: md:grid-cols-2 untuk Desktop, grid-cols-1 untuk Mobile */}
@@ -315,12 +315,12 @@ export default function Tips() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: idx * 0.05 }}
-                    className="bg-white dark:bg-slate-900/80 px-6 py-4 md:px-8 md:py-5 rounded-[24px] md:rounded-[28px] border border-gray-200 dark:border-slate-700 shadow-sm relative group hover:bg-white dark:hover:bg-slate-900 transition-colors overflow-hidden flex items-center min-h-[80px] md:min-h-[90px]"
+                    className="bg-surface-elevated glass-panel dark:bg-surface/80 px-6 py-4 md:px-8 md:py-5 rounded-[24px] md:rounded-[28px] border border-border dark:border-border shadow-sm relative group hover:bg-surface-elevated glass-panel dark:hover:bg-surface transition-colors overflow-hidden flex items-center min-h-[80px] md:min-h-[90px]"
                   >
-                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-6xl md:text-8xl font-extrabold text-gray-200/40 dark:text-slate-700/60 select-none pointer-events-none group-hover:text-blue-100/50 dark:group-hover:text-blue-900/40 transition-colors z-0">
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-6xl md:text-8xl font-extrabold text-text-muted/40 dark:text-text-secondary/60 select-none pointer-events-none group-hover:text-blue-100/50 dark:group-hover:text-blue-900/40 transition-colors z-0">
                       {tip.displayIndex}
                     </span>
-                    <p className="text-sm md:text-xl font-medium text-gray-700 dark:text-slate-200 relative z-10 leading-relaxed pr-10">
+                    <p className="text-sm md:text-xl font-medium text-text-secondary dark:text-text-primary relative z-10 leading-relaxed pr-10">
                       {tip.text}
                     </p>
                   </Motion.div>

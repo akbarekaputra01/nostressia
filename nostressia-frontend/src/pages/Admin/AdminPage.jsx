@@ -400,8 +400,8 @@ export default function AdminPage({ skipAuth = false }) {
   const renderDashboardCards = () => (
     <>
       <div className="mb-8 animate-fade-in">
-        <h2 className="text-2xl font-bold text-gray-900">Dashboard Overview</h2>
-        <p className="text-gray-500">Manage content and users.</p>
+        <h2 className="text-2xl font-bold text-text-primary">Dashboard Overview</h2>
+        <p className="text-text-muted">Manage content and users.</p>
         {skipAuth && (<p className="mt-2 text-xs font-bold text-orange-600 bg-orange-100 inline-block px-2 py-1 rounded">* Developer Mode</p>)}
       </div>
 
@@ -412,15 +412,15 @@ export default function AdminPage({ skipAuth = false }) {
           // ✅ PERBAIKAN: Ganti "rose" menjadi "red" di sini
           {title: "Diary Moderation", count: totalDiariesCount, desc: "Delete user diaries.", color: "red", icon: <BookOpen size={24}/>, action: () => setActiveView('diaries'), btn: "Moderate"}
         ].map((card, idx) => (
-          <div key={idx} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all relative overflow-hidden group flex flex-col h-full">
+          <div key={idx} className="bg-surface-elevated glass-panel p-6 rounded-2xl shadow-sm border border-border-subtle hover:shadow-md transition-all relative overflow-hidden group flex flex-col h-full">
             {/* Menggunakan dynamic class yang aman untuk red/orange/blue/purple */}
             <div className={`absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity text-${card.color}-500`}>{React.cloneElement(card.icon, {size: 80})}</div>
             <div className="flex justify-between items-start mb-4 relative z-10">
               <div className={`p-3 bg-${card.color}-100 text-${card.color}-600 rounded-xl`}>{card.icon}</div>
-              <span className="text-3xl font-bold text-gray-800">{card.count}</span>
+              <span className="text-3xl font-bold text-text-primary">{card.count}</span>
             </div>
-            <h3 className="text-lg font-bold text-gray-800 mb-1 relative z-10">{card.title}</h3>
-            <p className="text-sm text-gray-500 mb-6 relative z-10 flex-1">{card.desc}</p>
+            <h3 className="text-lg font-bold text-text-primary mb-1 relative z-10">{card.title}</h3>
+            <p className="text-sm text-text-muted mb-6 relative z-10 flex-1">{card.desc}</p>
             <button onClick={card.action} className={`relative z-10 w-full py-3 bg-${card.color}-500 text-white rounded-xl font-bold hover:bg-${card.color}-600 transition-colors shadow-lg shadow-${card.color}-200 cursor-pointer mt-auto`}>{card.btn}</button>
           </div>
         ))}
@@ -432,30 +432,30 @@ export default function AdminPage({ skipAuth = false }) {
     <div className="animate-fade-in">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <button onClick={() => setActiveView("dashboard")} className="flex items-center text-gray-500 hover:text-blue-600 mb-2 font-bold transition-colors cursor-pointer"><ArrowLeft size={18} className="mr-2" /> Back to Dashboard</button>
-          <h2 className="text-2xl font-bold text-gray-900">User Management</h2>
+          <button onClick={() => setActiveView("dashboard")} className="flex items-center text-text-muted hover:text-blue-600 mb-2 font-bold transition-colors cursor-pointer"><ArrowLeft size={18} className="mr-2" /> Back to Dashboard</button>
+          <h2 className="text-2xl font-bold text-text-primary">User Management</h2>
         </div>
       </div>
       <div className="mb-6">
-        <input type="text" placeholder="Search by Name, Email, or Username..." className="w-full max-w-md px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none cursor-text" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
+        <input type="text" placeholder="Search by Name, Email, or Username..." className="w-full max-w-md px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-purple-500 outline-none cursor-text" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
       </div>
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+      <div className="bg-surface-elevated glass-panel rounded-2xl shadow-sm border border-border overflow-hidden overflow-x-auto">
+        <table className="min-w-full divide-y divide-border">
+          <thead className="bg-surface-muted">
             <tr>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">User Info</th>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Profile</th>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Stats</th>
-              <th className="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
+              <th className="px-6 py-4 text-left text-xs font-bold text-text-muted uppercase tracking-wider">User Info</th>
+              <th className="px-6 py-4 text-left text-xs font-bold text-text-muted uppercase tracking-wider">Profile</th>
+              <th className="px-6 py-4 text-left text-xs font-bold text-text-muted uppercase tracking-wider">Stats</th>
+              <th className="px-6 py-4 text-right text-xs font-bold text-text-muted uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200">
-            {loadingUsers ? (<tr><td colSpan="4" className="text-center py-8 text-gray-500">Loading...</td></tr>) : users.length === 0 ? (<tr><td colSpan="4" className="text-center py-8 text-gray-500">No users found.</td></tr>) : (
+          <tbody className="divide-y divide-border">
+            {loadingUsers ? (<tr><td colSpan="4" className="text-center py-8 text-text-muted">Loading...</td></tr>) : users.length === 0 ? (<tr><td colSpan="4" className="text-center py-8 text-text-muted">No users found.</td></tr>) : (
               users.map((user) => (
-                <tr key={user.userId} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap"><div className="text-sm font-bold text-gray-900">{user.name}</div><div className="text-sm text-gray-500">{user.email}</div><div className="text-xs text-purple-600 font-sans">@{user.username}</div></td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><div>{user.gender || "-"}</div><div className="text-xs text-gray-400">{user.userDob || "No DOB"}</div></td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">🔥 {user.streak || 0} Streak</td>
+                <tr key={user.userId} className="hover:bg-surface-muted transition-colors">
+                  <td className="px-6 py-4 whitespace-nowrap"><div className="text-sm font-bold text-text-primary">{user.name}</div><div className="text-sm text-text-muted">{user.email}</div><div className="text-xs text-purple-600 font-sans">@{user.username}</div></td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-text-muted"><div>{user.gender || "-"}</div><div className="text-xs text-text-muted">{user.userDob || "No DOB"}</div></td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-text-muted">🔥 {user.streak || 0} Streak</td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button onClick={() => { setEditingUser({...user, userDob: user.userDob ? user.userDob.split("T")[0] : ""}); setIsEditUserModalOpen(true); }} className="text-indigo-600 hover:text-indigo-900 mr-4 font-bold cursor-pointer">Edit</button>
                     <button onClick={() => handleDeleteUser(user.userId)} className="text-red-600 hover:text-red-900 font-bold cursor-pointer">Delete</button>
@@ -466,9 +466,9 @@ export default function AdminPage({ skipAuth = false }) {
         </table>
       </div>
       <div className="mt-6 flex justify-center items-center gap-4">
-        <button disabled={page === 1} onClick={() => setPage(p => p - 1)} className="px-4 py-2 border rounded-lg bg-white hover:bg-gray-50 disabled:opacity-50 text-sm font-bold text-gray-600 cursor-pointer disabled:cursor-not-allowed">Previous</button>
-        <span className="text-gray-600 text-sm font-medium">Page {page} of {totalPages}</span>
-        <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="px-4 py-2 border rounded-lg bg-white hover:bg-gray-50 disabled:opacity-50 text-sm font-bold text-gray-600 cursor-pointer disabled:cursor-not-allowed">Next</button>
+        <button disabled={page === 1} onClick={() => setPage(p => p - 1)} className="px-4 py-2 border rounded-lg bg-surface-elevated glass-panel hover:bg-surface-muted disabled:opacity-50 text-sm font-bold text-text-secondary cursor-pointer disabled:cursor-not-allowed">Previous</button>
+        <span className="text-text-secondary text-sm font-medium">Page {page} of {totalPages}</span>
+        <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="px-4 py-2 border rounded-lg bg-surface-elevated glass-panel hover:bg-surface-muted disabled:opacity-50 text-sm font-bold text-text-secondary cursor-pointer disabled:cursor-not-allowed">Next</button>
       </div>
     </div>
   );
@@ -477,33 +477,33 @@ export default function AdminPage({ skipAuth = false }) {
     <div className="animate-fade-in">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <button onClick={() => setActiveView("dashboard")} className="flex items-center text-gray-500 hover:text-blue-600 mb-2 font-bold transition-colors cursor-pointer"><ArrowLeft size={18} className="mr-2" /> Back to Dashboard</button>
-          <h2 className="text-2xl font-bold text-gray-900">Diary Moderation</h2>
+          <button onClick={() => setActiveView("dashboard")} className="flex items-center text-text-muted hover:text-blue-600 mb-2 font-bold transition-colors cursor-pointer"><ArrowLeft size={18} className="mr-2" /> Back to Dashboard</button>
+          <h2 className="text-2xl font-bold text-text-primary">Diary Moderation</h2>
         </div>
       </div>
       <div className="mb-6">
         {/* ✅ PERBAIKAN: focus:ring-red-500 */}
-        <input type="text" placeholder="Search by Content or User Name..." className="w-full max-w-md px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none cursor-text" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
+        <input type="text" placeholder="Search by Content or User Name..." className="w-full max-w-md px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-red-500 outline-none cursor-text" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
       </div>
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+      <div className="bg-surface-elevated glass-panel rounded-2xl shadow-sm border border-border overflow-hidden overflow-x-auto">
+        <table className="min-w-full divide-y divide-border">
+          <thead className="bg-surface-muted">
             <tr>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">User</th>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Date</th>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Title</th>
-              <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Content Snippet</th>
-              <th className="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Action</th>
+              <th className="px-6 py-4 text-left text-xs font-bold text-text-muted uppercase tracking-wider">User</th>
+              <th className="px-6 py-4 text-left text-xs font-bold text-text-muted uppercase tracking-wider">Date</th>
+              <th className="px-6 py-4 text-left text-xs font-bold text-text-muted uppercase tracking-wider">Title</th>
+              <th className="px-6 py-4 text-left text-xs font-bold text-text-muted uppercase tracking-wider">Content Snippet</th>
+              <th className="px-6 py-4 text-right text-xs font-bold text-text-muted uppercase tracking-wider">Action</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200">
-            {loadingDiaries ? (<tr><td colSpan="5" className="text-center py-8 text-gray-500">Loading diaries...</td></tr>) : diaries.length === 0 ? (<tr><td colSpan="5" className="text-center py-8 text-gray-500">No diaries found.</td></tr>) : (
+          <tbody className="divide-y divide-border">
+            {loadingDiaries ? (<tr><td colSpan="5" className="text-center py-8 text-text-muted">Loading diaries...</td></tr>) : diaries.length === 0 ? (<tr><td colSpan="5" className="text-center py-8 text-text-muted">No diaries found.</td></tr>) : (
                 diaries.map((diary) => (
-                <tr key={diary.diaryId} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap"><div className="text-sm font-bold text-gray-900">{diary.username}</div><div className="text-xs text-gray-500"></div></td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(diary.createdAt).toLocaleDateString()}</td>
-                  <td className="px-6 py-4 text-sm text-gray-800 font-medium">{diary.title || "-"}</td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{diary.content.length > 60 ? diary.content.substring(0, 60) + "..." : diary.content}</td>
+                <tr key={diary.diaryId} className="hover:bg-surface-muted transition-colors">
+                  <td className="px-6 py-4 whitespace-nowrap"><div className="text-sm font-bold text-text-primary">{diary.username}</div><div className="text-xs text-text-muted"></div></td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-text-muted">{new Date(diary.createdAt).toLocaleDateString()}</td>
+                  <td className="px-6 py-4 text-sm text-text-primary font-medium">{diary.title || "-"}</td>
+                  <td className="px-6 py-4 text-sm text-text-secondary">{diary.content.length > 60 ? diary.content.substring(0, 60) + "..." : diary.content}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     {/* ✅ PERBAIKAN: Ganti semua 'rose' menjadi 'red' */}
                     <button onClick={() => handleDeleteDiary(diary.diaryId)} className="text-red-600 hover:text-red-900 font-bold bg-red-50 px-3 py-1 rounded-lg border border-red-100 cursor-pointer">Delete</button>
@@ -514,9 +514,9 @@ export default function AdminPage({ skipAuth = false }) {
         </table>
       </div>
       <div className="mt-6 flex justify-center items-center gap-4">
-        <button disabled={page === 1} onClick={() => setPage(p => p - 1)} className="px-4 py-2 border rounded-lg bg-white hover:bg-gray-50 disabled:opacity-50 text-sm font-bold text-gray-600 cursor-pointer disabled:cursor-not-allowed">Previous</button>
-        <span className="text-gray-600 text-sm font-medium">Page {page} of {totalPages}</span>
-        <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="px-4 py-2 border rounded-lg bg-white hover:bg-gray-50 disabled:opacity-50 text-sm font-bold text-gray-600 cursor-pointer disabled:cursor-not-allowed">Next</button>
+        <button disabled={page === 1} onClick={() => setPage(p => p - 1)} className="px-4 py-2 border rounded-lg bg-surface-elevated glass-panel hover:bg-surface-muted disabled:opacity-50 text-sm font-bold text-text-secondary cursor-pointer disabled:cursor-not-allowed">Previous</button>
+        <span className="text-text-secondary text-sm font-medium">Page {page} of {totalPages}</span>
+        <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="px-4 py-2 border rounded-lg bg-surface-elevated glass-panel hover:bg-surface-muted disabled:opacity-50 text-sm font-bold text-text-secondary cursor-pointer disabled:cursor-not-allowed">Next</button>
       </div>
     </div>
   );
@@ -525,31 +525,31 @@ export default function AdminPage({ skipAuth = false }) {
   // MAIN RENDER
   // ==============================
   return (
-    <div className="min-h-screen bg-gray-50 font-sans text-gray-800">
+    <div className="min-h-screen bg-surface-muted font-sans text-text-primary">
       
       {/* NAVBAR CANTIK */}
-      <nav className="sticky top-0 z-50 bg-white/90 dark:bg-slate-900/90 backdrop-blur-lg border-b border-gray-200 dark:border-slate-700 shadow-sm px-6 py-4 transition-all duration-300">
+      <nav className="sticky top-0 z-50 bg-surface-elevated/90 dark:bg-surface/90 backdrop-blur-lg border-b border-border dark:border-border shadow-sm px-6 py-4 transition-all duration-300 glass-panel">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 md:gap-0">
             {/* Logo Section */}
             <div className="flex items-center gap-3 w-full md:w-auto">
-                <div className="bg-gradient-to-br from-blue-600 to-purple-600 text-white p-2.5 rounded-xl shadow-md">
+                <div className="bg-gradient-to-br from-brand-primary to-brand-info text-text-inverse p-2.5 rounded-xl shadow-md">
                     <LayoutDashboard size={22} />
                 </div>
-                <h1 className="text-2xl font-extrabold tracking-tight text-gray-900">
-                    Admin Panel <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Nostressia</span>
+                <h1 className="text-2xl font-extrabold tracking-tight text-text-primary">
+                    Admin Panel <span className="bg-gradient-to-r from-brand-primary to-brand-info bg-clip-text text-transparent">Nostressia</span>
                 </h1>
             </div>
 
             {/* User Profile & Logout */}
             <div className="flex items-center gap-4 w-full md:w-auto justify-end">
                 {/* User Pill */}
-                <div className="hidden md:flex items-center gap-3 pl-2 pr-5 py-1.5 rounded-full bg-gray-50 border border-gray-100 shadow-inner">
-                    <div className="bg-white p-1 rounded-full border border-gray-200">
-                        <UserCircle size={28} className="text-blue-500"/>
+                <div className="hidden md:flex items-center gap-3 pl-2 pr-5 py-1.5 rounded-full bg-surface-muted border border-border-subtle shadow-inner">
+                    <div className="bg-surface-elevated glass-panel p-1 rounded-full border border-border">
+                        <UserCircle size={28} className="text-brand-primary"/>
                     </div>
                     <div className="flex flex-col leading-none">
-                        <span className="text-sm font-bold text-gray-700">{currentUser.name}</span>
-                        <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mt-0.5">
+                        <span className="text-sm font-bold text-text-secondary">{currentUser.name}</span>
+                        <span className="text-[10px] font-semibold text-text-muted uppercase tracking-wider mt-0.5">
                             {currentUser.id === 999 ? "DEV-MODE" : `ADM-${String(currentUser.id).padStart(3, "0")}`}
                         </span>
                     </div>
@@ -558,7 +558,7 @@ export default function AdminPage({ skipAuth = false }) {
                 {/* Logout Button */}
                 <button 
                     onClick={handleLogout} 
-                    className="group flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-red-500 hover:bg-red-50 hover:text-red-600 transition-all active:scale-95 cursor-pointer border border-transparent hover:border-red-100"
+                    className="group flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-brand-accent hover:bg-brand-accent/10 hover:text-brand-accent transition-all active:scale-95 cursor-pointer border border-transparent hover:border-brand-accent/20"
                 >
                     <LogOut size={18} className="group-hover:-translate-x-1 transition-transform" />
                     Logout
@@ -576,29 +576,29 @@ export default function AdminPage({ skipAuth = false }) {
       {/* --- MODALS --- */}
       {/* MOTIVATION MODAL */}
       {activeModal === 'motivation' && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl">
-            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50 rounded-t-2xl">
-              <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2"><Sparkles className="text-orange-600" /> Manage Motivation</h3>
-              <button onClick={closeModal} className="p-2 hover:bg-gray-200 rounded-full cursor-pointer"><X size={20} className="text-gray-500" /></button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-950/40 backdrop-blur-sm animate-fade-in">
+          <div className="bg-surface-elevated glass-panel rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl">
+            <div className="p-6 border-b border-border-subtle flex justify-between items-center bg-surface-muted rounded-t-2xl">
+              <h3 className="text-xl font-bold text-text-primary flex items-center gap-2"><Sparkles className="text-orange-600" /> Manage Motivation</h3>
+              <button onClick={closeModal} className="p-2 hover:bg-surface-muted rounded-full cursor-pointer"><X size={20} className="text-text-muted" /></button>
             </div>
-            <div className="flex-1 overflow-y-auto p-6 bg-gray-50">
+            <div className="flex-1 overflow-y-auto p-6 bg-surface-muted">
               <div className="flex flex-col md:flex-row gap-6">
                 <div className="w-full md:w-1/3 h-fit md:sticky top-0 self-start">
-                  <div className="bg-white p-5 rounded-xl border border-orange-100 shadow-sm">
+                  <div className="bg-surface-elevated glass-panel p-5 rounded-xl border border-orange-100 shadow-sm">
                     <h4 className="font-bold text-sm text-orange-800 uppercase tracking-wide mb-3">Add Quote</h4>
                     <form onSubmit={handleAddQuote} className="space-y-3">
-                      <div><label className="text-xs font-bold text-gray-500 ml-1 mb-1 block">QUOTE TEXT</label><textarea placeholder="Write motivational quote..." className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-400 resize-none cursor-text" rows="3" value={quoteForm.text} onChange={(e) => setQuoteForm({ ...quoteForm, text: e.target.value })} /></div>
-                      <div><label className="text-xs font-bold text-gray-500 ml-1 mb-1 block">AUTHOR</label><input type="text" placeholder="Author name" className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-400 cursor-text" value={quoteForm.author} onChange={(e) => setQuoteForm({ ...quoteForm, author: e.target.value })} /></div>
+                      <div><label className="text-xs font-bold text-text-muted ml-1 mb-1 block">QUOTE TEXT</label><textarea placeholder="Write motivational quote..." className="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-orange-400 resize-none cursor-text" rows="3" value={quoteForm.text} onChange={(e) => setQuoteForm({ ...quoteForm, text: e.target.value })} /></div>
+                      <div><label className="text-xs font-bold text-text-muted ml-1 mb-1 block">AUTHOR</label><input type="text" placeholder="Author name" className="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-orange-400 cursor-text" value={quoteForm.author} onChange={(e) => setQuoteForm({ ...quoteForm, author: e.target.value })} /></div>
                       <button type="submit" className="w-full bg-orange-600 text-white font-bold rounded-lg py-3 hover:bg-orange-700 shadow-md mt-2 cursor-pointer">Add Quote</button>
                     </form>
                   </div>
                 </div>
                 <div className="w-full md:w-2/3 space-y-4">
                   {quotes.map((quote) => (
-                    <div key={quote.id} className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 hover:shadow-md transition-all">
+                    <div key={quote.id} className="bg-surface-elevated glass-panel rounded-xl border border-border shadow-sm p-5 hover:shadow-md transition-all">
                       <div className="flex justify-between items-start gap-4">
-                        <div className="flex-1"><p className="text-gray-800 text-base leading-relaxed mb-3 italic">"{quote.text}"</p><p className="text-sm font-bold text-gray-700">— {quote.author}</p><p className="text-[10px] text-gray-400 mt-1 flex items-center gap-1"><User size={10} /> ({quote.uploaderId})</p></div>
+                        <div className="flex-1"><p className="text-text-primary text-base leading-relaxed mb-3 italic">"{quote.text}"</p><p className="text-sm font-bold text-text-secondary">— {quote.author}</p><p className="text-[10px] text-text-muted mt-1 flex items-center gap-1"><User size={10} /> ({quote.uploaderId})</p></div>
                         <button onClick={() => handleDeleteQuote(quote.id)} className="text-red-400 hover:text-red-600 bg-red-50 hover:bg-red-100 p-2 rounded-lg border border-red-100 cursor-pointer"><Trash2 size={18} /></button>
                       </div>
                     </div>
@@ -612,9 +612,9 @@ export default function AdminPage({ skipAuth = false }) {
 
       {/* TIPS MODAL */}
       {activeModal === 'tips' && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white rounded-2xl w-full max-w-5xl max-h-[85vh] flex flex-col shadow-2xl">
-            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50 rounded-t-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-950/40 backdrop-blur-sm animate-fade-in">
+          <div className="bg-surface-elevated glass-panel rounded-2xl w-full max-w-5xl max-h-[85vh] flex flex-col shadow-2xl">
+            <div className="p-6 border-b border-border-subtle flex justify-between items-center bg-surface-muted rounded-t-2xl">
               <div className="flex items-center gap-3">
                 {selectedTipCategory && (
                   <button
@@ -624,26 +624,26 @@ export default function AdminPage({ skipAuth = false }) {
                       setEditingTipId(null);
                       setEditingTipText("");
                     }}
-                    className="mr-2 p-2 rounded-full hover:bg-gray-200 transition-colors cursor-pointer"
+                    className="mr-2 p-2 rounded-full hover:bg-surface-muted transition-colors cursor-pointer"
                   >
-                    <ArrowLeft size={20} className="text-gray-600" />
+                    <ArrowLeft size={20} className="text-text-secondary" />
                   </button>
                 )}
-                <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2"><Lightbulb className="text-blue-600" /> {selectedTipCategory ? activeCategoryData?.name : "Manage Tips (Select Category)"}</h3>
+                <h3 className="text-xl font-bold text-text-primary flex items-center gap-2"><Lightbulb className="text-blue-600" /> {selectedTipCategory ? activeCategoryData?.name : "Manage Tips (Select Category)"}</h3>
               </div>
-              <button onClick={closeModal} className="p-2 hover:bg-gray-200 rounded-full cursor-pointer"><X size={20} className="text-gray-500" /></button>
+              <button onClick={closeModal} className="p-2 hover:bg-surface-muted rounded-full cursor-pointer"><X size={20} className="text-text-muted" /></button>
             </div>
-            <div className="flex-1 overflow-y-auto p-6 bg-gray-50">
+            <div className="flex-1 overflow-y-auto p-6 bg-surface-muted">
               {!selectedTipCategory && (
                 <div>
                   {loadingCategories ? (<div className="flex items-center justify-center py-20"><div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div></div>) : (
                     <div className="space-y-6 animate-fade-in">
-                      <div className="bg-white rounded-2xl border border-blue-100 shadow-sm p-4 flex flex-col md:flex-row gap-3 items-center">
+                      <div className="bg-surface-elevated glass-panel rounded-2xl border border-blue-100 shadow-sm p-4 flex flex-col md:flex-row gap-3 items-center">
                         <div className="flex-1">
                           <input
                             type="text"
                             placeholder="New category name..."
-                            className="w-full bg-transparent text-gray-800 placeholder-gray-400 focus:outline-none text-base cursor-text"
+                            className="w-full bg-transparent text-text-primary placeholder:text-text-muted focus:outline-none text-base cursor-text"
                             value={newCategoryName}
                             onChange={(e) => setNewCategoryName(e.target.value)}
                           />
@@ -651,7 +651,7 @@ export default function AdminPage({ skipAuth = false }) {
                         <button
                           onClick={handleCreateCategory}
                           disabled={!newCategoryName.trim()}
-                          className="px-6 py-2.5 bg-slate-100 text-slate-900 font-bold rounded-xl hover:bg-white disabled:opacity-50 cursor-pointer dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
+                          className="px-6 py-2.5 bg-surface-muted text-text-primary font-bold rounded-xl hover:bg-surface-elevated glass-panel disabled:opacity-50 cursor-pointer dark:bg-surface dark:text-text-primary dark:hover:bg-surface"
                         >
                           Add Category
                         </button>
@@ -663,18 +663,18 @@ export default function AdminPage({ skipAuth = false }) {
                       )}
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {tipCategories.map((cat) => (
-                          <div key={cat.id} className="relative bg-white rounded-2xl border border-gray-200 p-6 flex flex-col items-center text-center gap-4 hover:shadow-lg hover:border-blue-300 hover:-translate-y-1 transition-all group">
+                          <div key={cat.id} className="relative bg-surface-elevated glass-panel rounded-2xl border border-border p-6 flex flex-col items-center text-center gap-4 hover:shadow-lg hover:border-blue-300 hover:-translate-y-1 transition-all group">
                             <button
                               onClick={() => handleDeleteCategory(cat.id)}
-                              className="absolute top-3 right-3 text-gray-300 hover:text-red-500 hover:bg-red-50 p-2 rounded-lg transition-all cursor-pointer"
+                              className="absolute top-3 right-3 text-text-muted hover:text-red-500 hover:bg-red-50 p-2 rounded-lg transition-all cursor-pointer"
                             >
                               <Trash2 size={16} />
                             </button>
                             <div onClick={() => openCategory(cat.id)} className="flex flex-col items-center gap-4 cursor-pointer">
                               <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center text-3xl group-hover:scale-110 transition-transform">{cat.icon}</div>
                               <div>
-                                <h4 className="font-bold text-gray-800 text-lg group-hover:text-blue-600 transition-colors">{cat.name}</h4>
-                                <p className="text-sm text-gray-500 font-medium mt-1">{tipCountByCategory[cat.id] ?? 0} Tips</p>
+                                <h4 className="font-bold text-text-primary text-lg group-hover:text-blue-600 transition-colors">{cat.name}</h4>
+                                <p className="text-sm text-text-muted font-medium mt-1">{tipCountByCategory[cat.id] ?? 0} Tips</p>
                               </div>
                             </div>
                           </div>
@@ -686,12 +686,12 @@ export default function AdminPage({ skipAuth = false }) {
               )}
               {selectedTipCategory && activeCategoryData && (
                 <div className="animate-fade-in max-w-3xl mx-auto">
-                  <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-6 min-h-[300px] flex flex-col">
-                    <h4 className="font-bold text-gray-500 text-xs uppercase tracking-wider mb-4">Current Tips List</h4>
-                    {loadingTips ? (<div className="flex-1 flex flex-col items-center justify-center text-gray-400 py-10"><div className="w-8 h-8 border-3 border-blue-200 border-t-blue-600 rounded-full animate-spin mb-3"></div><p>Loading tips...</p></div>) : (
+                  <div className="bg-surface-elevated glass-panel rounded-2xl border border-border shadow-sm p-6 mb-6 min-h-[300px] flex flex-col">
+                    <h4 className="font-bold text-text-muted text-xs uppercase tracking-wider mb-4">Current Tips List</h4>
+                    {loadingTips ? (<div className="flex-1 flex flex-col items-center justify-center text-text-muted py-10"><div className="w-8 h-8 border-3 border-blue-200 border-t-blue-600 rounded-full animate-spin mb-3"></div><p>Loading tips...</p></div>) : (
                       <ul className="space-y-3 flex-1 pr-2">
                         {currentCategoryTips.map((tip, idx) => (
-                          <li key={tip.id} className="flex justify-between items-start gap-4 p-4 bg-gray-50 rounded-xl border hover:border-blue-100 transition-all">
+                          <li key={tip.id} className="flex justify-between items-start gap-4 p-4 bg-surface-muted rounded-xl border hover:border-blue-100 transition-all">
                             <div className="flex items-start gap-3 w-full">
                               <span className="min-w-[24px] h-[24px] rounded-full bg-blue-100 text-blue-600 text-xs flex items-center justify-center font-bold">{idx + 1}</span>
                               <div className="flex-1">
@@ -699,7 +699,7 @@ export default function AdminPage({ skipAuth = false }) {
                                   <>
                                     <input
                                       type="text"
-                                      className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                                      className="w-full bg-surface-elevated glass-panel border border-border rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-blue-200"
                                       value={editingTipText}
                                       onChange={(e) => setEditingTipText(e.target.value)}
                                     />
@@ -713,7 +713,7 @@ export default function AdminPage({ skipAuth = false }) {
                                       </button>
                                       <button
                                         onClick={handleCancelEditTip}
-                                        className="px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                        className="px-3 py-1.5 text-xs font-bold rounded-lg bg-surface-muted text-text-secondary hover:bg-surface-muted"
                                       >
                                         Cancel
                                       </button>
@@ -721,8 +721,8 @@ export default function AdminPage({ skipAuth = false }) {
                                   </>
                                 ) : (
                                   <>
-                                    <p className="text-base text-gray-800 font-medium">{tip.tip_text || tip.tipText}</p>
-                                    <p className="text-xs text-gray-400 mt-1 flex items-center gap-1"><User size={10} /> Added by ({tip.uploader_id ? `ADM${String(tip.uploader_id).padStart(3, "0")}` : "Admin"})</p>
+                                    <p className="text-base text-text-primary font-medium">{tip.tip_text || tip.tipText}</p>
+                                    <p className="text-xs text-text-muted mt-1 flex items-center gap-1"><User size={10} /> Added by ({tip.uploader_id ? `ADM${String(tip.uploader_id).padStart(3, "0")}` : "Admin"})</p>
                                   </>
                                 )}
                               </div>
@@ -730,21 +730,21 @@ export default function AdminPage({ skipAuth = false }) {
                             <div className="flex flex-col gap-2">
                               <button
                                 onClick={() => handleStartEditTip(tip)}
-                                className="text-gray-300 hover:text-blue-500 hover:bg-blue-50 p-2 rounded-lg transition-all cursor-pointer"
+                                className="text-text-muted hover:text-blue-500 hover:bg-blue-50 p-2 rounded-lg transition-all cursor-pointer"
                               >
                                 <UserCircle size={18} />
                               </button>
-                              <button onClick={() => handleDeleteTipFromCategory(selectedTipCategory, tip.id)} className="text-gray-300 hover:text-red-500 hover:bg-red-50 p-2 rounded-lg transition-all cursor-pointer"><Trash2 size={18} /></button>
+                              <button onClick={() => handleDeleteTipFromCategory(selectedTipCategory, tip.id)} className="text-text-muted hover:text-red-500 hover:bg-red-50 p-2 rounded-lg transition-all cursor-pointer"><Trash2 size={18} /></button>
                             </div>
                           </li>
                         ))}
                       </ul>
                     )}
                   </div>
-                  <div className="bg-white rounded-2xl border border-blue-100 shadow-lg p-4 flex gap-3 sticky bottom-0">
+                  <div className="bg-surface-elevated glass-panel rounded-2xl border border-blue-100 shadow-lg p-4 flex gap-3 sticky bottom-0">
                     <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white"><Sparkles size={20} /></div>
-                    <input type="text" placeholder={`Write new tip for ${activeCategoryData.name}...`} className="flex-1 bg-transparent text-gray-800 placeholder-gray-400 focus:outline-none text-base cursor-text" value={currentTipInput} onChange={(e) => setCurrentTipInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleAddTipToCategory(selectedTipCategory)} />
-                    <button onClick={() => handleAddTipToCategory(selectedTipCategory)} disabled={!currentTipInput.trim()} className="px-6 py-2.5 bg-slate-100 text-slate-900 font-bold rounded-xl hover:bg-white disabled:opacity-50 cursor-pointer dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800">Add</button>
+                    <input type="text" placeholder={`Write new tip for ${activeCategoryData.name}...`} className="flex-1 bg-transparent text-text-primary placeholder:text-text-muted focus:outline-none text-base cursor-text" value={currentTipInput} onChange={(e) => setCurrentTipInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleAddTipToCategory(selectedTipCategory)} />
+                    <button onClick={() => handleAddTipToCategory(selectedTipCategory)} disabled={!currentTipInput.trim()} className="px-6 py-2.5 bg-surface-muted text-text-primary font-bold rounded-xl hover:bg-surface-elevated glass-panel disabled:opacity-50 cursor-pointer dark:bg-surface dark:text-text-primary dark:hover:bg-surface">Add</button>
                   </div>
                 </div>
               )}
@@ -755,28 +755,28 @@ export default function AdminPage({ skipAuth = false }) {
 
       {/* EDIT USER MODAL */}
       {isEditUserModalOpen && editingUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl p-8 transform transition-all">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-950/40 backdrop-blur-sm animate-fade-in">
+          <div className="bg-surface-elevated glass-panel rounded-2xl w-full max-w-md shadow-2xl p-8 transform transition-all">
             <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-800">Edit User Data</h2>
-                <button onClick={() => setIsEditUserModalOpen(false)} className="text-gray-400 hover:text-gray-600 cursor-pointer"><X size={24} /></button>
+                <h2 className="text-2xl font-bold text-text-primary">Edit User Data</h2>
+                <button onClick={() => setIsEditUserModalOpen(false)} className="text-text-muted hover:text-text-secondary cursor-pointer"><X size={24} /></button>
             </div>
             <form onSubmit={handleSaveUser} className="space-y-4">
-                <div><label className="block text-sm font-bold text-gray-700 mb-1">Full Name</label><input type="text" className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none cursor-text" value={editingUser.name} onChange={e => setEditingUser({...editingUser, name: e.target.value})} /></div>
-                <div><label className="block text-sm font-bold text-gray-700 mb-1">Email Address</label><input type="email" className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none cursor-text" value={editingUser.email} onChange={e => setEditingUser({...editingUser, email: e.target.value})} /></div>
-                <div><label className="block text-sm font-bold text-gray-700 mb-1">Username</label><input type="text" className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none cursor-text" value={editingUser.username} onChange={e => setEditingUser({...editingUser, username: e.target.value})} /></div>
+                <div><label className="block text-sm font-bold text-text-secondary mb-1">Full Name</label><input type="text" className="w-full border border-border p-3 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none cursor-text" value={editingUser.name} onChange={e => setEditingUser({...editingUser, name: e.target.value})} /></div>
+                <div><label className="block text-sm font-bold text-text-secondary mb-1">Email Address</label><input type="email" className="w-full border border-border p-3 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none cursor-text" value={editingUser.email} onChange={e => setEditingUser({...editingUser, email: e.target.value})} /></div>
+                <div><label className="block text-sm font-bold text-text-secondary mb-1">Username</label><input type="text" className="w-full border border-border p-3 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none cursor-text" value={editingUser.username} onChange={e => setEditingUser({...editingUser, username: e.target.value})} /></div>
                 <div className="grid grid-cols-2 gap-4">
-                    <div><label className="block text-sm font-bold text-gray-700 mb-1">Gender</label><select className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-purple-500 cursor-pointer" value={editingUser.gender || ""} onChange={e => setEditingUser({...editingUser, gender: e.target.value})}><option value="">Select</option><option value="Male">Male</option><option value="Female">Female</option></select></div>
-                    <div><label className="block text-sm font-bold text-gray-700 mb-1">Date of Birth</label><input type="date" className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-purple-500 cursor-pointer" value={editingUser.userDob || ""} onChange={e => setEditingUser({...editingUser, userDob: e.target.value})} /></div>
+                    <div><label className="block text-sm font-bold text-text-secondary mb-1">Gender</label><select className="w-full border border-border p-3 rounded-lg focus:ring-2 focus:ring-purple-500 cursor-pointer" value={editingUser.gender || ""} onChange={e => setEditingUser({...editingUser, gender: e.target.value})}><option value="">Select</option><option value="Male">Male</option><option value="Female">Female</option></select></div>
+                    <div><label className="block text-sm font-bold text-text-secondary mb-1">Date of Birth</label><input type="date" className="w-full border border-border p-3 rounded-lg focus:ring-2 focus:ring-purple-500 cursor-pointer" value={editingUser.userDob || ""} onChange={e => setEditingUser({...editingUser, userDob: e.target.value})} /></div>
                 </div>
-                <div className="mt-4 pt-4 border-t border-gray-100">
-                  <label className="block text-sm font-bold text-gray-700 mb-1">Reset Password <span className="text-xs font-normal text-gray-400">(Unavailable)</span></label>
-                  <div className="w-full border border-gray-200 p-3 rounded-lg bg-gray-100 text-gray-400">
+                <div className="mt-4 pt-4 border-t border-border-subtle">
+                  <label className="block text-sm font-bold text-text-secondary mb-1">Reset Password <span className="text-xs font-normal text-text-muted">(Unavailable)</span></label>
+                  <div className="w-full border border-border p-3 rounded-lg bg-surface-muted text-text-muted">
                     Password reset is not available on the backend yet.
                   </div>
-                  <p className="text-xs text-gray-400 mt-1">This will be enabled once the reset endpoint is available.</p>
+                  <p className="text-xs text-text-muted mt-1">This will be enabled once the reset endpoint is available.</p>
                 </div>
-                <div className="flex justify-end gap-3 mt-8"><button type="button" onClick={() => setIsEditUserModalOpen(false)} className="px-5 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg font-bold transition-colors cursor-pointer">Cancel</button><button type="submit" className="px-5 py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-bold shadow-md shadow-purple-200 transition-all cursor-pointer">Save Changes</button></div>
+                <div className="flex justify-end gap-3 mt-8"><button type="button" onClick={() => setIsEditUserModalOpen(false)} className="px-5 py-2.5 text-text-secondary hover:bg-surface-muted rounded-lg font-bold transition-colors cursor-pointer">Cancel</button><button type="submit" className="px-5 py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-bold shadow-md shadow-purple-200 transition-all cursor-pointer">Save Changes</button></div>
             </form>
           </div>
         </div>

@@ -21,9 +21,9 @@ const brandGreen = "#00A4FF";
 const brandRed = "#FF6700";
 
 const TODAY_LOG_STORAGE_KEY = "nostressia_today_log";
-const bgCream = "rgb(var(--bg-gradient-cream))";
-const bgPink = "rgb(var(--bg-gradient-pink))";
-const bgLavender = "rgb(var(--bg-gradient-lavender))";
+const bgSun = "rgb(var(--bg-gradient-sun))";
+const bgOrange = "rgb(var(--bg-gradient-orange))";
+const bgSky = "rgb(var(--bg-gradient-sky))";
 const colorGray = "rgb(var(--neutral-300))";
 
 // TRANSLATED: Month Names
@@ -215,29 +215,29 @@ function getForecastTheme(status) {
   if (status === "High") {
     return {
       color: brandRed,
-      bg: "bg-red-50 dark:bg-red-500/20",
+      bg: "bg-brand-accent/10 dark:bg-brand-accent/25",
       panelTheme:
-        "bg-gradient-to-b from-red-50 via-white to-white dark:from-red-950 dark:via-slate-900 dark:to-slate-900",
-      border: "border-red-200 dark:border-red-500/40",
+        "bg-gradient-to-b from-brand-accent/15 via-surface-elevated/90 to-surface-elevated/80 dark:from-brand-accent/20 dark:via-surface dark:to-surface",
+      border: "border-brand-accent/30 dark:border-brand-accent/40",
       icon: "ph-warning"
     };
   }
   if (status === "Moderate") {
     return {
       color: brandOrange,
-      bg: "bg-orange-50 dark:bg-orange-500/20",
+      bg: "bg-brand-warning/15 dark:bg-brand-warning/25",
       panelTheme:
-        "bg-gradient-to-b from-orange-50 via-white to-white dark:from-orange-950 dark:via-slate-900 dark:to-slate-900",
-      border: "border-orange-200 dark:border-orange-500/40",
+        "bg-gradient-to-b from-brand-warning/20 via-surface-elevated/90 to-surface-elevated/80 dark:from-brand-warning/25 dark:via-surface dark:to-surface",
+      border: "border-brand-warning/30 dark:border-brand-warning/40",
       icon: "ph-activity"
     };
   }
   return {
     color: brandGreen,
-    bg: "bg-green-50 dark:bg-emerald-500/20",
+    bg: "bg-brand-info/10 dark:bg-brand-info/25",
     panelTheme:
-      "bg-gradient-to-b from-green-50 via-white to-white dark:from-emerald-950 dark:via-slate-900 dark:to-slate-900",
-    border: "border-green-200 dark:border-emerald-500/40",
+      "bg-gradient-to-b from-brand-info/15 via-surface-elevated/90 to-surface-elevated/80 dark:from-brand-info/25 dark:via-surface dark:to-surface",
+    border: "border-brand-info/30 dark:border-brand-info/40",
     icon: "ph-plant"
   };
 }
@@ -1308,8 +1308,8 @@ export default function Dashboard() {
     <div
       style={{
         minHeight: "100vh",
-        backgroundColor: bgCream,
-        backgroundImage: `radial-gradient(at 10% 10%, ${bgCream} 0%, transparent 50%), radial-gradient(at 90% 20%, ${bgPink} 0%, transparent 50%), radial-gradient(at 50% 80%, ${bgLavender} 0%, transparent 50%)`,
+        backgroundColor: bgSun,
+        backgroundImage: `radial-gradient(at 10% 10%, ${bgSun} 0%, transparent 50%), radial-gradient(at 90% 20%, ${bgOrange} 0%, transparent 50%), radial-gradient(at 50% 80%, ${bgSky} 0%, transparent 50%)`,
         backgroundSize: "200% 200%",
         animation: "gradient-bg 20s ease infinite",
       }}
@@ -1353,10 +1353,10 @@ export default function Dashboard() {
 
       <main className="max-w-[1400px] mx-auto p-6 md:p-8 lg:p-10 pt-28">
         <div className="mb-8 animate-slide-down">
-          <h1 className="text-3xl md:text-4xl font-extrabold text-gray-800 flex items-center gap-2">
+          <h1 className="text-3xl md:text-4xl font-extrabold text-text-primary flex items-center gap-2">
             Hello, <span style={{ color: brandBlue }}>{username}!</span> 👋
           </h1>
-          <p className="text-gray-600 mt-2 text-lg font-medium">Ready to navigate the day with more calm?</p>
+          <p className="text-text-secondary mt-2 text-lg font-medium">Ready to navigate the day with more calm?</p>
         </div>
         {!isLoadingLogs && loadError && (
           <div className="mb-6 flex items-center gap-2 rounded-xl bg-red-50 text-red-700 px-4 py-3 text-sm font-semibold">
@@ -1369,7 +1369,7 @@ export default function Dashboard() {
           {/* FLIP CARD SECTION */}
           <section className="col-span-1 md:col-span-2 relative overflow-hidden" style={{ minHeight: 600 }}>
             {isLoadingLogs && (
-              <div className="absolute inset-0 z-20 flex items-center justify-center rounded-[20px] bg-white/70 backdrop-blur-sm">
+              <div className="absolute inset-0 z-20 flex items-center justify-center rounded-[20px] bg-surface-elevated/70 glass-panel backdrop-blur-sm">
                 <div className="h-14 w-14 rounded-full border-4 border-blue-200 border-t-blue-500 animate-spin" />
               </div>
             )}
@@ -1393,8 +1393,8 @@ export default function Dashboard() {
                   )}
 
                   <header className="flex justify-between items-center mb-4 relative z-10">
-                    <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">Today's Stress Prediction</h2>
-                    <div className="text-2xl text-gray-500"><i className="ph ph-cloud-sun mr-2" /> <i className="ph ph-smiley" /></div>
+                    <h2 className="text-xl font-bold text-text-primary flex items-center gap-2">Today's Stress Prediction</h2>
+                    <div className="text-2xl text-text-muted"><i className="ph ph-cloud-sun mr-2" /> <i className="ph ph-smiley" /></div>
                   </header>
                   <div className="flex-grow flex flex-col items-center justify-center text-center relative z-10">
                     {(() => {
@@ -1407,7 +1407,7 @@ export default function Dashboard() {
                       return (
                         <div className="flex flex-col items-center gap-4">
                           <div className={`text-[8rem] leading-none ${ui.anim} drop-shadow-lg`} style={{ color: ui.color, transition: "color 0.5s" }}><i className={`ph ${ui.icon}`}></i></div>
-                          <div><h2 className="text-4xl font-black tracking-wider uppercase mb-1" style={{ color: ui.color }}>{ui.label}</h2><p className="text-lg font-semibold text-gray-600">{ui.sub}</p></div>
+                          <div><h2 className="text-4xl font-black tracking-wider uppercase mb-1" style={{ color: ui.color }}>{ui.label}</h2><p className="text-lg font-semibold text-text-secondary">{ui.sub}</p></div>
                         </div>
                       );
                     })()}
@@ -1416,7 +1416,7 @@ export default function Dashboard() {
                   <hr className="border-t border-white/30 my-6 relative z-10" />
                   
                   {/* TREND DOTS */}
-                  <h4 className="text-base font-bold text-gray-800 mb-3 relative z-10">Last 7 Days Trend</h4>
+                  <h4 className="text-base font-bold text-text-primary mb-3 relative z-10">Last 7 Days Trend</h4>
                   <div className="flex justify-between items-end w-full relative z-10 h-16 px-2">
                     {trendDots.map((d, i) => {
                       const isToday = d.isToday;
@@ -1435,7 +1435,7 @@ export default function Dashboard() {
                                 boxShadow: (isToday && d.status !== null) ? `0 0 6px ${dotColor}` : 'none' 
                               }}
                            />
-                           <span className="text-xs font-bold text-gray-500 opacity-80">{d.day}</span>
+                           <span className="text-xs font-bold text-text-muted opacity-80">{d.day}</span>
                         </div>
                       );
                     })}
@@ -1458,7 +1458,7 @@ export default function Dashboard() {
                 >
                   <header className="flex justify-between items-center mb-4 transition-opacity duration-300" style={{ opacity: successModal.visible ? 0 : 1 }}>
                     <div>
-                      <h3 className="text-xl font-bold text-gray-800">
+                      <h3 className="text-xl font-bold text-text-primary">
                         {isRestoreMode
                           ? "Restore Data"
                           : hasSubmittedToday
@@ -1466,14 +1466,14 @@ export default function Dashboard() {
                           : "Log Today's Data"}
                       </h3>
                       {isRestoreMode && (
-                        <p className="text-xs font-semibold text-gray-500 mt-1">
+                        <p className="text-xs font-semibold text-text-muted mt-1">
                           Target: {activeLogDate}
                         </p>
                       )}
                     </div>
                     <button
                       type="button"
-                      className="w-8 h-8 rounded-full flex items-center justify-center text-gray-600 hover:text-gray-900 hover:bg-black/5 transition-colors cursor-pointer"
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-surface-muted/60 transition-colors cursor-pointer"
                       onClick={() => {
                         setIsFlipped(false);
                         setIsRestoreMode(false);
@@ -1497,8 +1497,8 @@ export default function Dashboard() {
                   >
                     <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pr-2">
                       {isRestoreMode && (
-                        <div className="rounded-xl border border-white/40 bg-white/60 p-3 shadow-sm">
-                          <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                        <div className="rounded-xl border border-white/40 bg-surface-elevated/60 glass-panel p-3 shadow-sm">
+                          <p className="text-xs font-semibold uppercase tracking-wider text-text-muted">
                             Restore input mode
                           </p>
                           <div className="mt-2 grid grid-cols-2 gap-2">
@@ -1508,7 +1508,7 @@ export default function Dashboard() {
                               className={`rounded-lg px-3 py-2 text-xs font-bold transition-all ${
                                 restoreInputMode === "manual"
                                   ? "bg-blue-600 text-white shadow-md"
-                                  : "bg-white/70 text-gray-600 hover:bg-white"
+                                  : "bg-surface-elevated/70 glass-panel text-text-secondary hover:bg-surface-elevated"
                               }`}
                             >
                               Manual entry
@@ -1519,14 +1519,14 @@ export default function Dashboard() {
                               className={`rounded-lg px-3 py-2 text-xs font-bold transition-all ${
                                 restoreInputMode === "auto"
                                   ? "bg-emerald-600 text-white shadow-md"
-                                  : "bg-white/70 text-gray-600 hover:bg-white"
+                                  : "bg-surface-elevated/70 glass-panel text-text-secondary hover:bg-surface-elevated"
                               }`}
                             >
                               Auto fill (imputed)
                             </button>
                           </div>
                           {restoreImputeInfo && (
-                            <p className="mt-2 text-[11px] font-medium text-gray-500">
+                            <p className="mt-2 text-[11px] font-medium text-text-muted">
                               {restoreImputeInfo}
                             </p>
                           )}
@@ -1534,14 +1534,14 @@ export default function Dashboard() {
                       )}
                       {/* GPA SECTION (UPDATED LOGIC) */}
                       <div>
-                        <label className="block text-sm font-semibold text-gray-800 mb-2">GPA <span className="text-red-500">*</span></label>
+                        <label className="block text-sm font-semibold text-text-primary mb-2">GPA <span className="text-red-500">*</span></label>
                         {!isEditingGpa ? (
                           <div className="flex items-center gap-3">
                             {/* Tampilan jika GPA kosong vs ada isinya */}
                             {gpa !== "" ? (
                               <span className="text-2xl font-bold" style={{ color: brandOrange }}>{Number(gpa).toFixed(2)}</span>
                             ) : (
-                              <span className="text-lg font-bold text-gray-400 italic border-b-2 border-dashed border-gray-300">Set GPA</span>
+                              <span className="text-lg font-bold text-text-muted italic border-b-2 border-dashed border-border">Set GPA</span>
                             )}
                             
                             <button type="button" className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors cursor-pointer ${gpa === "" ? "bg-red-100 text-red-600 animate-pulse" : "bg-blue-100 text-blue-600 hover:bg-blue-200"}`} onClick={() => setIsEditingGpa(true)}>
@@ -1555,7 +1555,7 @@ export default function Dashboard() {
                               defaultValue={gpa === "" ? "" : gpa} 
                               placeholder="0.00"
                               step="0.01" min="0" max="4" 
-                              className="w-24 p-2 border border-gray-300 rounded-lg text-center font-bold focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                              className="w-24 p-2 border border-border rounded-lg text-center font-bold focus:outline-none focus:ring-2 focus:ring-blue-500" 
                               id="gpaInput" 
                               style={{ color: "rgb(var(--text-primary))" }} 
                               autoFocus
@@ -1572,16 +1572,16 @@ export default function Dashboard() {
                       </div>
 
                       <div className="flex flex-col gap-3">
-                        <div><label className="text-sm font-semibold text-gray-800 mb-1 block">Study Hours <span className="text-gray-400 text-xs font-normal">(Hrs)</span></label><input type="number" value={studyHours} onChange={(e) => setStudyHours(e.target.value)} min="0" max="24" step="0.5" placeholder="0" className="w-full p-2.5 border border-white/50 bg-white/50 rounded-lg focus:ring-2 focus:ring-blue-400 placeholder-gray-400"/></div>
-                        <div><label className="text-sm font-semibold text-gray-800 mb-1 block">Extracurricular <span className="text-gray-400 text-xs font-normal">(Hrs)</span></label><input type="number" value={extraHours} onChange={(e) => setExtraHours(e.target.value)} min="0" max="24" step="0.5" placeholder="0" className="w-full p-2.5 border border-white/50 bg-white/50 rounded-lg focus:ring-2 focus:ring-blue-400 placeholder-gray-400"/></div>
-                        <div><label className="text-sm font-semibold text-gray-800 mb-1 block">Sleep Hours <span className="text-gray-400 text-xs font-normal">(Hrs)</span></label><input type="number" value={sleepHours} onChange={(e) => setSleepHours(e.target.value)} min="0" max="24" step="0.5" placeholder="0" className="w-full p-2.5 border border-white/50 bg-white/50 rounded-lg focus:ring-2 focus:ring-blue-400 placeholder-gray-400" data-required="true"/></div>
-                        <div><label className="text-sm font-semibold text-gray-800 mb-1 block">Social Hours <span className="text-gray-400 text-xs font-normal">(Hrs)</span></label><input type="number" value={socialHours} onChange={(e) => setSocialHours(e.target.value)} min="0" max="24" step="0.5" placeholder="0" className="w-full p-2.5 border border-white/50 bg-white/50 rounded-lg focus:ring-2 focus:ring-blue-400 placeholder-gray-400"/></div>
-                        <div><label className="text-sm font-semibold text-gray-800 mb-1 block">Physical Activity <span className="text-gray-400 text-xs font-normal">(Exercise Hrs)</span></label><input type="number" value={physicalHours} onChange={(e) => setPhysicalHours(e.target.value)} min="0" max="24" step="0.5" placeholder="0" className="w-full p-2.5 border border-white/50 bg-white/50 rounded-lg focus:ring-2 focus:ring-blue-400 placeholder-gray-400"/></div>
+                        <div><label className="text-sm font-semibold text-text-primary mb-1 block">Study Hours <span className="text-text-muted text-xs font-normal">(Hrs)</span></label><input type="number" value={studyHours} onChange={(e) => setStudyHours(e.target.value)} min="0" max="24" step="0.5" placeholder="0" className="w-full p-2.5 border border-white/50 bg-surface-elevated/50 glass-panel rounded-lg focus:ring-2 focus:ring-blue-400 placeholder:text-text-muted"/></div>
+                        <div><label className="text-sm font-semibold text-text-primary mb-1 block">Extracurricular <span className="text-text-muted text-xs font-normal">(Hrs)</span></label><input type="number" value={extraHours} onChange={(e) => setExtraHours(e.target.value)} min="0" max="24" step="0.5" placeholder="0" className="w-full p-2.5 border border-white/50 bg-surface-elevated/50 glass-panel rounded-lg focus:ring-2 focus:ring-blue-400 placeholder:text-text-muted"/></div>
+                        <div><label className="text-sm font-semibold text-text-primary mb-1 block">Sleep Hours <span className="text-text-muted text-xs font-normal">(Hrs)</span></label><input type="number" value={sleepHours} onChange={(e) => setSleepHours(e.target.value)} min="0" max="24" step="0.5" placeholder="0" className="w-full p-2.5 border border-white/50 bg-surface-elevated/50 glass-panel rounded-lg focus:ring-2 focus:ring-blue-400 placeholder:text-text-muted" data-required="true"/></div>
+                        <div><label className="text-sm font-semibold text-text-primary mb-1 block">Social Hours <span className="text-text-muted text-xs font-normal">(Hrs)</span></label><input type="number" value={socialHours} onChange={(e) => setSocialHours(e.target.value)} min="0" max="24" step="0.5" placeholder="0" className="w-full p-2.5 border border-white/50 bg-surface-elevated/50 glass-panel rounded-lg focus:ring-2 focus:ring-blue-400 placeholder:text-text-muted"/></div>
+                        <div><label className="text-sm font-semibold text-text-primary mb-1 block">Physical Activity <span className="text-text-muted text-xs font-normal">(Exercise Hrs)</span></label><input type="number" value={physicalHours} onChange={(e) => setPhysicalHours(e.target.value)} min="0" max="24" step="0.5" placeholder="0" className="w-full p-2.5 border border-white/50 bg-surface-elevated/50 glass-panel rounded-lg focus:ring-2 focus:ring-blue-400 placeholder:text-text-muted"/></div>
                       </div>
 
                       <hr className="border-t border-white/20 my-1" />
                       <div>
-                        <label className="block text-sm font-semibold text-gray-800 mb-3 text-center">How are you feeling today?</label>
+                        <label className="block text-sm font-semibold text-text-primary mb-3 text-center">How are you feeling today?</label>
                         <div className="flex justify-around">
                           {moods.map((emo, idx) => (
                             <button key={idx} type="button" className={`w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center text-2xl md:text-3xl transition-transform cursor-pointer ${moodIndex === idx ? "scale-110 shadow-lg" : "hover:scale-105"}`} onClick={() => setMoodIndex(idx)} style={{ backgroundColor: moodIndex === idx ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.45)" }}>
@@ -1623,8 +1623,8 @@ export default function Dashboard() {
                   </form>
 
                   {isSaving && (
-                    <div className="absolute inset-0 z-40 flex items-center justify-center rounded-[20px] bg-white/70 backdrop-blur-sm">
-                      <div className="flex items-center justify-center rounded-2xl bg-white px-4 py-3 shadow-lg" aria-label="Processing entry">
+                    <div className="absolute inset-0 z-40 flex items-center justify-center rounded-[20px] bg-surface-elevated/70 glass-panel backdrop-blur-sm">
+                      <div className="flex items-center justify-center rounded-2xl bg-surface-elevated glass-panel px-4 py-3 shadow-lg" aria-label="Processing entry">
                         <span className="h-5 w-5 rounded-full border-2 border-blue-500 border-t-transparent animate-spin" />
                       </div>
                     </div>
@@ -1632,7 +1632,7 @@ export default function Dashboard() {
 
                   {/* INTERNAL SUCCESS OVERLAY */}
                   {successModal.visible && (
-                    <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-[20px]" style={{ animation: "fadeIn 0.3s ease-out" }}>
+                    <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-surface-elevated/90 dark:bg-surface/90 backdrop-blur-md rounded-[20px]" style={{ animation: "fadeIn 0.3s ease-out" }}>
                       
                       <div className="w-24 h-24 rounded-full flex items-center justify-center shadow-lg mb-4 animate-success-icon" style={{ backgroundColor: "rgb(var(--surface-elevated))", border: `4px solid ${brandGreen}` }}>
                         <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke={brandGreen} strokeWidth="3">
@@ -1640,16 +1640,16 @@ export default function Dashboard() {
                         </svg>
                       </div>
 
-                      <h2 className="text-2xl font-bold text-gray-800 mb-2" style={{ opacity: 0, animation: "fadeInUp 0.5s ease-out forwards 0.5s" }}>
+                      <h2 className="text-2xl font-bold text-text-primary mb-2" style={{ opacity: 0, animation: "fadeInUp 0.5s ease-out forwards 0.5s" }}>
                         {successModal.title}
                       </h2>
 
-                      <p className="text-gray-600 text-center px-8 mb-4" style={{ opacity: 0, animation: "fadeInUp 0.5s ease-out forwards 0.7s" }}>
+                      <p className="text-text-secondary text-center px-8 mb-4" style={{ opacity: 0, animation: "fadeInUp 0.5s ease-out forwards 0.7s" }}>
                         {successModal.text}
                       </p>
 
-                      <div className="px-6 border-t border-gray-200 pt-3 mt-1" style={{ opacity: 0, animation: "fadeInUp 0.5s ease-out forwards 0.9s" }}>
-                        <p className="text-[10px] text-gray-400 font-medium text-center">
+                      <div className="px-6 border-t border-border pt-3 mt-1" style={{ opacity: 0, animation: "fadeInUp 0.5s ease-out forwards 0.9s" }}>
+                        <p className="text-[10px] text-text-muted font-medium text-center">
                            🤖 AI prediction only. Not a medical diagnosis.
                         </p>
                       </div>
@@ -1662,9 +1662,9 @@ export default function Dashboard() {
           </section>
 
           {/* CALENDAR SECTION (FIXED BUTTONS) */}
-          <section className="col-span-1 md:col-span-2 p-6 md:p-8 rounded-[20px] bg-white/40 backdrop-blur-md border border-white/20 shadow-xl relative overflow-hidden" style={{ minHeight: 600 }}>
+          <section className="col-span-1 md:col-span-2 p-6 md:p-8 rounded-[20px] bg-surface-elevated/40 glass-panel backdrop-blur-md border border-white/20 shadow-xl relative overflow-hidden" style={{ minHeight: 600 }}>
             {isLoadingLogs && (
-              <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/70 backdrop-blur-sm">
+              <div className="absolute inset-0 z-20 flex items-center justify-center bg-surface-elevated/70 glass-panel backdrop-blur-sm">
                 <div className="h-12 w-12 rounded-full border-4 border-blue-200 border-t-blue-500 animate-spin" />
               </div>
             )}
@@ -1674,7 +1674,7 @@ export default function Dashboard() {
                 {/* Tombol Back (Previous Month) - MENGGUNAKAN SVG AGAR PASTI MUNCUL */}
                 <button 
                   type="button"
-                  className="w-10 h-10 flex items-center justify-center rounded-full bg-white/50 hover:bg-white text-gray-600 hover:text-brandBlue shadow-sm transition-all cursor-pointer border border-white/20" 
+                  className="w-10 h-10 flex items-center justify-center rounded-full bg-surface-elevated/50 glass-panel hover:bg-surface-elevated glass-panel text-text-secondary hover:text-brandBlue shadow-sm transition-all cursor-pointer border border-white/20" 
                   onClick={() => changeMonth(-1)}
                   title="Previous Month"
                 >
@@ -1685,7 +1685,7 @@ export default function Dashboard() {
 
                 {/* Judul Bulan & Tahun */}
                 <div className="flex flex-col items-center">
-                  <h3 className="text-xl font-extrabold text-gray-800 tracking-tight">
+                  <h3 className="text-xl font-extrabold text-text-primary tracking-tight">
                     {monthNames[month]} {year}
                   </h3>
                   {(month !== today.getMonth() || year !== today.getFullYear()) && (
@@ -1701,7 +1701,7 @@ export default function Dashboard() {
                 {/* Tombol Next (Next Month) - MENGGUNAKAN SVG AGAR PASTI MUNCUL */}
                 <button 
                   type="button"
-                  className="w-10 h-10 flex items-center justify-center rounded-full bg-white/50 hover:bg-white text-gray-600 hover:text-brandBlue shadow-sm transition-all cursor-pointer border border-white/20" 
+                  className="w-10 h-10 flex items-center justify-center rounded-full bg-surface-elevated/50 glass-panel hover:bg-surface-elevated glass-panel text-text-secondary hover:text-brandBlue shadow-sm transition-all cursor-pointer border border-white/20" 
                   onClick={() => changeMonth(1)}
                   title="Next Month"
                 >
@@ -1714,7 +1714,7 @@ export default function Dashboard() {
               {/* Nama Hari */}
               <div className="grid grid-cols-7 gap-1 mb-3 text-center">
                 {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
-                  <div key={d} className="text-xs font-bold text-gray-400 uppercase tracking-wider">{d}</div>
+                  <div key={d} className="text-xs font-bold text-text-muted uppercase tracking-wider">{d}</div>
                 ))}
               </div>
 
@@ -1746,7 +1746,7 @@ export default function Dashboard() {
                       onClick={() => handleDateClick(day)}
                       className={`
                         aspect-square flex flex-col items-center justify-center rounded-2xl font-bold text-sm cursor-pointer transition-all duration-300 relative overflow-hidden group
-                        ${isSel ? "text-white shadow-lg scale-105" : "text-gray-600 hover:bg-white/80 hover:shadow-md"}
+                        ${isSel ? "text-white shadow-lg scale-105" : "text-text-secondary hover:bg-surface-elevated/80 hover:shadow-md"}
                         ${!isSel && isRealToday ? "bg-blue-50 border-2 border-blue-200" : ""}
                       `}
                       style={{
@@ -1757,7 +1757,7 @@ export default function Dashboard() {
                       <span className="relative z-10">{day}</span>
                       {hasData && (
                         <div 
-                          className={`mt-1 w-1.5 h-1.5 rounded-full transition-all duration-300 ${isSel ? "bg-white" : ""}`} 
+                          className={`mt-1 w-1.5 h-1.5 rounded-full transition-all duration-300 ${isSel ? "bg-surface-elevated" : ""}`} 
                           style={{ backgroundColor: isSel ? "white" : has.color }} 
                         />
                       )}
@@ -1766,17 +1766,17 @@ export default function Dashboard() {
                 })}
               </div>
 
-              <div className="mt-4 rounded-2xl border border-white/40 bg-white/60 p-4 shadow-sm dark:border-slate-700/70 dark:bg-slate-900/70">
+              <div className="mt-4 rounded-2xl border border-white/40 bg-surface-elevated/60 glass-panel p-4 shadow-sm dark:border-border/70 dark:bg-surface/70">
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
                     <div className="h-10 w-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center dark:bg-orange-500/20 dark:text-orange-200">
                       <span className="text-lg">🔥</span>
                     </div>
                     <div>
-                      <h4 className="text-sm font-bold text-gray-800 dark:text-slate-100">Restore Streak</h4>
-                      <p className="text-xs text-gray-500 dark:text-slate-300">
+                      <h4 className="text-sm font-bold text-text-primary dark:text-text-primary">Restore Streak</h4>
+                      <p className="text-xs text-text-muted dark:text-text-muted">
                         Remaining:{" "}
-                        <span className="font-semibold text-gray-700 dark:text-slate-200">
+                        <span className="font-semibold text-text-secondary dark:text-text-primary">
                           {restoreRemaining}/{restoreLimit}
                         </span>
                       </p>
@@ -1796,14 +1796,14 @@ export default function Dashboard() {
                       eligibilityLoading ||
                       restoreRemaining <= 0 ||
                       !canRestoreSelectedDay
-                        ? "bg-gray-200 text-gray-400 cursor-not-allowed dark:bg-slate-800 dark:text-slate-500"
+                        ? "bg-surface-muted text-text-muted cursor-not-allowed dark:bg-surface dark:text-text-muted"
                         : "bg-orange-500 text-white hover:bg-orange-600"
                     }`}
                   >
                     Restore {selectedDateKey}
                   </button>
                 </div>
-                <p className="text-xs text-gray-500 mt-2 dark:text-slate-300">{restoreHint}</p>
+                <p className="text-xs text-text-muted mt-2 dark:text-text-muted">{restoreHint}</p>
                 {eligibilityError && (
                   <p className="text-xs text-red-500 mt-1">{eligibilityError}</p>
                 )}
@@ -1811,20 +1811,20 @@ export default function Dashboard() {
 
               {/* --- NEW SECTION: 3-DAY FORECAST --- */}
               <div className="mt-auto pt-6 pb-2">
-                <div className="w-full h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent mb-4 dark:via-slate-700"></div>
+                <div className="w-full h-px bg-gradient-to-r from-transparent via-border to-transparent mb-4 dark:via-border"></div>
                 <div className="flex items-center justify-between mb-3">
-                   <h4 className="text-sm font-bold text-gray-700 dark:text-slate-100 flex items-center gap-2">
-                      <i className="ph ph-crystal-ball text-purple-500 text-lg"></i>
+                   <h4 className="text-sm font-bold text-text-secondary dark:text-text-primary flex items-center gap-2">
+                      <i className="ph ph-crystal-ball text-brand-info text-lg"></i>
                       3-Day Forecast
                    </h4>
                    <div className="relative group">
                       <span
-                        className="text-[10px] bg-purple-50 text-purple-600 px-2 py-0.5 rounded font-bold uppercase tracking-wider cursor-help dark:bg-purple-500/20 dark:text-purple-200"
+                        className="text-[10px] bg-brand-info/10 text-brand-primary px-2 py-0.5 rounded font-bold uppercase tracking-wider cursor-help dark:bg-brand-info/20 dark:text-brand-info"
                         title={forecastModeDescription}
                       >
                         {forecastModeLabel}
                       </span>
-                      <div className="pointer-events-none absolute right-0 mt-2 w-48 rounded-lg border border-purple-100 bg-white/95 p-2 text-[10px] text-purple-700 shadow-lg opacity-0 transition-opacity duration-200 group-hover:opacity-100 dark:border-purple-500/30 dark:bg-slate-900/95 dark:text-purple-100">
+                      <div className="pointer-events-none absolute right-0 bottom-full mb-2 w-52 max-w-[220px] rounded-lg border border-brand-info/20 bg-surface-elevated/95 p-2 text-[10px] text-brand-primary shadow-lg opacity-0 transition-opacity duration-200 group-hover:opacity-100 dark:border-brand-info/30 dark:bg-surface/95 dark:text-brand-info">
                         {forecastModeDescription}
                       </div>
                    </div>
@@ -1835,22 +1835,22 @@ export default function Dashboard() {
                       Array.from({ length: 3 }).map((_, idx) => (
                         <div
                           key={`forecast-loading-${idx}`}
-                          className="relative rounded-xl p-3 flex flex-col items-center text-center border border-white/40 bg-white/50 animate-pulse dark:border-slate-700 dark:bg-slate-900/60"
+                          className="relative rounded-xl p-3 flex flex-col items-center text-center border border-white/40 bg-surface-elevated/50 glass-panel animate-pulse dark:border-border dark:bg-surface/60"
                         >
-                          <div className="h-3 w-12 bg-gray-200 rounded mb-3 dark:bg-slate-700" />
-                          <div className="h-6 w-6 bg-gray-200 rounded-full mb-2 dark:bg-slate-700" />
-                          <div className="h-4 w-14 bg-gray-200 rounded mb-2 dark:bg-slate-700" />
-                          <div className="h-3 w-16 bg-gray-200 rounded-full dark:bg-slate-700" />
+                          <div className="h-3 w-12 bg-surface-muted rounded mb-3 dark:bg-surface-muted" />
+                          <div className="h-6 w-6 bg-surface-muted rounded-full mb-2 dark:bg-surface-muted" />
+                          <div className="h-4 w-14 bg-surface-muted rounded mb-2 dark:bg-surface-muted" />
+                          <div className="h-3 w-16 bg-surface-muted rounded-full dark:bg-surface-muted" />
                         </div>
                       ))
                     )}
                     {!forecastLoading && forecastError && (
-                      <div className="col-span-3 text-center text-xs font-semibold text-gray-500 bg-white/60 border border-gray-200 rounded-xl px-3 py-4 whitespace-pre-line dark:bg-slate-900/70 dark:border-slate-700 dark:text-slate-300">
+                      <div className="col-span-3 text-center text-xs font-semibold text-text-muted bg-surface-elevated/60 glass-panel border border-border rounded-xl px-3 py-4 whitespace-pre-line dark:bg-surface/70 dark:border-border dark:text-text-muted">
                         {forecastError}
                       </div>
                     )}
                     {!forecastLoading && !forecastError && forecastList.length === 0 && (
-                      <div className="col-span-3 text-center text-xs font-semibold text-gray-500 bg-white/60 border border-gray-200 rounded-xl px-3 py-4 dark:bg-slate-900/70 dark:border-slate-700 dark:text-slate-300">
+                      <div className="col-span-3 text-center text-xs font-semibold text-text-muted bg-surface-elevated/60 glass-panel border border-border rounded-xl px-3 py-4 dark:bg-surface/70 dark:border-border dark:text-text-muted">
                         Forecast is not available yet.
                       </div>
                     )}
@@ -1861,17 +1861,17 @@ export default function Dashboard() {
                           onClick={() => setForecastDetail(item)}
                           className={`
                             relative rounded-xl p-3 flex flex-col items-center text-center cursor-pointer 
-                            transition-all duration-300 hover:scale-105 hover:shadow-md border border-transparent hover:border-black/5 active:scale-95
-                            dark:hover:border-slate-600/60
+                            transition-all duration-300 hover:scale-105 hover:shadow-md border border-transparent hover:border-border/60 active:scale-95
+                            dark:hover:border-border/60
                             ${item.bg}
                           `}
                         >
-                           <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 dark:text-slate-400">{item.dateStr}</span>
+                           <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest mb-1 dark:text-text-muted">{item.dateStr}</span>
                            <div className="text-2xl mb-1" style={{ color: item.color }}>
                               <i className={`ph ${item.icon}`}></i>
                            </div>
                            <div className="font-extrabold text-sm uppercase" style={{ color: item.color }}>{item.status}</div>
-                           <div className="text-[10px] font-medium text-gray-500 mt-1 flex items-center gap-1 bg-white/50 px-2 py-0.5 rounded-full dark:bg-slate-900/70 dark:text-slate-200">
+                           <div className="text-[10px] font-medium text-text-muted mt-1 flex items-center gap-1 bg-surface-elevated/50 glass-panel px-2 py-0.5 rounded-full dark:bg-surface/70 dark:text-text-primary">
                               <i className="ph ph-trend-up"></i> {item.probability}%
                            </div>
                         </div>
@@ -1884,13 +1884,13 @@ export default function Dashboard() {
 
             {/* DETAIL CARD OVERLAY (Calendar Day Click) */}
             {dayDetail && (
-              <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/10 backdrop-blur-sm p-4 animate-card-enter" onClick={() => setDayDetail(null)}>
-                <div className="relative w-full max-w-sm rounded-2xl p-6 shadow-2xl border border-gray-100 overflow-hidden bg-white" onClick={(e) => e.stopPropagation()}>
+              <div className="absolute inset-0 z-10 flex items-center justify-center bg-surface-elevated/10 backdrop-blur-sm p-4 animate-card-enter" onClick={() => setDayDetail(null)}>
+                <div className="relative w-full max-w-sm rounded-2xl p-6 shadow-2xl border border-border-subtle overflow-hidden bg-surface-elevated" onClick={(e) => e.stopPropagation()}>
                   <div className="absolute -right-6 -bottom-6 text-9xl opacity-10 select-none pointer-events-none grayscale">{dayDetail.mood}</div>
                   <div className="flex justify-between items-start mb-6">
                     <div>
-                        <h4 className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">Daily Recap</h4>
-                        <h2 className="text-2xl font-extrabold text-gray-800">{dayDetail.dateStr}</h2>
+                        <h4 className="text-text-muted text-xs font-bold uppercase tracking-wider mb-1">Daily Recap</h4>
+                        <h2 className="text-2xl font-extrabold text-text-primary">{dayDetail.dateStr}</h2>
                         {dayDetail.isRestored && (
                           <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-orange-600 bg-orange-50 border border-orange-100 rounded-full px-2 py-0.5 mt-2">
                             <i className="ph ph-clock-counter-clockwise" />
@@ -1898,37 +1898,37 @@ export default function Dashboard() {
                           </span>
                         )}
                     </div>
-                    <button onClick={() => setDayDetail(null)} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition cursor-pointer">
-                        <i className="ph ph-x text-lg text-gray-600"></i>
+                    <button onClick={() => setDayDetail(null)} className="p-2 bg-surface-muted rounded-full hover:bg-surface-muted transition cursor-pointer">
+                        <i className="ph ph-x text-lg text-text-secondary"></i>
                     </button>
                   </div>
                   
                   <div className="flex items-center gap-4 mb-6">
                     <div className="relative w-24 h-24 rounded-full flex items-center justify-center border-[5px]" style={{ borderColor: dayDetail.color }}>
                       <div className="text-center">
-                        <div className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Status</div>
+                        <div className="text-[10px] text-text-muted font-bold uppercase tracking-widest mb-1">Status</div>
                         <div className="text-lg font-black uppercase leading-none" style={{ color: dayDetail.color }}>
                            {getStatusFromLevel(dayDetail.level) === 2 ? "High" : getStatusFromLevel(dayDetail.level) === 1 ? "Mod" : "Low"}
                         </div>
                       </div>
                     </div>
-                    <div className="flex-1"><p className="text-sm font-semibold text-gray-600 italic">"{dayDetail.level > 60 ? "Take a break, you need it." : "Keep it up and maintain balance!"}"</p></div>
+                    <div className="flex-1"><p className="text-sm font-semibold text-text-secondary italic">"{dayDetail.level > 60 ? "Take a break, you need it." : "Keep it up and maintain balance!"}"</p></div>
                   </div>
                   
                   <div className="space-y-3 custom-scroll" style={{ maxHeight: "220px", overflowY: "auto", paddingRight: "4px" }}>
                     {[
                       { l: "Sleep", v: dayDetail.sleep, max: 10, c: "bg-purple-500", i: "ph-moon-stars" },
                       { l: "Study", v: dayDetail.study, max: 12, c: "bg-blue-500", i: "ph-book-open" },
-                      { l: "Extra", v: dayDetail.extra || 0, max: 8, c: "bg-pink-500", i: "ph-medal" },
+                      { l: "Extra", v: dayDetail.extra || 0, max: 8, c: "bg-brand-warning", i: "ph-medal" },
                       { l: "Social", v: dayDetail.social, max: 8, c: "bg-orange-500", i: "ph-users" },
                       { l: "Exercise", v: dayDetail.physical || 0, max: 4, c: "bg-teal-500", i: "ph-sneaker" },
                     ].map((s, idx) => (
                        <div key={idx}>
-                         <div className="flex justify-between text-xs font-bold text-gray-600 mb-1">
+                         <div className="flex justify-between text-xs font-bold text-text-secondary mb-1">
                             <span className="flex items-center gap-1"><i className={`ph ${s.i} text-${s.c.split('-')[1]}-500`} /> {s.l}</span>
                             <span>{s.v} hrs</span>
                          </div>
-                         <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
+                         <div className="h-2 w-full bg-surface-muted rounded-full overflow-hidden">
                             <div className={`h-full ${s.c} rounded-full`} style={{ width: `${Math.min((s.v / s.max) * 100, 100)}%` }} />
                          </div>
                        </div>
@@ -1944,7 +1944,7 @@ export default function Dashboard() {
                 // Disini kita gunakan forecastDetail.panelTheme untuk warna container (tanpa opacity class)
                 // Hapus bg-opacity-95 agar solid, tambahkan shadow-2xl agar lebih kontras dengan background
                 className={`
-                  absolute inset-x-0 bottom-0 z-30 rounded-t-[24px] shadow-2xl border-t border-gray-100 overflow-hidden dark:border-slate-700
+                  absolute inset-x-0 bottom-0 z-30 rounded-t-[24px] shadow-2xl border-t border-border-subtle overflow-hidden dark:border-border
                   ${isClosingPanel ? "animate-slide-down-panel" : "animate-slide-up-panel"}
                   ${forecastDetail.panelTheme}
                 `}
@@ -1952,24 +1952,24 @@ export default function Dashboard() {
               >
                   {/* Handle Bar for aesthetics */}
                   <div className="w-full flex justify-center pt-3 pb-1" onClick={handleCloseForecast}>
-                     <div className="w-12 h-1.5 bg-gray-400/30 rounded-full cursor-pointer hover:bg-gray-400/50 transition-colors dark:bg-slate-500/40 dark:hover:bg-slate-500/60" />
+                     <div className="w-12 h-1.5 bg-surface-muted/60 rounded-full cursor-pointer hover:bg-surface-muted/80 transition-colors dark:bg-surface-muted/70 dark:hover:bg-surface-muted/90" />
                   </div>
 
                   <div className="p-6 pt-2">
                      <div className="flex justify-between items-start mb-4">
                         <div>
                            <div className="flex items-center gap-2 mb-1">
-                              <span className="text-xs font-bold text-gray-500 uppercase tracking-widest dark:text-slate-300">{forecastDetail.fullDate}</span>
-                              <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold bg-white/60 border ${forecastDetail.border}`} style={{ color: forecastDetail.color }}>
+                              <span className="text-xs font-bold text-text-muted uppercase tracking-widest dark:text-text-muted">{forecastDetail.fullDate}</span>
+                              <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold bg-surface-elevated/60 glass-panel border ${forecastDetail.border}`} style={{ color: forecastDetail.color }}>
                                  {forecastDetail.status} Risk
                               </span>
                            </div>
-                           <h3 className="text-xl font-bold text-gray-800 dark:text-slate-100">Stress Forecast Advice</h3>
+                           <h3 className="text-xl font-bold text-text-primary dark:text-text-primary">Stress Forecast Advice</h3>
                         </div>
                         {/* TOMBOL X DIGANTI DENGAN SVG */}
                         <button 
                            onClick={handleCloseForecast} 
-                           className="w-8 h-8 rounded-full bg-white/40 text-gray-600 hover:bg-white/60 hover:text-gray-900 flex items-center justify-center transition-all cursor-pointer dark:bg-slate-900/60 dark:text-slate-200 dark:hover:bg-slate-800"
+                           className="w-8 h-8 rounded-full bg-surface-elevated/40 glass-panel text-text-secondary hover:bg-surface-elevated/60 glass-panel hover:text-text-primary flex items-center justify-center transition-all cursor-pointer dark:bg-surface/60 dark:text-text-primary dark:hover:bg-surface"
                         >
                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
                               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -1977,17 +1977,17 @@ export default function Dashboard() {
                         </button>
                      </div>
 
-                     <div className={`p-4 rounded-xl border ${forecastDetail.border} bg-white/40 flex items-start gap-3 dark:bg-slate-900/60`}>
+                     <div className={`p-4 rounded-xl border ${forecastDetail.border} bg-surface-elevated/40 glass-panel flex items-start gap-3 dark:bg-surface/60`}>
                         <i className={`ph ${forecastDetail.icon} text-2xl mt-0.5`} style={{ color: forecastDetail.color }}></i>
                         <div>
-                           <p className="text-sm text-gray-800 font-medium leading-relaxed dark:text-slate-100">
+                           <p className="text-sm text-text-primary font-medium leading-relaxed dark:text-text-primary">
                               {forecastDetail.advice}
                            </p>
                            <div className="mt-2 flex items-center gap-1 text-xs font-bold opacity-70" style={{ color: forecastDetail.color }}>
                               <i className="ph ph-lightning"></i> Confidence: {forecastDetail.probability}%
                            </div>
                            {(forecastDetail.forecastMode || forecastDetail.modelType || typeof forecastDetail.threshold === "number") && (
-                             <div className="mt-1 text-[11px] font-semibold text-gray-500 dark:text-slate-300">
+                             <div className="mt-1 text-[11px] font-semibold text-text-muted dark:text-text-muted">
                                {forecastDetail.forecastMode && (
                                  <span>
                                    Forecast:{" "}
@@ -2013,7 +2013,7 @@ export default function Dashboard() {
                         </div>
                      </div>
                      
-                    <button onClick={handleCloseForecast} className="w-full mt-4 py-3 bg-slate-100 text-slate-900 rounded-xl font-bold text-sm shadow-lg hover:bg-white transition-transform active:scale-95 cursor-pointer dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800">
+                    <button onClick={handleCloseForecast} className="w-full mt-4 py-3 bg-surface-muted text-text-primary rounded-xl font-bold text-sm shadow-lg hover:bg-surface-elevated glass-panel transition-transform active:scale-95 cursor-pointer dark:bg-surface dark:text-text-primary dark:hover:bg-surface">
                         Got it!
                      </button>
                   </div>
@@ -2026,7 +2026,7 @@ export default function Dashboard() {
         <div className="mt-8 grid grid-cols-1">
           {/* ... (Section motivasi tetap sama) ... */}
           <section className="col-span-4 relative overflow-hidden rounded-[24px] shadow-xl group transition-all duration-500 hover:shadow-orange-100">
-            <div className="absolute inset-0 bg-white/60 backdrop-blur-xl border border-white/40 dark:bg-slate-900/80 dark:border-slate-700/60 z-0"></div>
+            <div className="absolute inset-0 bg-surface-elevated/60 glass-panel backdrop-blur-xl border border-white/40 dark:bg-surface/80 dark:border-border/60 z-0"></div>
             <div className="absolute -left-10 -top-10 w-40 h-40 bg-orange-300 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob"></div>
             <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-purple-300 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob animation-delay-2000"></div>
             <div className="relative z-10 p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-6">
@@ -2038,18 +2038,18 @@ export default function Dashboard() {
                   </p>
                   <div className={`transition-all duration-500 ${isQuoteAnimating ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"}`}>
                     {quoteLoading ? (
-                      <p className="text-gray-500 dark:text-slate-300 font-medium">Loading daily wisdom...</p>
+                      <p className="text-text-muted dark:text-text-muted font-medium">Loading daily wisdom...</p>
                     ) : quoteError ? (
                       <p className="text-rose-500 font-medium">{quoteError}</p>
                     ) : quoteData.text ? (
                       <>
-                        <h3 className="text-2xl md:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-slate-700 to-slate-500 dark:from-slate-100 dark:to-slate-300 leading-tight mb-2">
+                        <h3 className="text-2xl md:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-text-secondary to-text-muted dark:from-text-primary dark:to-text-secondary leading-tight mb-2">
                           "{quoteData.text}"
                         </h3>
-                        <p className="text-gray-500 dark:text-slate-300 font-medium italic">— {quoteData.author}</p>
+                        <p className="text-text-muted dark:text-text-muted font-medium italic">— {quoteData.author}</p>
                       </>
                     ) : (
-                      <p className="text-gray-500 dark:text-slate-300 font-medium">No quotes available yet.</p>
+                      <p className="text-text-muted dark:text-text-muted font-medium">No quotes available yet.</p>
                     )}
                   </div>
                 </div>
@@ -2057,7 +2057,7 @@ export default function Dashboard() {
               <button
                 onClick={handleNewQuote}
                 disabled={isQuoteAnimating || quoteLoading || quotePool.length === 0}
-                className="flex-shrink-0 group relative px-6 py-3 rounded-xl bg-white border border-gray-200 text-gray-700 font-bold shadow-sm hover:shadow-md hover:border-orange-300 hover:text-orange-600 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 dark:hover:text-orange-300 transition-all active:scale-95 disabled:opacity-70 cursor-pointer"
+                className="flex-shrink-0 group relative px-6 py-3 rounded-xl bg-surface-elevated glass-panel border border-border text-text-secondary font-bold shadow-sm hover:shadow-md hover:border-orange-300 hover:text-orange-600 dark:bg-surface dark:border-border dark:text-text-primary dark:hover:text-orange-300 transition-all active:scale-95 disabled:opacity-70 cursor-pointer"
               >
                 <span className="flex items-center gap-2">
                   <i className={`ph ph-arrows-clockwise text-xl transition-transform duration-700 ${isQuoteAnimating ? "rotate-180" : ""}`}></i>
@@ -2069,7 +2069,7 @@ export default function Dashboard() {
 
           <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
             {tipsLoading ? (
-              <div className="col-span-full bg-white/70 border border-white/50 rounded-2xl p-6 text-center text-gray-500 font-medium">
+              <div className="col-span-full bg-surface-elevated/70 glass-panel border border-white/50 rounded-2xl p-6 text-center text-text-muted font-medium">
                 Loading tips...
               </div>
             ) : tipsError ? (
@@ -2077,7 +2077,7 @@ export default function Dashboard() {
                 {tipsError}
               </div>
             ) : tipCards.length === 0 ? (
-              <div className="col-span-full bg-white/70 border border-white/50 rounded-2xl p-6 text-center text-gray-500 font-medium">
+              <div className="col-span-full bg-surface-elevated/70 glass-panel border border-white/50 rounded-2xl p-6 text-center text-text-muted font-medium">
                 No tips available yet.
               </div>
             ) : (
@@ -2107,25 +2107,25 @@ export default function Dashboard() {
       <Footer />
 
       {missingRestorePopup && (
-        <div className="fixed inset-0 z-[1090] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fadeIn">
+        <div className="fixed inset-0 z-[1090] flex items-center justify-center p-4 bg-neutral-950/50 backdrop-blur-sm animate-fadeIn">
           <div className="absolute inset-0 cursor-pointer" onClick={handleCloseMissingPopup} />
-          <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden animate-modal-slide">
+          <div className="relative w-full max-w-md bg-surface-elevated glass-panel rounded-3xl shadow-2xl overflow-hidden animate-modal-slide">
             <div className="p-8">
               <div className="flex items-start justify-between gap-4 mb-2">
-                <h2 className="text-xl font-extrabold text-gray-900">
+                <h2 className="text-xl font-extrabold text-text-primary">
                   You have missed dates
                 </h2>
                 <button
                   type="button"
                   onClick={handleCloseMissingPopup}
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-gray-500 hover:text-gray-800 hover:bg-gray-100 transition-colors cursor-pointer"
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-surface-muted transition-colors cursor-pointer"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
               </div>
-              <p className="text-sm text-gray-600 mb-4">
+              <p className="text-sm text-text-secondary mb-4">
                 You have <span className="font-semibold">{missingRestorePopup.count}</span>{" "}
                 missing dates. Use restore to fill these days:
               </p>
@@ -2153,7 +2153,7 @@ export default function Dashboard() {
                   Auto fill
                 </button>
               </div>
-              <p className="mt-3 text-xs text-gray-500">
+              <p className="mt-3 text-xs text-text-muted">
                 Auto fill uses nearby averages. You can still edit the data afterward.
               </p>
             </div>
@@ -2162,14 +2162,14 @@ export default function Dashboard() {
       )}
 
       {showTodayReminder && (
-        <div className="fixed inset-0 z-[1080] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fadeIn">
+        <div className="fixed inset-0 z-[1080] flex items-center justify-center p-4 bg-neutral-950/50 backdrop-blur-sm animate-fadeIn">
           <div className="absolute inset-0 cursor-pointer" onClick={() => setShowTodayReminder(false)} />
-          <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden animate-modal-slide">
+          <div className="relative w-full max-w-md bg-surface-elevated glass-panel rounded-3xl shadow-2xl overflow-hidden animate-modal-slide">
             <div className="p-8">
-              <h2 className="text-xl font-extrabold text-gray-900 mb-2">
+              <h2 className="text-xl font-extrabold text-text-primary mb-2">
                 Time to log today
               </h2>
-              <p className="text-sm text-gray-600 mb-6">
+              <p className="text-sm text-text-secondary mb-6">
                 You have not logged today yet. Log now to keep your streak safe.
               </p>
               <div className="flex items-center gap-3">
@@ -2181,7 +2181,7 @@ export default function Dashboard() {
                 </button>
                 <button
                   onClick={() => setShowTodayReminder(false)}
-                  className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl font-bold shadow-sm hover:bg-gray-200 transition-transform active:scale-95 cursor-pointer"
+                  className="flex-1 py-3 bg-surface-muted text-text-secondary rounded-xl font-bold shadow-sm hover:bg-surface-muted transition-transform active:scale-95 cursor-pointer"
                 >
                   Later
                 </button>
@@ -2193,30 +2193,30 @@ export default function Dashboard() {
        
       {/* MODAL TIPS */}
       {activeTip && (
-        <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fadeIn">
+        <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4 bg-neutral-950/50 backdrop-blur-sm animate-fadeIn">
           <div className="absolute inset-0 cursor-pointer" onClick={() => setActiveTip(null)} />
            
-          <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden animate-modal-slide">
+          <div className="relative w-full max-w-md bg-surface-elevated glass-panel rounded-3xl shadow-2xl overflow-hidden animate-modal-slide">
              <div className={`h-32 w-full ${activeTip.theme.bg} relative flex items-center justify-center`}>
                 <div className="text-6xl animate-bounce">{activeTip.emoji}</div>
              </div>
 
              <div className="p-8 pt-10 relative">
-               <div className="absolute -top-5 left-8 px-4 py-2 bg-white rounded-xl shadow-lg text-sm font-bold tracking-wide text-gray-800 uppercase">
+               <div className="absolute -top-5 left-8 px-4 py-2 bg-surface-elevated glass-panel rounded-xl shadow-lg text-sm font-bold tracking-wide text-text-primary uppercase">
                  {activeTip.category}
                </div>
                
-               <h2 className="text-2xl font-extrabold text-gray-900 mb-3">
+               <h2 className="text-2xl font-extrabold text-text-primary mb-3">
                  {activeTip.title}
                </h2>
                
-               <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100 text-gray-700 leading-relaxed text-sm">
+               <div className="p-4 bg-surface-muted rounded-2xl border border-border-subtle text-text-secondary leading-relaxed text-sm">
                  {activeTip.fullDetail}
                </div>
 
                <button 
                  onClick={() => setActiveTip(null)} 
-                 className={`w-full mt-6 py-3 rounded-xl font-bold shadow-lg shadow-gray-200 transition-transform active:scale-95 cursor-pointer ${activeTip.theme.btn}`}
+                 className={`w-full mt-6 py-3 rounded-xl font-bold shadow-lg shadow-brand-primary/20 transition-transform active:scale-95 cursor-pointer ${activeTip.theme.btn}`}
                >
                  Got it!
                </button>

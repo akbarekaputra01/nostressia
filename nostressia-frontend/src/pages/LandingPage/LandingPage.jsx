@@ -21,7 +21,7 @@ import CTABackground from "../../assets/images/preview2.png";
 
 // 1. Mockup Mood Tracker
 const MoodCard = () => (
-   <div className="bg-surface-elevated p-5 md:p-6 rounded-3xl shadow-xl border border-border w-full max-w-[320px] md:max-w-sm rotate-[-3deg] hover:rotate-0 transition-transform duration-500 relative z-10 mx-auto">
+   <div className="bg-surface-elevated glass-panel p-5 md:p-6 rounded-3xl shadow-xl border border-border w-full max-w-[320px] md:max-w-sm rotate-[-3deg] hover:rotate-0 transition-transform duration-500 relative z-10 mx-auto">
       <div className="flex justify-between items-center mb-4 md:mb-6">
          <span className="font-bold text-text-secondary text-sm md:text-base">How's your mood?</span>
          <span className="text-[10px] md:text-xs text-text-muted">Today</span>
@@ -42,7 +42,7 @@ const MoodCard = () => (
 
 // 2. Mockup Analytics
 const AnalyticsCard = () => (
-    <div className="bg-surface-elevated p-5 md:p-6 rounded-3xl shadow-xl border border-border w-full max-w-[320px] md:max-w-sm rotate-2 hover:rotate-0 transition-transform duration-500 relative group z-10 mx-auto">
+    <div className="bg-surface-elevated glass-panel p-5 md:p-6 rounded-3xl shadow-xl border border-border w-full max-w-[320px] md:max-w-sm rotate-2 hover:rotate-0 transition-transform duration-500 relative group z-10 mx-auto">
        <div className="flex justify-between items-center mb-4 md:mb-6">
           <div>
              <span className="font-bold text-text-secondary block text-sm md:text-base">History</span>
@@ -73,7 +73,7 @@ const AnalyticsCard = () => (
 
 // 3. Mockup Motivation
 const MotivationCard = () => (
-    <div className="bg-surface-elevated p-5 md:p-6 rounded-3xl shadow-xl border border-border w-full max-w-[320px] md:max-w-sm rotate-[-1deg] hover:rotate-0 transition-transform duration-500 relative z-10 mx-auto">
+    <div className="bg-surface-elevated glass-panel p-5 md:p-6 rounded-3xl shadow-xl border border-border w-full max-w-[320px] md:max-w-sm rotate-[-1deg] hover:rotate-0 transition-transform duration-500 relative z-10 mx-auto">
       <div className="flex justify-between items-center mb-4 md:mb-6">
          <div>
              <span className="font-bold text-text-secondary block text-sm md:text-base">Motivation</span>
@@ -95,8 +95,8 @@ const MotivationCard = () => (
 
 // 4. Mockup Tips Page
 const TipsPagePreview = () => (
-    <div className="w-full max-w-[320px] md:max-w-sm bg-surface-elevated rounded-[24px] md:rounded-[32px] shadow-2xl border border-border overflow-hidden relative group rotate-1 hover:rotate-0 transition-transform duration-500 mx-auto">
-       <div className="bg-gradient-to-br from-bg-cream via-bg-pink to-bg-lavender p-5 md:p-6 pb-3 md:pb-4">
+    <div className="w-full max-w-[320px] md:max-w-sm bg-surface-elevated glass-panel rounded-[24px] md:rounded-[32px] shadow-2xl border border-border overflow-hidden relative group rotate-1 hover:rotate-0 transition-transform duration-500 mx-auto">
+       <div className="bg-gradient-to-br from-bg-sun via-bg-orange to-bg-sky p-5 md:p-6 pb-3 md:pb-4">
              <div className="mb-4 md:mb-6">
                  <h3 className="text-xl md:text-2xl font-extrabold text-brand-primary tracking-wide">
                      TIPS
@@ -123,7 +123,7 @@ const TipsPagePreview = () => (
 
 // 5. Mockup Diary
 const DiaryBookPreview = () => (
-    <div className="relative w-full max-w-[320px] md:max-w-sm aspect-[4/3] bg-bg-cream dark:bg-surface-muted rounded-l-2xl rounded-r-2xl shadow-2xl border-l-4 border-r-4 border-border flex overflow-hidden rotate-[-1deg] hover:rotate-0 transition-transform duration-500 group z-10 mx-auto">
+    <div className="relative w-full max-w-[320px] md:max-w-sm aspect-[4/3] bg-bg-sun dark:bg-surface-muted rounded-l-2xl rounded-r-2xl shadow-2xl border-l-4 border-r-4 border-border flex overflow-hidden rotate-[-1deg] hover:rotate-0 transition-transform duration-500 group z-10 mx-auto">
        <div className="flex-1 border-r border-border p-4 relative flex flex-col">
            <h4 className="text-xs md:text-sm font-sans font-bold text-text-secondary mb-3 md:mb-4 opacity-70">Journal</h4>
            <div className="space-y-3 md:space-y-4">
@@ -135,7 +135,7 @@ const DiaryBookPreview = () => (
                </div>
            </div>
        </div>
-       <div className="flex-1 p-4 relative bg-bg-cream dark:bg-surface-muted">
+       <div className="flex-1 p-4 relative bg-bg-sun dark:bg-surface-muted">
            <div className="flex justify-between items-center mb-2 md:mb-3">
                <span className="text-[8px] md:text-[10px] text-text-muted font-bold uppercase tracking-widest">Today</span>
                <div className="text-lg md:text-xl">😌</div>
@@ -186,7 +186,7 @@ const HeroAppPreview = () => {
             <Motion.div 
                animate={{ rotate: [0, 15, -15, 0] }}
                transition={{ repeat: Infinity, repeatDelay: 4, duration: 1 }}
-               className="p-2 bg-surface-elevated rounded-full shadow-sm text-text-muted cursor-pointer hover:text-brand-accent"
+               className="p-2 bg-surface-elevated glass-panel rounded-full shadow-sm text-text-muted cursor-pointer hover:text-brand-accent"
             >
                <Bell size={16} />
             </Motion.div>
@@ -215,7 +215,7 @@ const HeroAppPreview = () => {
          <div className="grid grid-cols-2 gap-3">
             <Motion.div variants={itemVariants} className="bg-brand-accent/10 p-4 rounded-[1.5rem] border border-brand-accent/20 hover:shadow-md transition-shadow cursor-pointer">
                <div className="flex justify-between items-start mb-2">
-                  <div className="p-1.5 bg-surface-elevated rounded-lg text-brand-accent shadow-sm">
+                  <div className="p-1.5 bg-surface-elevated glass-panel rounded-lg text-brand-accent shadow-sm">
                      <Zap size={14} fill="currentColor" />
                   </div>
                   <span className="text-[10px] font-bold text-brand-accent/70">Today</span>
@@ -223,7 +223,7 @@ const HeroAppPreview = () => {
                <p className="text-xs font-medium text-text-secondary italic">"Keep pushing forward."</p>
             </Motion.div>
             
-            <Motion.div variants={itemVariants} className="bg-surface-elevated p-4 rounded-[1.5rem] border border-border shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+            <Motion.div variants={itemVariants} className="bg-surface-elevated glass-panel p-4 rounded-[1.5rem] border border-border shadow-sm hover:shadow-md transition-shadow cursor-pointer">
                <div className="flex justify-between items-start mb-3">
                   <span className="text-xs font-bold text-text-muted">Stress</span>
                   <span className="text-xs font-bold text-brand-info bg-brand-info/10 px-2 py-0.5 rounded-full">Low</span>
@@ -253,7 +253,7 @@ const HeroAppPreview = () => {
       <Motion.div 
          animate={{ y: [-15, 10, -15], rotate: [12, 15, 12] }}
          transition={{ repeat: Infinity, duration: 5, ease: "easeInOut", delay: 0.5 }}
-         className="absolute top-20 -right-8 z-[-1] bg-surface-elevated p-3 rounded-2xl shadow-xl border border-border-subtle hidden md:block"
+         className="absolute top-20 -right-8 z-[-1] bg-surface-elevated glass-panel p-3 rounded-2xl shadow-xl border border-border-subtle hidden md:block"
       >
          <div className="flex items-center gap-2">
             <div className="bg-brand-warning/20 p-2 rounded-full text-brand-accent">
@@ -269,7 +269,7 @@ const HeroAppPreview = () => {
       <Motion.div 
          animate={{ y: [15, -10, 15], rotate: [-6, -3, -6] }}
          transition={{ repeat: Infinity, duration: 7, ease: "easeInOut" }}
-         className="absolute bottom-32 -left-8 z-[-1] bg-surface-elevated p-3 rounded-2xl shadow-xl border border-border-subtle hidden md:block"
+         className="absolute bottom-32 -left-8 z-[-1] bg-surface-elevated glass-panel p-3 rounded-2xl shadow-xl border border-border-subtle hidden md:block"
       >
          <div className="flex items-center gap-2">
             <div className="bg-brand-info/20 p-2 rounded-full text-brand-info">
@@ -347,7 +347,7 @@ const HeroSimple = () => {
               Get Started Free <ArrowRight className="group-hover:translate-x-1 transition-transform" size={20} />
             </Link>
              {/* BUTTON EXPLORE */}
-             <button onClick={() => document.getElementById('prediction').scrollIntoView({ behavior: 'smooth'})} className="px-8 py-4 bg-surface-elevated text-text-primary dark:text-text-primary border border-border dark:border-border rounded-full font-bold text-base shadow-sm hover:bg-surface-muted dark:bg-surface dark:hover:bg-surface-muted transition-all flex items-center justify-center cursor-pointer">
+             <button onClick={() => document.getElementById('prediction').scrollIntoView({ behavior: 'smooth'})} className="px-8 py-4 bg-surface-elevated glass-panel text-text-primary dark:text-text-primary border border-border dark:border-border rounded-full font-bold text-base shadow-sm hover:bg-surface-muted dark:bg-surface dark:hover:bg-surface-muted transition-all flex items-center justify-center cursor-pointer">
               Explore Features
             </button>
           </Motion.div>
@@ -432,7 +432,7 @@ const SplitNav = ({ scrollToSection, setIsMobileMenuOpen }) => {
                   <button
                      key={item}
                      onClick={() => scrollToSection(item.toLowerCase())}
-                     className="px-4 py-2 text-sm font-semibold text-text-muted dark:text-text-secondary hover:text-text-primary dark:hover:text-text-primary hover:bg-surface-elevated dark:hover:bg-surface-muted rounded-full transition-all relative group cursor-pointer"
+                     className="px-4 py-2 text-sm font-semibold text-text-muted dark:text-text-secondary hover:text-text-primary dark:hover:text-text-primary hover:bg-surface-elevated glass-panel dark:hover:bg-surface-muted rounded-full transition-all relative group cursor-pointer"
                   >
                      {item}
                   </button>
@@ -487,7 +487,7 @@ const MobileMenuOverlay = ({ isOpen, setIsOpen, scrollToSection }) => {
                      <span className="text-xs font-bold text-text-muted dark:text-text-muted uppercase tracking-wider">Menu</span>
                      <button 
                         onClick={() => setIsOpen(false)}
-                        className="p-1.5 bg-surface-muted dark:bg-surface-muted rounded-full text-text-muted dark:text-text-secondary hover:bg-border-subtle dark:hover:bg-surface-elevated transition-colors"
+                        className="p-1.5 bg-surface-muted dark:bg-surface-muted rounded-full text-text-muted dark:text-text-secondary hover:bg-border-subtle dark:hover:bg-surface-elevated glass-panel transition-colors"
                      >
                         <X size={16} />
                      </button>
@@ -501,7 +501,7 @@ const MobileMenuOverlay = ({ isOpen, setIsOpen, scrollToSection }) => {
                            setIsOpen(false);
                            setTimeout(() => scrollToSection(item.toLowerCase()), 300);
                         }}
-                        className="w-full text-left px-4 py-3 text-sm font-bold text-text-secondary dark:text-text-secondary hover:text-brand-primary dark:hover:text-brand-info hover:bg-surface-elevated dark:hover:bg-surface-muted rounded-2xl transition-all active:scale-95"
+                        className="w-full text-left px-4 py-3 text-sm font-bold text-text-secondary dark:text-text-secondary hover:text-brand-primary dark:hover:text-brand-info hover:bg-surface-elevated glass-panel dark:hover:bg-surface-muted rounded-2xl transition-all active:scale-95"
                      >
                         {item}
                      </button>
@@ -604,7 +604,7 @@ export default function LandingPage() {
                   <div className="w-full px-4 text-center">
                       <ul className="grid grid-cols-2 gap-3 mb-4 w-full px-2">
                           {['Daily Check-in', 'Visual Charts', 'Trigger Analysis'].map((item, i) => (
-                             <li key={i} className={`flex items-center gap-2 text-sm text-text-secondary font-medium bg-surface-elevated px-3 py-2 rounded-lg shadow-sm border border-border justify-center ${i === 0 ? 'col-span-2' : ''}`}>
+                             <li key={i} className={`flex items-center gap-2 text-sm text-text-secondary font-medium bg-surface-elevated glass-panel px-3 py-2 rounded-lg shadow-sm border border-border justify-center ${i === 0 ? 'col-span-2' : ''}`}>
                                  <CheckCircle size={16} className="text-brand-primary shrink-0" /> 
                                  <span>{item}</span>
                              </li>
@@ -665,7 +665,7 @@ export default function LandingPage() {
                     <div className="w-full px-4 text-center">
                        <ul className="grid grid-cols-2 gap-3 mb-4 w-full px-2">
                            {['Monthly History', 'Pattern Recognition', 'Data Insights'].map((item, i) => (
-                              <li key={i} className={`flex items-center gap-2 text-sm text-text-secondary font-medium bg-surface-elevated px-3 py-2 rounded-lg shadow-sm border border-border justify-center ${i === 0 ? 'col-span-2' : ''}`}>
+                              <li key={i} className={`flex items-center gap-2 text-sm text-text-secondary font-medium bg-surface-elevated glass-panel px-3 py-2 rounded-lg shadow-sm border border-border justify-center ${i === 0 ? 'col-span-2' : ''}`}>
                                   <CheckCircle size={16} className="text-brand-primary shrink-0" /> 
                                   <span>{item}</span>
                               </li>
@@ -726,7 +726,7 @@ export default function LandingPage() {
                     <div className="w-full px-4 text-center">
                        <ul className="grid grid-cols-2 gap-3 mb-4 w-full px-2">
                            {['Daily Quotes', 'Positive Affirmations', 'Mood Boosters'].map((item, i) => (
-                              <li key={i} className={`flex items-center gap-2 text-sm text-text-secondary font-medium bg-surface-elevated px-3 py-2 rounded-lg shadow-sm border border-border justify-center ${i === 0 ? 'col-span-2' : ''}`}>
+                              <li key={i} className={`flex items-center gap-2 text-sm text-text-secondary font-medium bg-surface-elevated glass-panel px-3 py-2 rounded-lg shadow-sm border border-border justify-center ${i === 0 ? 'col-span-2' : ''}`}>
                                   <CheckCircle size={16} className="text-brand-primary shrink-0" /> 
                                   <span>{item}</span>
                               </li>
@@ -787,7 +787,7 @@ export default function LandingPage() {
                     <div className="w-full px-4 text-center">
                        <ul className="grid grid-cols-2 gap-3 mb-4 w-full px-2">
                            {['Daily Curated Tips', 'Breathing Exercises', 'Sleep Hygiene'].map((item, i) => (
-                              <li key={i} className={`flex items-center gap-2 text-sm text-text-secondary font-medium bg-surface-elevated px-3 py-2 rounded-lg shadow-sm border border-border justify-center ${i === 0 ? 'col-span-2' : ''}`}>
+                              <li key={i} className={`flex items-center gap-2 text-sm text-text-secondary font-medium bg-surface-elevated glass-panel px-3 py-2 rounded-lg shadow-sm border border-border justify-center ${i === 0 ? 'col-span-2' : ''}`}>
                                   <CheckCircle size={16} className="text-brand-primary shrink-0" /> 
                                   <span>{item}</span>
                               </li>
@@ -849,7 +849,7 @@ export default function LandingPage() {
                     <div className="w-full px-4 text-center">
                        <ul className="grid grid-cols-2 gap-3 mb-4 w-full px-2">
                            {['Private & Secure', 'Reflect on your day', 'Gratitude Journaling'].map((item, i) => (
-                              <li key={i} className={`flex items-center gap-2 text-sm text-text-secondary font-medium bg-surface-elevated px-3 py-2 rounded-lg shadow-sm border border-border justify-center ${i === 0 ? 'col-span-2' : ''}`}>
+                              <li key={i} className={`flex items-center gap-2 text-sm text-text-secondary font-medium bg-surface-elevated glass-panel px-3 py-2 rounded-lg shadow-sm border border-border justify-center ${i === 0 ? 'col-span-2' : ''}`}>
                                   <CheckCircle size={16} className="text-brand-primary shrink-0" /> 
                                   <span>{item}</span>
                               </li>
@@ -908,7 +908,7 @@ export default function LandingPage() {
                   <span className="text-brand-warning">College Life?</span>
                </h2>
                <div className="flex flex-col sm:flex-row justify-center gap-4 pt-4">
-                  <Link to="/login" className="px-8 py-3 md:px-10 md:py-4 bg-surface-elevated text-text-primary dark:text-text-primary dark:bg-surface dark:hover:bg-brand-accent rounded-full font-bold text-base md:text-lg hover:bg-brand-accent hover:text-text-inverse transition-all shadow-lg transform hover:-translate-y-1 cursor-pointer">
+                  <Link to="/login" className="px-8 py-3 md:px-10 md:py-4 bg-surface-elevated glass-panel text-text-primary dark:text-text-primary dark:bg-surface dark:hover:bg-brand-accent rounded-full font-bold text-base md:text-lg hover:bg-brand-accent hover:text-text-inverse transition-all shadow-lg transform hover:-translate-y-1 cursor-pointer">
                      Join Now - It's Free
                   </Link>
                </div>
