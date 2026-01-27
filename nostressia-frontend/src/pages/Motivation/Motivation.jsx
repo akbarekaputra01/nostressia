@@ -18,9 +18,9 @@ import Logo from "../../assets/images/Logo-Nostressia.png";
 import { getMotivations } from "../../services/motivationService";
 
 // --- COLOR CONFIGURATION (MATCHING DASHBOARD) ---
-const BG_CREAM = "var(--bg-gradient-cream)";
-const BG_PINK = "var(--bg-gradient-pink)";
-const BG_LAVENDER = "var(--bg-gradient-lavender)";
+const BG_CREAM = "rgb(var(--bg-gradient-cream))";
+const BG_PINK = "rgb(var(--bg-gradient-pink))";
+const BG_LAVENDER = "rgb(var(--bg-gradient-lavender))";
 
 // Style Background dengan Animasi
 const backgroundStyle = {
@@ -44,7 +44,7 @@ const TEMPLATES = [
   {
     id: "pastel-gradient",
     name: "Peach",
-    color: "linear-gradient(135deg,#FFE2D1,#FFD1C8)",
+    color: "linear-gradient(135deg, rgb(var(--brand-warning)), rgb(var(--brand-accent)))",
   },
 ];
 
@@ -332,7 +332,7 @@ export default function Motivation() {
           style={{
             width: "82%",
             maxWidth: 900,
-            background: "#fff",
+            background: "rgb(var(--surface-elevated))",
             padding: 20,
             borderRadius: 12,
             textAlign: "center",
@@ -360,16 +360,16 @@ export default function Motivation() {
               }}
             />
             <div style={{ textAlign: "left" }}>
-              <div style={{ fontSize: 13, color: "#ff7a59", fontWeight: 700 }}>
+              <div style={{ fontSize: 13, color: "rgb(var(--brand-accent))", fontWeight: 700 }}>
                 Motivation
               </div>
-              <div style={{ fontSize: 11, color: "#7b7b7b" }}>Share Card</div>
+              <div style={{ fontSize: 11, color: "rgb(var(--text-muted))" }}>Share Card</div>
             </div>
           </div>
           <p
             style={{
               fontSize: 18,
-              color: "#333",
+              color: "rgb(var(--text-primary))",
               fontStyle: "italic",
               margin: "6px 0 12px",
             }}
@@ -381,7 +381,7 @@ export default function Motivation() {
               display: "flex",
               justifyContent: "space-between",
               fontSize: 12,
-              color: "#777",
+              color: "rgb(var(--text-muted))",
               marginTop: 8,
             }}
           >
@@ -442,10 +442,10 @@ export default function Motivation() {
           ref={heroRef}
           className="opacity-0 translate-y-6 mt-6 md:mt-8 rounded-2xl p-6 md:p-10 relative overflow-hidden"
           style={{
-            background: "var(--glass-bg)",
-            border: "1px solid var(--glass-border)",
+            background: "rgb(var(--glass-bg) / 0.7)",
+            border: "1px solid rgb(var(--glass-border) / 0.5)",
             backdropFilter: "blur(10px)",
-            boxShadow: "0 8px 32px var(--glass-shadow)",
+            boxShadow: "0 8px 32px rgb(var(--shadow-color) / 0.12)",
           }}
         >
           <div className="relative z-10">
@@ -524,10 +524,10 @@ export default function Motivation() {
                 ref={(el) => (cardsRef.current[idx] = el)}
                 className="opacity-0 translate-y-6 rounded-2xl p-5 md:p-6 relative transition-all hover:scale-105 hover:shadow-xl"
                 style={{
-                  background: "var(--glass-bg)",
-                  border: "1px solid var(--glass-border)",
+                  background: "rgb(var(--glass-bg) / 0.7)",
+                  border: "1px solid rgb(var(--glass-border) / 0.5)",
                   backdropFilter: "blur(10px)",
-                  boxShadow: "0 4px 18px var(--glass-shadow)",
+                  boxShadow: "0 4px 18px rgb(var(--shadow-color) / 0.1)",
                 }}
               >
                 <p className="text-md md:text-lg italic text-gray-700 min-h-[72px] md:min-h-[90px] dark:text-slate-200">
@@ -657,7 +657,7 @@ export default function Motivation() {
                         >
                           <div
                             style={{
-                              background: "#fff",
+                              background: "rgb(var(--surface-elevated))",
                               padding: 6,
                               borderRadius: 8,
                             }}
@@ -666,7 +666,7 @@ export default function Motivation() {
                               style={{
                                 fontSize: 12,
                                 fontWeight: 700,
-                                color: "#ff7a59",
+                                color: "rgb(var(--brand-accent))",
                               }}
                             >
                               {t.name}

@@ -82,7 +82,7 @@ export default function AdminLogin() {
 
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[var(--surface-primary)] px-4 font-sans text-[var(--text-primary)]">
+    <div className="min-h-screen flex items-center justify-center bg-surface px-4 font-sans text-text-primary">
       <div className="max-w-md w-full bg-white dark:bg-slate-900 rounded-2xl shadow-xl overflow-hidden border border-gray-100 dark:border-slate-700">
         
         {/* Header dengan Gradient Pastel Oren-Biru */}

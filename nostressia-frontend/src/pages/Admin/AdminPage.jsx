@@ -453,7 +453,7 @@ export default function AdminPage({ skipAuth = false }) {
             {loadingUsers ? (<tr><td colSpan="4" className="text-center py-8 text-gray-500">Loading...</td></tr>) : users.length === 0 ? (<tr><td colSpan="4" className="text-center py-8 text-gray-500">No users found.</td></tr>) : (
               users.map((user) => (
                 <tr key={user.userId} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap"><div className="text-sm font-bold text-gray-900">{user.name}</div><div className="text-sm text-gray-500">{user.email}</div><div className="text-xs text-purple-600 font-mono">@{user.username}</div></td>
+                  <td className="px-6 py-4 whitespace-nowrap"><div className="text-sm font-bold text-gray-900">{user.name}</div><div className="text-sm text-gray-500">{user.email}</div><div className="text-xs text-purple-600 font-sans">@{user.username}</div></td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><div>{user.gender || "-"}</div><div className="text-xs text-gray-400">{user.userDob || "No DOB"}</div></td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">🔥 {user.streak || 0} Streak</td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -787,7 +787,7 @@ export default function AdminPage({ skipAuth = false }) {
         .animate-fade-in { animation: fade-in 0.2s ease-out forwards; } 
         .custom-scrollbar::-webkit-scrollbar { width: 4px; } 
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; } 
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgb(var(--neutral-200)); border-radius: 10px; }
       `}</style>
     </div>
   );
