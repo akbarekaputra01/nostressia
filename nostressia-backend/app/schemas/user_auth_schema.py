@@ -17,10 +17,10 @@ class UserRegister(BaseSchema):
     avatar: Optional[str] = None
 
 class UserLogin(BaseSchema):
-    identifier: str  # Bisa berupa Email ATAU Username
+    identifier: str  # Can be an email address or username.
     password: str
 
-# ✅ (BARU) Schema untuk Verifikasi OTP
+# OTP verification schema
 class VerifyOTP(BaseSchema):
     email: EmailStr
     otp_code: str
@@ -41,7 +41,7 @@ class UserResponse(BaseSchema):
     user_dob: Optional[date] = None
     streak: int
     diary_count: int = 0
-    is_verified: bool # ✅ (BARU) Tambahkan ini agar frontend tahu statusnya
+    is_verified: bool  # Expose verification status to the frontend.
 
 class UserTokenResponse(BaseSchema):
     access_token: str

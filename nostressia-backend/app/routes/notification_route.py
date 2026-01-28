@@ -1,4 +1,4 @@
-# nostressia-backend/app/routes/notification_route.py
+"""Notification subscription routes."""
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -15,10 +15,10 @@ from app.schemas.response_schema import APIResponse
 from app.utils.jwt_handler import get_current_user
 from app.utils.response import success_response
 
-# push sender (buat test-send)
+# Push sender (used for test send).
 from app.services.push_notification_service import WebPushException, send_push
 
-# ✅ scheduler: pasang/remove job cron
+# Scheduler: attach/remove cron jobs.
 from app.services.notification_scheduler import (
     upsert_daily_reminder_job,
     remove_daily_reminder_job,
@@ -29,17 +29,17 @@ router = APIRouter(prefix="/notifications", tags=["Notifications"])
 
 def _normalize_time(value: str) -> str:
     if not value or ":" not in value:
-        raise ValueError("Format waktu tidak valid")
+        raise ValueError("Invalid time format")
     parts = value.split(":")
     if len(parts) != 2:
-        raise ValueError("Format waktu tidak valid")
+        raise ValueError("Invalid time format")
     hours, minutes = parts
     if not hours.isdigit() or not minutes.isdigit():
-        raise ValueError("Format waktu tidak valid")
+        raise ValueError("Invalid time format")
     hour_value = int(hours)
     minute_value = int(minutes)
     if hour_value < 0 or hour_value > 23 or minute_value < 0 or minute_value > 59:
-        raise ValueError("Format waktu tidak valid")
+        raise ValueError("Invalid time format")
     return f"{hour_value:02d}:{minute_value:02d}"
 
 
@@ -79,7 +79,7 @@ def subscribe_notification(
         db.commit()
         db.refresh(existing)
 
-        # ✅ pasang job cron (tepat detik 00) untuk subscription ini
+        # Register the cron job (second 00) for this subscription.
         upsert_daily_reminder_job(
             subscription_id=existing.subscription_id,
             reminder_time=reminder_time,
@@ -100,7 +100,7 @@ def subscribe_notification(
         db.commit()
         db.refresh(new_subscription)
 
-        # ✅ pasang job cron (tepat detik 00) untuk subscription ini
+        # Register the cron job (second 00) for this subscription.
         upsert_daily_reminder_job(
             subscription_id=new_subscription.subscription_id,
             reminder_time=reminder_time,
@@ -112,7 +112,7 @@ def subscribe_notification(
         reminderTime=reminder_time,
         timezone=payload.timezone,
     )
-    return success_response(data=response, message="Subscription tersimpan")
+    return success_response(data=response, message="Subscription saved")
 
 
 @router.delete(
@@ -124,7 +124,7 @@ def unsubscribe_notification(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # ✅ ambil semua subscription aktif user ini dulu (buat remove job)
+    # Fetch active subscriptions first so we can remove jobs.
     active_subs = (
         db.query(PushSubscription)
         .filter(
@@ -134,11 +134,11 @@ def unsubscribe_notification(
         .all()
     )
 
-    # ✅ remove job scheduler untuk semua subscription aktif
+    # Remove scheduler jobs for each active subscription.
     for sub in active_subs:
         remove_daily_reminder_job(sub.subscription_id)
 
-    # ✅ matikan di DB
+    # Deactivate in the database.
     db.query(PushSubscription).filter(
         PushSubscription.user_id == current_user.user_id,
         PushSubscription.is_active.is_(True),
@@ -150,7 +150,7 @@ def unsubscribe_notification(
         reminderTime=None,
         timezone=None,
     )
-    return success_response(data=response, message="Subscription dinonaktifkan")
+    return success_response(data=response, message="Subscription deactivated")
 
 
 @router.get(
@@ -177,7 +177,7 @@ def notification_status(
         reminderTime=active_subscription.reminder_time if active_subscription else None,
         timezone=active_subscription.timezone if active_subscription else None,
     )
-    return success_response(data=response, message="Status notifikasi")
+    return success_response(data=response, message="Notification status")
 
 
 @router.post(
@@ -190,16 +190,16 @@ def test_send_notification(
     current_user: User = Depends(get_current_user),
 ):
     """
-    Endpoint test untuk memastikan:
-    - subscription tersimpan di DB
-    - VAPID private key terisi
-    - pywebpush bisa ngirim
-    - service worker bisa nampilin notifikasi
+    Test endpoint to validate:
+    - subscription exists in the database
+    - VAPID private key is configured
+    - pywebpush can send notifications
+    - the service worker can display notifications
     """
     if not settings.vapid_private_key:
         raise HTTPException(
             status_code=500,
-            detail="VAPID_PRIVATE_KEY belum diisi di environment backend.",
+            detail="VAPID_PRIVATE_KEY is not configured in the backend environment.",
         )
 
     subscription = (
@@ -215,12 +215,15 @@ def test_send_notification(
     if not subscription:
         raise HTTPException(
             status_code=404,
-            detail="Tidak ada push subscription aktif untuk user ini. Pastikan sudah subscribe dari frontend.",
+            detail=(
+                "No active push subscription for this user. "
+                "Ensure the frontend has subscribed."
+            ),
         )
 
     payload = {
         "title": "Nostressia Push Test",
-        "body": "Kalau kamu lihat ini, berarti backend berhasil kirim web push ✅",
+        "body": "If you can see this, the backend successfully sent a push notification.",
         "url": "/",
     }
 
@@ -230,12 +233,12 @@ def test_send_notification(
         status_code = exc.response.status_code if exc.response else None
         raise HTTPException(
             status_code=500,
-            detail=f"Gagal kirim push. status={status_code}, error={str(exc)}",
+            detail=f"Failed to send push. status={status_code}, error={str(exc)}",
         ) from exc
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Push error: {str(exc)}") from exc
 
     return success_response(
         data={"sent": True},
-        message="Push test terkirim (cek notifikasi device/browser).",
+        message="Push test sent. Check the device/browser notifications.",
     )

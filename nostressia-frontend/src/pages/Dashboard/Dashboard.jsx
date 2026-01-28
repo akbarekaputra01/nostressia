@@ -475,7 +475,7 @@ export default function Dashboard() {
 
   const [isFlipped, setIsFlipped] = useState(false);
 
-  // State Data Utama
+  // Primary data state
   const [stressData, setStressData] = useState(() =>
     createEmptyTodayData(TODAY_KEY),
   );
@@ -504,7 +504,7 @@ export default function Dashboard() {
   const [forecastLoading, setForecastLoading] = useState(false);
   const [forecastError, setForecastError] = useState("");
   const [forecastMode, setForecastMode] = useState("global");
-  // State khusus untuk animasi tutup panel
+  // Dedicated state for the panel close animation.
   const [isClosingPanel, setIsClosingPanel] = useState(false);
   const [eligibilityData, setEligibilityData] = useState(null);
   const [eligibilityLoading, setEligibilityLoading] = useState(true);
@@ -884,13 +884,13 @@ export default function Dashboard() {
     setRestoreImputeInfo("");
   }
 
-  // --- FUNGSI UNTUK MENUTUP FORECAST DENGAN ANIMASI ---
+  // --- Close the forecast panel with an animation ---
   function handleCloseForecast() {
-    setIsClosingPanel(true); // Mulai animasi tutup (slide-down)
+    setIsClosingPanel(true); // Start the slide-down animation.
     setTimeout(() => {
-      setForecastDetail(null); // Hapus data setelah animasi selesai
-      setIsClosingPanel(false); // Reset status animasi
-    }, 380); // Waktu sedikit kurang dari durasi animasi CSS (0.4s) agar mulus
+      setForecastDetail(null); // Clear data after the animation finishes.
+      setIsClosingPanel(false); // Reset the animation state.
+    }, 380); // Slightly shorter than the CSS duration (0.4s) for smoothness.
   }
 
   const refreshEligibility = useCallback(
@@ -1060,7 +1060,7 @@ export default function Dashboard() {
 
         if (!token) {
           setForecastList([]);
-          setForecastError("Login untuk melihat forecast.");
+          setForecastError("Log in to view the forecast.");
           setForecastMode("global");
           return;
         }
@@ -1253,7 +1253,7 @@ export default function Dashboard() {
     }
   };
 
-  // LOGIKA SIMPAN GPA (LOKAL)
+  // GPA persistence logic (local only)
   function handleGpaSave(val) {
     if (val === "") return alert("GPA cannot be empty.");
     const num = parseFloat(val);
@@ -1262,7 +1262,7 @@ export default function Dashboard() {
     }
 
     setGpa(num);
-    localStorage.setItem("user_gpa", num); // Simpan ke browser
+    localStorage.setItem("user_gpa", num); // Persist to browser storage.
     setIsEditingGpa(false);
   }
 
@@ -1775,7 +1775,7 @@ export default function Dashboard() {
                         </label>
                         {!isEditingGpa ? (
                           <div className="flex items-center gap-3">
-                            {/* Tampilan jika GPA kosong vs ada isinya */}
+                            {/* Render when GPA is missing versus available */}
                             {gpa !== "" ? (
                               <span
                                 className="text-2xl font-bold"
@@ -2124,7 +2124,7 @@ export default function Dashboard() {
               className={`flex flex-col h-full ${isLoadingLogs ? "opacity-0 pointer-events-none" : ""}`}
             >
               <header className="flex justify-between items-center mb-6">
-                {/* Tombol Back (Previous Month) - MENGGUNAKAN SVG AGAR PASTI MUNCUL */}
+                {/* Back button (previous month) using SVG for consistent rendering */}
                 <button
                   type="button"
                   className="w-10 h-10 flex items-center justify-center rounded-full bg-surface-elevated/50 glass-panel hover:bg-surface-elevated glass-panel text-text-secondary hover:text-brandBlue shadow-sm transition-all cursor-pointer border border-white/20"
@@ -2163,7 +2163,7 @@ export default function Dashboard() {
                   )}
                 </div>
 
-                {/* Tombol Next (Next Month) - MENGGUNAKAN SVG AGAR PASTI MUNCUL */}
+                {/* Next button (next month) using SVG for consistent rendering */}
                 <button
                   type="button"
                   className="w-10 h-10 flex items-center justify-center rounded-full bg-surface-elevated/50 glass-panel hover:bg-surface-elevated glass-panel text-text-secondary hover:text-brandBlue shadow-sm transition-all cursor-pointer border border-white/20"
@@ -2534,8 +2534,8 @@ export default function Dashboard() {
             {/* --- SLIDE-UP PANEL (OPTION 1 - WITH SVG ICON & SOLID GRADIENT FIX) --- */}
             {forecastDetail && (
               <div
-                // Disini kita gunakan forecastDetail.panelTheme untuk warna container (tanpa opacity class)
-                // Hapus bg-opacity-95 agar solid, tambahkan shadow-2xl agar lebih kontras dengan background
+                // Use forecastDetail.panelTheme for the container color (without opacity class).
+                // Remove bg-opacity-95 for a solid panel and add shadow-2xl for contrast.
                 className={`
                   absolute inset-x-0 bottom-0 z-30 rounded-t-[24px] shadow-2xl border-t border-border-subtle overflow-hidden dark:border-border
                   ${isClosingPanel ? "animate-slide-down-panel" : "animate-slide-up-panel"}
@@ -2655,7 +2655,7 @@ export default function Dashboard() {
 
         {/* MOTIVATION & TIPS SECTIONS */}
         <div className="mt-8 grid grid-cols-1">
-          {/* ... (Section motivasi tetap sama) ... */}
+          {/* ... (Motivation section remains unchanged) ... */}
           <section className="col-span-4 relative overflow-hidden rounded-[24px] shadow-xl group transition-all duration-500 hover:shadow-orange-100">
             <div className="absolute inset-0 bg-surface-elevated/60 glass-panel backdrop-blur-xl border border-white/40 dark:bg-surface/80 dark:border-border/60 z-0"></div>
             <div className="absolute -left-10 -top-10 w-40 h-40 bg-orange-300 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob"></div>

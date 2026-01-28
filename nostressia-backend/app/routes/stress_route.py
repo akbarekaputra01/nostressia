@@ -10,7 +10,7 @@ from app.schemas.stress_schema import (
 )
 from app.schemas.response_schema import APIResponse
 from app.services import stress_service
-from app.utils.jwt_handler import get_current_user # <--- Import fungsi auth kamu
+from app.utils.jwt_handler import get_current_user  # Authenticated user resolver.
 from app.utils.response import success_response
 
 router = APIRouter(
@@ -57,7 +57,7 @@ def read_my_stress_logs(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user) # <--- Proteksi Token
 ):
-    # Hanya ambil data milik user yang sedang login
+    # Only fetch data for the authenticated user.
     return success_response(
         data=stress_service.get_user_stress_logs(
             db=db,

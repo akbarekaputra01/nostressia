@@ -22,8 +22,8 @@ const resolveStreakCount = (payload) => {
 
 export default function MainLayout() {
   const navigate = useNavigate();
-  // 1. Ambil data awal dari Cache. 
-  // Jika ada data lengkap tersimpan (JSON), pakai itu. Jika tidak, pakai default.
+  // 1. Load initial data from cache.
+  // If a complete JSON payload exists, use it; otherwise fall back to defaults.
   const [user, setUser] = useState(() => {
     const savedData = localStorage.getItem("cache_userData");
     return savedData ? JSON.parse(savedData) : { name: "User", avatar: null };

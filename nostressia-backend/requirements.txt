@@ -64,3 +64,5 @@ urllib3
 watchfiles
 websockets
 python-dotenv
+pytest
+pytest-cov

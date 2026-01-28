@@ -157,7 +157,7 @@ export default function Login() {
     }
   };
 
-  // --- 1. LOGIKA LOGIN ---
+  // --- 1. LOGIN FLOW ---
   const handleLogin = async (e) => {
     e.preventDefault();
     if (!formData.email || !formData.password) return;
@@ -167,9 +167,7 @@ export default function Login() {
         identifier: formData.email,
         password: formData.password,
       });
-      const token =
-        response?.accessToken ||
-        response?.data?.accessToken;
+      const token = response?.accessToken;
       if (!isAuthTokenValid(token)) {
         alert("Login succeeded, but the token is invalid.");
         return;
@@ -184,7 +182,7 @@ export default function Login() {
     }
   };
 
-  // --- 2. LOGIKA REGISTER ---
+  // --- 2. REGISTRATION FLOW ---
   const handleSignUp = async (e) => {
     e.preventDefault();
     if (
@@ -438,7 +436,7 @@ export default function Login() {
             </div>
 
             <div className="relative">
-              {/* ...lanjutan konten kamu tetap */}
+              {/* ...remaining content continues */}
 
               <div className="text-center lg:text-left mb-6">
                 <h1 className="text-4xl font-extrabold text-text-primary tracking-tight">

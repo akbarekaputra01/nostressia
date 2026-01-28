@@ -1,5 +1,5 @@
 from functools import lru_cache
-from typing import List
+from typing import List, Optional
 
 from pydantic import Field
 from pydantic_settings import BaseSettings
@@ -26,8 +26,9 @@ class Settings(BaseSettings):
     db_host: str = Field(..., env="DB_HOST")
     db_port: int = Field(3306, env="DB_PORT")
     db_name: str = Field(..., env="DB_NAME")
+    database_url_override: Optional[str] = Field(default=None, env="DATABASE_URL")
 
-    # ✅ TAMBAHAN BARU: AGAR TIDAK ERROR "EXTRA INPUTS"
+    # Extra settings needed for email delivery.
     brevo_api_key: str = Field(..., env="BREVO_API_KEY")
 
     azure_storage_connection_string: str = Field(
@@ -44,12 +45,13 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
-        # Tambahan ini penting agar jika ada variable lain di .env (misal .DS_Store atau komen), 
-        # aplikasi tidak langsung crash.
-        extra = "ignore" 
+        # Ignore unknown env vars so optional entries do not crash the app.
+        extra = "ignore"
 
     @property
     def database_url(self) -> str:
+        if self.database_url_override:
+            return self.database_url_override
         return (
             f"mysql+mysqlconnector://{self.db_user}:{self.db_password}"
             f"@{self.db_host}:{self.db_port}/{self.db_name}"

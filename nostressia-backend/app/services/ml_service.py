@@ -1,11 +1,14 @@
+import logging
+import os
+
 import joblib
 import pandas as pd
-import os
-import sys
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
 
-# Tentukan path absolut biar tidak bingung
+logger = logging.getLogger(__name__)
+
+# Resolve absolute paths for model artifacts.
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODEL_PATH = os.path.join(BASE_DIR, "models_ml", "current_stress_pipeline.joblib")
 
@@ -85,65 +88,73 @@ class StressModelService:
                 self._coerce_logistic_regression(value, seen=seen)
 
     def load_model(self):
-        print(f"🔍 Mencari model di: {MODEL_PATH}") # DEBUG PRINT
+        logger.info("Loading ML model from %s", MODEL_PATH)
         
         if not os.path.exists(MODEL_PATH):
-            print(f"⚠️  FILE TIDAK DITEMUKAN! Pastikan file ada di folder tersebut.")
+            logger.warning("Model file not found. Ensure the artifact exists.")
             return
 
         try:
             data = joblib.load(MODEL_PATH)
             
-            # Unpack dictionary artifacts
+            # Unpack dictionary artifacts.
             if isinstance(data, dict):
-                self.pipeline = data.get('pipeline')
-                self.feature_names = data.get('feature_names')
+                self.pipeline = data.get("pipeline")
+                self.feature_names = data.get("feature_names")
             else:
                 self.pipeline = data
 
             self._coerce_logistic_regression(self.pipeline)
             
-            print("✅ ML Model Berhasil Dimuat!")
-        except Exception as e:
-            print(f"❌ Error saat load joblib: {e}")
+            logger.info("ML model loaded successfully.")
+        except Exception as exc:
+            logger.exception("Failed to load the ML model: %s", exc)
 
-    # Logic ini disamakan PERSIS dengan predict.ipynb kamu
+    # Keep feature engineering aligned with the notebook workflow.
     def _calculate_academic_performance_encoded(self, gpa):
-        # 1. Tentukan Kategori (Sesuai fungsi categorize_academic_performance di notebook)
+        # 1. Categorize performance (aligned with the notebook logic).
         if gpa >= 3.5:
-            category = 'Excellent'
+            category = "Excellent"
         elif 3.0 <= gpa < 3.5:
-            category = 'Good'
+            category = "Good"
         elif 2.0 <= gpa < 3.0:
-            category = 'Fair'
+            category = "Fair"
         else:
-            category = 'Poor'
+            category = "Poor"
         
-        # 2. Mapping ke Angka (Sesuai mapping_performance di notebook)
-        mapping = {'Poor': 0, 'Fair': 1, 'Good': 2, 'Excellent': 3}
+        # 2. Map to numeric encoding (aligned with the notebook mapping).
+        mapping = {"Poor": 0, "Fair": 1, "Good": 2, "Excellent": 3}
         return mapping.get(category, 0)
 
     def predict_stress(self, input_data: dict) -> str:
         if not self.pipeline:
-            print("❌ Model belum siap saat predict dipanggil.")
+            logger.error("Prediction requested before the model was ready.")
             return "Error: Model not ready"
 
         try:
-            # Feature Engineering
-            gpa = input_data['gpa']
-            # Pakai fungsi baru yang logic-nya sama dengan Notebook
+            # Feature engineering.
+            gpa = input_data["gpa"]
+            # Reuse the notebook-aligned helper.
             academic_encoded = self._calculate_academic_performance_encoded(gpa)
 
-            # Buat DataFrame
-            df = pd.DataFrame([{
-                'Study_Hours_Per_Day': input_data['study_hours'],
-                'Extracurricular_Hours_Per_Day': input_data['extracurricular_hours'],
-                'Sleep_Hours_Per_Day': input_data['sleep_hours'],
-                'Social_Hours_Per_Day': input_data['social_hours'],
-                'Physical_Activity_Hours_Per_Day': input_data['physical_hours'],
-                'GPA': gpa,
-                'Academic_Performance_Encoded': academic_encoded
-            }])
+            # Build the inference DataFrame.
+            df = pd.DataFrame(
+                [
+                    {
+                        "Study_Hours_Per_Day": input_data["study_hours"],
+                        "Extracurricular_Hours_Per_Day": input_data[
+                            "extracurricular_hours"
+                        ],
+                        "Sleep_Hours_Per_Day": input_data["sleep_hours"],
+                        "Social_Hours_Per_Day": input_data["social_hours"],
+                        "Physical_Activity_Hours_Per_Day": input_data[
+                            "physical_hours"
+                        ],
+                        "GPA": gpa,
+                        "Academic_Performance_Encoded": academic_encoded,
+                    }
+                ]
+            )
 
             if self.feature_names:
                 df = df[self.feature_names]
@@ -156,8 +167,8 @@ class StressModelService:
             
             return label_map.get(prediction_idx, "Unknown")
 
-        except Exception as e:
-            print(f"❌ Prediction Error: {e}")
-            return f"Error: {str(e)}"
+        except Exception as exc:
+            logger.exception("Prediction failed: %s", exc)
+            return f"Error: {str(exc)}"
 
 ml_service = StressModelService()

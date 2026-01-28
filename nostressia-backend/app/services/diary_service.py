@@ -10,7 +10,7 @@ def create_diary(db: Session, diary_data: DiaryCreate, user_id: int):
         note=diary_data.note,
         date=diary_data.date,
         emoji=diary_data.emoji,
-        font=diary_data.font, # Simpan font pilihan user
+        font=diary_data.font,  # Store the user's selected font.
         user_id=user_id
     )
     db.add(new_diary)
@@ -20,7 +20,7 @@ def create_diary(db: Session, diary_data: DiaryCreate, user_id: int):
 
 # 2. Ambil Semua Diary (Milik User Login)
 def get_user_diaries(db: Session, user_id: int):
-    # Urutkan dari yang terbaru (descending)
+    # Sort newest first.
     return db.query(Diary).filter(Diary.user_id == user_id).order_by(Diary.date.desc()).all()
 
 # 3. Helper: Ambil Satu Diary & Cek Kepemilikan

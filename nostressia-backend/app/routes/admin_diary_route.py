@@ -25,31 +25,31 @@ def get_all_diaries(
 ):
     skip = (page - 1) * limit
     
-    # Join Diary dengan User agar bisa search nama user juga
+    # Join Diary with User to enable user name search.
     query = db.query(Diary).join(User)
 
     if search:
         search_fmt = f"%{search}%"
         query = query.filter(
             or_(
-                Diary.note.ilike(search_fmt),    # Search isi note
-                Diary.title.ilike(search_fmt),   # ✅ (2) TAMBAHAN: Search judul juga
-                User.name.ilike(search_fmt),     # Search nama user
-                User.username.ilike(search_fmt)  # Search username
+                Diary.note.ilike(search_fmt),    # Search note content
+                Diary.title.ilike(search_fmt),   # Search titles as well
+                User.name.ilike(search_fmt),     # Search user names
+                User.username.ilike(search_fmt)  # Search usernames
             )
         )
 
     total = query.count()
-    # Urutkan dari yang paling baru
+    # Sort newest first.
     diaries = query.order_by(desc(Diary.created_at)).offset(skip).limit(limit).all()
 
-    # Format Data Manual
+    # Format the response data manually.
     data = []
     for d in diaries:
         data.append({
             "diaryId": d.diary_id,
-            "title": d.title, # ✅ (3) TAMBAHAN: Masukkan data title ke response
-            "content": d.note, # Note dari DB dikirim sebagai 'content' ke Frontend
+            "title": d.title,  # Include diary title in the response.
+            "content": d.note,  # Note is sent as "content" to the frontend.
             "createdAt": d.created_at,
             "userId": d.user.user_id,
             "username": d.user.username

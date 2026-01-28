@@ -46,8 +46,8 @@ class PersonalizedForecastService(GlobalForecastService):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=(
-                    "Histori stress belum cukup untuk prediksi personalized. "
-                    f"Minimal {window + 1} hari data diperlukan."
+                    "Not enough stress history for personalized prediction. "
+                    f"At least {window + 1} days of data are required."
                 ),
             )
 
@@ -97,17 +97,17 @@ class PersonalizedForecastService(GlobalForecastService):
         if date_col not in df.columns:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Kolom tanggal '{date_col}' tidak ditemukan pada data user.",
+                detail=f"Date column '{date_col}' was not found in user data.",
             )
         if target_col not in df.columns:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Kolom target '{target_col}' tidak ditemukan pada data user.",
+                detail=f"Target column '{target_col}' was not found in user data.",
             )
         if user_col not in df.columns:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Kolom user '{user_col}' tidak ditemukan pada data user.",
+                detail=f"User column '{user_col}' was not found in user data.",
             )
 
         df[date_col] = pd.to_datetime(df[date_col], errors="raise")
@@ -127,8 +127,8 @@ class PersonalizedForecastService(GlobalForecastService):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=(
-                    "Histori stress belum cukup untuk membuat fitur prediksi. "
-                    f"Pastikan minimal {window + 1} hari data tersedia."
+                    "Not enough stress history to build prediction features. "
+                    f"Ensure at least {window + 1} days of data are available."
                 ),
             )
 
@@ -136,7 +136,7 @@ class PersonalizedForecastService(GlobalForecastService):
         if user_feat.empty:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Model personalized tidak menemukan fitur untuk user.",
+                detail="The personalized model did not find features for this user.",
             )
 
         last_row = user_feat.sort_values([user_col, date_col]).tail(1).iloc[0]
@@ -151,13 +151,13 @@ class PersonalizedForecastService(GlobalForecastService):
             if probs_by_user is None:
                 raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail="Artifact markov_user tidak lengkap.",
+                    detail="The markov_user artifact is incomplete.",
                 )
             probs = probs_by_user.get(user_id)
             if probs is None:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Model personalized markov belum tersedia untuk user.",
+                    detail="The personalized Markov model is not available for this user.",
                 )
             probability = self._markov_proba_user(probs, last_row)
             threshold = float(threshold_obj.get(user_id, 0.5)) if isinstance(
@@ -169,13 +169,13 @@ class PersonalizedForecastService(GlobalForecastService):
             if models_by_user is None:
                 raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail="Artifact personalized tidak memiliki model per user.",
+                    detail="The personalized artifact does not include per-user models.",
                 )
             pipe = models_by_user.get(user_id)
             if pipe is None:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Model personalized belum tersedia untuk user.",
+                    detail="The personalized model is not available for this user.",
                 )
             input_df = pd.DataFrame([last_row])[feature_cols]
             probability = float(pipe.predict_proba(input_df)[:, 1][0])
@@ -186,7 +186,7 @@ class PersonalizedForecastService(GlobalForecastService):
         else:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Tipe model personalized tidak dikenali: {art_type}",
+                detail=f"Unrecognized personalized model type: {art_type}",
             )
 
         prediction_binary = int(probability >= threshold)

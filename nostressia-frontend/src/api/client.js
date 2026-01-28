@@ -1,6 +1,6 @@
 import axios from "axios";
 
-import { readAdminToken, readAuthToken } from "../utils/auth";
+import { clearAdminSession, clearAuthToken, readAdminToken, readAuthToken } from "../utils/auth";
 
 const rawBaseUrl = import.meta.env.VITE_API_BASE_URL || "";
 const normalizedBaseUrl = rawBaseUrl.replace(/\/$/, "");
@@ -47,6 +47,32 @@ client.interceptors.request.use((config) => {
   return config;
 });
 
+/**
+ * Avoid redundant redirects when the user is already on the relevant login page.
+ */
+const shouldRedirectToLogin = (isAdmin, currentPath) => {
+  const adminLoginPath = "/admin/login";
+  const userLoginPath = "/login";
+  const targetPath = isAdmin ? adminLoginPath : userLoginPath;
+
+  if (!currentPath) {
+    return true;
+  }
+
+  return currentPath !== targetPath;
+};
+
+/**
+ * Clear local auth state to prevent login redirect loops after a 401.
+ */
+const handleUnauthorized = (isAdmin) => {
+  if (isAdmin) {
+    clearAdminSession();
+  } else {
+    clearAuthToken();
+  }
+};
+
 client.interceptors.response.use(
   (response) => {
     if (response?.data?.success === false) {
@@ -77,7 +103,11 @@ client.interceptors.response.use(
       const isAdmin =
         error?.config?.auth === "admin" ||
         error?.config?.url?.includes("/admin");
-      window.location.assign(isAdmin ? "/admin/login" : "/login");
+      handleUnauthorized(isAdmin);
+      const currentPath = window.location?.pathname;
+      if (shouldRedirectToLogin(isAdmin, currentPath)) {
+        window.location.assign(isAdmin ? "/admin/login" : "/login");
+      }
     }
 
     return Promise.reject(normalizedError);

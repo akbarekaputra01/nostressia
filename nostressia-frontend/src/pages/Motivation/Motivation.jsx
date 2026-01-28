@@ -80,7 +80,7 @@ export default function Motivation() {
   const [visibleCount, setVisibleCount] = useState(6);
   const ITEMS_PER_PAGE = 6;
 
-  // MODIFIKASI: Hero Quote harus punya ID null agar konsisten
+  // Ensure the hero quote keeps a null ID for consistency.
   const [heroQuote, setHeroQuote] = useState({
     text: "",
     motivationId: null,
@@ -217,7 +217,7 @@ export default function Motivation() {
     },
   ];
 
-  // --- MODIFIKASI: FUNGSI TOGGLE LIKE TERHUBUNG API ---
+  // --- Toggle like hook wired to the API ---
   const toggleLike = async (id) => {
     const token = readAuthToken();
     if (!token) {
@@ -225,7 +225,7 @@ export default function Motivation() {
       return;
     }
 
-    // Jangan proses bookmark untuk Hero Quote yang belum punya ID (statis)
+    // Skip bookmarks for the static hero quote that does not have an ID yet.
     if (!id || id === HERO_INDEX) {
       showToast("Cannot bookmark this yet.");
       return;
@@ -240,7 +240,7 @@ export default function Motivation() {
 
     try {
       if (isLiked) {
-        // Hapus Bookmark
+        // Remove the bookmark.
         await deleteBookmark(id);
         showToast("Bookmark removed 🗑️");
       } else {
@@ -251,7 +251,7 @@ export default function Motivation() {
     } catch (err) {
       console.error("Bookmark API Error:", err);
       showToast("Failed to bookmark.");
-      // Rollback state jika gagal
+      // Roll back local state if the API request fails.
       setLikedIndex((prev) =>
         isLiked ? [...prev, id] : prev.filter((i) => i !== id),
       );
@@ -494,7 +494,7 @@ export default function Motivation() {
                 New Quote
               </button>
 
-              {/* MODIFIKASI: Passing ID yang benar ke toggleLike */}
+              {/* Pass the correct ID to toggleLike */}
               <button
                 onClick={() => toggleLike(heroQuote.motivationId)}
                 disabled={!hasHeroQuote}
@@ -565,7 +565,7 @@ export default function Motivation() {
                   Author: {quoteObj.authorName ?? "-"}
                 </div>
                 <div className="mt-4 pt-4 border-t border-border/60 flex justify-end gap-3 items-center">
-                  {/* MODIFIKASI: Tombol Bookmark pada List */}
+                  {/* Bookmark button for list items */}
                   <button
                     onClick={() => toggleLike(id)}
                     aria-label={`bookmark-${id}`}

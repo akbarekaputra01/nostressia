@@ -19,13 +19,13 @@ const getRegistration = async () => {
   try {
     await navigator.serviceWorker.register("/notification-sw.js");
   } catch (error) {
-    console.warn("Gagal mendaftarkan service worker notifikasi:", error);
+    console.warn("Failed to register the notification service worker:", error);
     return null;
   }
   try {
     return await navigator.serviceWorker.ready;
   } catch (error) {
-    console.warn("Service worker belum siap:", error);
+    console.warn("Service worker is not ready yet:", error);
     return null;
   }
 };
@@ -51,7 +51,7 @@ const ensurePushSubscription = async (registration) => {
   if (existing) return existing;
 
   if (!VAPID_PUBLIC_KEY) {
-    throw new Error("VAPID public key belum dikonfigurasi.");
+    throw new Error("The VAPID public key is not configured.");
   }
 
   return registration.pushManager.subscribe({
@@ -85,14 +85,14 @@ export const subscribeDailyReminder = async (
     return {
       ok: false,
       reason: "unsupported",
-      message: "Browser belum mendukung notifikasi push.",
+      message: "This browser does not support push notifications.",
     };
   }
   if (!isSecureNotificationContext()) {
     return {
       ok: false,
       reason: "insecure",
-      message: "Notifikasi butuh koneksi HTTPS.",
+      message: "Notifications require a secure HTTPS context.",
     };
   }
 
@@ -100,7 +100,7 @@ export const subscribeDailyReminder = async (
     return {
       ok: false,
       reason: "denied",
-      message: "Izin notifikasi belum diberikan.",
+      message: "Notification permission has not been granted.",
     };
   }
 
@@ -109,7 +109,7 @@ export const subscribeDailyReminder = async (
       ok: false,
       reason: "denied",
       message:
-        "Notifikasi diblokir. Aktifkan izin di pengaturan browser terlebih dahulu.",
+        "Notifications are blocked. Enable permission in your browser settings.",
     };
   }
 
@@ -123,8 +123,8 @@ export const subscribeDailyReminder = async (
       reason: "denied",
       message:
         permission === "default"
-          ? "Permintaan izin notifikasi dibatalkan."
-          : "Izin notifikasi ditolak.",
+          ? "Notification permission request was dismissed."
+          : "Notification permission was denied.",
     };
   }
 
@@ -133,7 +133,7 @@ export const subscribeDailyReminder = async (
     return {
       ok: false,
       reason: "unavailable",
-      message: "Service worker belum siap.",
+      message: "The service worker is not ready.",
     };
   }
 
@@ -147,13 +147,13 @@ export const subscribeDailyReminder = async (
 
     return {
       ok: true,
-      message: "Scheduled reminder menggunakan push (jika device/browser mendukung).",
+      message: "Scheduled reminder uses push notifications when supported.",
     };
   } catch (error) {
     return {
       ok: false,
       reason: "subscribe-failed",
-      message: error?.message || "Gagal mengaktifkan push reminder.",
+      message: error?.message || "Failed to enable push reminders.",
     };
   }
 };
@@ -170,7 +170,7 @@ export const unsubscribeDailyReminder = async () => {
       try {
         await subscription.unsubscribe();
       } catch (error) {
-        console.warn("Gagal unsubscribe push:", error);
+        console.warn("Failed to unsubscribe from push notifications:", error);
       }
     }
   }
@@ -178,7 +178,7 @@ export const unsubscribeDailyReminder = async () => {
   try {
     await client.delete("/notifications/unsubscribe");
   } catch (error) {
-    console.warn("Gagal menghapus subscription di backend:", error);
+    console.warn("Failed to remove the subscription on the backend:", error);
     return { ok: false, reason: "backend-failed" };
   }
 

@@ -970,11 +970,11 @@ export default function Profile() {
         });
         uploadedUrl = uploadResult?.url;
       } else {
-        throw new Error("SAS response tidak valid.");
+        throw new Error("The SAS response is invalid.");
       }
 
       if (!uploadedUrl) {
-        throw new Error("URL upload tidak tersedia.");
+        throw new Error("The upload URL is not available.");
       }
 
       const updatedUser = await saveProfilePictureUrl(uploadedUrl);
@@ -984,11 +984,11 @@ export default function Profile() {
         avatar: updatedUser?.avatar || uploadedUrl,
       }));
       setLocalAvatarPreview(null);
-      showNotification("Foto profil berhasil diupload.", "success");
+      showNotification("Profile photo uploaded successfully.", "success");
       setShowAvatarModal(false);
       window.dispatchEvent(new Event("nostressia:user-update"));
     } catch (error) {
-      showNotification(error?.message || "Gagal upload foto profil.", "error");
+      showNotification(error?.message || "Failed to upload the profile photo.", "error");
     } finally {
       setIsUploadingAvatar(false);
     }

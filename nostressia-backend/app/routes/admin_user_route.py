@@ -9,11 +9,11 @@ from app.models.admin_model import Admin
 from app.schemas.user_auth_schema import UserResponse, UserListResponse, AdminUserUpdate
 from app.schemas.response_schema import APIResponse
 
-# ✅ Import Satpam dari auth_route
-from app.routes.auth_route import get_current_admin 
+# Admin auth dependency
+from app.routes.auth_route import get_current_admin
 from app.utils.response import success_response
 
-# Prefix URL khusus Admin
+# Admin-only URL prefix
 router = APIRouter(prefix="/admin/users", tags=["Admin - User Management"])
 
 # --- 1. GET ALL USERS (Search & Pagination) ---
@@ -23,14 +23,14 @@ def get_all_users(
     limit: int = 10,
     search: Optional[str] = None,
     db: Session = Depends(get_db),
-    current_admin: Admin = Depends(get_current_admin) # 🔒 Hanya Admin
+    current_admin: Admin = Depends(get_current_admin)
 ):
     skip = (page - 1) * limit
     query = db.query(User)
 
     if search:
         search_fmt = f"%{search}%"
-        # Search di Nama, Email, atau Username
+        # Search name, email, or username.
         query = query.filter(
             or_(
                 User.name.ilike(search_fmt),
@@ -68,7 +68,7 @@ def get_user_by_id(
 @router.put("/{user_id}", response_model=APIResponse[UserResponse])
 def admin_update_user(
     user_id: int,
-    user_update: AdminUserUpdate, # ✅ Pakai schema update khusus Admin
+    user_update: AdminUserUpdate,
     db: Session = Depends(get_db),
     current_admin: Admin = Depends(get_current_admin)
 ):

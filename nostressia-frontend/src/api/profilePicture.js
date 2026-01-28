@@ -5,7 +5,7 @@ import client, { unwrapResponse } from "./client";
 const MAX_PROFILE_PICTURE_SIZE = 2 * 1024 * 1024;
 
 export const requestProfilePictureSas = async (file) => {
-  // Minta SAS pendek dari backend supaya frontend tidak pegang key.
+  // Request a short-lived SAS token so the browser never holds the storage key.
   const response = await client.post("/profile/picture/sas", {
     fileName: file.name,
     contentType: file.type,
@@ -22,7 +22,7 @@ export const uploadProfilePictureToAzure = async (
   { sasUrl, containerName, blobName } = {}
 ) => {
   if (!sasUrl) {
-    throw new Error("SAS URL tidak tersedia untuk upload.");
+    throw new Error("SAS URL is not available for upload.");
   }
 
   if (containerName) {
@@ -38,7 +38,7 @@ export const uploadProfilePictureToAzure = async (
     return { url: blobClient.url, blobName: safeName };
   }
 
-  // Upload langsung ke Azure Blob via SAS URL untuk satu blob.
+  // Upload directly to Azure Blob using a single-blob SAS URL.
   const blobClient = new BlockBlobClient(sasUrl);
   await blobClient.uploadBrowserData(file, {
     blobHTTPHeaders: { blobContentType: file.type },
@@ -48,7 +48,7 @@ export const uploadProfilePictureToAzure = async (
 };
 
 export const saveProfilePictureUrl = async (profileImageUrl) => {
-  // Simpan URL foto profil ke database via backend.
+  // Save the profile image URL in the backend.
   const response = await client.put("/profile/picture", {
     profileImageUrl,
   });
@@ -57,13 +57,13 @@ export const saveProfilePictureUrl = async (profileImageUrl) => {
 
 export const validateProfilePictureFile = (file) => {
   if (!file) {
-    return { ok: false, message: "File belum dipilih." };
+    return { ok: false, message: "No file selected." };
   }
   if (!file.type?.startsWith("image/")) {
-    return { ok: false, message: "File harus berupa gambar." };
+    return { ok: false, message: "The file must be an image." };
   }
   if (file.size > MAX_PROFILE_PICTURE_SIZE) {
-    return { ok: false, message: "Ukuran file maksimal 2MB." };
+    return { ok: false, message: "The maximum file size is 2MB." };
   }
   return { ok: true };
 };

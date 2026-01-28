@@ -12,7 +12,7 @@ class Diary(Base):
     note = Column(Text)
     date = Column(Date, nullable=False)
     
-    # PERUBAHAN 1: Emoji jadi String (untuk simpan "😢", "😊")
+    # Emoji is stored as a string (e.g., "😢", "😊").
     emoji = Column(String(10)) 
     
     # PERUBAHAN 2: Tambah kolom Font

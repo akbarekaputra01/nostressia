@@ -22,7 +22,7 @@ def request_profile_picture_sas(
     payload: ProfilePictureSasRequest,
     current_user: User = Depends(get_current_user),
 ):
-    """Buat SAS URL pendek untuk upload foto profil."""
+    """Create a short-lived SAS URL for profile photo uploads."""
     sas_payload = create_profile_picture_sas(current_user.user_id, payload)
     return success_response(data=sas_payload, message="SAS created")
 

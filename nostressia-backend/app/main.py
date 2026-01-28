@@ -1,4 +1,4 @@
-# nostressia-backend/app/main.py
+"""FastAPI application entry point."""
 
 import logging
 from pathlib import Path
@@ -26,15 +26,15 @@ logger = logging.getLogger(__name__)
 def create_app() -> FastAPI:
     app = FastAPI(title=settings.app_name)
 
-    # ✅ Registrasi model agar Base.metadata tahu semua table
+    # Register models so metadata contains all tables.
     register_models()
 
-    # ✅ Folder uploads
+    # Upload folder
     upload_root = Path(__file__).resolve().parent.parent / "uploads"
     upload_root.mkdir(parents=True, exist_ok=True)
     app.mount("/uploads", StaticFiles(directory=upload_root), name="uploads")
 
-    # ✅ CORS
+    # CORS
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.allowed_origins,
@@ -43,7 +43,7 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
-    # ✅ HTTP exception handler
+    # HTTP exception handler
     @app.exception_handler(HTTPException)
     async def http_exception_handler(request: Request, exc: HTTPException):
         return JSONResponse(
@@ -55,7 +55,7 @@ def create_app() -> FastAPI:
             },
         )
 
-    # ✅ Validation exception handler
+    # Validation exception handler
     @app.exception_handler(RequestValidationError)
     async def validation_exception_handler(request: Request, exc: RequestValidationError):
         return JSONResponse(
@@ -67,30 +67,28 @@ def create_app() -> FastAPI:
             },
         )
 
-    # ✅ STARTUP
+    # STARTUP
     @app.on_event("startup")
     def on_startup() -> None:
-        # Penting untuk HF: pastikan terlihat
-        print("===== FastAPI Startup =====", flush=True)
+        logger.info("FastAPI startup")
 
-        # 1) Buat semua table (termasuk push_subscriptions) kalau belum ada
+        # 1) Create all tables (including push_subscriptions) if missing.
         Base.metadata.create_all(bind=engine)
-        print("✅ DB tables ensured (create_all).", flush=True)
+        logger.info("Database tables ensured (create_all).")
 
-        # 2) Sanity check untuk table users
+        # 2) Sanity check for the users table.
         try:
             inspector = inspect(engine)
             tables = inspector.get_table_names()
-            print(f"📋 DB tables: {tables}", flush=True)
+            logger.info("DB tables: %s", tables)
 
             if "users" not in tables:
                 message = "Startup check failed: table 'users' not found."
                 logger.error(message)
-                print(f"❌ {message}", flush=True)
                 raise RuntimeError(message)
 
             user_columns = {column["name"] for column in inspector.get_columns("users")}
-            print(f"📌 users columns: {sorted(list(user_columns))}", flush=True)
+            logger.info("Users columns: %s", sorted(list(user_columns)))
 
             if "username" not in user_columns:
                 message = (
@@ -98,27 +96,25 @@ def create_app() -> FastAPI:
                     "Ensure database migrations have been applied."
                 )
                 logger.error(message)
-                print(f"❌ {message}", flush=True)
                 raise RuntimeError(message)
 
         except SQLAlchemyError as exc:
             logger.exception("Startup check failed due to database error.")
-            print(f"❌ SQLAlchemyError during startup: {exc}", flush=True)
             raise RuntimeError("Startup check failed due to database error.") from exc
 
         # 3) Start scheduler
-        print("✅ starting notification scheduler...", flush=True)
+        logger.info("Starting notification scheduler.")
         app.state.notification_scheduler = start_notification_scheduler()
-        print("✅ notification scheduler started.", flush=True)
+        logger.info("Notification scheduler started.")
 
-    # ✅ SHUTDOWN
+    # SHUTDOWN
     @app.on_event("shutdown")
     def on_shutdown() -> None:
-        print("===== FastAPI Shutdown =====", flush=True)
+        logger.info("FastAPI shutdown")
         stop_notification_scheduler(getattr(app.state, "notification_scheduler", None))
-        print("✅ notification scheduler stopped.", flush=True)
+        logger.info("Notification scheduler stopped.")
 
-    # ✅ Router
+    # Router
     app.include_router(api_router, prefix=settings.api_prefix)
 
     return app

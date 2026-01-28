@@ -31,7 +31,7 @@ def predict_current_stress(
     result = ml_service.predict_stress(input_data)
 
     if result == "Error":
-        raise HTTPException(status_code=500, detail="Terjadi kesalahan pada model ML")
+        raise HTTPException(status_code=500, detail="An error occurred in the ML model.")
 
     payload = PredictResponse(
         result=result,

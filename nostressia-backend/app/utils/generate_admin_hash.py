@@ -8,7 +8,7 @@ def hash_password(password: str) -> str:
 
 
 if __name__ == "__main__":
-    plain = input("Masukkan password admin baru: ")
+    plain = input("Enter the new admin password: ")
     hashed = hash_password(plain)
     print("\n=== PASSWORD HASHED ===")
     print(hashed)

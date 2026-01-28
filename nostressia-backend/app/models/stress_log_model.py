@@ -15,10 +15,10 @@ class StressLevel(Base):
     user_id = Column(Integer, ForeignKey("users.user_id"), nullable=False)
     date = Column(Date, nullable=False)
 
-    # Hasil Prediksi (1=Low, 2=Medium, 3=High)
+    # Prediction result (1=Low, 2=Medium, 3=High)
     stress_level = Column(Integer, nullable=False)
     
-    # Input User (Disimpan persis sesuai nama kolom di SQL)
+    # User inputs (stored with column names aligned to SQL schema)
     gpa = Column(Float)
     extracurricular_hour_per_day = Column(Float)
     physical_activity_hour_per_day = Column(Float)
@@ -26,7 +26,7 @@ class StressLevel(Base):
     study_hour_per_day = Column(Float)
     social_hour_per_day = Column(Float)
     
-    emoji = Column(Integer) # Mood icon
+    emoji = Column(Integer)  # Mood icon
     is_restored = Column(Boolean, default=False, nullable=False)
 
     created_at = Column(TIMESTAMP, server_default=func.now())
