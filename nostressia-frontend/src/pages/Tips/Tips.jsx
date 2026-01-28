@@ -2,21 +2,12 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useOutletContext } from "react-router-dom";
 import { motion as Motion, AnimatePresence } from "framer-motion";
-import {
-  ArrowLeft,
-  Lightbulb,
-  RefreshCw,
-  CheckCircle2,
-  AlertCircle,
-} from "lucide-react";
+import { ArrowLeft, Lightbulb, RefreshCw, CheckCircle2, AlertCircle } from "lucide-react";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 
 // --- API URL ---
-import {
-  getTipCategories,
-  getTipsByCategory,
-} from "../../services/tipsService";
+import { getTipCategories, getTipsByCategory } from "../../services/tipsService";
 
 // --- COLOR CONFIGURATION ---
 const bgSun = "rgb(var(--bg-gradient-sun))";
@@ -44,8 +35,7 @@ const TIP_STYLE_PRESETS = [
   },
   {
     emoji: "🥗",
-    colorClass:
-      "from-brand-info/10 to-brand-info/20 text-brand-info border-brand-info/20",
+    colorClass: "from-brand-info/10 to-brand-info/20 text-brand-info border-brand-info/20",
   },
   {
     emoji: "😴",
@@ -54,18 +44,15 @@ const TIP_STYLE_PRESETS = [
   },
   {
     emoji: "🧘",
-    colorClass:
-      "from-brand-info/10 to-brand-info/20 text-brand-info border-brand-info/20",
+    colorClass: "from-brand-info/10 to-brand-info/20 text-brand-info border-brand-info/20",
   },
   {
     emoji: "🗣️",
-    colorClass:
-      "from-brand-accent/10 to-brand-accent/20 text-brand-accent border-brand-accent/20",
+    colorClass: "from-brand-accent/10 to-brand-accent/20 text-brand-accent border-brand-accent/20",
   },
   {
     emoji: "🧠",
-    colorClass:
-      "from-surface to-surface-muted text-text-secondary border-border",
+    colorClass: "from-surface to-surface-muted text-text-secondary border-border",
   },
 ];
 
@@ -86,8 +73,7 @@ const DUMMY_TIP_CATEGORIES = [
     id: "placeholder-balance",
     name: "Mind & Body",
     emoji: "🧘",
-    colorClass:
-      "from-brand-info/10 to-brand-info/20 text-brand-info border-brand-info/20",
+    colorClass: "from-brand-info/10 to-brand-info/20 text-brand-info border-brand-info/20",
     tips: [
       "Try a 4-7-8 breathing cycle to lower stress quickly.",
       "Stretch for 3 minutes after long study sessions.",
@@ -153,8 +139,7 @@ export default function Tips() {
             name: item.categoryName || item.name || "",
             emoji: preset?.emoji || "💡",
             colorClass:
-              preset?.colorClass ||
-              "from-gray-50 to-gray-100 text-text-secondary border-border",
+              preset?.colorClass || "from-gray-50 to-gray-100 text-text-secondary border-border",
             tipsCount: tipsData.length,
             tips: tipsData.map((t) => t.detail),
           };
@@ -200,10 +185,8 @@ export default function Tips() {
 
     const ordered = [];
     for (let i = 0; i < half; i++) {
-      if (leftColumn[i])
-        ordered.push({ text: leftColumn[i], displayIndex: i + 1 });
-      if (rightColumn[i])
-        ordered.push({ text: rightColumn[i], displayIndex: half + i + 1 });
+      if (leftColumn[i]) ordered.push({ text: leftColumn[i], displayIndex: i + 1 });
+      if (rightColumn[i]) ordered.push({ text: rightColumn[i], displayIndex: half + i + 1 });
     }
     return ordered;
   };
@@ -217,13 +200,10 @@ export default function Tips() {
     [],
   );
 
-  const categorySource =
-    syncStatus === "updated" ? categories : fallbackCategories;
+  const categorySource = syncStatus === "updated" ? categories : fallbackCategories;
 
   const filteredCategories = useMemo(() => {
-    return categorySource.filter((c) =>
-      c.name.toLowerCase().includes(searchQuery.toLowerCase()),
-    );
+    return categorySource.filter((c) => c.name.toLowerCase().includes(searchQuery.toLowerCase()));
   }, [categorySource, searchQuery]);
 
   return (
@@ -247,10 +227,7 @@ export default function Tips() {
               animate="visible"
               exit="hidden"
             >
-              <Motion.div
-                variants={itemVariants}
-                className="mb-8 md:mb-10 text-center"
-              >
+              <Motion.div variants={itemVariants} className="mb-8 md:mb-10 text-center">
                 <div className="flex items-center gap-2 mb-2 justify-center">
                   <Lightbulb className="w-6 h-6 md:w-8 md:h-8 text-brand-primary drop-shadow-lg" />
                   <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold bg-gradient-to-r from-brand-primary to-brand-info bg-clip-text text-transparent drop-shadow-md">
@@ -275,12 +252,7 @@ export default function Tips() {
                     className="w-full pl-11 pr-4 py-3 bg-surface-elevated glass-panel text-text-secondary dark:bg-surface/80 dark:text-text-primary backdrop-blur-md rounded-xl shadow-sm border border-border dark:border-border focus:bg-surface-elevated glass-panel dark:focus:bg-surface outline-none font-medium text-base transition-all"
                   />
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none z-10">
-                    <svg
-                      width="18"
-                      height="18"
-                      fill="currentColor"
-                      viewBox="0 0 256 256"
-                    >
+                    <svg width="18" height="18" fill="currentColor" viewBox="0 0 256 256">
                       <path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z" />
                     </svg>
                   </div>
@@ -379,24 +351,22 @@ export default function Tips() {
 
               {/* Grid Responsif: md:grid-cols-2 untuk Desktop, grid-cols-1 untuk Mobile */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                {getVerticalOrderedTips(selectedCategory.tips).map(
-                  (tip, idx) => (
-                    <Motion.div
-                      key={idx}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: idx * 0.05 }}
-                      className="bg-surface-elevated glass-panel dark:bg-surface/80 px-6 py-4 md:px-8 md:py-5 rounded-[24px] md:rounded-[28px] border border-border dark:border-border shadow-sm relative group hover:bg-surface-elevated glass-panel dark:hover:bg-surface transition-colors overflow-hidden flex items-center min-h-[80px] md:min-h-[90px]"
-                    >
-                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-6xl md:text-8xl font-extrabold text-text-muted/40 dark:text-text-secondary/60 select-none pointer-events-none group-hover:text-blue-100/50 dark:group-hover:text-blue-900/40 transition-colors z-0">
-                        {tip.displayIndex}
-                      </span>
-                      <p className="text-sm md:text-xl font-medium text-text-secondary dark:text-text-primary relative z-10 leading-relaxed pr-10">
-                        {tip.text}
-                      </p>
-                    </Motion.div>
-                  ),
-                )}
+                {getVerticalOrderedTips(selectedCategory.tips).map((tip, idx) => (
+                  <Motion.div
+                    key={idx}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.05 }}
+                    className="bg-surface-elevated glass-panel dark:bg-surface/80 px-6 py-4 md:px-8 md:py-5 rounded-[24px] md:rounded-[28px] border border-border dark:border-border shadow-sm relative group hover:bg-surface-elevated glass-panel dark:hover:bg-surface transition-colors overflow-hidden flex items-center min-h-[80px] md:min-h-[90px]"
+                  >
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-6xl md:text-8xl font-extrabold text-text-muted/40 dark:text-text-secondary/60 select-none pointer-events-none group-hover:text-orange-900/40 dark:group-hover:text-blue-900/40 transition-colors z-0">
+                      {tip.displayIndex}
+                    </span>
+                    <p className="text-sm md:text-xl font-medium text-text-secondary dark:text-text-primary relative z-10 leading-relaxed pr-10">
+                      {tip.text}
+                    </p>
+                  </Motion.div>
+                ))}
               </div>
             </Motion.div>
           )}
