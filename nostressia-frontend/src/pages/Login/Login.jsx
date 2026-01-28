@@ -41,7 +41,7 @@ import avatar5 from "../../assets/images/avatar5.png";
 
 const AVATAR_OPTIONS = [avatar1, avatar4, avatar3, avatar5, avatar2];
 
-// STATE AWAL (KOSONG)
+// Initial form state (empty)
 const INITIAL_FORM_DATA = {
   name: "",
   username: "",
@@ -56,28 +56,28 @@ const INITIAL_FORM_DATA = {
 export default function Login() {
   const navigate = useNavigate();
 
-  // --- STATE UTAMA ---
+  // --- Core state ---
   const [formData, setFormData] = useState(INITIAL_FORM_DATA);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  // --- STATE UI ---
+  // --- UI state ---
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [showSignUpPassword, setShowSignUpPassword] = useState(false);
   const [isFlipped, setIsFlipped] = useState(false);
   const [isWinking, setIsWinking] = useState(false);
   const [showOTPForm, setShowOTPForm] = useState(false);
 
-  // --- STATE & REF KHUSUS OTP REGISTER (6 Digit) ---
+  // --- OTP register state & ref (6 digits) ---
   const [otp, setOtp] = useState("");
   const otpInputRef = useRef(null);
 
-  // --- STATE FORGOT PASSWORD ---
+  // --- Forgot password state ---
   const [showForgotModal, setShowForgotModal] = useState(false);
   const [forgotStep, setForgotStep] = useState(1); // 1: Email, 2: OTP, 3: Password
   const [forgotEmail, setForgotEmail] = useState("");
 
-  // OTP Forgot (6 Digit Array untuk Input Terpisah)
+  // Forgot OTP values (6-digit array for separate inputs)
   const [forgotOtpValues, setForgotOtpValues] = useState(new Array(6).fill(""));
   const forgotOtpRefs = useRef([]);
 
@@ -87,10 +87,10 @@ export default function Login() {
   const [loadingForgot, setLoadingForgot] = useState(false);
   const [forgotOtpVerified, setForgotOtpVerified] = useState(false);
 
-  // --- STATE COUNTDOWN ---
+  // --- Countdown state ---
   const [countdown, setCountdown] = useState(0);
 
-  // --- EFEK KEDIP ---
+  // --- Blink effect ---
   useEffect(() => {
     const triggerBlink = () => {
       setIsWinking(true);
@@ -102,7 +102,7 @@ export default function Login() {
     return () => clearInterval(blinkInterval);
   }, []);
 
-  // --- EFEK COUNTDOWN TIMER ---
+  // --- Countdown timer effect ---
   useEffect(() => {
     let timer;
     if (countdown > 0) {
@@ -113,7 +113,7 @@ export default function Login() {
     return () => clearInterval(timer);
   }, [countdown]);
 
-  // --- EFEK AUTO FOCUS INPUT OTP REGISTER ---
+  // --- Auto-focus OTP register input ---
   useEffect(() => {
     if (showOTPForm && !isSuccess && otpInputRef.current) {
       setTimeout(() => {
@@ -122,7 +122,7 @@ export default function Login() {
     }
   }, [showOTPForm, isSuccess]);
 
-  // --- EFEK AUTO FOCUS INPUT OTP FORGOT (Step 2) ---
+  // --- Auto-focus forgot OTP input (step 2) ---
   useEffect(() => {
     if (showForgotModal && forgotStep === 2) {
       setTimeout(() => {
@@ -230,7 +230,7 @@ export default function Login() {
     }
   };
 
-  // --- 3. LOGIKA VERIFIKASI OTP REGISTER ---
+  // --- 3. OTP verification for registration ---
   const handleVerifyOTP = async (e) => {
     e.preventDefault();
     if (otp.length !== 6) return alert("Please enter the 6-digit OTP code.");
@@ -257,7 +257,7 @@ export default function Login() {
   };
 
   // ==========================================
-  // LOGIKA BARU FORGOT PASSWORD (STEPPER 3 DOTS)
+  // Forgot password flow (3-step progress)
   // ==========================================
 
   // Step 1: Request OTP
@@ -279,7 +279,7 @@ export default function Login() {
     }
   };
 
-  // Helper Input OTP
+  // OTP input helper
   const handleForgotOtpChange = (index, value) => {
     if (isNaN(value)) return;
     const newOtp = [...forgotOtpValues];
@@ -296,7 +296,7 @@ export default function Login() {
       forgotOtpRefs.current[index - 1]?.focus();
     }
     if (e.key === "Enter") {
-      e.preventDefault(); // PENTING: Mencegah submit form default
+      e.preventDefault(); // Important: prevent default form submit
       handleForgotVerifyStep(e);
     }
   };
@@ -429,7 +429,7 @@ export default function Login() {
              overflow-hidden"
             style={{ backfaceVisibility: "hidden", zIndex: isFlipped ? 0 : 1 }}
           >
-            {/* highlight tipis biar glass lebih hidup */}
+            {/* Subtle highlight to enhance the glass effect */}
             <div className="pointer-events-none absolute inset-0">
               <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-white/25 blur-3xl" />
               <div className="absolute -bottom-28 -left-28 w-72 h-72 rounded-full bg-white/20 blur-3xl" />
@@ -553,7 +553,7 @@ export default function Login() {
               }}
             >
               {showOTPForm ? (
-                // TAMPILAN SUKSES / VERIFIED REGISTER
+                // VERIFIED SUCCESS VIEW
                 isSuccess ? (
                   <div className="flex flex-col h-full justify-center items-center text-center p-6 animate-fade-in">
                     <div className="w-24 h-24 bg-brand-info/15 rounded-full flex items-center justify-center mb-6 animate-bounce">
@@ -573,7 +573,7 @@ export default function Login() {
                     </p>
                   </div>
                 ) : (
-                  // TAMPILAN OTP REGISTER (6 DIGIT)
+                  // OTP REGISTER VIEW (6 DIGITS)
                   <div className="flex flex-col h-full justify-center items-center text-center p-4 animate-fade-in">
                     <div className="bg-brand-warning/20 p-4 rounded-full mb-6 text-brand-warning animate-bounce">
                       <ShieldCheck size={48} />
@@ -699,7 +699,7 @@ export default function Login() {
                       onKeyDown={handleFormKeyDown}
                       className="space-y-4 pb-2"
                     >
-                      {/* FORM REGISTER INPUTS (SAME AS BEFORE) */}
+                      {/* Registration form inputs */}
                       <div className="space-y-1">
                         <label className="text-xs font-bold text-text-secondary ml-1">
                           Full Name
@@ -894,7 +894,10 @@ export default function Login() {
                         </div>
                       </div>
                       <div className="space-y-1">
-                        <label className="text-xs font-bold text-text-secondary ml-1">
+                        <label
+                          htmlFor="signup-dob"
+                          className="text-xs font-bold text-text-secondary ml-1"
+                        >
                           Date of Birth
                         </label>
                         <div className="relative group">
@@ -902,6 +905,7 @@ export default function Login() {
                             <Calendar className="h-4 w-4 text-text-muted group-focus-within:text-brand-warning transition-colors" />
                           </div>
                           <input
+                            id="signup-dob"
                             type="date"
                             value={formData.dob}
                             onChange={(e) =>
@@ -1088,7 +1092,7 @@ export default function Login() {
                         )}
                       </div>
                     </div>
-                    {/* PENTING: type="button" untuk mencegah submit form default */}
+                    {/* Important: type="button" prevents default form submit */}
                     <button
                       type="button"
                       onClick={handleForgotVerifyStep}

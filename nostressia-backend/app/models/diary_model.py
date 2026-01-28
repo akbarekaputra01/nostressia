@@ -15,7 +15,7 @@ class Diary(Base):
     # Emoji is stored as a string (e.g., "😢", "😊").
     emoji = Column(String(10)) 
     
-    # PERUBAHAN 2: Tambah kolom Font
+    # Added font column to persist diary styling.
     font = Column(String(100), default="sans-serif") 
 
     user_id = Column(Integer, ForeignKey("users.user_id"), nullable=False)

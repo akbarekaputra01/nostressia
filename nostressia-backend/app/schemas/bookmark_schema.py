@@ -13,7 +13,7 @@ class BookmarkResponse(BaseSchema):
     user_id: int
     motivation_id: int
     
-    # UBAH DISINI: Tambahkan Optional dan default None
+    # Allow null timestamps when the database omits the value.
     created_at: Optional[datetime] = None 
     
     motivation: MotivationInBookmark 

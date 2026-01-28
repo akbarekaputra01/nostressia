@@ -21,6 +21,7 @@ from app.schemas.user_auth_schema import (
     UserResponse,
     UserUpdate,
     ChangePasswordSchema,
+    VerifyCurrentPassword,
     VerifyOTP,
     ForgotPasswordRequest,
     ResetPasswordConfirm,
@@ -226,9 +227,17 @@ def update_user_profile(user_update: UserUpdate, db: Session = Depends(get_db), 
             raise HTTPException(status_code=400, detail="Email already registered")
         current_user.email = user_update.email
 
-    if user_update.name is not None: current_user.name = user_update.name
-    if user_update.avatar is not None: current_user.avatar = user_update.avatar
-    if user_update.gender is not None: current_user.gender = user_update.gender
+    if user_update.user_dob and user_update.user_dob > date.today():
+        raise HTTPException(status_code=400, detail="Birthday cannot be in the future.")
+
+    if user_update.name is not None:
+        current_user.name = user_update.name
+    if user_update.avatar is not None:
+        current_user.avatar = user_update.avatar
+    if user_update.gender is not None:
+        current_user.gender = user_update.gender
+    if user_update.user_dob is not None:
+        current_user.user_dob = user_update.user_dob
 
     db.commit()
     db.refresh(current_user)
@@ -258,6 +267,16 @@ def upload_user_avatar(
     db.commit()
     db.refresh(current_user)
     return success_response(data=_serialize_user(current_user), message="Avatar uploaded")
+
+
+@router.post("/verify-current-password", response_model=APIResponse[None])
+def verify_current_password(
+    payload: VerifyCurrentPassword,
+    current_user: User = Depends(get_current_user),
+):
+    if not verify_password(payload.current_password, current_user.password):
+        raise HTTPException(status_code=400, detail="Current password is incorrect.")
+    return success_response(message="Current password verified")
 
 @router.put("/change-password", status_code=status.HTTP_200_OK, response_model=APIResponse[None])
 def change_password(payload: ChangePasswordSchema, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):

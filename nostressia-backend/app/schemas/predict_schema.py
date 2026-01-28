@@ -9,5 +9,5 @@ class PredictRequest(BaseSchema):
     gpa: float
 
 class PredictResponse(BaseSchema):
-    result: str  # Isinya "Low", "Moderate", atau "High"
+    result: str  # Expected values: "Low", "Moderate", or "High"
     message: str

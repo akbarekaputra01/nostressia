@@ -109,9 +109,29 @@ def _build_stress_level(stress_data: StressLevelCreate, user_id: int, is_restore
     )
 
 
+def _resolve_latest_gpa(db: Session, user_id: int) -> float | None:
+    latest = (
+        db.query(StressLevel)
+        .filter(StressLevel.user_id == user_id, StressLevel.gpa.is_not(None))
+        .order_by(StressLevel.date.desc(), StressLevel.created_at.desc())
+        .first()
+    )
+    return float(latest.gpa) if latest and latest.gpa is not None else None
+
+
+def _ensure_gpa_imputed(db: Session, stress_data: StressLevelCreate, user_id: int) -> StressLevelCreate:
+    if stress_data.gpa is not None:
+        return stress_data
+    latest_gpa = _resolve_latest_gpa(db, user_id)
+    if latest_gpa is None:
+        return stress_data
+    return stress_data.model_copy(update={"gpa": latest_gpa})
+
+
 def create_stress_log(db: Session, stress_data: StressLevelCreate, user_id: int) -> StressLevel:
     _ensure_no_duplicate(db, user_id, stress_data.date)
-    new_log = _build_stress_level(stress_data, user_id, is_restored=False)
+    stress_payload = _ensure_gpa_imputed(db, stress_data, user_id)
+    new_log = _build_stress_level(stress_payload, user_id, is_restored=False)
     db.add(new_log)
     db.commit()
     db.refresh(new_log)
@@ -126,7 +146,8 @@ def create_restore_log(db: Session, stress_data: StressLevelCreate, user_id: int
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Restore limit reached for this month.",
         )
-    new_log = _build_stress_level(stress_data, user_id, is_restored=True)
+    stress_payload = _ensure_gpa_imputed(db, stress_data, user_id)
+    new_log = _build_stress_level(stress_payload, user_id, is_restored=True)
     db.add(new_log)
     db.commit()
     db.refresh(new_log)

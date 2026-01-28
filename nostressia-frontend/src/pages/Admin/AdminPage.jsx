@@ -308,20 +308,16 @@ export default function AdminPage({ skipAuth = false }) {
         isVerified: user.isVerified
       }));
 
-      // 🔍 DEBUG: Cek di Console browser (F12) apakah ada field 'isVerified'
-      console.log("Contoh Data User dari Backend:", normalizedUsers[0]); 
-
-      // ✅ PERBAIKAN FILTER: Menangani Boolean, Angka (1), dan String ("1")
-      const validUsers = normalizedUsers.filter(user => {
-          // Kita anggap valid jika: true, angka 1, atau string "1"
-          return user.isVerified === true || user.isVerified === 1 || user.isVerified == "1";
-      });
+      // Filter handles boolean, numeric, and string representations.
+      const validUsers = normalizedUsers.filter(user =>
+          user.isVerified === true || user.isVerified === 1 || user.isVerified == "1"
+      );
       
-      // Jika setelah filter hasilnya kosong tapi data aslinya ada, 
-      // berarti backend TIDAK mengirim field 'isVerified'.
+      // If the filtered list is empty but the source data exists,
+      // Backend does not include the "isVerified" field.
       if (validUsers.length === 0 && normalizedUsers.length > 0) {
           console.warn("Warning: the API did not return 'isVerified'. Filtering could not be applied.");
-          setUsers(normalizedUsers); // Terpaksa tampilkan semua daripada kosong
+          setUsers(normalizedUsers); // Show all users instead of an empty list.
       } else {
           setUsers(validUsers);
       }

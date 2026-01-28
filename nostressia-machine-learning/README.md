@@ -36,6 +36,11 @@ Expected columns include:
 
 These artifacts are loaded by the backend services for prediction.
 
+## GPA Imputation
+Missing GPA values should be filled using the latest known GPA per user. The helper
+in `imputation.py` mirrors the production rule and is used in tests to keep the
+notebooks aligned with the backend/FE behavior.
+
 ## Running Notebooks
 1. Install dependencies:
    ```bash

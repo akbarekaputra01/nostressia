@@ -147,7 +147,7 @@ export const subscribeDailyReminder = async (
 
     return {
       ok: true,
-      message: "Scheduled reminder uses push notifications when supported.",
+      message: "You’ll receive a reminder at your scheduled time.",
     };
   } catch (error) {
     return {

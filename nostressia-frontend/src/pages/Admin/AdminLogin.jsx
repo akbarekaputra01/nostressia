@@ -4,6 +4,7 @@ import { Lock, User, ArrowLeft } from "lucide-react";
 import { adminLogin } from "../../services/authService";
 import {
   hasAdminSession,
+  isAuthTokenValid,
   persistAdminProfile,
   persistAdminToken,
 } from "../../utils/auth";
@@ -51,7 +52,13 @@ export default function AdminLogin() {
       const data = await adminLogin(formData);
 
       // Persist the admin session using canonical storage keys.
-      persistAdminToken(data.accessToken);
+      const token = data?.accessToken ?? data?.access_token;
+      if (!isAuthTokenValid(token)) {
+        setError("Login succeeded, but the token is invalid.");
+        setIsLoading(false);
+        return;
+      }
+      persistAdminToken(token);
       persistAdminProfile(data.admin);
 
       navigate("/admin");

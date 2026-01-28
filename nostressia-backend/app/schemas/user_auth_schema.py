@@ -57,10 +57,15 @@ class UserUpdate(BaseSchema):
     email: Optional[EmailStr] = None
     avatar: Optional[str] = None
     gender: Optional[str] = None
+    user_dob: Optional[date] = None
 
 class ChangePasswordSchema(BaseSchema):
     current_password: str
     new_password: str
+
+
+class VerifyCurrentPassword(BaseSchema):
+    current_password: str
 
 class AdminUserUpdate(BaseSchema):
     name: Optional[str] = None

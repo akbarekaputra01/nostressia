@@ -54,6 +54,11 @@ npm run test
 npm run test:watch
 ```
 
+### Coverage
+```bash
+npm run test:coverage
+```
+
 ## Project Structure
 ```
 src/

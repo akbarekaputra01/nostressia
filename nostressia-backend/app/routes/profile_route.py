@@ -33,6 +33,6 @@ def save_profile_picture(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Simpan URL foto profil ke database."""
+    """Persist the profile photo URL to the database."""
     user_payload = update_profile_picture(current_user, payload, db)
     return success_response(data=user_payload, message="Profile picture updated")

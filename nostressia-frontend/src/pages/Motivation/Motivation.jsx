@@ -29,7 +29,7 @@ const BG_SKY = "rgb(var(--bg-gradient-sky))";
 const BG_OCEAN = "rgb(var(--bg-gradient-ocean))";
 const BG_INK = "rgb(var(--bg-gradient-ink))";
 
-// Style Background dengan Animasi
+// Background style with animation
 const backgroundStyle = {
   minHeight: "100vh",
   backgroundColor: BG_SUN,
@@ -66,7 +66,7 @@ export default function Motivation() {
   const [likedIndex, setLikedIndex] = useState([]);
   const [toastMessage, setToastMessage] = useState("");
 
-  // 3. AMBIL DATA USER DARI WRAPPER (MAINLAYOUT)
+  // Fetch the user context from MainLayout.
   const { user } = useOutletContext() || { user: {} };
 
   const showToast = (msg) => {
@@ -98,7 +98,7 @@ export default function Motivation() {
   const prevBodyOverflow = useRef(null);
   const initialScrollResetDone = useRef(false);
 
-  // --- TAMBAHAN: FETCH DATA BOOKMARK DARI API SAAT LOAD ---
+  // --- Fetch bookmarks from the API on load ---
   useEffect(() => {
     const fetchBookmarks = async () => {
       const token = readAuthToken();
@@ -640,7 +640,7 @@ export default function Motivation() {
                   <div className="transform scale-[0.75] sm:scale-[0.9] md:scale-100 transition-transform origin-center">
                     <div
                       ref={shareCardRef}
-                      // UBAHAN: Hardcode width/height to match EXPORT_SIZES (464x264)
+                      // Match width/height to EXPORT_SIZES (464x264).
                       style={{
                         width: "464px",
                         height: "264px",
@@ -664,7 +664,7 @@ export default function Motivation() {
                 </div>
 
                 {/* Bagian Kanan (Controls) */}
-                {/* UBAHANNYA: w-full di mobile, fixed width di desktop */}
+                {/* Use full width on mobile and fixed width on desktop */}
                 <div className="w-full md:w-[360px] space-y-4">
                   <div>
                     <h4 className="font-semibold mb-2 text-text-primary">
