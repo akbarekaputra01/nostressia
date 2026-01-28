@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { getProfile } from "../services/authService";
 import { getStressEligibility } from "../services/stressService";
-import { readAuthToken } from "../utils/auth";
+import { clearAuthToken, readAuthToken } from "../utils/auth";
 import { restoreDailyReminderSubscription } from "../utils/notificationService";
 
 const resolveStreakCount = (payload) => {
@@ -71,7 +71,7 @@ export default function MainLayout() {
     } catch (error) {
       console.error("Failed to refresh user data in layout:", error);
       if ([401, 403].includes(error?.status)) {
-        localStorage.removeItem("token");
+        clearAuthToken();
         localStorage.removeItem("cache_userData");
         navigate("/login", { replace: true });
       }

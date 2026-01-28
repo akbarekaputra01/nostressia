@@ -169,11 +169,7 @@ export default function Login() {
       });
       const token =
         response?.accessToken ||
-        response?.access_token ||
-        response?.token ||
-        response?.data?.accessToken ||
-        response?.data?.access_token ||
-        response?.data?.token;
+        response?.data?.accessToken;
       if (!isAuthTokenValid(token)) {
         alert("Login succeeded, but the token is invalid.");
         return;

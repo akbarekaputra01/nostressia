@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Lock, User, ArrowLeft } from "lucide-react";
 import { adminLogin } from "../../services/authService";
+import { persistAdminToken, readAdminToken } from "../../utils/auth";
 // Import Logo Nostressia
 import LogoNostressia from "../../assets/images/Logo-Nostressia.png";
 
@@ -10,6 +11,12 @@ export default function AdminLogin() {
   const [formData, setFormData] = useState({ username: "", password: "" });
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (readAdminToken()) {
+      navigate("/admin", { replace: true });
+    }
+  }, [navigate]);
 
   const focusFirstEmptyField = (form) => {
     const requiredFields = Array.from(
@@ -39,10 +46,9 @@ export default function AdminLogin() {
       // --- coba login via API ---
       const data = await adminLogin(formData);
 
-      // Jika berhasil login via API, simpan token & data
-      localStorage.setItem("adminToken", data.accessToken || data.access_token);
+      // Persist the admin session using a single token key.
+      persistAdminToken(data.accessToken);
       localStorage.setItem("adminData", JSON.stringify(data.admin));
-      localStorage.setItem("adminAuth", "true");
 
       navigate("/admin");
     } catch (err) {
@@ -62,11 +68,10 @@ export default function AdminLogin() {
             email: "admin@offline.local",
           };
 
-          localStorage.setItem("adminToken", "offline-token");
+          persistAdminToken("offline-token");
           localStorage.setItem("adminData", JSON.stringify(offlineAdmin));
-          localStorage.setItem("adminAuth", "true");
 
-          console.warn("⚠️ API mati — menggunakan mode offline admin.");
+          console.warn("⚠️ API unavailable — using offline admin mode.");
           navigate("/admin");
           return;
         }

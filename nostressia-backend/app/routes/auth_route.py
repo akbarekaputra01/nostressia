@@ -43,13 +43,13 @@ def get_current_admin(token: str = Depends(oauth2_admin_scheme), db: Session = D
 def admin_login(request: LoginRequest, db: Session = Depends(get_db)):
     admin = authenticate_admin(db, request.username, request.password)
     if not admin:
-        raise HTTPException(status_code=401, detail="Username atau password salah")
+        raise HTTPException(status_code=401, detail="Invalid username or password")
 
     access_token = create_access_token({"sub": admin.username, "role": "admin"})
 
     payload = {
-        "access_token": access_token,
-        "token_type": "bearer",
+        "accessToken": access_token,
+        "tokenType": "bearer",
         "admin": {
             "id": admin.admin_id,
             "name": admin.name,

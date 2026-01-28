@@ -16,6 +16,7 @@ import {
 } from "../../services/tipsService";
 import Footer from "../../components/Footer";
 import Navbar from "../../components/Navbar";
+import { clearAuthToken, readAuthToken } from "../../utils/auth";
 
 // --- COLOR CONFIGURATION ---
 const brandBlue = "#0162F1";
@@ -897,7 +898,7 @@ export default function Dashboard() {
       setEligibilityLoading(true);
       setEligibilityError("");
       try {
-        const token = localStorage.getItem("token");
+        const token = readAuthToken();
 
         if (!token) {
           setEligibilityData(null);
@@ -909,7 +910,7 @@ export default function Dashboard() {
       } catch (error) {
         if (error?.name === "AbortError") return;
         if (error?.status === 401) {
-          localStorage.removeItem("token");
+          clearAuthToken();
           navigate("/login", { replace: true });
           return;
         }
@@ -937,7 +938,7 @@ export default function Dashboard() {
       setIsLoadingLogs(true);
       setLoadError("");
       try {
-        const token = localStorage.getItem("token");
+        const token = readAuthToken();
 
         if (!token) {
           setStressData(createEmptyTodayData(TODAY_KEY));
@@ -1055,7 +1056,7 @@ export default function Dashboard() {
       setForecastError("");
       setForecastDetail(null);
       try {
-        const token = localStorage.getItem("token");
+        const token = readAuthToken();
 
         if (!token) {
           setForecastList([]);
@@ -1128,7 +1129,7 @@ export default function Dashboard() {
       } catch (error) {
         if (error?.name === "AbortError") return;
         if (error?.status === 401) {
-          localStorage.removeItem("token");
+          clearAuthToken();
           navigate("/login", { replace: true });
           return;
         }
@@ -1266,7 +1267,7 @@ export default function Dashboard() {
   }
 
   async function saveStressLog(status, { dateKey, isRestore } = {}) {
-    const token = localStorage.getItem("token");
+    const token = readAuthToken();
 
     if (!token) return null;
 
