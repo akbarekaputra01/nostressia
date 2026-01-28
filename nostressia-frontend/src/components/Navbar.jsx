@@ -137,9 +137,9 @@ const Navbar = ({ user }) => {
           </nav>
         </div>
 
-        {/* KANAN: STREAK & PROFIL */}
+        {/* Right: Streak & profile */}
         <div className="flex items-center gap-2 md:gap-4">
-          {/* [FINAL] STREAK PILL - API BERUBAH WARNA */}
+          {/* Streak pill with API-driven color */}
           <Link
             to="/profile"
             className="
@@ -160,11 +160,11 @@ const Navbar = ({ user }) => {
               className={`w-4 h-4 md:w-5 md:h-5 transition-colors duration-500 ${flameClass}`}
             />
 
-            {/* Angka tetap abu-abu netral */}
+            {/* Keep the number neutral gray */}
             <span>{streakVal}</span>
           </Link>
 
-          {/* FOTO PROFIL (DESKTOP) */}
+          {/* Profile photo (desktop) */}
           <Link to="/profile" className="hidden lg:block">
             <img
               src={avatarSrc}
@@ -176,7 +176,7 @@ const Navbar = ({ user }) => {
             />
           </Link>
 
-          {/* HAMBURGER MENU */}
+          {/* Hamburger menu */}
           <button
             className="lg:hidden p-2 text-text-secondary hover:bg-brand-primary/5 rounded-xl transition-all ml-1 cursor-pointer dark:text-text-secondary dark:hover:bg-surface/60"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}

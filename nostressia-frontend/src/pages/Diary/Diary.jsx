@@ -34,7 +34,7 @@ export default function Diary() {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const scrollRef = useRef(null);
 
-  // --- STATE BARU UNTUK ANIMASI & FEEDBACK ---
+  // --- State for animations and feedback ---
   const [isLoading, setIsLoading] = useState(true); 
   const [isSubmitting, setIsSubmitting] = useState(false); 
   const [showSuccessModal, setShowSuccessModal] = useState(false); 
@@ -53,7 +53,7 @@ export default function Diary() {
     { emoji: "😄", label: "Excited" },
   ];
 
-  // --- 2. LOGIKA FETCH DATA (GET) ---
+  // --- 2. Fetch data logic (GET) ---
   useEffect(() => {
     const fetchDiaries = async () => {
       try {
@@ -92,7 +92,7 @@ export default function Diary() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // --- 3. LOGIKA SIMPAN DATA (POST) ---
+  // --- 3. Save data logic (POST) ---
   const handleSubmit = async () => {
     if (!text.trim() || !title.trim()) return;
 
@@ -141,7 +141,7 @@ export default function Diary() {
       setIsBookOpen(false);
       setEditingEntryId(null);
       
-      // TAMPILKAN MODAL SUKSES
+      // Show success modal
       setShowSuccessModal(true);
       
       setTimeout(() => {
@@ -305,7 +305,7 @@ export default function Diary() {
                         <div className="mt-2 flex justify-between items-center pt-2 border-t border-border-subtle">
                              <div className="flex gap-1">{fontOptions.map(f => (<button key={f.name} onClick={() => setSelectedFont(f.value)} className={`w-6 h-6 rounded-full border text-[10px] flex items-center justify-center transition-all ${selectedFont === f.value ? "bg-surface-muted text-text-secondary border-border dark:bg-surface dark:text-white dark:border-border" : "bg-surface-elevated glass-panel text-text-muted dark:bg-surface dark:text-text-primary dark:border-border"}`}>{f.label}</button>))}</div>
                              
-                             {/* TOMBOL SAVE DENGAN LOADING STATE */}
+                            {/* Save button with loading state */}
                              <button 
                                 onClick={handleSubmit} 
                                 disabled={isSubmitting}
@@ -388,15 +388,15 @@ export default function Diary() {
             </motion.div>
         </div>
 
-        {/* HISTORY SECTION (DENGAN LOADING & ANIMASI) */}
+        {/* History section with loading and animations */}
         <div className="w-full max-w-6xl mt-12 md:mt-16 pb-20 min-h-[300px]">
              {isLoading ? (
-                // TAMPILAN SAAT LOADING DATA
+                // View while data is loading
                 <div className="flex flex-col items-center justify-center py-20 opacity-70">
                     <Loader2 className="w-12 h-12 animate-spin text-orange-400" />
                 </div>
              ) : (
-                // TAMPILAN SETELAH DATA LOADED
+                // View after data loads
                 entries.length > 0 ? (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
                         <div className="flex items-center gap-2 mb-6">

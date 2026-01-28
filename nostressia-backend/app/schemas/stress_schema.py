@@ -12,7 +12,7 @@ RESTORE_LIMIT = 3
 # 1. Schema for user-submitted data (request)
 class StressLevelCreate(BaseSchema):
     date: date
-    stress_level: int  # Hasil 1, 2, atau 3
+    stress_level: int  # Expected values: 1, 2, or 3
     gpa: Optional[float] = None
     extracurricular_hour_per_day: Optional[float] = None
     physical_activity_hour_per_day: Optional[float] = None

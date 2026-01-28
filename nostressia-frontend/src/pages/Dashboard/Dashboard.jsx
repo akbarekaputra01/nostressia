@@ -483,6 +483,7 @@ export default function Dashboard() {
     const saved = localStorage.getItem("user_gpa");
     return saved ? Number(saved) : "";
   });
+  const [latestKnownGpa, setLatestKnownGpa] = useState(null);
   const [isEditingGpa, setIsEditingGpa] = useState(false);
 
   const [studyHours, setStudyHours] = useState("");
@@ -652,8 +653,8 @@ export default function Dashboard() {
               category: categoryName,
               emoji: palette?.emoji ?? "💡",
               title,
-              desc: desc || "Tips tersedia",
-              fullDetail: detail || "Tips tersedia",
+              desc: desc || "Tips available",
+              fullDetail: detail || "Tips available",
               theme: palette?.theme ?? tipThemePalette[0].theme,
             };
           }),
@@ -676,7 +677,7 @@ export default function Dashboard() {
     };
   }, []);
 
-  // --- LOGIKA GRADIEN BACKGROUND ---
+  // --- Background gradient logic ---
   let gradientBg = "radial-gradient(circle at 50% 30%, rgba(156, 163, 175, 0.15), transparent 70%)";
   if (hasSubmittedToday) {
     if (stressScore > 60)
@@ -686,7 +687,7 @@ export default function Dashboard() {
     else gradientBg = `radial-gradient(circle at 50% 30%, ${brandGreen}30, transparent 70%)`;
   }
 
-  // --- MENGHITUNG TREND DOTS ---
+  // --- Compute trend dots ---
   const trendDots = [];
   const daysShort = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   for (let i = 6; i >= 0; i--) {
@@ -888,6 +889,40 @@ export default function Dashboard() {
         }
         const logs = await getMyStressLogs();
         const logList = Array.isArray(logs) ? logs : [];
+
+        const latestGpaEntry = logList
+          .map((log) => {
+            const dt = log?.date ? new Date(log.date) : null;
+            const createdAt = log?.createdAt ? new Date(log.createdAt) : null;
+            const gpaValue = Number(log?.gpa);
+            if (!Number.isFinite(gpaValue) || !dt || Number.isNaN(dt.getTime())) {
+              return null;
+            }
+            return {
+              gpa: gpaValue,
+              date: dt.getTime(),
+              createdAt: createdAt ? createdAt.getTime() : 0,
+            };
+          })
+          .filter(Boolean)
+          .sort((a, b) => {
+            if (a.date === b.date) {
+              return b.createdAt - a.createdAt;
+            }
+            return b.date - a.date;
+          })[0];
+
+        const latestGpa = latestGpaEntry?.gpa ?? null;
+        setLatestKnownGpa(latestGpa);
+        if (latestGpa !== null) {
+          setGpa((prev) => {
+            if (prev === "" || prev === null || Number.isNaN(Number(prev))) {
+              localStorage.setItem("user_gpa", String(latestGpa));
+              return latestGpa;
+            }
+            return prev;
+          });
+        }
 
         const byDate = new Map();
         let latestLogDate = null;
@@ -1170,15 +1205,28 @@ export default function Dashboard() {
     setIsEditingGpa(false);
   }
 
-  async function saveStressLog(status, { dateKey, isRestore } = {}) {
+  const resolveGpaForSubmit = () => {
+    if (gpa !== "" && gpa !== null && Number.isFinite(Number(gpa))) {
+      return Number(gpa);
+    }
+    if (Number.isFinite(Number(latestKnownGpa))) {
+      return Number(latestKnownGpa);
+    }
+    return null;
+  };
+
+  async function saveStressLog(status, { dateKey, isRestore, gpaValue } = {}) {
     const token = readAuthToken();
 
     if (!token) return null;
 
+    const resolvedGpaValue = Number.isFinite(Number(gpaValue))
+      ? Number(gpaValue)
+      : Number(gpa);
     const logPayload = {
       date: dateKey,
       stressLevel: status,
-      gpa: Number(gpa),
+      gpa: resolvedGpaValue,
       extracurricularHourPerDay: Number(extraHours),
       physicalActivityHourPerDay: Number(physicalHours),
       sleepHourPerDay: Number(sleepHours),
@@ -1208,10 +1256,15 @@ export default function Dashboard() {
 
     if (isSaving) return;
 
-    // VALIDASI: GPA WAJIB DIISI SEBELUM SUBMIT
-    if (gpa === "" || gpa === null) {
-      setIsEditingGpa(true); // Otomatis buka mode edit
+    // Validation: GPA must be provided before submit.
+    const resolvedGpa = resolveGpaForSubmit();
+    if (resolvedGpa === null) {
+      setIsEditingGpa(true);
       return alert("Please set your GPA before submitting the data.");
+    }
+    if (gpa === "" || gpa === null) {
+      setGpa(resolvedGpa);
+      localStorage.setItem("user_gpa", resolvedGpa);
     }
 
     if (sleepHours === "" || sleepHours < 0 || sleepHours > 24) {
@@ -1228,7 +1281,7 @@ export default function Dashboard() {
         sleepHours: Number(sleepHours),
         socialHours: Number(socialHours),
         physicalHours: Number(physicalHours),
-        gpa: Number(gpa),
+        gpa: resolvedGpa,
       };
 
       const apiData = await predictCurrentStress(payload);
@@ -1238,6 +1291,7 @@ export default function Dashboard() {
       const savedLogId = await saveStressLog(status, {
         dateKey: targetDateKey,
         isRestore: isRestoreMode,
+        gpaValue: resolvedGpa,
       });
       if (!savedLogId) return;
       setSuccessModal({
@@ -1601,14 +1655,14 @@ export default function Dashboard() {
                   <form
                     onSubmit={handleSaveForm}
                     onKeyDown={handleFormKeyDown}
-                    className="flex h-full flex-col gap-3 transition-all duration-500 custom-scroll"
+                    className="flex h-full min-h-0 flex-col gap-3 overflow-y-auto pr-2 transition-all duration-500 custom-scroll"
                     style={{
                       opacity: successModal.visible ? 0 : 1,
                       transform: successModal.visible ? "scale(0.95)" : "scale(1)",
                       pointerEvents: successModal.visible || isSaving ? "none" : "auto",
                     }}
                   >
-                    <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pr-2">
+                    <div className="flex min-h-0 flex-1 flex-col gap-3">
                       {isRestoreMode && (
                         <div className="rounded-xl border border-white/40 bg-surface-elevated/60 glass-panel p-3 shadow-sm">
                           <p className="text-xs font-semibold uppercase tracking-wider text-text-muted">
@@ -2009,7 +2063,7 @@ export default function Dashboard() {
                   </svg>
                 </button>
 
-                {/* Judul Bulan & Tahun */}
+                {/* Month and year title */}
                 <div className="flex flex-col items-center">
                   <h3 className="text-xl font-extrabold text-text-primary tracking-tight">
                     {monthNames[month]} {year}
@@ -2048,7 +2102,7 @@ export default function Dashboard() {
                 </button>
               </header>
 
-              {/* Nama Hari */}
+              {/* Day names */}
               <div className="grid grid-cols-7 gap-1 mb-3 text-center">
                 {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
                   <div
@@ -2060,7 +2114,7 @@ export default function Dashboard() {
                 ))}
               </div>
 
-              {/* Grid Tanggal */}
+              {/* Calendar grid */}
               <div className="grid grid-cols-7 gap-2">
                 {[...Array(firstDayOfMonth)].map((_, i) => (
                   <div key={`empty-${month}-${i}`} className="aspect-square" />
@@ -2410,7 +2464,7 @@ export default function Dashboard() {
                         Stress Forecast Advice
                       </h3>
                     </div>
-                    {/* TOMBOL X DIGANTI DENGAN SVG */}
+                    {/* Close button rendered with SVG */}
                     <button
                       onClick={handleCloseForecast}
                       className="w-8 h-8 rounded-full bg-surface-elevated/40 glass-panel text-text-secondary hover:bg-surface-elevated/60 glass-panel hover:text-text-primary flex items-center justify-center transition-all cursor-pointer dark:bg-surface/60 dark:text-text-primary dark:hover:bg-surface"

@@ -18,12 +18,12 @@ router = APIRouter(
     tags=["Stress Levels"]
 )
 
-# 1. Endpoint Tambah Data (POST)
+# 1. Create stress log (POST)
 @router.post("/", response_model=APIResponse[StressLevelResponse])
 def add_stress_log(
     log_data: StressLevelCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user) # <--- Proteksi Token
+    current_user: User = Depends(get_current_user),
 ):
     return success_response(
         data=stress_service.create_stress_log(
@@ -34,7 +34,7 @@ def add_stress_log(
         message="Stress log created",
     )
 
-# 2. Endpoint Restore Data (POST)
+# 2. Restore stress log (POST)
 @router.post("/restore", response_model=APIResponse[StressLevelResponse])
 def restore_stress_log(
     log_data: StressLevelCreate,
@@ -51,11 +51,11 @@ def restore_stress_log(
     )
 
 
-# 3. Endpoint Ambil Data Saya (GET)
+# 3. Fetch my stress logs (GET)
 @router.get("/my-logs", response_model=APIResponse[list[StressLevelResponse]])
 def read_my_stress_logs(
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user) # <--- Proteksi Token
+    current_user: User = Depends(get_current_user),
 ):
     # Only fetch data for the authenticated user.
     return success_response(
@@ -67,7 +67,7 @@ def read_my_stress_logs(
     )
 
 
-# 4. Endpoint Eligibility Global
+# 4. Global eligibility
 @router.get("/eligibility", response_model=APIResponse[EligibilityResponse])
 def get_global_eligibility(
     db: Session = Depends(get_db),

@@ -72,6 +72,11 @@ export const changePassword = async (payload) => {
   return unwrapResponse(response);
 };
 
+export const verifyCurrentPassword = async (payload) => {
+  const response = await client.post("/auth/verify-current-password", payload);
+  return unwrapResponse(response);
+};
+
 export const adminLogin = async (payload) => {
   const response = await client.post("/auth/admin/login", payload, {
     auth: false,

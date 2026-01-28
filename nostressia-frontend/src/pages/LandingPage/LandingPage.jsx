@@ -21,7 +21,7 @@ import Footer from "../../components/Footer";
 // --- Assets ---
 import LogoNostressia from "../../assets/images/Logo-Nostressia.png";
 import Avatar1 from "../../assets/images/avatar1.png";
-// GANTI 'preview1.png' INI DENGAN GAMBAR BACKGROUND YANG ANDA INGINKAN (misal: foto gedung kampus atau kegiatan mhs)
+// Replace "preview1.png" with the background image you want (e.g., a campus or student activity photo).
 import CTABackground from "../../assets/images/preview2.png";
 
 // --- COMPONENTS: UI MOCKUPS (TETAP SAMA) ---

@@ -15,6 +15,11 @@ The Nostressia backend is a FastAPI service that provides authentication, stress
 ## Intended Use
 This API is intended for the Nostressia web application and internal tooling. It provides user-facing endpoints for stress tracking and admin-only endpoints for moderation.
 
+## Limitations
+- The backend serves predictions from pre-trained artifacts and does not retrain models in production.
+- Forecast accuracy depends on the quality and completeness of user-provided logs.
+- Reminder delivery depends on the client maintaining an active push subscription.
+
 ## How to Get Started with the Model
 Even though this is an API, the service is packaged for Hugging Face Spaces using the Docker SDK.
 
@@ -54,6 +59,18 @@ Not applicable. The backend consumes pre-trained artifacts rather than training 
 - **Push Notifications:** VAPID + web push
 - **Code Quality:** Ruff + Black + isort (see `requirements-dev.txt`)
 
+## Testing
+### Run the test suite
+```bash
+pytest
+```
+
+### Test Structure
+- `tests/routes/` for API route coverage
+- `tests/unit/` for helper/service unit tests
+- `tests/integration/` for workflow tests
+- `tests/security/` for authentication and authorization checks
+
 ## Citation
 ```
 @misc{nostressia-backend,
@@ -62,12 +79,6 @@ Not applicable. The backend consumes pre-trained artifacts rather than training 
   year = {2025},
   howpublished = {\url{https://github.com/nostressia/nostressia}}
 }
-```
-
-## Testing
-### Run the test suite
-```bash
-pytest
 ```
 
 ### Notes

@@ -116,7 +116,7 @@ export default function Tips() {
 
   const { user } = useOutletContext() || { user: {} };
 
-  // Deteksi ukuran layar untuk memperbaiki urutan nomor
+  // Detect screen size to keep tip ordering consistent.
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
@@ -349,7 +349,7 @@ export default function Tips() {
                 </div>
               </div>
 
-              {/* Grid Responsif: md:grid-cols-2 untuk Desktop, grid-cols-1 untuk Mobile */}
+              {/* Responsive grid: two columns on desktop, one on mobile */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 {getVerticalOrderedTips(selectedCategory.tips).map((tip, idx) => (
                   <Motion.div

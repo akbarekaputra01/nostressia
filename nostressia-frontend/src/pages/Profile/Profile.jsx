@@ -2,7 +2,11 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Link, useOutletContext } from "react-router-dom";
 import Navbar from "../../components/Navbar";
-import { changePassword, updateProfile } from "../../services/authService";
+import {
+  changePassword,
+  updateProfile,
+  verifyCurrentPassword,
+} from "../../services/authService";
 import { deleteBookmark, getMyBookmarks } from "../../services/bookmarkService";
 import {
   User,
@@ -12,7 +16,7 @@ import {
   LogOut,
   Edit3,
   Flame,
-  BookOpen, // [UBAH] Trophy diganti Flame
+  BookOpen, // Flame replaces Trophy for streak stats.
   ChevronRight,
   Bell,
   CheckCircle,
@@ -53,7 +57,7 @@ import {
 import { useTheme } from "../../theme/ThemeProvider";
 import { getMyStressLogs } from "../../services/stressService";
 
-// --- IMPORT AVATAR ---
+// --- AVATAR ASSETS ---
 import avatar1 from "../../assets/images/avatar1.png";
 import avatar2 from "../../assets/images/avatar2.png";
 import avatar3 from "../../assets/images/avatar3.png";
@@ -580,12 +584,16 @@ export default function Profile() {
   const [isLoadingSave, setIsLoadingSave] = useState(false);
 
   const [isLoadingPassword, setIsLoadingPassword] = useState(false);
+  const [isVerifyingCurrentPassword, setIsVerifyingCurrentPassword] =
+    useState(false);
+  const [isCurrentPasswordVerified, setIsCurrentPasswordVerified] =
+    useState(false);
 
-  // STATE VISIBILITY TOGGLES
+  // Visibility toggles
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPasswords, setShowNewPasswords] = useState(false);
 
-  // STATE UNTUK BOOKMARK
+  // Bookmark state
   const [bookmarks, setBookmarks] = useState([]);
   const [loadingBookmarks, setLoadingBookmarks] = useState(false);
   const [stressSummary, setStressSummary] = useState({
@@ -594,11 +602,13 @@ export default function Profile() {
     bgColor: "bg-surface-muted",
   });
 
-  // STATE UNTUK LOCK/UNLOCK FIELD
+  // Lock/unlock fields for inline edits
   const [editableFields, setEditableFields] = useState({
     username: false,
     fullName: false,
     email: false,
+    birthday: false,
+    gender: false,
   });
 
   const { user: contextUser } = useOutletContext() || { user: {} };
@@ -624,7 +634,7 @@ export default function Profile() {
   const displayAvatar =
     resolveAvatarUrl(localAvatarPreview || formData.avatar) || fallbackAvatar;
 
-  // --- LOGIC SYNC USER ---
+  // --- Sync user info into the form ---
   useEffect(() => {
     if (contextUser) {
       setFormData({
@@ -750,7 +760,7 @@ export default function Profile() {
     return () => URL.revokeObjectURL(localAvatarPreview);
   }, [localAvatarPreview]);
 
-  // ✅ LOGIC BARU: STATISTIK DINAMIS & WARNA STREAK
+  // Dynamic stats and streak color logic
   const getStreakStyle = (streak) => {
     const s = streak || 0;
     if (s >= 60)
@@ -853,7 +863,7 @@ export default function Profile() {
     {
       label: "Streak",
       value: `${streakVal} Days`,
-      // [UBAH] Gunakan Flame dan logika warna
+      // Use the Flame icon with the same color logic.
       icon: <Flame className={`w-5 h-5 ${streakStyle.iconColor}`} />,
       bg: streakStyle.bgColor,
     },
@@ -905,6 +915,23 @@ export default function Profile() {
         return;
       }
 
+      if (formData.birthday) {
+        const birthDate = new Date(formData.birthday);
+        const now = new Date();
+        if (birthDate > now) {
+          showNotification("Birthday cannot be in the future.", "error");
+          return;
+        }
+      }
+
+      if (
+        formData.gender &&
+        !["male", "female", "other"].includes(formData.gender)
+      ) {
+        showNotification("Please select a valid gender option.", "error");
+        return;
+      }
+
       if (shouldClearProfilePicture) {
         await saveProfilePictureUrl(null);
       }
@@ -914,11 +941,19 @@ export default function Profile() {
         name: formData.fullName,
         email: formData.email,
         avatar: formData.avatar,
+        gender: formData.gender || null,
+        userDob: formData.birthday || null,
       };
 
       await updateProfile(payload);
       showNotification("Profile updated successfully!");
-      setEditableFields({ username: false, fullName: false, email: false });
+      setEditableFields({
+        username: false,
+        fullName: false,
+        email: false,
+        birthday: false,
+        gender: false,
+      });
       setShouldClearProfilePicture(false);
       setTimeout(() => window.location.reload(), 1000);
     } catch (error) {
@@ -1121,25 +1156,52 @@ export default function Profile() {
   const handlePasswordChangeInput = (e) => {
     const { name, value } = e.target;
     setPasswordForm({ ...passwordForm, [name]: value });
+    if (name === "currentPassword") {
+      setIsCurrentPasswordVerified(false);
+    }
   };
 
-  const handlePasswordStepNext = (e) => {
+  const handlePasswordStepNext = async (e) => {
     e.preventDefault();
     if (!passwordForm.currentPassword) {
       showNotification("Please enter your current password.", "error");
       return;
     }
-    setPasswordStep(2);
+    if (isCurrentPasswordVerified) {
+      setPasswordStep(2);
+      return;
+    }
+
+    setIsVerifyingCurrentPassword(true);
+    try {
+      await verifyCurrentPassword({
+        currentPassword: passwordForm.currentPassword,
+      });
+      setIsCurrentPasswordVerified(true);
+      setPasswordStep(2);
+      showNotification("Current password verified.", "success");
+    } catch (error) {
+      setIsCurrentPasswordVerified(false);
+      showNotification(
+        error?.message || "Unable to verify the current password.",
+        "error",
+      );
+    } finally {
+      setIsVerifyingCurrentPassword(false);
+    }
   };
 
   const handlePasswordStepBack = () => {
     setPasswordStep(1);
+    setIsCurrentPasswordVerified(false);
   };
 
   const handleClosePasswordModal = () => {
     setShowPasswordModal(false);
     setShowCurrentPassword(false);
     setShowNewPasswords(false);
+    setIsCurrentPasswordVerified(false);
+    setIsVerifyingCurrentPassword(false);
     setPasswordStep(1);
     setPasswordForm({
       currentPassword: "",
@@ -1150,6 +1212,11 @@ export default function Profile() {
 
   const handleSubmitPasswordChange = async (e) => {
     e.preventDefault();
+    if (!isCurrentPasswordVerified) {
+      showNotification("Please verify your current password first.", "error");
+      setPasswordStep(1);
+      return;
+    }
     if (
       !passwordForm.currentPassword ||
       !passwordForm.newPassword ||
@@ -1218,7 +1285,7 @@ export default function Profile() {
               </h3>
             </div>
             <p className="text-sm text-text-secondary dark:text-text-muted mb-6">
-              Nostressia needs permission to send daily reminder notifications.
+              Nostressia needs permission to send daily reminders.
               {permissionStatus === "denied" && (
                 <span className="mt-2 block text-xs text-orange-500 dark:text-orange-300">
                   Notifications are blocked. Enable them in your browser
@@ -1325,8 +1392,7 @@ export default function Profile() {
                     />
                   </div>
                   <p className="text-[11px] text-text-muted dark:text-text-muted">
-                    Scheduled reminder menggunakan push (jika device/browser
-                    mendukung).
+                    You will receive a reminder at your scheduled time.
                   </p>
                 </div>
               )}
@@ -1407,12 +1473,16 @@ export default function Profile() {
                     Enter your current password before setting a new one.
                   </p>
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-text-secondary ml-1">
+                    <label
+                      htmlFor="profile-current-password"
+                      className="text-sm font-bold text-text-secondary ml-1"
+                    >
                       Current Password
                     </label>
                     <div className="relative">
                       <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
                       <input
+                        id="profile-current-password"
                         type={showCurrentPassword ? "text" : "password"}
                         name="currentPassword"
                         value={passwordForm.currentPassword}
@@ -1438,9 +1508,16 @@ export default function Profile() {
                   </div>
                   <button
                     type="submit"
-                    className="w-full mt-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-200 transition-all cursor-pointer transform active:scale-95"
+                    disabled={isVerifyingCurrentPassword}
+                    className={`w-full mt-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-200 transition-all cursor-pointer transform active:scale-95 ${isVerifyingCurrentPassword ? "opacity-70 cursor-not-allowed" : ""}`}
                   >
-                    Continue
+                    {isVerifyingCurrentPassword ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <Loader2 className="w-5 h-5 animate-spin" /> Verifying...
+                      </span>
+                    ) : (
+                      "Continue"
+                    )}
                   </button>
                 </div>
               ) : (
@@ -1449,12 +1526,16 @@ export default function Profile() {
                     Create a new password for your account.
                   </p>
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-text-secondary ml-1">
+                    <label
+                      htmlFor="profile-new-password"
+                      className="text-sm font-bold text-text-secondary ml-1"
+                    >
                       New Password
                     </label>
                     <div className="relative">
                       <Key className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
                       <input
+                        id="profile-new-password"
                         type={showNewPasswords ? "text" : "password"}
                         name="newPassword"
                         value={passwordForm.newPassword}
@@ -1467,12 +1548,16 @@ export default function Profile() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-text-secondary ml-1">
+                    <label
+                      htmlFor="profile-confirm-password"
+                      className="text-sm font-bold text-text-secondary ml-1"
+                    >
                       Confirm New Password
                     </label>
                     <div className="relative">
                       <Key className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
                       <input
+                        id="profile-confirm-password"
                         type={showNewPasswords ? "text" : "password"}
                         name="confirmPassword"
                         value={passwordForm.confirmPassword}
@@ -1546,7 +1631,7 @@ export default function Profile() {
                   }}
                 />
               </div>
-              {/* BUTTON UBAH AVATAR (MEMBUKA MODAL) */}
+              {/* Avatar edit button (opens modal) */}
               <button
                 onClick={() => setShowAvatarModal(true)}
                 className="absolute bottom-1 right-1 bg-blue-600 text-white p-2 rounded-full shadow-md hover:bg-blue-700 transition-all cursor-pointer"
@@ -1702,36 +1787,66 @@ export default function Profile() {
                   </div>
                 </div>
 
-                {/* BIRTHDAY & GENDER (READ ONLY) */}
+                {/* BIRTHDAY & GENDER */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-text-secondary ml-1">
+                    <label
+                      htmlFor="profile-birthday"
+                      className="text-sm font-bold text-text-secondary ml-1"
+                    >
                       Birthday
                     </label>
-                    <div className="relative">
-                      <Cake className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
-                      <input
-                        name="birthday"
-                        type="date"
-                        value={formData.birthday}
-                        disabled={true}
-                        className="w-full pl-12 pr-4 py-3 rounded-xl bg-surface-muted border border-border text-text-muted cursor-not-allowed focus:outline-none"
-                      />
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <Cake className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
+                        <input
+                          id="profile-birthday"
+                          name="birthday"
+                          type="date"
+                          value={formData.birthday}
+                          onChange={handleInputChange}
+                          disabled={!editableFields.birthday}
+                          className={`w-full pl-12 pr-4 py-3 rounded-xl bg-surface-elevated glass-panel border ${editableFields.birthday ? "border-blue-400 ring-2 ring-blue-100" : "border-border bg-surface-muted text-text-muted"} focus:outline-none transition-all`}
+                        />
+                      </div>
+                      <button
+                        onClick={() => toggleEdit("birthday")}
+                        className="px-4 py-3 rounded-xl border border-blue-200 text-blue-600 font-bold text-sm hover:bg-blue-50 transition-colors cursor-pointer whitespace-nowrap"
+                      >
+                        {editableFields.birthday ? "Lock" : "Change"}
+                      </button>
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-text-secondary ml-1">
+                    <label
+                      htmlFor="profile-gender"
+                      className="text-sm font-bold text-text-secondary ml-1"
+                    >
                       Gender
                     </label>
-                    <div className="relative">
-                      <Smile className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
-                      <input
-                        name="gender"
-                        type="text"
-                        value={formData.gender}
-                        disabled={true}
-                        className="w-full pl-12 pr-4 py-3 rounded-xl bg-surface-muted border border-border text-text-muted cursor-not-allowed focus:outline-none"
-                      />
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <Smile className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
+                        <select
+                          id="profile-gender"
+                          name="gender"
+                          value={formData.gender}
+                          onChange={handleInputChange}
+                          disabled={!editableFields.gender}
+                          className={`w-full pl-12 pr-4 py-3 rounded-xl bg-surface-elevated glass-panel border ${editableFields.gender ? "border-blue-400 ring-2 ring-blue-100" : "border-border bg-surface-muted text-text-muted"} focus:outline-none transition-all appearance-none`}
+                        >
+                          <option value="">Select Gender</option>
+                          <option value="male">Male</option>
+                          <option value="female">Female</option>
+                          <option value="other">Prefer not to say</option>
+                        </select>
+                      </div>
+                      <button
+                        onClick={() => toggleEdit("gender")}
+                        className="px-4 py-3 rounded-xl border border-blue-200 text-blue-600 font-bold text-sm hover:bg-blue-50 transition-colors cursor-pointer whitespace-nowrap"
+                      >
+                        {editableFields.gender ? "Lock" : "Change"}
+                      </button>
                     </div>
                   </div>
                 </div>

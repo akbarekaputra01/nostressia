@@ -8,6 +8,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 
 from app.core.database import SessionLocal
+from app.models.push_delivery_log_model import PushDeliveryLog
 from app.models.push_subscription_model import PushSubscription
 from app.services.push_notification_service import WebPushException, send_push
 
@@ -73,11 +74,19 @@ def _send_daily_reminder(subscription_id: int) -> None:
         now = datetime.now(tz)
 
         # Dedupe: avoid sending more than once per day.
-        if sub.last_sent_date == now.date():
+        already_sent = (
+            db.query(PushDeliveryLog)
+            .filter(
+                PushDeliveryLog.subscription_id == sub.subscription_id,
+                PushDeliveryLog.sent_date == now.date(),
+            )
+            .first()
+        )
+        if already_sent:
             logger.info(
                 "Skipping already sent notification. sub_id=%s date=%s",
                 sub.subscription_id,
-                sub.last_sent_date,
+                now.date(),
             )
             return
 
@@ -91,8 +100,11 @@ def _send_daily_reminder(subscription_id: int) -> None:
 
         send_push(sub, _build_payload())
 
-        sub.last_sent_date = now.date()
-        db.add(sub)
+        delivery_log = PushDeliveryLog(
+            subscription_id=sub.subscription_id,
+            sent_date=now.date(),
+        )
+        db.add(delivery_log)
         db.commit()
 
         logger.info(

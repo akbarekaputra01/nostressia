@@ -3,7 +3,7 @@ from typing import Optional
 
 from app.schemas.base_schema import BaseSchema
 
-# Base Schema (Field yang umum)
+# Base schema (shared fields)
 class DiaryBase(BaseSchema):
     title: Optional[str] = None
     note: str

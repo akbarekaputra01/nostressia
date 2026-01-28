@@ -40,7 +40,7 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* KOLOM 3: Contact Us [DIPERBARUI] */}
+          {/* Column 3: Contact Us */}
           <div className="md:col-span-4">
             <h3 className="text-text-primary text-sm font-bold mb-2 dark:text-text-primary">Contact Us</h3>
             <p className="text-text-secondary text-xs mb-3 dark:text-text-secondary">
@@ -59,7 +59,7 @@ export default function Footer() {
                 <span className="text-xs font-semibold">Contact Support</span>
               </a>
 
-              {/* Social Media Icons (Optional, tetap dipertahankan untuk koneksi lain) */}
+              {/* Social media icons (optional, kept for additional channels). */}
               <div className="flex items-center gap-3 mt-1">
                 <a 
                   href="https://www.instagram.com/nostressia" 
