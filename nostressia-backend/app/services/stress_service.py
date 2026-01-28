@@ -12,7 +12,7 @@ from app.schemas.stress_schema import (
     StressLevelCreate,
 )
 from app.services.global_forecast_service import global_forecast_service
-
+from typing import Optional
 
 def _month_bounds(ref_date: date) -> tuple[date, date]:
     first_day = ref_date.replace(day=1)
@@ -109,7 +109,7 @@ def _build_stress_level(stress_data: StressLevelCreate, user_id: int, is_restore
     )
 
 
-def _resolve_latest_gpa(db: Session, user_id: int) -> float | None:
+def _resolve_latest_gpa(db: Session, user_id: int) -> Optional[float]:
     latest = (
         db.query(StressLevel)
         .filter(StressLevel.user_id == user_id, StressLevel.gpa.is_not(None))
