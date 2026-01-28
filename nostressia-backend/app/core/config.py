@@ -42,6 +42,12 @@ class Settings(BaseSettings):
     vapid_private_key: str = Field("", env="VAPID_PRIVATE_KEY")
     vapid_subject: str = Field("mailto:nostressia.official@gmail.com", env="VAPID_SUBJECT")
 
+    admin_seed_enabled: bool = Field(True, env="ADMIN_SEED_ENABLED")
+    admin_seed_username: str = Field("admin", env="ADMIN_SEED_USERNAME")
+    admin_seed_password: str = Field("admin123", env="ADMIN_SEED_PASSWORD")
+    admin_seed_email: str = Field("admin@nostressia.local", env="ADMIN_SEED_EMAIL")
+    admin_seed_name: str = Field("Admin", env="ADMIN_SEED_NAME")
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

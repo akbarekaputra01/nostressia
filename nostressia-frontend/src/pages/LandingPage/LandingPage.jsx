@@ -535,7 +535,13 @@ const SplitNav = ({ scrollToSection, setIsMobileMenuOpen }) => {
           )}
         </div>
 
-        {/* Login Button Independent */}
+        {/* Sign up + Login Buttons */}
+        <Link
+          to="/signup"
+          className="px-6 py-3 bg-brand-primary text-text-inverse rounded-full font-bold text-sm shadow-xl hover:shadow-2xl hover:bg-brand-primary/90 hover:-translate-y-0.5 transition-all cursor-pointer flex items-center gap-2"
+        >
+          Sign Up <ArrowRight size={14} />
+        </Link>
         <Link
           to="/login"
           className="px-6 py-3 bg-surface-muted text-text-primary rounded-full font-bold text-sm shadow-xl hover:shadow-2xl hover:bg-brand-primary hover:-translate-y-0.5 transition-all cursor-pointer flex items-center gap-2 dark:bg-surface dark:text-text-primary dark:hover:bg-surface-muted"
@@ -612,7 +618,14 @@ const MobileMenuOverlay = ({ isOpen, setIsOpen, scrollToSection }) => {
 
             <div className="h-[1px] bg-border-subtle dark:bg-border my-1 mx-2"></div>
 
-            {/* Login Button */}
+            {/* Signup + Login Buttons */}
+            <Link
+              to="/signup"
+              onClick={() => setIsOpen(false)}
+              className="w-full flex items-center justify-between px-4 py-3 text-sm font-bold text-text-inverse bg-brand-primary hover:bg-brand-primary/90 rounded-2xl transition-colors shadow-lg active:scale-95"
+            >
+              Sign Up <ArrowRight size={14} />
+            </Link>
             <Link
               to="/login"
               onClick={() => setIsOpen(false)}

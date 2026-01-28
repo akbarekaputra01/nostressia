@@ -53,7 +53,7 @@ const INITIAL_FORM_DATA = {
   avatar: AVATAR_OPTIONS[0],
 };
 
-export default function Login() {
+export default function Login({ initialMode = "login" }) {
   const navigate = useNavigate();
 
   // --- Core state ---
@@ -64,7 +64,7 @@ export default function Login() {
   // --- UI state ---
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [showSignUpPassword, setShowSignUpPassword] = useState(false);
-  const [isFlipped, setIsFlipped] = useState(false);
+  const [isFlipped, setIsFlipped] = useState(initialMode === "signup");
   const [isWinking, setIsWinking] = useState(false);
   const [showOTPForm, setShowOTPForm] = useState(false);
 
@@ -89,6 +89,18 @@ export default function Login() {
 
   // --- Countdown state ---
   const [countdown, setCountdown] = useState(0);
+
+  useEffect(() => {
+    setIsFlipped(initialMode === "signup");
+    setFormData(INITIAL_FORM_DATA);
+    setShowLoginPassword(false);
+    setShowSignUpPassword(false);
+    setIsSuccess(false);
+    setIsLoading(false);
+    setShowOTPForm(false);
+    setOtp("");
+    setCountdown(0);
+  }, [initialMode]);
 
   // --- Blink effect ---
   useEffect(() => {

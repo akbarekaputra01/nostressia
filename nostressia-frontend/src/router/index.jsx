@@ -51,6 +51,7 @@ function AppRouter() {
         <Route path="/" element={<LandingPage />} />
         <Route element={<PublicRoute />}>
           <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Login initialMode="signup" />} />
         </Route>
 
         <Route element={<ProtectedRoute />}>

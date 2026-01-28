@@ -13,12 +13,14 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from app.api.api_router import api_router
 from app.core.config import settings
-from app.core.database import Base, engine
+from app.core.database import Base, SessionLocal, engine
 from app.models import register_models
+from app.models.admin_model import Admin
 from app.services.notification_scheduler import (
     start_notification_scheduler,
     stop_notification_scheduler,
 )
+from app.utils.hashing import hash_password
 
 logger = logging.getLogger(__name__)
 
@@ -101,6 +103,30 @@ def create_app() -> FastAPI:
         except SQLAlchemyError as exc:
             logger.exception("Startup check failed due to database error.")
             raise RuntimeError("Startup check failed due to database error.") from exc
+
+        # 2.1) Seed default admin account when enabled.
+        if settings.admin_seed_enabled:
+            try:
+                with SessionLocal() as db:
+                    admin = (
+                        db.query(Admin)
+                        .filter(Admin.username == settings.admin_seed_username)
+                        .first()
+                    )
+                    if not admin:
+                        db.add(
+                            Admin(
+                                name=settings.admin_seed_name,
+                                username=settings.admin_seed_username,
+                                email=settings.admin_seed_email,
+                                password=hash_password(settings.admin_seed_password),
+                            )
+                        )
+                        db.commit()
+                        logger.info("Seeded default admin user.")
+            except SQLAlchemyError as exc:
+                logger.exception("Failed to seed default admin user.")
+                raise RuntimeError("Failed to seed default admin user.") from exc
 
         # 3) Start scheduler
         logger.info("Starting notification scheduler.")
