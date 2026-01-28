@@ -9,6 +9,11 @@ const LEGACY_USER_TOKEN_KEYS = ["accessToken", "token", "access_token", "jwt"];
 const LEGACY_ADMIN_TOKEN_KEYS = ["adminAccessToken", "adminToken", "adminAuth"];
 const LEGACY_ADMIN_PROFILE_KEYS = ["adminData"];
 
+export const AUTH_SCOPE = {
+  USER: "user",
+  ADMIN: "admin",
+};
+
 /**
  * Validate token values to avoid storing empty or sentinel values.
  */
@@ -100,6 +105,12 @@ export const readAdminToken = () => {
   cleanupLegacyTokens([ADMIN_TOKEN_KEY, ...LEGACY_ADMIN_TOKEN_KEYS]);
   return legacyToken || null;
 };
+
+/**
+ * Read the access token for the requested auth scope.
+ */
+export const readTokenForScope = (scope) =>
+  scope === AUTH_SCOPE.ADMIN ? readAdminToken() : readAuthToken();
 
 /**
  * Persist the admin access token using the canonical storage key.
