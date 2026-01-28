@@ -2,8 +2,12 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Lock, User, ArrowLeft } from "lucide-react";
 import { adminLogin } from "../../services/authService";
-import { persistAdminToken, readAdminToken } from "../../utils/auth";
-// Import Logo Nostressia
+import {
+  hasAdminSession,
+  persistAdminProfile,
+  persistAdminToken,
+} from "../../utils/auth";
+// Nostressia logo asset.
 import LogoNostressia from "../../assets/images/Logo-Nostressia.png";
 
 export default function AdminLogin() {
@@ -13,7 +17,7 @@ export default function AdminLogin() {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (readAdminToken()) {
+    if (hasAdminSession()) {
       navigate("/admin", { replace: true });
     }
   }, [navigate]);
@@ -43,22 +47,22 @@ export default function AdminLogin() {
     setIsLoading(true);
 
     try {
-      // --- coba login via API ---
+      // Attempt the primary admin login flow.
       const data = await adminLogin(formData);
 
-      // Persist the admin session using a single token key.
+      // Persist the admin session using canonical storage keys.
       persistAdminToken(data.accessToken);
-      localStorage.setItem("adminData", JSON.stringify(data.admin));
+      persistAdminProfile(data.admin);
 
       navigate("/admin");
     } catch (err) {
-      console.error("Login API error:", err);
+      console.error("Admin login API error:", err);
 
-      // ✅ Hanya jika API mati, baru cek username/password offline
+      // Only use offline credentials if the API is unreachable.
       if (
-        err.message.includes("Failed to fetch") || // fetch gagal
-        err.message.includes("NetworkError") || // network error
-        err.message.includes("timeout") // atau timeout
+        err.message.includes("Failed to fetch") ||
+        err.message.includes("NetworkError") ||
+        err.message.includes("timeout")
       ) {
         if (formData.username === "admin" && formData.password === "admin123") {
           const offlineAdmin = {
@@ -69,15 +73,15 @@ export default function AdminLogin() {
           };
 
           persistAdminToken("offline-token");
-          localStorage.setItem("adminData", JSON.stringify(offlineAdmin));
+          persistAdminProfile(offlineAdmin);
 
-          console.warn("⚠️ API unavailable — using offline admin mode.");
+          console.warn("API unavailable. Using offline admin mode.");
           navigate("/admin");
           return;
         }
       }
 
-      // Jika bukan login offline, tampilkan error biasa
+      // When offline fallback is not used, surface the API error message.
       setError(err.message || "Login failed. Please try again.");
       setIsLoading(false);
     }
@@ -86,7 +90,7 @@ export default function AdminLogin() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-surface px-4 font-sans text-text-primary">
       <div className="max-w-md w-full bg-surface-elevated glass-panel dark:bg-surface rounded-2xl shadow-xl overflow-hidden border border-border-subtle dark:border-border glass-panel-strong">
-        {/* Header dengan Gradient Pastel Oren-Biru */}
+        {/* Header with a pastel orange-blue gradient */}
         <div className="bg-gradient-to-br from-brand-warning/20 via-brand-warning/10 to-brand-primary/20 dark:from-brand-warning/20 dark:via-surface/80 dark:to-brand-primary/20 p-8 text-center relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-full bg-surface-elevated/40 glass-panel dark:bg-surface/40 opacity-50 transform -rotate-6 scale-125"></div>
           <div className="relative z-10 flex flex-col items-center">
@@ -160,7 +164,7 @@ export default function AdminLogin() {
               </div>
             </div>
 
-            {/* Tombol dengan Gradasi Biru-Oren */}
+            {/* Button with a blue-orange gradient */}
             <button
               type="submit"
               disabled={isLoading}

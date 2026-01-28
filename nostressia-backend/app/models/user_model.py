@@ -34,8 +34,8 @@ class User(Base):
     is_verified = Column(Boolean, default=False)
     otp_code = Column(String(6), nullable=True)
     otp_created_at = Column(DateTime, nullable=True)
-    # ✅ Properti untuk menghitung jumlah diary otomatis
+    # Derived property to count diaries automatically.
     @property
     def diary_count(self):
-        # Ini akan menghitung jumlah item di relasi diaries
+        # Count the number of related diary entries.
         return len(self.diaries)

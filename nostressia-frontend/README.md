@@ -1,16 +1,68 @@
-# React + Vite
+# Nostressia Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Overview
+The Nostressia frontend is a production-ready React application built with Vite and Tailwind CSS. It delivers the user and admin experiences while relying on a shared, consistent authentication contract with the backend API.
 
-Currently, two official plugins are available:
+## Tech Stack
+- React 19 + React Router
+- Vite
+- Tailwind CSS
+- Axios
+- Vitest + React Testing Library
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Local Setup
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+2. Create a local environment file:
+   ```bash
+   cp .env.example .env
+   ```
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
 
-## React Compiler
+## Environment Variables
+| Variable | Description |
+| --- | --- |
+| `VITE_API_BASE_URL` | Base URL for the backend API (e.g., `https://api.example.com`). |
+| `VITE_INTERNAL_USER` | Internal access username gate for non-public environments. |
+| `VITE_INTERNAL_PASS` | Internal access password gate for non-public environments. |
+| `VITE_VAPID_PUBLIC_KEY` | VAPID public key for push notifications. |
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Available Scripts
+| Script | Description |
+| --- | --- |
+| `npm run dev` | Start the Vite dev server. |
+| `npm run build` | Build the production bundle. |
+| `npm run preview` | Preview the production build. |
+| `npm run lint` | Run ESLint. |
+| `npm run test` | Run Vitest once. |
+| `npm run test:watch` | Run Vitest in watch mode. |
+| `npm run test:coverage` | Run Vitest with coverage. |
 
-## Expanding the ESLint configuration
+## Testing Guide
+### Unit + Component Tests
+```bash
+npm run test
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### Watch Mode
+```bash
+npm run test:watch
+```
+
+## Project Structure
+```
+src/
+  api/           # Axios client and API adapters
+  components/    # Shared UI components
+  layouts/       # Layout wrappers (auth-aware)
+  pages/         # Route-level UI
+  router/        # Router configuration + guards
+  services/      # API service layer
+  utils/         # Reusable helpers (auth storage, notifications, etc.)
+  __tests__/     # Vitest test suites
+```

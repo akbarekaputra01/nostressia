@@ -5,7 +5,7 @@ import LogoImage from "../assets/images/Logo-Nostressia.png";
 import { DEFAULT_AVATAR, resolveAvatarUrl } from "../utils/avatar";
 import { Flame } from "lucide-react";
 
-// --- Data Menu Navigasi ---
+// --- Navigation menu data ---
 const navLinks = [
   { name: "Dashboard", href: "/dashboard" },
   { name: "Analytics", href: "/analytics" },
@@ -16,7 +16,7 @@ const navLinks = [
 
 const TODAY_LOG_STORAGE_KEY = "nostressia_today_log";
 
-// --- TERIMA PROPS 'user' DI SINI ---
+// --- Receive the 'user' prop here ---
 const Navbar = ({ user }) => {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -39,11 +39,11 @@ const Navbar = ({ user }) => {
   const fallbackAvatar = DEFAULT_AVATAR;
   const avatarSrc = resolveAvatarUrl(user?.avatar) || fallbackAvatar;
 
-  // --- LOGIKA WARNA API BERDASARKAN STREAK ---
+  // --- Flame color logic based on the current streak ---
   const getFlameColor = (streakCount, hasLoggedToday) => {
     const count = streakCount || 0;
 
-    // kalau belum log hari ini, atau streak <= 0 -> muted
+    // If the user has not logged today or streak is <= 0, keep the flame muted.
     if (!hasLoggedToday || count <= 0) {
       return "text-text-muted fill-text-muted/40";
     }
@@ -155,7 +155,7 @@ const Navbar = ({ user }) => {
             "
             title={`Current Streak: ${streakVal} days`}
           >
-            {/* Ikon Flame berubah warna sesuai logika di atas */}
+            {/* The flame icon changes color based on the logic above */}
             <Flame
               className={`w-4 h-4 md:w-5 md:h-5 transition-colors duration-500 ${flameClass}`}
             />

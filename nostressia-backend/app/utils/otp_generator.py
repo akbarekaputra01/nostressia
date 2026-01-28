@@ -3,8 +3,8 @@ import string
 
 def generate_otp(length=6) -> str:
     """
-    Menghasilkan kode OTP angka acak.
+    Generate a numeric OTP code.
     Default panjang: 6 digit.
     """
-    # Mengambil angka '0'-'9' dan mengacaknya sebanyak 'length'
+    # Sample digits '0'-'9' and shuffle for the requested length.
     return "".join(random.choices(string.digits, k=length))

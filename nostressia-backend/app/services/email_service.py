@@ -1,4 +1,5 @@
-# app/services/email_service.py
+"""Email delivery utilities for OTP and weekly reports."""
+import logging
 import os
 from typing import Optional, Tuple
 
@@ -6,18 +7,20 @@ from dotenv import load_dotenv
 import sib_api_v3_sdk
 from sib_api_v3_sdk.rest import ApiException
 
-# 1. Load Environment Variables
+# Load environment variables.
 load_dotenv()
 
-# 2. Ambil API Key dari file .env
+# Read the API key from the environment.
 BREVO_API_KEY = os.getenv("BREVO_API_KEY")
 
-# ⚠️ Ganti dengan email yang kamu gunakan untuk login Brevo
+logger = logging.getLogger(__name__)
+
+# Sender email used for Brevo.
 SENDER_EMAIL = "nostressia.official@gmail.com"
 
 def _get_brevo_client() -> Tuple[Optional[sib_api_v3_sdk.TransactionalEmailsApi], Optional[str]]:
     if not BREVO_API_KEY:
-        return None, "BREVO_API_KEY belum diset di environment."
+        return None, "BREVO_API_KEY is not set in the environment."
 
     configuration = sib_api_v3_sdk.Configuration()
     configuration.api_key["api-key"] = BREVO_API_KEY
@@ -28,32 +31,30 @@ def _get_brevo_client() -> Tuple[Optional[sib_api_v3_sdk.TransactionalEmailsApi]
 
 
 def send_otp_email(to_email: str, otp_code: str) -> Tuple[bool, Optional[str]]:
-    """
-    Fungsi untuk mengirim email OTP Pendaftaran (Register).
-    """
+    """Send the registration OTP email."""
     api_instance, error_message = _get_brevo_client()
     if error_message:
-        print(f"❌ {error_message}")
+        logger.error("Email client error: %s", error_message)
         return False, error_message
     
-    # Setup Pengirim (Harus Verified Email)
+    # Sender configuration (must be a verified email).
     sender = {"name": "Nostressia Admin", "email": SENDER_EMAIL}
     to = [{"email": to_email}]
     
-    # HTML Body untuk Register
+    # Registration email HTML body.
     html_content = f"""
     <html>
       <body style="font-family: Arial, sans-serif; text-align: center; padding: 20px;">
         <div style="max-width: 500px; margin: auto; border: 1px solid #ddd; padding: 20px; border-radius: 10px;">
-            <h2 style="color: #4F46E5;">Verifikasi Akun Nostressia</h2>
-            <p>Halo,</p>
-            <p>Terima kasih telah mendaftar. Gunakan kode OTP berikut untuk memverifikasi akun Anda:</p>
+            <h2 style="color: #4F46E5;">Verify Your Nostressia Account</h2>
+            <p>Hello,</p>
+            <p>Thank you for signing up. Use the OTP below to verify your account:</p>
             <h1 style="color: #333; letter-spacing: 5px; background-color: #f3f4f6; padding: 10px; border-radius: 5px; display: inline-block;">
                 {otp_code}
             </h1>
             <p style="margin-top: 20px; font-size: 12px; color: #888;">
-                Kode ini berlaku selama 10 menit.<br>
-                Jika Anda tidak merasa mendaftar, abaikan email ini.
+                This code is valid for 10 minutes.<br>
+                If you did not sign up, you can ignore this email.
             </p>
         </div>
       </body>
@@ -63,50 +64,48 @@ def send_otp_email(to_email: str, otp_code: str) -> Tuple[bool, Optional[str]]:
     send_smtp_email = sib_api_v3_sdk.SendSmtpEmail(
         to=to,
         sender=sender,
-        subject="Kode OTP Nostressia Anda",
+        subject="Your Nostressia OTP Code",
         html_content=html_content
     )
 
     try:
         api_instance.send_transac_email(send_smtp_email)
-        print(f"✅ Email Register terkirim ke {to_email}")
+        logger.info("Registration email sent to %s", to_email)
         return True, None
     except ApiException as e:
         error_detail = f"Brevo API error: {e}"
-        print(f"❌ Gagal mengirim email Register: {error_detail}")
+        logger.error("Failed to send registration email: %s", error_detail)
         return False, error_detail
     except Exception as e:
         error_detail = f"Unexpected error: {e}"
-        print(f"❌ Gagal mengirim email Register: {error_detail}")
+        logger.error("Failed to send registration email: %s", error_detail)
         return False, error_detail
 
 
 def send_reset_password_email(to_email: str, otp_code: str) -> Tuple[bool, Optional[str]]:
-    """
-    Fungsi untuk mengirim email OTP Reset Password.
-    """
+    """Send the password reset OTP email."""
     api_instance, error_message = _get_brevo_client()
     if error_message:
-        print(f"❌ {error_message}")
+        logger.error("Email client error: %s", error_message)
         return False, error_message
     
-    # Setup Pengirim
+    # Sender configuration.
     sender = {"name": "Nostressia Support", "email": SENDER_EMAIL}
     to = [{"email": to_email}]
     
-    # HTML Body untuk Reset Password (Warna Merah/Warning)
+    # Password reset email HTML body.
     html_content = f"""
     <html>
       <body style="font-family: Arial, sans-serif; text-align: center; padding: 20px;">
         <div style="max-width: 500px; margin: auto; border: 1px solid #ddd; padding: 20px; border-radius: 10px;">
-            <h2 style="color: #DC2626;">Reset Password</h2>
-            <p>Seseorang (semoga Anda) meminta reset password untuk akun Nostressia.</p>
-            <p>Gunakan kode OTP berikut untuk membuat password baru:</p>
+            <h2 style="color: #DC2626;">Password Reset</h2>
+            <p>Someone requested a password reset for your Nostressia account.</p>
+            <p>Use the OTP below to create a new password:</p>
             <h1 style="color: #333; letter-spacing: 5px; background-color: #fee2e2; padding: 10px; border-radius: 5px; display: inline-block;">
                 {otp_code}
             </h1>
             <p style="margin-top: 20px; font-size: 12px; color: #888;">
-                Jika ini bukan Anda, abaikan email ini. Akun Anda tetap aman.
+                If this was not you, you can ignore this email. Your account remains safe.
             </p>
         </div>
       </body>
@@ -122,15 +121,15 @@ def send_reset_password_email(to_email: str, otp_code: str) -> Tuple[bool, Optio
 
     try:
         api_instance.send_transac_email(send_smtp_email)
-        print(f"✅ Email Reset Password terkirim ke {to_email}")
+        logger.info("Password reset email sent to %s", to_email)
         return True, None
     except ApiException as e:
         error_detail = f"Brevo API error: {e}"
-        print(f"❌ Gagal mengirim email Reset Password: {error_detail}")
+        logger.error("Failed to send password reset email: %s", error_detail)
         return False, error_detail
     except Exception as e:
         error_detail = f"Unexpected error: {e}"
-        print(f"❌ Gagal mengirim email Reset Password: {error_detail}")
+        logger.error("Failed to send password reset email: %s", error_detail)
         return False, error_detail
 
 
@@ -141,7 +140,7 @@ def send_weekly_report_email(
 ) -> Tuple[bool, Optional[str]]:
     api_instance, error_message = _get_brevo_client()
     if error_message:
-        print(f"❌ {error_message}")
+        logger.error("Email client error: %s", error_message)
         return False, error_message
 
     sender = {"name": "Nostressia", "email": SENDER_EMAIL}
@@ -182,13 +181,13 @@ def send_weekly_report_email(
 
     try:
         api_instance.send_transac_email(send_smtp_email)
-        print(f"✅ Weekly report terkirim ke {to_email}")
+        logger.info("Weekly report email sent to %s", to_email)
         return True, None
     except ApiException as e:
         error_detail = f"Brevo API error: {e}"
-        print(f"❌ Gagal mengirim weekly report: {error_detail}")
+        logger.error("Failed to send weekly report email: %s", error_detail)
         return False, error_detail
     except Exception as e:
         error_detail = f"Unexpected error: {e}"
-        print(f"❌ Gagal mengirim weekly report: {error_detail}")
+        logger.error("Failed to send weekly report email: %s", error_detail)
         return False, error_detail

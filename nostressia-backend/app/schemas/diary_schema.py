@@ -8,14 +8,14 @@ class DiaryBase(BaseSchema):
     title: Optional[str] = None
     note: str
     date: date
-    emoji: Optional[str] = "😐"   # Tipe data String
+    emoji: Optional[str] = "😐"   # Stored as a string.
     font: Optional[str] = "sans-serif" # Default font
 
-# Schema untuk Input (Create)
+# Schema for input (create)
 class DiaryCreate(DiaryBase):
     pass
 
-# Schema untuk Edit (Update)
+# Schema for edits (update)
 class DiaryUpdate(BaseSchema):
     title: Optional[str] = None
     note: Optional[str] = None
@@ -23,7 +23,7 @@ class DiaryUpdate(BaseSchema):
     emoji: Optional[str] = None
     font: Optional[str] = None
 
-# Schema untuk Response (Output ke Frontend)
+# Schema for responses (sent to the frontend)
 class DiaryResponse(DiaryBase):
     diary_id: int
     user_id: int

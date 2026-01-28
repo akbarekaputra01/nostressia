@@ -243,18 +243,18 @@ export default function Diary() {
         }
       `}</style>
       
-      {/* --- FIXED NAVBAR WRAPPER (DIPERBAIKI) ---
-          - pt-4 md:pt-6: Memberikan 'gap' di atas navbar agar tidak nempel langit-langit browser.
-          - z-50: Tetap di atas konten.
+      {/* --- FIXED NAVBAR WRAPPER (ADJUSTED) ---
+          - pt-4 md:pt-6: Adds spacing above the navbar to avoid sticking to the top.
+          - z-50: Keeps the navbar above the content.
       */}
       <div className="fixed top-0 left-0 w-full z-50 pt-4 md:pt-4 transition-all duration-300">
         <Navbar activeLink="Diary" user={user} />
       </div>
 
-      {/* --- SPACER (DIPERBAIKI LAGI) ---
-          - Ditambah tingginya untuk mengkompensasi padding-top pada navbar.
-          - Mobile: 160px (biar aman dan judul turun).
-          - Desktop: 130px (biar judul tidak ketabrak navbar yang sekarang agak turun).
+      {/* --- SPACER (ADJUSTED) ---
+          - Increase height to compensate for the navbar padding.
+          - Mobile: 160px (keeps the header from overlapping).
+          - Desktop: 130px (prevents the title from being covered).
       */}
       <div className="h-[160px] md:h-[162px]" />
 
@@ -361,7 +361,7 @@ export default function Diary() {
                         </p>
                       </div>
 
-                      {/* Tombol Klik */}
+                      {/* Clickable button */}
                       <div 
                         className={`absolute bottom-8 animate-bounce text-white/50 text-xs font-bold tracking-widest uppercase transition-opacity duration-500 ${
                           isBookOpen ? 'opacity-0 invisible' : 'opacity-100 visible'

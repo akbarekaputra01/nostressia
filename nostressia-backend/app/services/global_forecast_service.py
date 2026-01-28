@@ -28,7 +28,7 @@ class GlobalForecastService:
         if not os.path.exists(artifact_path):
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Model artifact tidak ditemukan: {artifact_path}",
+                detail=f"Model artifact not found: {artifact_path}",
             )
 
         try:
@@ -37,12 +37,12 @@ class GlobalForecastService:
         except Exception as exc:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Gagal memuat model artifact: {exc}",
+                detail=f"Failed to load model artifact: {exc}",
             ) from exc
 
         return self._artifact
 
-    # ✅ Python 3.9 compatible (tidak pakai `int | None`)
+    # Python 3.9 compatible (avoid `int | None`).
     def get_required_history_days(self) -> Optional[int]:
         artifact_path = self._artifact_path()
         if not os.path.exists(artifact_path):
@@ -193,7 +193,7 @@ class GlobalForecastService:
         meta = artifact.get("meta", {})
 
         date_col = meta.get("date_col", "date")
-        # default diset konsisten dengan records (user_id)
+        # Default is aligned with stored records (user_id).
         user_col = meta.get("user_col", "user_id")
         target_col = meta.get("target_col", "stress_level")
         window = int(meta.get("window", 3))
@@ -211,8 +211,8 @@ class GlobalForecastService:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=(
-                    "Histori stress belum cukup untuk prediksi. "
-                    f"Minimal {window + 1} hari data diperlukan."
+                    "Not enough stress history for prediction. "
+                    f"At least {window + 1} days of data are required."
                 ),
             )
 
@@ -234,7 +234,7 @@ class GlobalForecastService:
 
         df = pd.DataFrame(records)
 
-        # ✅ Guard: kalau meta user_col beda (mis. "userID"), tetap sediakan kolomnya
+        # Guard: if meta user_col differs (e.g., "userID"), keep the column available.
         if user_col not in df.columns and "user_id" in df.columns:
             df[user_col] = df["user_id"]
 
@@ -263,17 +263,17 @@ class GlobalForecastService:
         if date_col not in df.columns:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Kolom tanggal '{date_col}' tidak ditemukan pada data user.",
+                detail=f"Date column '{date_col}' was not found in user data.",
             )
         if target_col not in df.columns:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Kolom target '{target_col}' tidak ditemukan pada data user.",
+                detail=f"Target column '{target_col}' was not found in user data.",
             )
         if user_col not in df.columns:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Kolom user '{user_col}' tidak ditemukan pada data user.",
+                detail=f"User column '{user_col}' was not found in user data.",
             )
 
         df[date_col] = pd.to_datetime(df[date_col], errors="raise")
@@ -293,8 +293,8 @@ class GlobalForecastService:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=(
-                    "Histori stress belum cukup untuk membuat fitur prediksi. "
-                    f"Pastikan minimal {window + 1} hari data tersedia."
+                    "Not enough stress history to build prediction features. "
+                    f"Ensure at least {window + 1} days of data are available."
                 ),
             )
 
@@ -328,7 +328,7 @@ class GlobalForecastService:
             if probs is None:
                 raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail="Artifact markov tidak memiliki probabilities.",
+                    detail="The Markov artifact is missing probabilities.",
                 )
             threshold = float(artifact.get("thr", 0.5))
             probability = self._markov_proba(probs, last_row)
@@ -338,7 +338,7 @@ class GlobalForecastService:
             if pipe is None:
                 raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail="Artifact ML tidak memiliki pipeline.",
+                    detail="The ML artifact is missing a pipeline.",
                 )
             threshold = float(artifact.get("thr", 0.5))
             probability = float(pipe.predict_proba(model_input)[:, 1][0])
@@ -351,7 +351,7 @@ class GlobalForecastService:
             if pipe is None and probs is None:
                 raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail="Artifact blend tidak lengkap.",
+                    detail="The blend artifact is incomplete.",
                 )
             if pipe is None:
                 probability = self._markov_proba(probs, last_row)
@@ -367,7 +367,7 @@ class GlobalForecastService:
         else:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Tipe model tidak dikenali: {model_type}",
+                detail=f"Unrecognized model type: {model_type}",
             )
 
         prediction_binary = int(probability >= threshold)

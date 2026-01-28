@@ -15,28 +15,28 @@ SAS_EXPIRES_MINUTES = 10
 
 
 def _sanitize_filename(file_name: str) -> str:
-    """Bersihkan nama file agar aman dipakai sebagai blob name."""
+    """Sanitize filenames to make them safe for blob names."""
     base_name = Path(file_name).name
     return re.sub(r"[^a-zA-Z0-9._-]", "_", base_name)
 
 
 def _get_blob_service_client() -> BlobServiceClient:
     if not settings.azure_storage_connection_string:
-        raise RuntimeError("Azure storage connection string belum dikonfigurasi.")
+        raise RuntimeError("Azure storage connection string is not configured.")
     return BlobServiceClient.from_connection_string(
         settings.azure_storage_connection_string
     )
 
 
 def build_profile_picture_blob_name(user_id: int, original_name: str) -> str:
-    """Buat path blob rapi untuk foto profil."""
+    """Build a clean blob path for profile photos."""
     sanitized = _sanitize_filename(original_name)
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
     return f"profile-pictures/{user_id}/{timestamp}-{sanitized}"
 
 
 def generate_profile_picture_sas(blob_name: str) -> tuple[str, str, datetime]:
-    """Generate SAS URL untuk upload blob tertentu."""
+    """Generate a SAS URL for uploading a specific blob."""
     blob_service_client = _get_blob_service_client()
     container_name = (
         settings.azure_storage_container_name
@@ -54,7 +54,7 @@ def generate_profile_picture_sas(blob_name: str) -> tuple[str, str, datetime]:
         account_key = credential.key
 
     if not account_key:
-        raise RuntimeError("Azure storage account key tidak tersedia.")
+        raise RuntimeError("Azure storage account key is not available.")
 
     expires_at = datetime.now(timezone.utc) + timedelta(minutes=SAS_EXPIRES_MINUTES)
     sas_token = generate_blob_sas(

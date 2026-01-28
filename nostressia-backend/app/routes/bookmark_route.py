@@ -6,7 +6,7 @@ from app.models.motivation_model import Motivation
 from app.models.user_model import User
 from app.schemas.bookmark_schema import BookmarkResponse
 from app.schemas.response_schema import APIResponse
-from app.utils.jwt_handler import get_current_user # Asumsi Anda punya fungsi ini untuk auth
+from app.utils.jwt_handler import get_current_user  # Authenticated user helper.
 from app.utils.response import success_response
 
 router = APIRouter(
@@ -14,19 +14,19 @@ router = APIRouter(
     tags=["Bookmarks"]
 )
 
-# 1. ADD BOOKMARK (Menyimpan Motivasi)
+# 1. ADD BOOKMARK (save motivation)
 @router.post("/{motivation_id}", status_code=status.HTTP_201_CREATED, response_model=APIResponse[None])
 def add_bookmark(
     motivation_id: int, 
     db: Session = Depends(get_db), 
     current_user: User = Depends(get_current_user)
 ):
-    # Cek apakah motivasi ada
+    # Check that the motivation exists.
     motivation = db.query(Motivation).filter(Motivation.motivation_id == motivation_id).first()
     if not motivation:
         raise HTTPException(status_code=404, detail="Motivation not found")
 
-    # Cek apakah sudah pernah dibookmark user ini?
+    # Check whether the user has already bookmarked this motivation.
     existing_bookmark = db.query(Bookmark).filter(
         Bookmark.user_id == current_user.user_id,
         Bookmark.motivation_id == motivation_id
@@ -35,20 +35,20 @@ def add_bookmark(
     if existing_bookmark:
         raise HTTPException(status_code=400, detail="Motivation already bookmarked")
 
-    # Simpan Bookmark
+    # Persist the bookmark.
     new_bookmark = Bookmark(user_id=current_user.user_id, motivation_id=motivation_id)
     db.add(new_bookmark)
     db.commit()
     
     return success_response(message="Bookmark added successfully")
 
-# 2. GET MY BOOKMARKS (Opsi B: Langsung dapat data motivasinya)
+# 2. GET MY BOOKMARKS (include motivation data)
 @router.get("/me", response_model=APIResponse[list[BookmarkResponse]])
 def get_my_bookmarks(
     db: Session = Depends(get_db), 
     current_user: User = Depends(get_current_user)
 ):
-    # joinedload berfungsi menarik data motivation sekaligus (Eager Loading)
+    # joinedload fetches the motivation relation in the same query.
     bookmarks = db.query(Bookmark)\
         .options(joinedload(Bookmark.motivation))\
         .filter(Bookmark.user_id == current_user.user_id)\

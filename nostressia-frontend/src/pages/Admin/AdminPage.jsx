@@ -8,7 +8,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { getAdminDiaries, getAdminUsers, deleteAdminDiary, deleteAdminUser, updateAdminUser } from "../../services/adminService";
 import { createMotivation, deleteMotivation, getMotivations } from "../../services/motivationService";
 import { createTip, createTipCategory, deleteTip, deleteTipCategory, getTipCategories, getTipsByCategory, updateTip } from "../../services/tipsService";
-import { clearAdminSession, readAdminToken } from "../../utils/auth";
+import { clearAdminSession, readAdminProfile, readAdminToken } from "../../utils/auth";
 
 export default function AdminPage({ skipAuth = false }) {
   const navigate = useNavigate();
@@ -42,15 +42,23 @@ export default function AdminPage({ skipAuth = false }) {
   const [isEditUserModalOpen, setIsEditUserModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
 
-  // AUTH CHECK
+  // Auth gate: load the admin profile or redirect to the login screen.
   useEffect(() => {
     if (skipAuth) {
       setCurrentUser({ id: 999, name: "Developer Mode", role: "admin" });
       return; 
     }
-    const storedUser = localStorage.getItem("adminData");
-    if (storedUser) setCurrentUser(JSON.parse(storedUser));
-    else navigate("/admin/login");
+    const storedUser = readAdminProfile();
+    if (storedUser) {
+      try {
+        setCurrentUser(JSON.parse(storedUser));
+        return;
+      } catch (error) {
+        console.error("Failed to parse stored admin profile:", error);
+      }
+    }
+    clearAdminSession();
+    navigate("/admin/login");
   }, [navigate, skipAuth]);
 
   const handleLogout = () => {
@@ -67,7 +75,7 @@ export default function AdminPage({ skipAuth = false }) {
   const [quoteForm, setQuoteForm] = useState({ text: "", author: "" });
 
   useEffect(() => {
-    // 1. Fetch Motivations (Biarkan bagian ini tetap sama)
+    // 1. Fetch motivations to populate the dashboard list.
     getMotivations()
       .then((data) => {
         const formatted = data.map(item => ({
@@ -79,22 +87,22 @@ export default function AdminPage({ skipAuth = false }) {
         }));
         setQuotes(formatted);
       })
-      .catch(err => console.log("Offline/Error:", err));
+      .catch(err => console.log("Offline or API error:", err));
 
-    // ✅ 2. Fetch Dashboard Stats (INI YANG DIUPDATE)
+    // 2. Fetch dashboard statistics for verified users and diaries.
     const fetchStats = async () => {
         try {
-            // UBAH: Ambil list user (limit besar, misal 1000) agar bisa kita filter manual
+            // Request a larger user page to filter verified users client-side.
             const data = await getAdminUsers({ limit: 1000 });
 
-            // HITUNG MANUAL: Hanya user yang verified
+            // Count only verified users.
             const validUsersCount = (data.data || []).filter(u =>
                 u.isVerified === true || u.isVerified === 1 || u.isVerified == "1"
             ).length;
 
             setTotalUserCount(validUsersCount); 
 
-            // Bagian Diary biarkan tetap sama
+            // Keep the diary counter consistent with the existing API response.
             const diaryData = await getAdminDiaries({ limit: 1 });
             setTotalDiariesCount(diaryData.total || 0);
 
@@ -312,14 +320,14 @@ export default function AdminPage({ skipAuth = false }) {
       // Jika setelah filter hasilnya kosong tapi data aslinya ada, 
       // berarti backend TIDAK mengirim field 'isVerified'.
       if (validUsers.length === 0 && normalizedUsers.length > 0) {
-          console.warn("⚠️ PERINGATAN: Sepertinya Backend tidak mengirim data 'isVerified'. Filter gagal.");
+          console.warn("Warning: the API did not return 'isVerified'. Filtering could not be applied.");
           setUsers(normalizedUsers); // Terpaksa tampilkan semua daripada kosong
       } else {
           setUsers(validUsers);
       }
 
-      // Update total halaman berdasarkan data yang sudah difilter (estimasi)
-      // Catatan: Pagination akan sedikit tidak akurat jika filter dilakukan di Frontend
+      // Estimate pagination after filtering on the client side.
+      // Note: client-side filtering makes pagination approximate.
       setTotalPages(Math.ceil(data.total / 10));
 
     } catch (error) { 
@@ -412,7 +420,7 @@ export default function AdminPage({ skipAuth = false }) {
           {title: "Diary Moderation", count: totalDiariesCount, desc: "Delete user diaries.", color: "red", icon: <BookOpen size={24}/>, action: () => setActiveView('diaries'), btn: "Moderate"}
         ].map((card, idx) => (
           <div key={idx} className="bg-surface-elevated glass-panel p-6 rounded-2xl shadow-sm border border-border-subtle hover:shadow-md transition-all relative overflow-hidden group flex flex-col h-full">
-            {/* Menggunakan dynamic class yang aman untuk red/orange/blue/purple */}
+            {/* Use safe, whitelisted dynamic classes for red/orange/blue/purple themes. */}
             <div className={`absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity text-${card.color}-500`}>{React.cloneElement(card.icon, {size: 80})}</div>
             <div className="flex justify-between items-start mb-4 relative z-10">
               <div className={`p-3 bg-${card.color}-100 text-${card.color}-600 rounded-xl`}>{card.icon}</div>

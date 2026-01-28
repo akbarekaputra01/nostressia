@@ -1,7 +1,6 @@
-# nostressia-backend/app/services/notification_scheduler.py
-
+"""Notification scheduler helpers for daily reminders."""
 import logging
-from datetime import datetime, date
+from datetime import datetime
 from typing import Optional
 
 import pytz
@@ -16,14 +15,14 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_TZ = "Asia/Jakarta"
 
-# scheduler global biar bisa dipanggil dari route
+# Global scheduler instance for route handlers.
 _scheduler: Optional[BackgroundScheduler] = None
 
 
 def _build_payload() -> dict:
     return {
         "title": "Nostressia Daily Reminder",
-        "body": "Time to check-in dan log stress level kamu.",
+        "body": "Time to check in and log your stress level.",
         "url": "/",
     }
 
@@ -39,7 +38,7 @@ def _normalize_tz(tz_name: str) -> str:
 
 
 def _parse_hhmm(reminder_time: str) -> tuple[int, int]:
-    # reminder_time sudah distandarkan "HH:mm" dari route
+    # reminder_time is normalized to "HH:mm" by the route layer.
     h, m = reminder_time.split(":")
     return int(h), int(m)
 
@@ -50,7 +49,7 @@ def _job_id_for_subscription(subscription_id: int) -> str:
 
 def _send_daily_reminder(subscription_id: int) -> None:
     """
-    Ini yang dipanggil APScheduler tepat di detik 00.
+    APScheduler callback that runs at second 00.
     """
     db = SessionLocal()
     try:
@@ -63,24 +62,31 @@ def _send_daily_reminder(subscription_id: int) -> None:
             .first()
         )
         if not sub:
-            print(f"ℹ️ [scheduler] subscription_id={subscription_id} inactive/not found", flush=True)
+            logger.info(
+                "Subscription inactive or not found. subscription_id=%s",
+                subscription_id,
+            )
             return
 
         tz_name = _normalize_tz(sub.timezone or DEFAULT_TZ)
         tz = pytz.timezone(tz_name)
         now = datetime.now(tz)
 
-        # dedupe: jangan double-send dalam tanggal yang sama
+        # Dedupe: avoid sending more than once per day.
         if sub.last_sent_date == now.date():
-            print(
-                f"⏭️ [scheduler] skip already sent today sub_id={sub.subscription_id} date={sub.last_sent_date}",
-                flush=True,
+            logger.info(
+                "Skipping already sent notification. sub_id=%s date=%s",
+                sub.subscription_id,
+                sub.last_sent_date,
             )
             return
 
-        print(
-            f"🚀 [scheduler] sending sub_id={sub.subscription_id} user_id={sub.user_id} now={now.strftime('%H:%M:%S')} tz={tz_name}",
-            flush=True,
+        logger.info(
+            "Sending reminder. sub_id=%s user_id=%s time=%s tz=%s",
+            sub.subscription_id,
+            sub.user_id,
+            now.strftime("%H:%M:%S"),
+            tz_name,
         )
 
         send_push(sub, _build_payload())
@@ -89,18 +95,21 @@ def _send_daily_reminder(subscription_id: int) -> None:
         db.add(sub)
         db.commit()
 
-        print(
-            f"✅ [scheduler] sent OK sub_id={sub.subscription_id} user_id={sub.user_id}",
-            flush=True,
+        logger.info(
+            "Reminder sent. sub_id=%s user_id=%s",
+            sub.subscription_id,
+            sub.user_id,
         )
 
     except WebPushException as exc:
         status_code = exc.response.status_code if exc.response else None
-        print(
-            f"❌ [scheduler] WebPushException sub_id={subscription_id} status={status_code} err={exc}",
-            flush=True,
+        logger.warning(
+            "WebPushException. sub_id=%s status=%s err=%s",
+            subscription_id,
+            status_code,
+            exc,
         )
-        # expired subscription -> matiin
+        # Expired subscription -> deactivate it.
         if status_code in {404, 410}:
             try:
                 sub = (
@@ -112,14 +121,15 @@ def _send_daily_reminder(subscription_id: int) -> None:
                     sub.is_active = False
                     db.add(sub)
                     db.commit()
-                    print(f"🧹 [scheduler] deactivated expired sub_id={subscription_id}", flush=True)
+                    logger.info("Deactivated expired subscription. sub_id=%s", subscription_id)
             except Exception:
                 logger.exception("Failed to deactivate expired subscription.")
-        logger.warning("Push gagal sub_id=%s: %s", subscription_id, exc)
+        logger.warning("Push failed. sub_id=%s: %s", subscription_id, exc)
 
     except Exception as exc:
-        print(f"💥 [scheduler] unexpected error sub_id={subscription_id}: {exc}", flush=True)
-        logger.exception("Scheduler job error: %s", exc)
+        logger.exception(
+            "Unexpected scheduler error. sub_id=%s error=%s", subscription_id, exc
+        )
 
     finally:
         db.close()
@@ -130,7 +140,7 @@ def _ensure_scheduler_started() -> BackgroundScheduler:
     if _scheduler and _scheduler.running:
         return _scheduler
 
-    print("✅ [scheduler] starting BackgroundScheduler (cron mode)...", flush=True)
+    logger.info("Starting BackgroundScheduler (cron mode).")
     _scheduler = BackgroundScheduler(timezone=DEFAULT_TZ)
     _scheduler.start()
     return _scheduler
@@ -138,14 +148,14 @@ def _ensure_scheduler_started() -> BackgroundScheduler:
 
 def upsert_daily_reminder_job(subscription_id: int, reminder_time: str, timezone: str) -> None:
     """
-    Buat/update job agar jalan tepat di HH:mm:00 sesuai timezone.
+    Create or update the job to run at HH:mm:00 in the selected timezone.
     """
     scheduler = _ensure_scheduler_started()
 
     tz_name = _normalize_tz(timezone or DEFAULT_TZ)
     hour, minute = _parse_hhmm(reminder_time)
 
-    # CronTrigger => exact di detik 00
+    # CronTrigger => execute at second 00.
     trigger = CronTrigger(hour=hour, minute=minute, second=0, timezone=pytz.timezone(tz_name))
 
     job_id = _job_id_for_subscription(subscription_id)
@@ -161,9 +171,11 @@ def upsert_daily_reminder_job(subscription_id: int, reminder_time: str, timezone
         misfire_grace_time=30,
     )
 
-    print(
-        f"🧩 [scheduler] upsert job_id={job_id} time={reminder_time}:00 tz={tz_name}",
-        flush=True,
+    logger.info(
+        "Upserted scheduler job. job_id=%s time=%s:00 tz=%s",
+        job_id,
+        reminder_time,
+        tz_name,
     )
 
 
@@ -172,23 +184,23 @@ def remove_daily_reminder_job(subscription_id: int) -> None:
     job_id = _job_id_for_subscription(subscription_id)
     try:
         scheduler.remove_job(job_id)
-        print(f"🧹 [scheduler] removed job_id={job_id}", flush=True)
+        logger.info("Removed scheduler job. job_id=%s", job_id)
     except Exception:
-        # kalau job belum ada, aman
+        # If the job does not exist, nothing to do.
         pass
 
 
 def load_jobs_from_db() -> None:
     """
-    Saat startup, ambil semua subscription aktif lalu pasang job cron-nya.
-    Ini penting karena HF restart = scheduler kosong.
+    On startup, load all active subscriptions and register cron jobs.
+    This is important because a restart clears the scheduler.
     """
     scheduler = _ensure_scheduler_started()
 
     db = SessionLocal()
     try:
         subs = db.query(PushSubscription).filter(PushSubscription.is_active.is_(True)).all()
-        print(f"📌 [scheduler] loading active subs={len(subs)}", flush=True)
+        logger.info("Loading active subscriptions. count=%s", len(subs))
 
         for sub in subs:
             try:
@@ -198,7 +210,11 @@ def load_jobs_from_db() -> None:
                     timezone=sub.timezone or DEFAULT_TZ,
                 )
             except Exception as exc:
-                print(f"⚠️ [scheduler] failed load job sub_id={sub.subscription_id}: {exc}", flush=True)
+                logger.warning(
+                    "Failed to load scheduler job. sub_id=%s error=%s",
+                    sub.subscription_id,
+                    exc,
+                )
 
     finally:
         db.close()
@@ -206,11 +222,11 @@ def load_jobs_from_db() -> None:
 
 def start_notification_scheduler() -> BackgroundScheduler:
     """
-    Dipanggil dari app startup.
+    Called during application startup.
     """
     scheduler = _ensure_scheduler_started()
     load_jobs_from_db()
-    print("✅ [scheduler] cron jobs ready.", flush=True)
+    logger.info("Scheduler cron jobs ready.")
     return scheduler
 
 
@@ -222,4 +238,4 @@ def stop_notification_scheduler(scheduler: Optional[BackgroundScheduler]) -> Non
         except Exception:
             pass
     _scheduler = None
-    print("🛑 [scheduler] stopped.", flush=True)
+    logger.info("Scheduler stopped.")

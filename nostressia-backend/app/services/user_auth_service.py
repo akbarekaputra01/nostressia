@@ -2,10 +2,10 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 from app.models.user_model import User
 from app.schemas.user_auth_schema import UserRegister
-from app.utils.hashing import hash_password, verify_password 
+from app.utils.hashing import hash_password, verify_password
 
 def create_user(db: Session, user_data: UserRegister):
-    # 1. Cek Duplikat
+    # 1. Check for duplicates.
     existing_user = db.query(User).filter(
         (User.email == user_data.email) | (User.username == user_data.username)
     ).first()
@@ -13,10 +13,10 @@ def create_user(db: Session, user_data: UserRegister):
     if existing_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, 
-            detail="Email atau Username sudah digunakan."
+            detail="Email or username is already in use."
         )
 
-    # 2. Buat User Baru
+    # 2. Create a new user.
     new_user = User(
         name=user_data.name,
         username=user_data.username,

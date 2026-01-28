@@ -1,20 +1,20 @@
-# app/routes/user_auth_route.py
+"""User authentication routes and profile endpoints."""
 
-from datetime import date, datetime, timedelta # ✅ Tambah datetime
+from datetime import date, datetime, timedelta
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
-from fastapi.security import OAuth2PasswordRequestForm 
+from fastapi.security import OAuth2PasswordRequestForm
 
 from app.core.database import get_db
 from app.models.user_model import User
 from app.utils.jwt_handler import create_access_token, get_current_user
 
-# ✅ Import Utils
-from app.utils.hashing import verify_password, hash_password 
-from app.utils.otp_generator import generate_otp       
+# Utilities
+from app.utils.hashing import verify_password, hash_password
+from app.utils.otp_generator import generate_otp
 from app.services.email_service import send_otp_email, send_reset_password_email
 
-# ✅ Import Schema
+# Schemas
 from app.schemas.user_auth_schema import (
     UserRegister,
     UserLogin,
@@ -34,8 +34,8 @@ from app.schemas.response_schema import APIResponse
 
 router = APIRouter()
 
-# --- KONFIGURASI ---
-OTP_EXPIRE_MINUTES = 5 # ✅ Waktu Kadaluarsa OTP
+# --- CONFIGURATION ---
+OTP_EXPIRE_MINUTES = 5  # OTP expiration in minutes.
 
 def _serialize_user(user: User) -> UserResponse:
     return UserResponse.model_validate(user)
@@ -67,47 +67,53 @@ def _authenticate_user(identifier: str, password: str, db: Session) -> User:
         user = db.query(User).filter(User.username == identifier).first()
 
     if not user or not verify_password(password, user.password):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Username/Email atau Password salah")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Username/email or password is incorrect.",
+        )
 
     if not user.is_verified:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Akun belum diverifikasi.")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Account is not verified yet.",
+        )
 
     return user
 
 # --- ENDPOINTS ---
 
-# 1. REGISTER (Updated: OTP Expired + Retry Logic)
+# 1. REGISTER (OTP expiration + retry logic)
 @router.post("/register", status_code=status.HTTP_201_CREATED, response_model=APIResponse[EmailResponse])
 def register(user_in: UserRegister, db: Session = Depends(get_db)):
-    # 1. Cek User berdasarkan Email & Username
+    # 1. Check existing user records by email and username.
     existing_user_email = db.query(User).filter(User.email == user_in.email).first()
     existing_user_username = db.query(User).filter(User.username == user_in.username).first()
 
-    # 2. Cek Konflik Username
+    # 2. Validate username conflicts.
     if existing_user_username:
         if not existing_user_email or (existing_user_email.user_id != existing_user_username.user_id):
              raise HTTPException(status_code=400, detail="Username already taken")
 
-    # Persiapan Data
+    # Prepare OTP and user data.
     otp_code = generate_otp(6)
     hashed_pw = hash_password(user_in.password)
-    now = datetime.utcnow() # ✅ Ambil waktu sekarang
+    now = datetime.utcnow()
 
-    # 3. Logika Utama: Cek Email
+    # 3. Main email workflow
     if existing_user_email:
-        # KASUS A: Email sudah ada DAN Sudah Verifikasi -> TOLAK
+        # Case A: email exists and is already verified -> reject.
         if existing_user_email.is_verified:
             raise HTTPException(status_code=400, detail="Email already registered")
         
-        # KASUS B: Email ada TAPI Belum Verifikasi -> UPDATE (TIMPA DATA LAMA)
+        # Case B: email exists but is not verified -> update existing record.
         else:
             existing_user_email.name = user_in.name
             existing_user_email.username = user_in.username
             existing_user_email.password = hashed_pw
             
-            # Update OTP & Waktu
+            # Refresh OTP and timestamp.
             existing_user_email.otp_code = otp_code
-            existing_user_email.otp_created_at = now # ✅ Simpan waktu OTP dibuat
+            existing_user_email.otp_created_at = now
             
             existing_user_email.user_dob = user_in.user_dob
             existing_user_email.gender = user_in.gender
@@ -121,7 +127,7 @@ def register(user_in: UserRegister, db: Session = Depends(get_db)):
                 message="Registration successful (Retry). Please check your email for new OTP.",
             )
 
-    # KASUS C: User Benar-Benar Baru -> BUAT BARU
+    # Case C: brand-new user -> create a record.
     new_user = User(
         name=user_in.name,
         username=user_in.username,
@@ -131,9 +137,9 @@ def register(user_in: UserRegister, db: Session = Depends(get_db)):
         user_dob=user_in.user_dob, 
         avatar=user_in.avatar,
         
-        # Field OTP
+        # OTP fields
         otp_code=otp_code,
-        otp_created_at=now, # ✅ Simpan waktu OTP dibuat
+        otp_created_at=now,
         
         is_verified=False,
         streak=0
@@ -143,53 +149,53 @@ def register(user_in: UserRegister, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_user)
 
-    # D. Kirim Email
+    # D. Send email
     email_sent, email_error = send_otp_email(new_user.email, otp_code)
     
     if not email_sent:
-        print(f"⚠️ Gagal mengirim email OTP ke {new_user.email}: {email_error}")
+        print(f"Failed to send OTP email to {new_user.email}: {email_error}")
 
     return success_response(
         data=EmailResponse(email=new_user.email),
         message="Registration successful! Please check your email for OTP verification.",
     )
 
-# 2. VERIFY OTP (Updated: Check Expired)
+# 2. VERIFY OTP (checks expiration)
 @router.post("/verify-otp", status_code=status.HTTP_200_OK, response_model=APIResponse[None])
 def verify_otp_endpoint(payload: VerifyOTP, db: Session = Depends(get_db)):
-    # Cari user berdasarkan email
+    # Find the user by email.
     user = db.query(User).filter(User.email == payload.email).first()
     
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    # Cek apakah sudah verified
+    # Check whether the account is already verified.
     if user.is_verified:
         return success_response(message="Account already verified. Please login.")
 
-    # 1. Cek Kode OTP (Angka)
+    # 1. Validate the OTP code.
     if user.otp_code != payload.otp_code:
         raise HTTPException(status_code=400, detail="Invalid OTP code")
 
-    # ✅ 2. Cek Expired (Waktu)
+    # 2. Check expiration window.
     if user.otp_created_at:
-        # Hitung selisih waktu
+        # Compute the time difference.
         time_diff = datetime.utcnow() - user.otp_created_at
         if time_diff > timedelta(minutes=OTP_EXPIRE_MINUTES):
-             # Opsional: Hapus OTP basi biar bersih
-             # user.otp_code = None
-             # db.commit()
-             raise HTTPException(status_code=400, detail="Kode OTP sudah kadaluarsa (expired). Silakan daftar ulang/minta OTP baru.")
+             raise HTTPException(
+                 status_code=400,
+                 detail="The OTP code has expired. Please register again or request a new OTP.",
+             )
 
-    # Jika lolos semua cek: Aktifkan akun
+    # If all checks pass, activate the account.
     user.is_verified = True
     user.otp_code = None 
-    user.otp_created_at = None # ✅ Bersihkan waktu juga
+    user.otp_created_at = None
     db.commit()
 
     return success_response(message="Account verified successfully! You can now login.")
 
-# 3. LOGIN (Tetap Sama)
+# 3. LOGIN
 @router.post("/login", response_model=APIResponse[UserTokenResponse])
 def login(payload: UserLogin, db: Session = Depends(get_db)):
     identifier = payload.identifier.strip() if isinstance(payload.identifier, str) else payload.identifier
@@ -256,9 +262,12 @@ def upload_user_avatar(
 @router.put("/change-password", status_code=status.HTTP_200_OK, response_model=APIResponse[None])
 def change_password(payload: ChangePasswordSchema, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     if not verify_password(payload.current_password, current_user.password):
-        raise HTTPException(status_code=400, detail="Password lama salah")
+        raise HTTPException(status_code=400, detail="Current password is incorrect.")
     if verify_password(payload.new_password, current_user.password):
-        raise HTTPException(status_code=400, detail="Password baru tidak boleh sama dengan password lama")
+        raise HTTPException(
+            status_code=400,
+            detail="New password must be different from the current password.",
+        )
     current_user.password = hash_password(payload.new_password)
     db.commit()
     return success_response(message="Password updated successfully")
@@ -268,68 +277,76 @@ def change_password(payload: ChangePasswordSchema, db: Session = Depends(get_db)
 def forgot_password(payload: ForgotPasswordRequest, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == payload.email).first()
     if not user:
-        raise HTTPException(status_code=404, detail="Email tidak terdaftar")
+        raise HTTPException(status_code=404, detail="Email is not registered.")
 
     otp_code = generate_otp(6)
     
-    # ✅ Update OTP & Waktu
+    # Update OTP and timestamp.
     user.otp_code = otp_code
-    user.otp_created_at = datetime.utcnow() # Reset waktu expired
+    user.otp_created_at = datetime.utcnow()
     db.commit()
 
-    # 4. Kirim Email
+    # 4. Send email
     email_sent, email_error = send_reset_password_email(user.email, otp_code)
     
     if not email_sent:
-        detail_message = "Gagal mengirim email. Coba lagi nanti."
+        detail_message = "Failed to send the email. Please try again later."
         if email_error:
-            detail_message = f"Gagal mengirim email: {email_error}"
+            detail_message = f"Failed to send the email: {email_error}"
         raise HTTPException(status_code=500, detail=detail_message)
 
-    return success_response(message="Kode OTP reset password telah dikirim ke email Anda.")
+    return success_response(message="Reset password OTP has been sent to your email.")
 
-# 5. RESET PASSWORD VERIFY (Check OTP sebelum input password baru)
+# 5. RESET PASSWORD VERIFY (check OTP before new password input)
 @router.post("/reset-password-verify", status_code=status.HTTP_200_OK, response_model=APIResponse[None])
 def reset_password_verify(payload: ResetPasswordVerify, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == payload.email).first()
     if not user:
-        raise HTTPException(status_code=404, detail="User tidak ditemukan")
+        raise HTTPException(status_code=404, detail="User not found.")
 
     if user.otp_code != payload.otp_code:
-        raise HTTPException(status_code=400, detail="Kode OTP salah")
+        raise HTTPException(status_code=400, detail="Incorrect OTP code.")
 
     if user.otp_created_at:
         time_diff = datetime.utcnow() - user.otp_created_at
         if time_diff > timedelta(minutes=OTP_EXPIRE_MINUTES):
-             raise HTTPException(status_code=400, detail="Kode OTP sudah kadaluarsa. Silakan minta ulang.")
+             raise HTTPException(
+                 status_code=400,
+                 detail="The OTP code has expired. Please request a new one.",
+             )
 
-    return success_response(message="Kode OTP valid. Silakan lanjutkan.")
+    return success_response(message="OTP code is valid. Please continue.")
 
 # 6. RESET PASSWORD CONFIRM (Updated: Check Expired)
 @router.post("/reset-password-confirm", status_code=status.HTTP_200_OK, response_model=APIResponse[None])
 def reset_password_confirm(payload: ResetPasswordConfirm, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == payload.email).first()
     if not user:
-        raise HTTPException(status_code=404, detail="User tidak ditemukan")
+        raise HTTPException(status_code=404, detail="User not found.")
 
-    # 1. Cek Kode OTP
+    # 1. Validate the OTP code.
     if user.otp_code != payload.otp_code:
-        raise HTTPException(status_code=400, detail="Kode OTP salah")
+        raise HTTPException(status_code=400, detail="Incorrect OTP code.")
 
-    # ✅ 2. Cek Expired
+    # 2. Check expiration.
     if user.otp_created_at:
         time_diff = datetime.utcnow() - user.otp_created_at
         if time_diff > timedelta(minutes=OTP_EXPIRE_MINUTES):
-             raise HTTPException(status_code=400, detail="Kode OTP sudah kadaluarsa. Silakan minta ulang.")
+             raise HTTPException(
+                 status_code=400,
+                 detail="The OTP code has expired. Please request a new one.",
+             )
 
-    # 3. Ganti Password
+    # 3. Update password
     user.password = hash_password(payload.new_password)
     
-    # Bersihkan OTP
+    # Clear OTP metadata.
     user.otp_code = None
     user.otp_created_at = None
     user.is_verified = True
     
     db.commit()
 
-    return success_response(message="Password berhasil diubah! Silakan login dengan password baru.")
+    return success_response(
+        message="Password updated successfully. Please log in with the new password.",
+    )

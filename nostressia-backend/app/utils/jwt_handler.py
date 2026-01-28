@@ -1,13 +1,14 @@
 from datetime import datetime, timedelta
+import logging
 import os
-from typing import Union 
+from typing import Union
 
 from jose import jwt, JWTError
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
-# Import Database & Model User
+# Database dependency and User model.
 from app.core.database import get_db
 from app.models.user_model import User
 
@@ -15,7 +16,9 @@ SECRET_KEY = os.getenv("JWT_SECRET", "supersecretkey")
 ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "1440"))
 
-# Setup Auth Scheme untuk Swagger UI
+logger = logging.getLogger(__name__)
+
+# OAuth2 scheme for Swagger UI.
 oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl="/api/auth/token",
     scheme_name="UserOAuth2PasswordBearer",
@@ -34,7 +37,7 @@ def decode_access_token(token: str):
     except Exception:
         return None
 
-# --- FUNGSI BARU YANG DIBUTUHKAN (get_current_user) ---
+# --- Authenticated user resolver ---
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -43,28 +46,28 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     )
     
     try:
-        # 1. Decode Token
+        # 1. Decode token.
         payload = decode_access_token(token)
         if payload is None:
             raise credentials_exception
         
-        # 2. Ambil identitas dari token
-        user_identifier = payload.get("sub") # Bisa berupa ID (angka) atau Email (string)
+        # 2. Extract identity from the token.
+        user_identifier = payload.get("sub")  # Can be numeric ID or email string.
         if user_identifier is None:
             user_identifier = payload.get("user_id") or payload.get("id")
             
         if user_identifier is None:
             raise credentials_exception
 
-        # 3. LOGIKA BARU: Cek apakah identifier ini Angka atau Email
-        # Kita convert ke string dulu untuk jaga-jaga
+        # 3. Determine whether the identifier is numeric or an email string.
+        # Convert to string defensively.
         identifier_str = str(user_identifier)
 
         if identifier_str.isdigit():
-            # Jika isinya angka murni (misal: "5"), cari berdasarkan userID
+            # Numeric identifier -> lookup by user ID.
             user = db.query(User).filter(User.user_id == int(identifier_str)).first()
         else:
-            # Jika isinya huruf/email (misal: "kaleb@gmail.com"), cari berdasarkan email
+            # Non-numeric identifier -> lookup by email.
             user = db.query(User).filter(User.email == identifier_str).first()
 
         if user is None:
@@ -72,6 +75,6 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
             
         return user
 
-    except Exception as e:
-        print(f"Error Auth: {e}") # Print error di terminal untuk debugging
+    except Exception as exc:
+        logger.warning("Auth validation failed: %s", exc)
         raise credentials_exception

@@ -22,31 +22,31 @@ from app.utils.azure_sas import (
 
 
 def _validate_profile_picture_payload(payload: ProfilePictureSasRequest) -> None:
-    """Validasi file gambar sebelum membuat SAS."""
+    """Validate profile image metadata before issuing a SAS."""
     if payload.content_type not in ALLOWED_IMAGE_TYPES:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Content type gambar tidak didukung.",
+            detail="The image content type is not supported.",
         )
 
     extension = Path(payload.file_name).suffix.lower()
     if extension not in ALLOWED_IMAGE_EXTENSIONS:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Ekstensi file gambar tidak didukung.",
+            detail="The image file extension is not supported.",
         )
 
     if payload.file_size > MAX_PROFILE_PICTURE_SIZE:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Ukuran file melebihi batas 2MB.",
+            detail="The file size exceeds the 2MB limit.",
         )
 
 
 def create_profile_picture_sas(
     user_id: int, payload: ProfilePictureSasRequest
 ) -> ProfilePictureSasResponse:
-    """Generate SAS untuk upload foto profil."""
+    """Generate a SAS URL for profile photo uploads."""
     _validate_profile_picture_payload(payload)
     blob_name = build_profile_picture_blob_name(user_id, payload.file_name)
     sas_url, blob_url, expires_at = generate_profile_picture_sas(blob_name)
@@ -61,7 +61,7 @@ def create_profile_picture_sas(
 def update_profile_picture(
     current_user: User, payload: ProfilePictureUpdateRequest, db: Session
 ) -> UserResponse:
-    """Simpan URL foto profil ke database."""
+    """Persist the profile photo URL in the database."""
     current_user.avatar = payload.profile_image_url
     db.commit()
     db.refresh(current_user)

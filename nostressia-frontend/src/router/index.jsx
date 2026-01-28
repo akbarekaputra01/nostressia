@@ -20,22 +20,26 @@ import NotFound from "../pages/NotFound/NotFound";
 import AdminPage from "../pages/Admin/AdminPage";
 import AdminLogin from "../pages/Admin/AdminLogin";
 
-const AdminProtectedRoute = () => {
+// Require an admin session for nested routes.
+export const AdminProtectedRoute = () => {
   const token = readAdminToken();
   return token ? <Outlet /> : <Navigate to="/admin/login" replace />;
 };
 
-const ProtectedRoute = () => {
+// Require a user session for nested routes.
+export const ProtectedRoute = () => {
   const token = readAuthToken();
   return token ? <Outlet /> : <Navigate to="/login" replace />;
 };
 
-const PublicRoute = ({ redirectTo = "/dashboard" }) => {
+// Redirect authenticated users away from public routes.
+export const PublicRoute = ({ redirectTo = "/dashboard" }) => {
   const token = readAuthToken();
   return token ? <Navigate to={redirectTo} replace /> : <Outlet />;
 };
 
-const AdminPublicRoute = ({ redirectTo = "/admin" }) => {
+// Redirect authenticated admins away from public routes.
+export const AdminPublicRoute = ({ redirectTo = "/admin" }) => {
   const token = readAdminToken();
   return token ? <Navigate to={redirectTo} replace /> : <Outlet />;
 };

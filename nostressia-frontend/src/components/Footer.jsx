@@ -47,7 +47,7 @@ export default function Footer() {
               Have questions? Reach out to us directly via email.
             </p>
             
-            {/* Tombol Contact Us yang lebih jelas */}
+            {/* Clearer "Contact Us" button */}
             <div className="flex flex-col gap-3">
               <a 
                 href="https://mail.google.com/mail/?view=cm&fs=1&to=nostressia.official@gmail.com" 

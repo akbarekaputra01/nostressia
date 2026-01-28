@@ -9,7 +9,7 @@ REQUIRED_STREAK = 7
 RESTORE_LIMIT = 3
 
 
-# 1. Schema untuk data yang dikirim User (Request)
+# 1. Schema for user-submitted data (request)
 class StressLevelCreate(BaseSchema):
     date: date
     stress_level: int  # Hasil 1, 2, atau 3
@@ -22,7 +22,7 @@ class StressLevelCreate(BaseSchema):
     emoji: int = 0
 
 
-# 2. Schema untuk data yang dikembalikan ke User (Response)
+# 2. Schema for data returned to the user (response)
 class StressLevelResponse(StressLevelCreate):
     stress_level_id: int
     user_id: int
