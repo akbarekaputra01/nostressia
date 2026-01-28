@@ -1119,7 +1119,7 @@ export default function LandingPage() {
 
           {/* Content (z-10 agar di atas overlay) */}
           <div className="relative z-10 space-y-6 md:space-y-8">
-            <h2 className="text-3xl md:text-6xl font-bold text-text-inverse tracking-tight">
+            <h2 className="text-3xl md:text-6xl font-bold text-text-inverse tracking-tight dark:text-text-primary">
               Ready to upgrade your <br />
               <span className="text-brand-warning">College Life?</span>
             </h2>
