@@ -10,10 +10,7 @@ import {
   restoreStressLog,
 } from "../../services/stressService";
 import { getMotivations } from "../../services/motivationService";
-import {
-  getTipCategories,
-  getTipsByCategory,
-} from "../../services/tipsService";
+import { getTipCategories, getTipsByCategory } from "../../services/tipsService";
 import Footer from "../../components/Footer";
 import Navbar from "../../components/Navbar";
 import { clearAuthToken, readAuthToken } from "../../utils/auth";
@@ -128,10 +125,8 @@ function getStatusFromLevel(level) {
 
 // Helper mapping API Result (0, 1, 2) ke UI
 function mapPredictionToUI(label) {
-  if (label === "High" || label === 2)
-    return { score: 85, color: brandRed, status: 2 };
-  if (label === "Moderate" || label === 1)
-    return { score: 50, color: brandOrange, status: 1 };
+  if (label === "High" || label === 2) return { score: 85, color: brandRed, status: 2 };
+  if (label === "Moderate" || label === 1) return { score: 50, color: brandOrange, status: 1 };
   return { score: 20, color: brandGreen, status: 0 };
 }
 
@@ -159,11 +154,7 @@ function getMissingDateKeys(lastLogDate, todayDate) {
     lastLogDate.getMonth(),
     lastLogDate.getDate(),
   );
-  const endDate = new Date(
-    todayDate.getFullYear(),
-    todayDate.getMonth(),
-    todayDate.getDate(),
-  );
+  const endDate = new Date(todayDate.getFullYear(), todayDate.getMonth(), todayDate.getDate());
   const missing = [];
   startDate.setDate(startDate.getDate() + 1);
   while (startDate < endDate) {
@@ -215,18 +206,12 @@ const moderateStressAdvices = [
   "You're in the middle zone—prioritize the tasks that matter most today.",
 ];
 
-function resolveForecastStatus({
-  predictionLabel,
-  predictionBinary,
-  chancePercent,
-  threshold,
-}) {
+function resolveForecastStatus({ predictionLabel, predictionBinary, chancePercent, threshold }) {
   const normalized = String(predictionLabel || "").toLowerCase();
   if (normalized.includes("high")) return "High";
   if (normalized.includes("moderate")) return "Moderate";
   if (normalized.includes("low")) return "Low";
-  if (typeof predictionBinary === "number")
-    return predictionBinary === 1 ? "High" : "Low";
+  if (typeof predictionBinary === "number") return predictionBinary === 1 ? "High" : "Low";
   if (typeof chancePercent === "number" && typeof threshold === "number") {
     return chancePercent >= threshold * 100 ? "High" : "Low";
   }
@@ -282,36 +267,28 @@ function buildForecastList(baseForecast) {
     entry?.prediction_date;
 
   const resolveChancePercent = (entry, fallbackChance) => {
-    const rawChance =
-      entry?.chancePercent ?? entry?.probability ?? entry?.chance;
-    const chance = Number.isFinite(Number(rawChance))
-      ? Number(rawChance)
-      : fallbackChance;
+    const rawChance = entry?.chancePercent ?? entry?.probability ?? entry?.chance;
+    const chance = Number.isFinite(Number(rawChance)) ? Number(rawChance) : fallbackChance;
     return Math.round(chance * 10) / 10;
   };
 
   const threshold = Number(baseForecast?.threshold ?? 0.5);
-  const baseChance = Number(
-    baseForecast?.chancePercent ?? baseForecast?.probability ?? 0,
-  );
+  const baseChance = Number(baseForecast?.chancePercent ?? baseForecast?.probability ?? 0);
   const baseProbability = Math.max(0, Math.min(baseChance, 100)) / 100;
 
   if (Array.isArray(forecastArray)) {
     return forecastArray
       .slice(0, 3)
       .map((entry, idx) => {
-        const entryDate =
-          getForecastDate(entry) || getForecastDate(baseForecast);
+        const entryDate = getForecastDate(entry) || getForecastDate(baseForecast);
         const resolvedDate = entryDate ? new Date(entryDate) : null;
         if (!resolvedDate || Number.isNaN(resolvedDate.getTime())) {
           return null;
         }
         const chancePercent = resolveChancePercent(entry, baseChance);
         const status = resolveForecastStatus({
-          predictionLabel:
-            entry?.predictionLabel ?? baseForecast?.predictionLabel,
-          predictionBinary:
-            entry?.predictionBinary ?? baseForecast?.predictionBinary,
+          predictionLabel: entry?.predictionLabel ?? baseForecast?.predictionLabel,
+          predictionBinary: entry?.predictionBinary ?? baseForecast?.predictionBinary,
           chancePercent,
           threshold,
         });
@@ -321,8 +298,7 @@ function buildForecastList(baseForecast) {
             : status === "Moderate"
               ? moderateStressAdvices
               : lowStressAdvices;
-        const adviceText =
-          adviceOptions[Math.floor(Math.random() * adviceOptions.length)];
+        const adviceText = adviceOptions[Math.floor(Math.random() * adviceOptions.length)];
         const theme = getForecastTheme(status);
 
         return {
@@ -367,8 +343,7 @@ function buildForecastList(baseForecast) {
         : status === "Moderate"
           ? moderateStressAdvices
           : lowStressAdvices;
-    const adviceText =
-      adviceOptions[Math.floor(Math.random() * adviceOptions.length)];
+    const adviceText = adviceOptions[Math.floor(Math.random() * adviceOptions.length)];
     const iterDate = new Date(startDate);
     iterDate.setDate(startDate.getDate() + idx);
     const theme = getForecastTheme(status);
@@ -398,15 +373,9 @@ function normalizeEligibility(payload) {
   if (!eligibility) return null;
 
   const streak = Number(eligibility?.streak ?? eligibility?.streakCount ?? 0);
-  const requiredStreak = Number(
-    eligibility?.requiredStreak ?? eligibility?.required_streak ?? 7,
-  );
-  const restoreUsed = Number(
-    eligibility?.restoreUsed ?? eligibility?.restore_used ?? 0,
-  );
-  const restoreLimit = Number(
-    eligibility?.restoreLimit ?? eligibility?.restore_limit ?? 3,
-  );
+  const requiredStreak = Number(eligibility?.requiredStreak ?? eligibility?.required_streak ?? 7);
+  const restoreUsed = Number(eligibility?.restoreUsed ?? eligibility?.restore_used ?? 0);
+  const restoreLimit = Number(eligibility?.restoreLimit ?? eligibility?.restore_limit ?? 3);
 
   return {
     streak,
@@ -433,9 +402,7 @@ function isSameEligibility(left, right) {
 
 function resolveForecastMode(eligibility) {
   if (!eligibility) return "global";
-  return eligibility.streak >= PERSONALIZED_STREAK_THRESHOLD
-    ? "personalized"
-    : "global";
+  return eligibility.streak >= PERSONALIZED_STREAK_THRESHOLD ? "personalized" : "global";
 }
 
 function buildForecastEligibilityMessage({
@@ -448,9 +415,7 @@ function buildForecastEligibilityMessage({
 } = {}) {
   const safeStreak = Number.isFinite(Number(streakCount)) ? streakCount : "-";
   const safeUsed = Number.isFinite(Number(restoreUsed)) ? restoreUsed : "-";
-  const safeRemaining = Number.isFinite(Number(restoreRemaining))
-    ? restoreRemaining
-    : "-";
+  const safeRemaining = Number.isFinite(Number(restoreRemaining)) ? restoreRemaining : "-";
 
   return [
     "Forecast is not available because your data does not meet the minimum requirement yet.",
@@ -476,9 +441,7 @@ export default function Dashboard() {
   const [isFlipped, setIsFlipped] = useState(false);
 
   // Primary data state
-  const [stressData, setStressData] = useState(() =>
-    createEmptyTodayData(TODAY_KEY),
-  );
+  const [stressData, setStressData] = useState(() => createEmptyTodayData(TODAY_KEY));
   const [hasSubmittedToday, setHasSubmittedToday] = useState(false);
   const [stressScore, setStressScore] = useState(0);
   const [todayLogId, setTodayLogId] = useState(null);
@@ -553,11 +516,7 @@ export default function Dashboard() {
   const selectedDateKey = formatDate(selectedDate);
   const selectedDayData = stressData[selectedDateKey];
   const selectedDayHasData = selectedDayData && !selectedDayData.isEmpty;
-  const todayDate = new Date(
-    today.getFullYear(),
-    today.getMonth(),
-    today.getDate(),
-  );
+  const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
   const selectedCalendarDate = new Date(
     selectedDate.getFullYear(),
     selectedDate.getMonth(),
@@ -575,14 +534,12 @@ export default function Dashboard() {
   const restoreHint = (() => {
     if (eligibilityLoading) return "Loading restore eligibility...";
     if (eligibilityError) return "Failed to load restore eligibility.";
-    if (restoreRemaining <= 0)
-      return "Your restore limit for this month is used up.";
+    if (restoreRemaining <= 0) return "Your restore limit for this month is used up.";
     if (!isSelectedPast) return "Select a date before today to restore.";
     if (selectedDayHasData) return "This date already has data.";
     return "No data found for this date. You can restore it.";
   })();
-  const forecastModeLabel =
-    forecastMode === "personalized" ? "Personalized" : "Global";
+  const forecastModeLabel = forecastMode === "personalized" ? "Personalized" : "Global";
   const forecastModeDescription =
     forecastMode === "personalized"
       ? "Personalized forecast is trained from your own stress history (60+ logs)."
@@ -662,49 +619,36 @@ export default function Dashboard() {
       setTipsError("");
       try {
         const categories = await getTipCategories();
-        const normalizedCategories = Array.isArray(categories)
-          ? categories
-          : [];
+        const normalizedCategories = Array.isArray(categories) ? categories : [];
 
         const entries = await Promise.all(
           normalizedCategories.map(async (category, index) => {
             const categoryId = category?.tipCategoryId ?? category?.id;
             if (!categoryId) return null;
-            const categoryName =
-              category?.categoryName ?? category?.name ?? "Tips";
+            const categoryName = category?.categoryName ?? category?.name ?? "Tips";
 
             let tips = [];
             try {
               tips = await getTipsByCategory(categoryId);
             } catch (error) {
-              console.warn(
-                "Failed to load tips for category",
-                categoryId,
-                error,
-              );
+              console.warn("Failed to load tips for category", categoryId, error);
               tips = [];
             }
 
             const primaryTip = (Array.isArray(tips) ? tips : [])[0];
             if (!primaryTip) return null;
 
-            const detail =
-              primaryTip?.detail ??
-              primaryTip?.tipText ??
-              primaryTip?.text ??
-              "";
+            const detail = primaryTip?.detail ?? primaryTip?.tipText ?? primaryTip?.text ?? "";
             const words = detail.split(" ").filter(Boolean);
             const title =
               words.length > 0
                 ? `${words.slice(0, 6).join(" ")}${words.length > 6 ? "..." : ""}`
                 : categoryName;
-            const desc =
-              detail.length > 80 ? `${detail.slice(0, 77)}...` : detail;
+            const desc = detail.length > 80 ? `${detail.slice(0, 77)}...` : detail;
             const palette = tipThemePalette[index % tipThemePalette.length];
 
             return {
-              id:
-                primaryTip?.tipId ?? primaryTip?.id ?? `${categoryId}-${index}`,
+              id: primaryTip?.tipId ?? primaryTip?.id ?? `${categoryId}-${index}`,
               category: categoryName,
               emoji: palette?.emoji ?? "💡",
               title,
@@ -733,15 +677,13 @@ export default function Dashboard() {
   }, []);
 
   // --- LOGIKA GRADIEN BACKGROUND ---
-  let gradientBg =
-    "radial-gradient(circle at 50% 30%, rgba(156, 163, 175, 0.15), transparent 70%)";
+  let gradientBg = "radial-gradient(circle at 50% 30%, rgba(156, 163, 175, 0.15), transparent 70%)";
   if (hasSubmittedToday) {
     if (stressScore > 60)
       gradientBg = `radial-gradient(circle at 50% 30%, ${brandRed}30, transparent 70%)`;
     else if (stressScore > 30)
       gradientBg = `radial-gradient(circle at 50% 30%, ${brandOrange}30, transparent 70%)`;
-    else
-      gradientBg = `radial-gradient(circle at 50% 30%, ${brandGreen}30, transparent 70%)`;
+    else gradientBg = `radial-gradient(circle at 50% 30%, ${brandGreen}30, transparent 70%)`;
   }
 
   // --- MENGHITUNG TREND DOTS ---
@@ -809,11 +751,7 @@ export default function Dashboard() {
         date: parseDateKey(key),
       }))
       .filter(
-        (entry) =>
-          entry.date &&
-          entry.key !== dateKey &&
-          entry.value &&
-          !entry.value.isEmpty,
+        (entry) => entry.date && entry.key !== dateKey && entry.value && !entry.value.isEmpty,
       );
 
     if (entries.length === 0) return null;
@@ -841,9 +779,7 @@ export default function Dashboard() {
       acc[mood] = (acc[mood] || 0) + 1;
       return acc;
     }, {});
-    const mostFrequentMood = Object.entries(moodCounts).sort(
-      (a, b) => b[1] - a[1],
-    )[0]?.[0];
+    const mostFrequentMood = Object.entries(moodCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
 
     return {
       studyHours: average((value) => value.study),
@@ -862,9 +798,7 @@ export default function Dashboard() {
       const imputed = getImputedInputs(dateKey);
       if (!imputed) {
         resetFormToEmpty();
-        setRestoreImputeInfo(
-          "No previous data found. Please fill it manually first.",
-        );
+        setRestoreImputeInfo("No previous data found. Please fill it manually first.");
         return;
       }
       setStudyHours(formatImputedValue(imputed.studyHours));
@@ -915,9 +849,7 @@ export default function Dashboard() {
           return;
         }
         const detail = error?.payload?.detail || error?.message;
-        setEligibilityError(
-          `Failed to load eligibility.${detail ? ` ${detail}` : ""}`,
-        );
+        setEligibilityError(`Failed to load eligibility.${detail ? ` ${detail}` : ""}`);
       } finally {
         setEligibilityLoading(false);
       }
@@ -962,20 +894,12 @@ export default function Dashboard() {
         logList.forEach((log) => {
           const dt = log?.date ? new Date(log.date) : null;
           if (!dt || Number.isNaN(dt.getTime())) return;
-          const dateKey = formatDate(
-            new Date(dt.getFullYear(), dt.getMonth(), dt.getDate()),
-          );
+          const dateKey = formatDate(new Date(dt.getFullYear(), dt.getMonth(), dt.getDate()));
           if (!latestLogDate || dt > latestLogDate) {
-            latestLogDate = new Date(
-              dt.getFullYear(),
-              dt.getMonth(),
-              dt.getDate(),
-            );
+            latestLogDate = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
           }
           const prev = byDate.get(dateKey);
-          const prevTs = prev?.createdAt
-            ? new Date(prev.createdAt).getTime()
-            : 0;
+          const prevTs = prev?.createdAt ? new Date(prev.createdAt).getTime() : 0;
           const curTs = log?.createdAt ? new Date(log.createdAt).getTime() : 0;
           if (!prev || curTs >= prevTs) byDate.set(dateKey, log);
         });
@@ -1075,15 +999,11 @@ export default function Dashboard() {
         const requiredStreak = eligibilitySnapshot?.requiredStreak ?? 7;
         const restoreLimit = eligibilitySnapshot?.restoreLimit ?? 3;
         const restoreRemainingCalc = Math.max(
-          (eligibilitySnapshot?.restoreLimit ?? 3) -
-            (eligibilitySnapshot?.restoreUsed ?? 0),
+          (eligibilitySnapshot?.restoreLimit ?? 3) - (eligibilitySnapshot?.restoreUsed ?? 0),
           0,
         );
 
-        if (
-          !eligibilitySnapshot ||
-          eligibilitySnapshot.streak < requiredStreak
-        ) {
+        if (!eligibilitySnapshot || eligibilitySnapshot.streak < requiredStreak) {
           setForecastMode(resolveForecastMode(eligibilitySnapshot));
           setForecastList([]);
           setForecastError(
@@ -1103,9 +1023,7 @@ export default function Dashboard() {
 
         const eligibilityFromForecast = normalizeEligibility(data?.eligibility);
         if (eligibilityFromForecast) {
-          if (
-            !isSameEligibility(eligibilityFromForecast, eligibilitySnapshot)
-          ) {
+          if (!isSameEligibility(eligibilityFromForecast, eligibilitySnapshot)) {
             setEligibilityData(data.eligibility);
           }
           setForecastMode(resolveForecastMode(eligibilityFromForecast));
@@ -1113,11 +1031,8 @@ export default function Dashboard() {
           setForecastMode(resolveForecastMode(eligibilitySnapshot));
         }
 
-        const baseForecast =
-          data?.forecast ?? data?.data ?? data?.forecastData ?? data;
-        const resolvedMode = resolveForecastMode(
-          eligibilityFromForecast ?? eligibilitySnapshot,
-        );
+        const baseForecast = data?.forecast ?? data?.data ?? data?.forecastData ?? data;
+        const resolvedMode = resolveForecastMode(eligibilityFromForecast ?? eligibilitySnapshot);
         const list = buildForecastList(baseForecast).map((item) => ({
           ...item,
           forecastMode: resolvedMode,
@@ -1159,11 +1074,8 @@ export default function Dashboard() {
           setForecastError("Not enough history to generate a forecast.");
           return;
         }
-        const detail =
-          error?.payload?.detail || error?.payload?.message || error?.message;
-        setForecastError(
-          `Failed to load forecast.${detail ? ` ${detail}` : ""}`,
-        );
+        const detail = error?.payload?.detail || error?.payload?.message || error?.message;
+        setForecastError(`Failed to load forecast.${detail ? ` ${detail}` : ""}`);
       } finally {
         setForecastLoading(false);
       }
@@ -1173,11 +1085,7 @@ export default function Dashboard() {
     return () => controller.abort();
   }, [navigate, normalizedEligibility]);
 
-  function handleOpenForm({
-    mode = "today",
-    dateKey = TODAY_KEY,
-    restoreMode = "manual",
-  } = {}) {
+  function handleOpenForm({ mode = "today", dateKey = TODAY_KEY, restoreMode = "manual" } = {}) {
     if (mode === "restore") {
       setIsRestoreMode(true);
       setActiveLogDate(dateKey);
@@ -1211,9 +1119,7 @@ export default function Dashboard() {
     const [year, month, day] = missingDates[0].split("-").map(Number);
     const targetDate = new Date(year, month - 1, day);
     setSelectedDate(targetDate);
-    setCalendarDate(
-      new Date(targetDate.getFullYear(), targetDate.getMonth(), 1),
-    );
+    setCalendarDate(new Date(targetDate.getFullYear(), targetDate.getMonth(), 1));
     handleOpenForm({
       mode: "restore",
       dateKey: missingDates[0],
@@ -1234,9 +1140,7 @@ export default function Dashboard() {
   }
 
   const focusFirstEmptyField = (form) => {
-    const requiredFields = Array.from(
-      form.querySelectorAll("[data-required='true']"),
-    );
+    const requiredFields = Array.from(form.querySelectorAll("[data-required='true']"));
     const emptyField = requiredFields.find((field) => !field.value);
     if (emptyField) {
       emptyField.focus();
@@ -1283,15 +1187,11 @@ export default function Dashboard() {
       emoji: moodIndex,
     };
     try {
-      const logData = await (isRestore ? restoreStressLog : addStressLog)(
-        logPayload,
-      );
+      const logData = await (isRestore ? restoreStressLog : addStressLog)(logPayload);
       return logData?.stressLevelId ?? logData?.id ?? logData?._id ?? null;
     } catch (error) {
       if (error?.status === 409) {
-        alert(
-          "Data already exists for this date. Updates are not available yet.",
-        );
+        alert("Data already exists for this date. Updates are not available yet.");
         return null;
       }
       if (error?.status === 403 && isRestore) {
@@ -1464,11 +1364,7 @@ export default function Dashboard() {
       `}</style>
 
       {/* NAVBAR */}
-      <Navbar
-        activeLink="Dashboard"
-        onPredictClick={handleOpenForm}
-        user={user}
-      />
+      <Navbar activeLink="Dashboard" onPredictClick={handleOpenForm} user={user} />
 
       <main className="max-w-[1400px] mx-auto p-6 md:p-8 lg:p-10 pt-28">
         <div className="mb-8 animate-slide-down">
@@ -1532,8 +1428,7 @@ export default function Dashboard() {
                       Today's Stress Prediction
                     </h2>
                     <div className="text-2xl text-text-muted">
-                      <i className="ph ph-cloud-sun mr-2" />{" "}
-                      <i className="ph ph-smiley" />
+                      <i className="ph ph-cloud-sun mr-2" /> <i className="ph ph-smiley" />
                     </div>
                   </header>
                   <div className="flex-grow flex flex-col items-center justify-center text-center relative z-10">
@@ -1589,9 +1484,7 @@ export default function Dashboard() {
                             >
                               {ui.label}
                             </h2>
-                            <p className="text-lg font-semibold text-text-secondary">
-                              {ui.sub}
-                            </p>
+                            <p className="text-lg font-semibold text-text-secondary">{ui.sub}</p>
                           </div>
                         </div>
                       );
@@ -1614,18 +1507,13 @@ export default function Dashboard() {
 
                       const sizeClass = isToday ? "w-5 h-5" : "w-3 h-3";
                       return (
-                        <div
-                          key={i}
-                          className="flex flex-col items-center gap-2 flex-1"
-                        >
+                        <div key={i} className="flex flex-col items-center gap-2 flex-1">
                           <div
                             className={`rounded-full transition-all duration-500 shadow-sm ${sizeClass} border-2 border-white/60`}
                             style={{
                               backgroundColor: dotColor,
                               boxShadow:
-                                isToday && d.status !== null
-                                  ? `0 0 6px ${dotColor}`
-                                  : "none",
+                                isToday && d.status !== null ? `0 0 6px ${dotColor}` : "none",
                             }}
                           />
                           <span className="text-xs font-bold text-text-muted opacity-80">
@@ -1641,20 +1529,16 @@ export default function Dashboard() {
                     className="w-full py-3 rounded-xl font-bold text-white shadow-md pressable transition-colors duration-300 relative z-10 cursor-pointer"
                     onClick={handleOpenForm}
                     style={{
-                      backgroundColor: hasSubmittedToday
-                        ? brandOrange
-                        : brandBlue,
+                      backgroundColor: hasSubmittedToday ? brandOrange : brandBlue,
                     }}
                   >
                     {hasSubmittedToday ? (
                       <>
-                        <i className="ph ph-pencil-simple mr-2" /> Edit
-                        Prediction Data
+                        <i className="ph ph-pencil-simple mr-2" /> Edit Prediction Data
                       </>
                     ) : (
                       <>
-                        <i className="ph ph-note-pencil mr-2" /> Fill Stress
-                        Prediction Data
+                        <i className="ph ph-note-pencil mr-2" /> Fill Stress Prediction Data
                       </>
                     )}
                   </button>
@@ -1720,11 +1604,8 @@ export default function Dashboard() {
                     className="flex h-full flex-col gap-3 transition-all duration-500 custom-scroll"
                     style={{
                       opacity: successModal.visible ? 0 : 1,
-                      transform: successModal.visible
-                        ? "scale(0.95)"
-                        : "scale(1)",
-                      pointerEvents:
-                        successModal.visible || isSaving ? "none" : "auto",
+                      transform: successModal.visible ? "scale(0.95)" : "scale(1)",
+                      pointerEvents: successModal.visible || isSaving ? "none" : "auto",
                     }}
                   >
                     <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pr-2">
@@ -1736,9 +1617,7 @@ export default function Dashboard() {
                           <div className="mt-2 grid grid-cols-2 gap-2">
                             <button
                               type="button"
-                              onClick={() =>
-                                applyRestoreInputMode("manual", activeLogDate)
-                              }
+                              onClick={() => applyRestoreInputMode("manual", activeLogDate)}
                               className={`rounded-lg px-3 py-2 text-xs font-bold transition-all ${
                                 restoreInputMode === "manual"
                                   ? "bg-blue-600 text-white shadow-md"
@@ -1749,9 +1628,7 @@ export default function Dashboard() {
                             </button>
                             <button
                               type="button"
-                              onClick={() =>
-                                applyRestoreInputMode("auto", activeLogDate)
-                              }
+                              onClick={() => applyRestoreInputMode("auto", activeLogDate)}
                               className={`rounded-lg px-3 py-2 text-xs font-bold transition-all ${
                                 restoreInputMode === "auto"
                                   ? "bg-emerald-600 text-white shadow-md"
@@ -1777,10 +1654,7 @@ export default function Dashboard() {
                           <div className="flex items-center gap-3">
                             {/* Render when GPA is missing versus available */}
                             {gpa !== "" ? (
-                              <span
-                                className="text-2xl font-bold"
-                                style={{ color: brandOrange }}
-                              >
+                              <span className="text-2xl font-bold" style={{ color: brandOrange }}>
                                 {Number(gpa).toFixed(2)}
                               </span>
                             ) : (
@@ -1829,9 +1703,7 @@ export default function Dashboard() {
                               type="button"
                               className="w-9 h-9 rounded-xl flex items-center justify-center bg-green-100 text-green-600 hover:bg-green-200 transition-colors cursor-pointer"
                               onClick={() =>
-                                handleGpaSave(
-                                  document.getElementById("gpaInput").value,
-                                )
+                                handleGpaSave(document.getElementById("gpaInput").value)
                               }
                             >
                               <svg
@@ -1877,9 +1749,7 @@ export default function Dashboard() {
                         <div>
                           <label className="text-sm font-semibold text-text-primary mb-1 block">
                             Study Hours{" "}
-                            <span className="text-text-muted text-xs font-normal">
-                              (Hrs)
-                            </span>
+                            <span className="text-text-muted text-xs font-normal">(Hrs)</span>
                           </label>
                           <input
                             type="number"
@@ -1895,9 +1765,7 @@ export default function Dashboard() {
                         <div>
                           <label className="text-sm font-semibold text-text-primary mb-1 block">
                             Extracurricular{" "}
-                            <span className="text-text-muted text-xs font-normal">
-                              (Hrs)
-                            </span>
+                            <span className="text-text-muted text-xs font-normal">(Hrs)</span>
                           </label>
                           <input
                             type="number"
@@ -1913,9 +1781,7 @@ export default function Dashboard() {
                         <div>
                           <label className="text-sm font-semibold text-text-primary mb-1 block">
                             Sleep Hours{" "}
-                            <span className="text-text-muted text-xs font-normal">
-                              (Hrs)
-                            </span>
+                            <span className="text-text-muted text-xs font-normal">(Hrs)</span>
                           </label>
                           <input
                             type="number"
@@ -1932,9 +1798,7 @@ export default function Dashboard() {
                         <div>
                           <label className="text-sm font-semibold text-text-primary mb-1 block">
                             Social Hours{" "}
-                            <span className="text-text-muted text-xs font-normal">
-                              (Hrs)
-                            </span>
+                            <span className="text-text-muted text-xs font-normal">(Hrs)</span>
                           </label>
                           <input
                             type="number"
@@ -2013,8 +1877,7 @@ export default function Dashboard() {
                         </span>
                       ) : isRestoreMode ? (
                         <span className="flex items-center justify-center">
-                          <i className="ph ph-clock-counter-clockwise mr-2" />{" "}
-                          Restore Data
+                          <i className="ph ph-clock-counter-clockwise mr-2" /> Restore Data
                         </span>
                       ) : hasSubmittedToday ? (
                         <span className="flex items-center justify-center">
@@ -2064,8 +1927,7 @@ export default function Dashboard() {
                             strokeLinejoin="round"
                             d="M4.5 12.75l6 6 9-13.5"
                             style={{
-                              animation:
-                                "circle-draw 0.8s ease-out forwards 0.3s",
+                              animation: "circle-draw 0.8s ease-out forwards 0.3s",
                             }}
                           />
                         </svg>
@@ -2152,8 +2014,7 @@ export default function Dashboard() {
                   <h3 className="text-xl font-extrabold text-text-primary tracking-tight">
                     {monthNames[month]} {year}
                   </h3>
-                  {(month !== today.getMonth() ||
-                    year !== today.getFullYear()) && (
+                  {(month !== today.getMonth() || year !== today.getFullYear()) && (
                     <button
                       onClick={() => setCalendarDate(new Date())}
                       className="text-xs text-blue-600 font-bold mt-1 hover:underline cursor-pointer"
@@ -2282,15 +2143,9 @@ export default function Dashboard() {
                         dateKey: selectedDateKey,
                       })
                     }
-                    disabled={
-                      eligibilityLoading ||
-                      restoreRemaining <= 0 ||
-                      !canRestoreSelectedDay
-                    }
+                    disabled={eligibilityLoading || restoreRemaining <= 0 || !canRestoreSelectedDay}
                     className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm ${
-                      eligibilityLoading ||
-                      restoreRemaining <= 0 ||
-                      !canRestoreSelectedDay
+                      eligibilityLoading || restoreRemaining <= 0 || !canRestoreSelectedDay
                         ? "bg-surface-muted text-text-muted cursor-not-allowed dark:bg-surface dark:text-text-muted"
                         : "bg-orange-500 text-white hover:bg-orange-600"
                     }`}
@@ -2298,13 +2153,9 @@ export default function Dashboard() {
                     Restore {selectedDateKey}
                   </button>
                 </div>
-                <p className="text-xs text-text-muted mt-2 dark:text-text-muted">
-                  {restoreHint}
-                </p>
+                <p className="text-xs text-text-muted mt-2 dark:text-text-muted">{restoreHint}</p>
                 {eligibilityError && (
-                  <p className="text-xs text-red-500 mt-1">
-                    {eligibilityError}
-                  </p>
+                  <p className="text-xs text-red-500 mt-1">{eligibilityError}</p>
                 )}
               </div>
 
@@ -2347,13 +2198,11 @@ export default function Dashboard() {
                       {forecastError}
                     </div>
                   )}
-                  {!forecastLoading &&
-                    !forecastError &&
-                    forecastList.length === 0 && (
-                      <div className="col-span-3 text-center text-xs font-semibold text-text-muted bg-surface-elevated/60 glass-panel border border-border rounded-xl px-3 py-4 dark:bg-surface/70 dark:border-border dark:text-text-muted">
-                        Forecast is not available yet.
-                      </div>
-                    )}
+                  {!forecastLoading && !forecastError && forecastList.length === 0 && (
+                    <div className="col-span-3 text-center text-xs font-semibold text-text-muted bg-surface-elevated/60 glass-panel border border-border rounded-xl px-3 py-4 dark:bg-surface/70 dark:border-border dark:text-text-muted">
+                      Forecast is not available yet.
+                    </div>
+                  )}
                   {!forecastLoading &&
                     !forecastError &&
                     forecastList.length > 0 &&
@@ -2371,10 +2220,7 @@ export default function Dashboard() {
                         <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest mb-1 dark:text-text-muted">
                           {item.dateStr}
                         </span>
-                        <div
-                          className="text-2xl mb-1"
-                          style={{ color: item.color }}
-                        >
+                        <div className="text-2xl mb-1" style={{ color: item.color }}>
                           <i className={`ph ${item.icon}`}></i>
                         </div>
                         <div
@@ -2509,10 +2355,7 @@ export default function Dashboard() {
                       <div key={idx}>
                         <div className="flex justify-between text-xs font-bold text-text-secondary mb-1">
                           <span className="flex items-center gap-1">
-                            <i
-                              className={`ph ${s.i} text-${s.c.split("-")[1]}-500`}
-                            />{" "}
-                            {s.l}
+                            <i className={`ph ${s.i} text-${s.c.split("-")[1]}-500`} /> {s.l}
                           </span>
                           <span>{s.v} hrs</span>
                         </div>
@@ -2534,20 +2377,18 @@ export default function Dashboard() {
             {/* --- SLIDE-UP PANEL (OPTION 1 - WITH SVG ICON & SOLID GRADIENT FIX) --- */}
             {forecastDetail && (
               <div
-                // Use forecastDetail.panelTheme for the container color (without opacity class).
-                // Remove bg-opacity-95 for a solid panel and add shadow-2xl for contrast.
                 className={`
-                  absolute inset-x-0 bottom-0 z-30 rounded-t-[24px] shadow-2xl border-t border-border-subtle overflow-hidden dark:border-border
+                  absolute inset-x-0 bottom-0 z-30 rounded-t-[24px]
+                  shadow-2xl border-t border-border-subtle overflow-hidden dark:border-border
                   ${isClosingPanel ? "animate-slide-down-panel" : "animate-slide-up-panel"}
-                  ${forecastDetail.panelTheme}
+                  backdrop-blur-xl supports-[backdrop-filter]:backdrop-blur-xl
+                  bg-white/10 dark:bg-black/20
+                  ring-1 ring-white/10 dark:ring-white/10
                 `}
                 onClick={(e) => e.stopPropagation()}
               >
                 {/* Handle Bar for aesthetics */}
-                <div
-                  className="w-full flex justify-center pt-3 pb-1"
-                  onClick={handleCloseForecast}
-                >
+                <div className="w-full flex justify-center pt-3 pb-1" onClick={handleCloseForecast}>
                   <div className="w-12 h-1.5 bg-surface-muted/60 rounded-full cursor-pointer hover:bg-surface-muted/80 transition-colors dark:bg-surface-muted/70 dark:hover:bg-surface-muted/90" />
                 </div>
 
@@ -2606,8 +2447,8 @@ export default function Dashboard() {
                         className="mt-2 flex items-center gap-1 text-xs font-bold opacity-70"
                         style={{ color: forecastDetail.color }}
                       >
-                        <i className="ph ph-lightning"></i> Confidence:{" "}
-                        {forecastDetail.probability}%
+                        <i className="ph ph-lightning"></i> Confidence: {forecastDetail.probability}
+                        %
                       </div>
                       {(forecastDetail.forecastMode ||
                         forecastDetail.modelType ||
@@ -2704,9 +2545,7 @@ export default function Dashboard() {
               </div>
               <button
                 onClick={handleNewQuote}
-                disabled={
-                  isQuoteAnimating || quoteLoading || quotePool.length === 0
-                }
+                disabled={isQuoteAnimating || quoteLoading || quotePool.length === 0}
                 className="flex-shrink-0 group relative px-6 py-3 rounded-xl bg-surface-elevated glass-panel border border-border text-text-secondary font-bold shadow-sm hover:shadow-md hover:border-orange-300 hover:text-orange-600 dark:bg-surface dark:border-border dark:text-text-primary dark:hover:text-orange-300 transition-all active:scale-95 disabled:opacity-70 cursor-pointer"
               >
                 <span className="flex items-center gap-2">
@@ -2747,21 +2586,11 @@ export default function Dashboard() {
                   />
                   <div className="relative z-10 h-full flex flex-col justify-between">
                     <div className="flex justify-between items-start">
-                      <span className="text-4xl filter drop-shadow-sm">
-                        {item.emoji}
-                      </span>
+                      <span className="text-4xl filter drop-shadow-sm">{item.emoji}</span>
                     </div>
                     <div>
-                      <h3
-                        className={`text-2xl font-bold mb-1 ${item.theme.text}`}
-                      >
-                        {item.title}
-                      </h3>
-                      <p
-                        className={`text-sm font-medium ${item.theme.subtext}`}
-                      >
-                        {item.desc}
-                      </p>
+                      <h3 className={`text-2xl font-bold mb-1 ${item.theme.text}`}>{item.title}</h3>
+                      <p className={`text-sm font-medium ${item.theme.subtext}`}>{item.desc}</p>
                     </div>
                   </div>
                 </div>
@@ -2774,16 +2603,11 @@ export default function Dashboard() {
 
       {missingRestorePopup && (
         <div className="fixed inset-0 z-[1090] flex items-center justify-center p-4 bg-neutral-950/50 backdrop-blur-sm animate-fadeIn">
-          <div
-            className="absolute inset-0 cursor-pointer"
-            onClick={handleCloseMissingPopup}
-          />
+          <div className="absolute inset-0 cursor-pointer" onClick={handleCloseMissingPopup} />
           <div className="relative w-full max-w-md bg-surface-elevated glass-panel rounded-3xl shadow-2xl overflow-hidden animate-modal-slide">
             <div className="p-8">
               <div className="flex items-start justify-between gap-4 mb-2">
-                <h2 className="text-xl font-extrabold text-text-primary">
-                  You have missed dates
-                </h2>
+                <h2 className="text-xl font-extrabold text-text-primary">You have missed dates</h2>
                 <button
                   type="button"
                   onClick={handleCloseMissingPopup}
@@ -2797,20 +2621,13 @@ export default function Dashboard() {
                     stroke="currentColor"
                     className="w-5 h-5"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M6 18L18 6M6 6l12 12"
-                    />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
               </div>
               <p className="text-sm text-text-secondary mb-4">
-                You have{" "}
-                <span className="font-semibold">
-                  {missingRestorePopup.count}
-                </span>{" "}
-                missing dates. Use restore to fill these days:
+                You have <span className="font-semibold">{missingRestorePopup.count}</span> missing
+                dates. Use restore to fill these days:
               </p>
               <div className="flex flex-wrap gap-2 mb-6">
                 {missingRestorePopup.dates.map((dateKey) => (
@@ -2837,8 +2654,7 @@ export default function Dashboard() {
                 </button>
               </div>
               <p className="mt-3 text-xs text-text-muted">
-                Auto fill uses nearby averages. You can still edit the data
-                afterward.
+                Auto fill uses nearby averages. You can still edit the data afterward.
               </p>
             </div>
           </div>
@@ -2853,9 +2669,7 @@ export default function Dashboard() {
           />
           <div className="relative w-full max-w-md bg-surface-elevated glass-panel rounded-3xl shadow-2xl overflow-hidden animate-modal-slide">
             <div className="p-8">
-              <h2 className="text-xl font-extrabold text-text-primary mb-2">
-                Time to log today
-              </h2>
+              <h2 className="text-xl font-extrabold text-text-primary mb-2">Time to log today</h2>
               <p className="text-sm text-text-secondary mb-6">
                 You have not logged today yet. Log now to keep your streak safe.
               </p>
@@ -2881,10 +2695,7 @@ export default function Dashboard() {
       {/* MODAL TIPS */}
       {activeTip && (
         <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4 bg-neutral-950/50 backdrop-blur-sm animate-fadeIn">
-          <div
-            className="absolute inset-0 cursor-pointer"
-            onClick={() => setActiveTip(null)}
-          />
+          <div className="absolute inset-0 cursor-pointer" onClick={() => setActiveTip(null)} />
 
           <div className="relative w-full max-w-md bg-surface-elevated glass-panel rounded-3xl shadow-2xl overflow-hidden animate-modal-slide">
             <div
@@ -2898,9 +2709,7 @@ export default function Dashboard() {
                 {activeTip.category}
               </div>
 
-              <h2 className="text-2xl font-extrabold text-text-primary mb-3">
-                {activeTip.title}
-              </h2>
+              <h2 className="text-2xl font-extrabold text-text-primary mb-3">{activeTip.title}</h2>
 
               <div className="p-4 bg-surface-muted rounded-2xl border border-border-subtle text-text-secondary leading-relaxed text-sm">
                 {activeTip.fullDetail}
