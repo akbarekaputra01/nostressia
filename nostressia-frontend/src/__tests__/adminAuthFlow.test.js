@@ -1,15 +1,16 @@
 import MockAdapter from "axios-mock-adapter";
 
-import client from "../api/client";
+import client, { adminClient } from "../api/client";
 import { adminLogin } from "../services/authService";
 import { getAdminUsers } from "../services/adminService";
 import { persistAdminToken } from "../utils/auth";
 
 describe("admin auth flow", () => {
   it("stores the admin token and sends it with admin requests", async () => {
-    const mock = new MockAdapter(client);
+    const userMock = new MockAdapter(client);
+    const adminMock = new MockAdapter(adminClient);
 
-    mock.onPost("/auth/admin/login").reply(200, {
+    userMock.onPost("/auth/admin/login").reply(200, {
       success: true,
       data: {
         accessToken: "admin-token",
@@ -18,7 +19,7 @@ describe("admin auth flow", () => {
       },
     });
 
-    mock.onGet("/admin/users/").reply((config) => {
+    adminMock.onGet("/admin/users/").reply((config) => {
       const authHeader = config.headers?.Authorization || config.headers?.authorization;
       expect(authHeader).toBe("Bearer admin-token");
       return [
@@ -36,6 +37,7 @@ describe("admin auth flow", () => {
     const result = await getAdminUsers({ limit: 10 });
     expect(result.total).toBe(0);
 
-    mock.restore();
+    userMock.restore();
+    adminMock.restore();
   });
 });

@@ -1,6 +1,6 @@
 import MockAdapter from "axios-mock-adapter";
 
-import client from "../api/client";
+import { adminClient } from "../api/client";
 import {
   persistAdminProfile,
   persistAdminToken,
@@ -28,13 +28,13 @@ describe("api client auth handling", () => {
   });
 
   it("clears the admin session after a 401 response", async () => {
-    const mock = new MockAdapter(client);
+    const mock = new MockAdapter(adminClient);
     mock.onGet("/admin/users").reply(401, { message: "Unauthorized" });
 
     persistAdminToken("expired-token");
     persistAdminProfile({ id: 1, name: "Admin" });
 
-    await expect(client.get("/admin/users", { auth: "admin" })).rejects.toThrow();
+    await expect(adminClient.get("/admin/users", { auth: "admin" })).rejects.toThrow();
 
     expect(readAdminToken()).toBeNull();
     expect(readAdminProfile()).toBeNull();
