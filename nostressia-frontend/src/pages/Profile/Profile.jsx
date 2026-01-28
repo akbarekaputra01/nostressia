@@ -2,11 +2,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Link, useOutletContext } from "react-router-dom";
 import Navbar from "../../components/Navbar";
-import {
-  changePassword,
-  updateProfile,
-  verifyCurrentPassword,
-} from "../../services/authService";
+import { changePassword, updateProfile, verifyCurrentPassword } from "../../services/authService";
 import { deleteBookmark, getMyBookmarks } from "../../services/bookmarkService";
 import {
   User,
@@ -70,13 +66,7 @@ const FALLBACK_SAS_URL = import.meta.env.VITE_AZURE_BLOB_SAS_URL || "";
 const FALLBACK_CONTAINER = import.meta.env.VITE_AZURE_BLOB_CONTAINER || "";
 
 // --- COMPONENT: AVATAR SELECTION MODAL ---
-const AvatarSelectionModal = ({
-  onClose,
-  onSelect,
-  onUpload,
-  currentAvatar,
-  uploading,
-}) => {
+const AvatarSelectionModal = ({ onClose, onSelect, onUpload, currentAvatar, uploading }) => {
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-neutral-950/60 backdrop-blur-sm animate-fade-in">
       <div className="bg-surface-elevated glass-panel rounded-[24px] p-6 w-full max-w-lg shadow-2xl border border-white/50 relative">
@@ -86,9 +76,7 @@ const AvatarSelectionModal = ({
         >
           <X size={24} />
         </button>
-        <h3 className="text-xl font-bold text-text-primary mb-6 text-center">
-          Pick Your Avatar
-        </h3>
+        <h3 className="text-xl font-bold text-text-primary mb-6 text-center">Pick Your Avatar</h3>
         <div className="flex justify-center items-center gap-3 md:gap-4 flex-wrap bg-surface-muted border border-border rounded-2xl p-4">
           {AVATAR_OPTIONS.map((avatarImg, index) => {
             const isSelected = currentAvatar === avatarImg;
@@ -157,18 +145,14 @@ const FishGameModal = ({ onClose }) => {
 
     const playSound = (freq, type, duration = 0.1) => {
       try {
-        if (!audioCtx)
-          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         if (audioCtx.state === "suspended") audioCtx.resume();
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = type;
         osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
         gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(
-          0.01,
-          audioCtx.currentTime + duration,
-        );
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
         osc.connect(gain);
         gain.connect(audioCtx.destination);
         osc.start();
@@ -188,9 +172,7 @@ const FishGameModal = ({ onClose }) => {
     };
     const updateLives = (val) => {
       const el = document.getElementById("game-lives");
-      if (el)
-        el.innerText =
-          "❤️".repeat(Math.max(0, val)) + "🤍".repeat(Math.max(0, 3 - val));
+      if (el) el.innerText = "❤️".repeat(Math.max(0, val)) + "🤍".repeat(Math.max(0, 3 - val));
     };
     const updateStatus = (msg) => {
       const el = document.getElementById("game-status");
@@ -492,11 +474,7 @@ const FishGameModal = ({ onClose }) => {
       animationFrameId = requestAnimationFrame(loop);
     }
     const handleKey = (e) => {
-      if (
-        ["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(
-          e.code,
-        )
-      )
+      if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code))
         e.preventDefault();
       if (e.type === "keydown") {
         keys[e.key] = true;
@@ -556,10 +534,7 @@ const FishGameModal = ({ onClose }) => {
           height={400}
           className="w-full max-w-[500px] h-auto bg-brand-neutral border-2 border-brand-info rounded-xl shadow-[0_0_20px_rgba(0,164,255,0.3)] cursor-crosshair"
         ></canvas>
-        <div
-          id="game-status"
-          className="mt-4 text-brand-warning font-bold text-lg h-6"
-        ></div>
+        <div id="game-status" className="mt-4 text-brand-warning font-bold text-lg h-6"></div>
         <button
           id="game-restart"
           className="mt-4 px-6 py-2 bg-gradient-to-r from-brand-info to-brand-primary text-text-inverse font-bold rounded-full hover:scale-105 transition-transform hidden cursor-pointer"
@@ -584,10 +559,8 @@ export default function Profile() {
   const [isLoadingSave, setIsLoadingSave] = useState(false);
 
   const [isLoadingPassword, setIsLoadingPassword] = useState(false);
-  const [isVerifyingCurrentPassword, setIsVerifyingCurrentPassword] =
-    useState(false);
-  const [isCurrentPasswordVerified, setIsCurrentPasswordVerified] =
-    useState(false);
+  const [isVerifyingCurrentPassword, setIsVerifyingCurrentPassword] = useState(false);
+  const [isCurrentPasswordVerified, setIsCurrentPasswordVerified] = useState(false);
 
   // Visibility toggles
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
@@ -627,12 +600,10 @@ export default function Profile() {
     birthday: "",
     gender: "",
   });
-  const [shouldClearProfilePicture, setShouldClearProfilePicture] =
-    useState(false);
+  const [shouldClearProfilePicture, setShouldClearProfilePicture] = useState(false);
   const fallbackAvatar = DEFAULT_AVATAR;
   const [localAvatarPreview, setLocalAvatarPreview] = useState(null);
-  const displayAvatar =
-    resolveAvatarUrl(localAvatarPreview || formData.avatar) || fallbackAvatar;
+  const displayAvatar = resolveAvatarUrl(localAvatarPreview || formData.avatar) || fallbackAvatar;
 
   // --- Sync user info into the form ---
   useEffect(() => {
@@ -684,18 +655,12 @@ export default function Profile() {
     }
   }, [activeTab, fetchBookmarks]);
 
-  const {
-    preference: themePreference,
-    resolvedTheme,
-    setPreference,
-  } = useTheme();
+  const { preference: themePreference, resolvedTheme, setPreference } = useTheme();
 
   const handleUnsave = async (motivationId) => {
     try {
       await deleteBookmark(motivationId);
-      setBookmarks((prev) =>
-        prev.filter((b) => b.motivationId !== motivationId),
-      );
+      setBookmarks((prev) => prev.filter((b) => b.motivationId !== motivationId));
       showNotification("Bookmark removed", "info");
     } catch {
       showNotification("Failed to remove bookmark", "error");
@@ -704,12 +669,7 @@ export default function Profile() {
 
   const handleThemeSelect = (nextTheme) => {
     setPreference(nextTheme);
-    const label =
-      nextTheme === "system"
-        ? "system"
-        : nextTheme === "dark"
-          ? "dark"
-          : "light";
+    const label = nextTheme === "system" ? "system" : nextTheme === "dark" ? "dark" : "light";
     showNotification(`Theme set to ${label}`);
   };
 
@@ -763,8 +723,7 @@ export default function Profile() {
   // Dynamic stats and streak color logic
   const getStreakStyle = (streak) => {
     const s = streak || 0;
-    if (s >= 60)
-      return { iconColor: "text-brand-info", bgColor: "bg-brand-info/15" };
+    if (s >= 60) return { iconColor: "text-brand-info", bgColor: "bg-brand-info/15" };
     if (s >= 7)
       return {
         iconColor: "text-brand-warning",
@@ -782,16 +741,13 @@ export default function Profile() {
   const streakStyle = getStreakStyle(streakVal);
 
   const resolveStressLabel = (value) => {
-    if (value === "High" || value === "high" || Number(value) >= 2)
-      return "High";
-    if (value === "Moderate" || value === "moderate" || Number(value) === 1)
-      return "Moderate";
+    if (value === "High" || value === "high" || Number(value) >= 2) return "High";
+    if (value === "Moderate" || value === "moderate" || Number(value) === 1) return "Moderate";
     return "Low";
   };
 
   const resolveStressStyle = (label) => {
-    if (label === "High")
-      return { textColor: "text-brand-accent", bgColor: "bg-brand-accent/15" };
+    if (label === "High") return { textColor: "text-brand-accent", bgColor: "bg-brand-accent/15" };
     if (label === "Moderate")
       return {
         textColor: "text-brand-warning",
@@ -820,9 +776,7 @@ export default function Profile() {
 
         const counts = entries.reduce(
           (acc, log) => {
-            const label = resolveStressLabel(
-              log?.stressLevel ?? log?.stress_level,
-            );
+            const label = resolveStressLabel(log?.stressLevel ?? log?.stress_level);
             acc[label] += 1;
             return acc;
           },
@@ -833,9 +787,7 @@ export default function Profile() {
         const topLabel = priority.reduce((top, label) => {
           if (counts[label] > counts[top]) return label;
           if (counts[label] === counts[top]) {
-            return priority.indexOf(label) < priority.indexOf(top)
-              ? label
-              : top;
+            return priority.indexOf(label) < priority.indexOf(top) ? label : top;
           }
           return top;
         }, "Low");
@@ -887,9 +839,7 @@ export default function Profile() {
   };
 
   const focusFirstEmptyField = (form) => {
-    const requiredFields = Array.from(
-      form.querySelectorAll("[data-required='true']"),
-    );
+    const requiredFields = Array.from(form.querySelectorAll("[data-required='true']"));
     const emptyField = requiredFields.find((field) => !field.value);
     if (emptyField) {
       emptyField.focus();
@@ -924,10 +874,7 @@ export default function Profile() {
         }
       }
 
-      if (
-        formData.gender &&
-        !["male", "female", "other"].includes(formData.gender)
-      ) {
+      if (formData.gender && !["male", "female", "other"].includes(formData.gender)) {
         showNotification("Please select a valid gender option.", "error");
         return;
       }
@@ -1042,8 +989,7 @@ export default function Profile() {
   };
 
   const getNotificationPermissionStatus = () => {
-    if (typeof window === "undefined" || !("Notification" in window))
-      return null;
+    if (typeof window === "undefined" || !("Notification" in window)) return null;
     return Notification.permission;
   };
 
@@ -1085,21 +1031,12 @@ export default function Profile() {
           const disabledSettings = { ...notifSettings, dailyReminder: false };
           setNotifSettings(disabledSettings);
           saveNotificationSettings(disabledSettings);
-          showNotification(
-            result.message || "Failed to schedule reminders.",
-            "error",
-          );
+          showNotification(result.message || "Failed to schedule reminders.", "error");
           return;
         }
-        showNotification(
-          result.message || "Notification preferences saved!",
-          "success",
-        );
+        showNotification(result.message || "Notification preferences saved!", "success");
       } catch (error) {
-        showNotification(
-          error?.message || "Failed to schedule reminders.",
-          "error",
-        );
+        showNotification(error?.message || "Failed to schedule reminders.", "error");
       }
       return;
     }
@@ -1122,21 +1059,12 @@ export default function Profile() {
           setPermissionStatus("denied");
           setShowPermissionPrompt(true);
         }
-        showNotification(
-          result.message || "Failed to schedule reminders.",
-          "error",
-        );
+        showNotification(result.message || "Failed to schedule reminders.", "error");
         return;
       }
-      showNotification(
-        result.message || "Notification preferences saved!",
-        "success",
-      );
+      showNotification(result.message || "Notification preferences saved!", "success");
     } catch (error) {
-      showNotification(
-        error?.message || "Failed to schedule reminders.",
-        "error",
-      );
+      showNotification(error?.message || "Failed to schedule reminders.", "error");
     }
   };
 
@@ -1147,10 +1075,7 @@ export default function Profile() {
     setNotifSettings(disabledSettings);
     saveNotificationSettings(disabledSettings);
     await unsubscribeDailyReminder();
-    showNotification(
-      "Notification permission is required to enable reminders.",
-      "info",
-    );
+    showNotification("Notification permission is required to enable reminders.", "info");
   };
 
   const handlePasswordChangeInput = (e) => {
@@ -1182,10 +1107,7 @@ export default function Profile() {
       showNotification("Current password verified.", "success");
     } catch (error) {
       setIsCurrentPasswordVerified(false);
-      showNotification(
-        error?.message || "Unable to verify the current password.",
-        "error",
-      );
+      showNotification(error?.message || "Unable to verify the current password.", "error");
     } finally {
       setIsVerifyingCurrentPassword(false);
     }
@@ -1261,9 +1183,7 @@ export default function Profile() {
       }}
     >
       <Navbar user={contextUser} />
-      {showGameModal && (
-        <FishGameModal onClose={() => setShowGameModal(false)} />
-      )}
+      {showGameModal && <FishGameModal onClose={() => setShowGameModal(false)} />}
       {showAvatarModal && (
         <AvatarSelectionModal
           onClose={() => setShowAvatarModal(false)}
@@ -1288,8 +1208,7 @@ export default function Profile() {
               Nostressia needs permission to send daily reminders.
               {permissionStatus === "denied" && (
                 <span className="mt-2 block text-xs text-orange-500 dark:text-orange-300">
-                  Notifications are blocked. Enable them in your browser
-                  settings to continue.
+                  Notifications are blocked. Enable them in your browser settings to continue.
                 </span>
               )}
             </p>
@@ -1459,11 +1378,7 @@ export default function Profile() {
               </button>
             </div>
             <form
-              onSubmit={
-                passwordStep === 1
-                  ? handlePasswordStepNext
-                  : handleSubmitPasswordChange
-              }
+              onSubmit={passwordStep === 1 ? handlePasswordStepNext : handleSubmitPasswordChange}
               onKeyDown={handleFormKeyDown}
               className="space-y-4"
             >
@@ -1493,16 +1408,10 @@ export default function Profile() {
                       />
                       <button
                         type="button"
-                        onClick={() =>
-                          setShowCurrentPassword(!showCurrentPassword)
-                        }
+                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
                         className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary cursor-pointer"
                       >
-                        {showCurrentPassword ? (
-                          <EyeOff size={20} />
-                        ) : (
-                          <Eye size={20} />
-                        )}
+                        {showCurrentPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                       </button>
                     </div>
                   </div>
@@ -1522,9 +1431,7 @@ export default function Profile() {
                 </div>
               ) : (
                 <div className="space-y-4 animate-fade-in">
-                  <p className="text-sm text-text-muted">
-                    Create a new password for your account.
-                  </p>
+                  <p className="text-sm text-text-muted">Create a new password for your account.</p>
                   <div className="space-y-2">
                     <label
                       htmlFor="profile-new-password"
@@ -1600,8 +1507,7 @@ export default function Profile() {
                     >
                       {isLoadingPassword ? (
                         <>
-                          <Loader2 className="w-5 h-5 animate-spin" />{" "}
-                          Updating...
+                          <Loader2 className="w-5 h-5 animate-spin" /> Updating...
                         </>
                       ) : (
                         "Update Password"
@@ -1643,25 +1549,18 @@ export default function Profile() {
               <h1 className="text-3xl font-extrabold text-text-primary">
                 {formData.fullName || "Your Name"}
               </h1>
-              <p className="text-text-muted font-medium mb-1">
-                @{formData.username || "username"}
-              </p>
+              <p className="text-text-muted font-medium mb-1">@{formData.username || "username"}</p>
             </div>
           </div>
           <div className="grid grid-cols-3 gap-4 mt-8 pt-8 border-t border-border/60">
             {stats.map((stat, idx) => (
-              <div
-                key={idx}
-                className="flex flex-col items-center justify-center p-2"
-              >
+              <div key={idx} className="flex flex-col items-center justify-center p-2">
                 <div
                   className={`w-10 h-10 ${stat.bg} rounded-full flex items-center justify-center mb-2`}
                 >
                   {stat.icon}
                 </div>
-                <span className="text-lg font-bold text-text-primary">
-                  {stat.value}
-                </span>
+                <span className="text-lg font-bold text-text-primary">{stat.value}</span>
                 <span className="text-xs text-text-muted uppercase tracking-wide">
                   {stat.label}
                 </span>
@@ -1709,9 +1608,7 @@ export default function Profile() {
               <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
                 {/* USERNAME (Editable) */}
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-text-secondary ml-1">
-                    Username
-                  </label>
+                  <label className="text-sm font-bold text-text-secondary ml-1">Username</label>
                   <div className="flex gap-2">
                     <div className="relative flex-1">
                       <span className="absolute left-4 top-1/2 z-2 -translate-y-1/2 text-text-muted font-bold">
@@ -1737,9 +1634,7 @@ export default function Profile() {
 
                 {/* FULL NAME (Editable) */}
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-text-secondary ml-1">
-                    Full Name
-                  </label>
+                  <label className="text-sm font-bold text-text-secondary ml-1">Full Name</label>
                   <div className="flex gap-2">
                     <div className="relative flex-1">
                       <User className="absolute left-4 top-1/2 z-2 -translate-y-1/2 w-5 h-5 text-text-muted" />
@@ -1798,7 +1693,7 @@ export default function Profile() {
                     </label>
                     <div className="flex gap-2">
                       <div className="relative flex-1">
-                        <Cake className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
+                        <Cake className="absolute left-4 top-1/2 z-2 -translate-y-1/2 w-5 h-5 text-text-muted" />
                         <input
                           id="profile-birthday"
                           name="birthday"
@@ -1826,7 +1721,7 @@ export default function Profile() {
                     </label>
                     <div className="flex gap-2">
                       <div className="relative flex-1">
-                        <Smile className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
+                        <Smile className="absolute left-4 top-1/2 z-2 -translate-y-1/2 w-5 h-5 text-text-muted" />
                         <select
                           id="profile-gender"
                           name="gender"
@@ -1873,10 +1768,7 @@ export default function Profile() {
               ) : bookmarks.length === 0 ? (
                 <div className="text-center py-10 text-text-muted">
                   <p>No bookmarks yet.</p>
-                  <Link
-                    to="/motivation"
-                    className="text-orange-500 font-bold hover:underline"
-                  >
+                  <Link to="/motivation" className="text-orange-500 font-bold hover:underline">
                     Go to Motivation Page
                   </Link>
                 </div>
@@ -1933,9 +1825,7 @@ export default function Profile() {
                       <Bell className="w-5 h-5" />
                     </div>
                     <div className="text-left">
-                      <h4 className="font-bold text-text-primary">
-                        Notifications
-                      </h4>
+                      <h4 className="font-bold text-text-primary">Notifications</h4>
                     </div>
                   </div>
                   <ChevronRight className="w-5 h-5 text-text-muted" />
@@ -1953,8 +1843,8 @@ export default function Profile() {
                     <div className="text-left">
                       <h4 className="font-bold text-text-primary">Theme</h4>
                       <p className="text-xs text-text-muted">
-                        Current: {themeLabels[themePreference] || "System"} (
-                        {systemLabel} when system)
+                        Current: {themeLabels[themePreference] || "System"} ({systemLabel} when
+                        system)
                       </p>
                     </div>
                   </div>
@@ -2006,9 +1896,7 @@ export default function Profile() {
                       <Lock className="w-5 h-5" />
                     </div>
                     <div className="text-left">
-                      <h4 className="font-bold text-text-primary">
-                        Change Password
-                      </h4>
+                      <h4 className="font-bold text-text-primary">Change Password</h4>
                     </div>
                   </div>
                   <ChevronRight className="w-5 h-5 text-text-muted" />
