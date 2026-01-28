@@ -1,10 +1,9 @@
 // src/router/index.jsx
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
-import { readAuthToken } from "../utils/auth";
+import { readAdminToken, readAuthToken } from "../utils/auth";
 
-// 1. IMPORT LAYOUT (Pastikan path-nya sesuai dengan lokasi file MainLayout Anda)
-import MainLayout from "../layouts/MainLayout"; 
+import MainLayout from "../layouts/MainLayout";
 
 // Import User Pages
 import Dashboard from "../pages/Dashboard/Dashboard";
@@ -21,10 +20,9 @@ import NotFound from "../pages/NotFound/NotFound";
 import AdminPage from "../pages/Admin/AdminPage";
 import AdminLogin from "../pages/Admin/AdminLogin";
 
-// Kode AdminRoute (Biarkan tetap seperti ini)
-const AdminRoute = () => {
-  const isAuthenticated = localStorage.getItem("adminAuth") === "true";
-  return isAuthenticated ? <Outlet /> : <Navigate to="/admin/login" replace />;
+const AdminProtectedRoute = () => {
+  const token = readAdminToken();
+  return token ? <Outlet /> : <Navigate to="/admin/login" replace />;
 };
 
 const ProtectedRoute = () => {
@@ -32,17 +30,25 @@ const ProtectedRoute = () => {
   return token ? <Outlet /> : <Navigate to="/login" replace />;
 };
 
+const PublicRoute = ({ redirectTo = "/dashboard" }) => {
+  const token = readAuthToken();
+  return token ? <Navigate to={redirectTo} replace /> : <Outlet />;
+};
+
+const AdminPublicRoute = ({ redirectTo = "/admin" }) => {
+  const token = readAdminToken();
+  return token ? <Navigate to={redirectTo} replace /> : <Outlet />;
+};
+
 function AppRouter() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* --- 1. ROUTE PUBLIK (Tanpa Navbar User) --- */}
-        {/* Route redirect lama dihapus agar "/" tidak melempar ke login */}
         <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<Login />} /> 
+        <Route element={<PublicRoute />}>
+          <Route path="/login" element={<Login />} />
+        </Route>
 
-        {/* --- 2. ROUTE USER (DILINDUNGI MAINLAYOUT) --- */}
-        {/* Semua halaman di dalam sini akan punya Navbar & Data User otomatis */}
         <Route element={<ProtectedRoute />}>
           <Route element={<MainLayout />}>
               <Route path="/dashboard" element={<Dashboard />} />
@@ -54,11 +60,12 @@ function AppRouter() {
           </Route>
         </Route>
 
-        {/* --- 3. ROUTE ADMIN (Terpisah) --- */}
         <Route path="/adm1n" element={<AdminPage skipAuth={true} />} /> 
-        <Route path="/admin/login" element={<AdminLogin />} /> 
+        <Route element={<AdminPublicRoute />}>
+          <Route path="/admin/login" element={<AdminLogin />} /> 
+        </Route>
 
-        <Route element={<AdminRoute />}>
+        <Route element={<AdminProtectedRoute />}>
             <Route path="/admin" element={<AdminPage />} />
         </Route>
 

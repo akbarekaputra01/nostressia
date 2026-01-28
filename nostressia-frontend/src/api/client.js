@@ -1,6 +1,6 @@
 import axios from "axios";
 
-import { readAuthToken } from "../utils/auth";
+import { readAdminToken, readAuthToken } from "../utils/auth";
 
 const rawBaseUrl = import.meta.env.VITE_API_BASE_URL || "";
 const normalizedBaseUrl = rawBaseUrl.replace(/\/$/, "");
@@ -34,7 +34,7 @@ client.interceptors.request.use((config) => {
   }
 
   const token = config?.auth === "admin"
-    ? localStorage.getItem("adminToken")
+    ? readAdminToken()
     : readAuthToken();
 
   if (token) {

@@ -8,6 +8,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { getAdminDiaries, getAdminUsers, deleteAdminDiary, deleteAdminUser, updateAdminUser } from "../../services/adminService";
 import { createMotivation, deleteMotivation, getMotivations } from "../../services/motivationService";
 import { createTip, createTipCategory, deleteTip, deleteTipCategory, getTipCategories, getTipsByCategory, updateTip } from "../../services/tipsService";
+import { clearAdminSession, readAdminToken } from "../../utils/auth";
 
 export default function AdminPage({ skipAuth = false }) {
   const navigate = useNavigate();
@@ -53,13 +54,11 @@ export default function AdminPage({ skipAuth = false }) {
   }, [navigate, skipAuth]);
 
   const handleLogout = () => {
-    localStorage.removeItem("adminToken");
-    localStorage.removeItem("adminData");
-    localStorage.removeItem("adminAuth");
+    clearAdminSession();
     navigate("/admin/login");
   };
 
-  const token = localStorage.getItem("adminToken");
+  const token = readAdminToken();
 
   // ==============================
   // 1. MOTIVATION & DASHBOARD STATS

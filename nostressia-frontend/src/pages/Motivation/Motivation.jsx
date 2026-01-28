@@ -20,6 +20,7 @@ import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import Logo from "../../assets/images/Logo-Nostressia.png";
 import { getMotivations } from "../../services/motivationService";
+import { readAuthToken } from "../../utils/auth";
 
 // --- COLOR CONFIGURATION (MATCHING DASHBOARD) ---
 const BG_SUN = "rgb(var(--bg-gradient-sun))";
@@ -100,7 +101,7 @@ export default function Motivation() {
   // --- TAMBAHAN: FETCH DATA BOOKMARK DARI API SAAT LOAD ---
   useEffect(() => {
     const fetchBookmarks = async () => {
-      const token = localStorage.getItem("token");
+      const token = readAuthToken();
       if (!token) return;
       try {
         const data = await getMyBookmarks();
@@ -218,7 +219,7 @@ export default function Motivation() {
 
   // --- MODIFIKASI: FUNGSI TOGGLE LIKE TERHUBUNG API ---
   const toggleLike = async (id) => {
-    const token = localStorage.getItem("token");
+    const token = readAuthToken();
     if (!token) {
       showToast("Please login first! 🔒");
       return;

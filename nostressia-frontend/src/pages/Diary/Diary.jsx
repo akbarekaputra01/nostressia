@@ -6,6 +6,7 @@ import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer"; 
 
 import { createDiary, getMyDiaries, updateDiary } from "../../services/diaryService";
+import { clearAuthToken, readAuthToken } from "../../utils/auth";
 
 // --- COLOR CONFIGURATION ---
 const bgSun = "rgb(var(--bg-gradient-sun))";
@@ -57,7 +58,7 @@ export default function Diary() {
     const fetchDiaries = async () => {
       try {
         setIsLoading(true); 
-        const token = localStorage.getItem("token");
+        const token = readAuthToken();
         if (!token) {
           setIsLoading(false);
           return;
@@ -97,7 +98,7 @@ export default function Diary() {
 
     try {
       setIsSubmitting(true); 
-      const token = localStorage.getItem("token");
+      const token = readAuthToken();
       if (!token) {
         alert("You are not logged in.");
         setIsSubmitting(false);

@@ -37,6 +37,7 @@ import {
   Monitor,
 } from "lucide-react";
 import { DEFAULT_AVATAR, resolveAvatarUrl } from "../../utils/avatar";
+import { clearAuthToken, readAuthToken } from "../../utils/auth";
 import {
   requestProfilePictureSas,
   saveProfilePictureUrl,
@@ -646,7 +647,7 @@ export default function Profile() {
 
   const fetchBookmarks = useCallback(async () => {
     setLoadingBookmarks(true);
-    const token = localStorage.getItem("token");
+    const token = readAuthToken();
     if (!token) {
       setLoadingBookmarks(false);
       return;
@@ -898,7 +899,7 @@ export default function Profile() {
   const handleSaveProfile = async () => {
     setIsLoadingSave(true);
     try {
-      const token = localStorage.getItem("token");
+      const token = readAuthToken();
       if (!token) {
         showNotification("You are logged out", "error");
         return;
@@ -999,7 +1000,7 @@ export default function Profile() {
 
   const handleLogout = () => {
     if (window.confirm("Are you sure you want to log out?")) {
-      localStorage.removeItem("token");
+      clearAuthToken();
       localStorage.removeItem("cache_userData");
       window.location.href = "/";
     }
