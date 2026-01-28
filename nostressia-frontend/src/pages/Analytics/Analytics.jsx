@@ -2,7 +2,14 @@ import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { useOutletContext } from "react-router-dom";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
-import { Activity, BarChart3, BookOpen, Flame, Sparkles, TrendingUp } from "lucide-react";
+import {
+  Activity,
+  BarChart3,
+  BookOpen,
+  Flame,
+  Sparkles,
+  TrendingUp,
+} from "lucide-react";
 import {
   LineChart,
   Line,
@@ -38,7 +45,7 @@ const getStressLabel = (value) => {
   if (!value) return "-";
   const idx = Math.min(
     stressLabels.length - 1,
-    Math.max(0, Math.round(value) - 1)
+    Math.max(0, Math.round(value) - 1),
   );
   return stressLabels[idx];
 };
@@ -148,20 +155,19 @@ const calcMode = (values) => {
     counts.set(n, (counts.get(n) || 0) + 1);
   });
   if (!counts.size) return 0;
-  return [...counts.entries()]
-    .sort((a, b) => b[1] - a[1] || b[0] - a[0])[0][0];
+  return [...counts.entries()].sort((a, b) => b[1] - a[1] || b[0] - a[0])[0][0];
 };
 
 const calcSummary = (logsInRange) => {
   const stressVals = (logsInRange || []).map((d) =>
-    normalizeAnalyticsValue(d?.stressLevel, 3)
+    normalizeAnalyticsValue(d?.stressLevel, 3),
   );
   const moodVals = (logsInRange || []).map((d) =>
-    normalizeAnalyticsValue(d?.emoji, 5)
+    normalizeAnalyticsValue(d?.emoji, 5),
   );
 
   const nonZeroStress = stressVals.filter(
-    (value) => Number.isFinite(value) && value > 0
+    (value) => Number.isFinite(value) && value > 0,
   );
 
   const avgStress = nonZeroStress.length
@@ -215,7 +221,9 @@ const renderMoodTooltip =
 
     return (
       <div className="rounded-xl border border-border bg-surface-elevated/90 px-3 py-2 text-sm shadow-lg dark:border-border dark:bg-surface/90">
-        <div className="font-semibold text-text-secondary dark:text-text-primary">{label}</div>
+        <div className="font-semibold text-text-secondary dark:text-text-primary">
+          {label}
+        </div>
         <div className="mt-1 text-text-secondary dark:text-text-muted">
           {hasValue
             ? `Mood: ${moodTooltipValue(value)}`
@@ -236,7 +244,9 @@ const renderStressTooltip =
 
     return (
       <div className="rounded-xl border border-border bg-surface-elevated/90 px-3 py-2 text-sm shadow-lg dark:border-border dark:bg-surface/90">
-        <div className="font-semibold text-text-secondary dark:text-text-primary">{label}</div>
+        <div className="font-semibold text-text-secondary dark:text-text-primary">
+          {label}
+        </div>
         <div className="mt-1 text-text-secondary dark:text-text-muted">
           {hasValue
             ? `Stress: ${getStressLabel(value)}`
@@ -305,16 +315,16 @@ export default function Analytics() {
   const rangeLogs = useMemo(() => getLogsInRange(logs, mode), [logs, mode]);
   const stressChartData = useMemo(
     () => addGapSeries(data, "stress", "stressGap"),
-    [data]
+    [data],
   );
   const moodChartData = useMemo(
     () => addGapSeries(data, "mood", "moodGap"),
-    [data]
+    [data],
   );
 
   const { modeStress, modeMood, avgStress } = useMemo(
     () => calcSummary(rangeLogs),
-    [rangeLogs]
+    [rangeLogs],
   );
 
   const streakValue = user?.streak ?? summary?.streak ?? 0;
@@ -324,8 +334,8 @@ export default function Analytics() {
     <div
       className="min-h-screen relative flex flex-col"
       style={{
-    backgroundColor: bgSun,
-    backgroundImage: `radial-gradient(at 10% 10%, ${bgSun} 0%, transparent 50%), radial-gradient(at 90% 20%, ${bgOrange} 0%, transparent 50%), radial-gradient(at 50% 80%, ${bgSky} 0%, transparent 50%)`,
+        backgroundColor: bgSun,
+        backgroundImage: `radial-gradient(at 10% 10%, ${bgSun} 0%, transparent 50%), radial-gradient(at 90% 20%, ${bgOrange} 0%, transparent 50%), radial-gradient(at 50% 80%, ${bgSky} 0%, transparent 50%)`,
         backgroundSize: "200% 200%",
         animation: "gradient-bg 20s ease infinite",
       }}
@@ -360,9 +370,7 @@ export default function Analytics() {
             <div className="flex items-center gap-3 mb-3 justify-center">
               <BarChart3 className="w-8 h-8 md:w-10 md:h-10 text-brand-primary drop-shadow-lg" />
 
-              <h1
-                className="text-3xl md:text-5xl font-extrabold bg-gradient-to-r from-brand-primary to-brand-info bg-clip-text text-transparent drop-shadow-md"
-              >
+              <h1 className="text-3xl md:text-5xl font-extrabold bg-gradient-to-r from-brand-primary to-brand-info bg-clip-text text-transparent drop-shadow-md">
                 Analytics
               </h1>
             </div>
@@ -461,7 +469,10 @@ export default function Analytics() {
             >
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={stressChartData}>
-                  <CartesianGrid stroke="rgb(var(--neutral-200))" strokeDasharray="5 5" />
+                  <CartesianGrid
+                    stroke="rgb(var(--neutral-200))"
+                    strokeDasharray="5 5"
+                  />
                   <XAxis
                     dataKey={mode === "week" ? "day" : "week"}
                     tick={{ fontSize: 12 }}
@@ -469,7 +480,7 @@ export default function Analytics() {
                   <YAxis
                     tick={{ fontSize: 12 }}
                     width={70}
-                    domain={[0, 3]}
+                    domain={[0, 3.5]}
                     ticks={[1, 2, 3]}
                     allowDecimals={false}
                     tickFormatter={(value) => getStressLabel(value)}
@@ -535,7 +546,11 @@ export default function Analytics() {
                   data={moodChartData}
                   margin={{ top: 0, right: 8, left: 12, bottom: 4 }}
                 >
-                  <CartesianGrid stroke="rgb(var(--neutral-200))" strokeDasharray="5 5" vertical={false} />
+                  <CartesianGrid
+                    stroke="rgb(var(--neutral-200))"
+                    strokeDasharray="5 5"
+                    vertical={false}
+                  />
                   <XAxis
                     dataKey={mode === "week" ? "day" : "week"}
                     tick={{ fontSize: 12 }}
@@ -543,15 +558,18 @@ export default function Analytics() {
                   <YAxis
                     tick={{ fontSize: 16 }}
                     width={54}
-                    domain={[0.5, 5.5]}
+                    domain={[0, 5.5]}
                     ticks={[1, 2, 3, 4, 5]}
                     interval={0}
                     allowDecimals={false}
                     tickFormatter={(value) => moodTooltipValue(value)}
                     tickMargin={10}
-                    padding={{ top: 10, bottom: 8 }}
+                    padding={{ top: 0, bottom: 0 }}
                   />
-                  <Tooltip content={renderMoodTooltip(mode)} filterNull={false} />
+                  <Tooltip
+                    content={renderMoodTooltip(mode)}
+                    filterNull={false}
+                  />
                   <Line
                     type="linear"
                     dataKey="mood"
@@ -572,8 +590,12 @@ export default function Analytics() {
           <section className="mb-10">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-5">
               <div>
-                <h3 className="text-xl font-bold text-text-primary">Analytics Highlights</h3>
-                <p className="text-sm text-text-muted">Real-time metrics based on your latest logs.</p>
+                <h3 className="text-xl font-bold text-text-primary">
+                  Analytics Highlights
+                </h3>
+                <p className="text-sm text-text-muted">
+                  Real-time metrics based on your latest logs.
+                </p>
               </div>
               <div className="inline-flex items-center gap-2 text-xs font-semibold text-text-secondary bg-surface/70 border border-border/60 px-3 py-1.5 rounded-full">
                 <Sparkles className="w-4 h-4 text-brand-primary" />
@@ -586,21 +608,24 @@ export default function Analytics() {
                   title: "Stress Logs",
                   value: summary.stressLogsCount ?? 0,
                   icon: Activity,
-                  gradient: "from-brand-primary/15 via-brand-primary/5 to-transparent",
+                  gradient:
+                    "from-brand-primary/15 via-brand-primary/5 to-transparent",
                   accent: "text-brand-primary",
                 },
                 {
                   title: "Diary Entries",
                   value: summary.diaryCount ?? 0,
                   icon: BookOpen,
-                  gradient: "from-brand-info/15 via-brand-info/5 to-transparent",
+                  gradient:
+                    "from-brand-info/15 via-brand-info/5 to-transparent",
                   accent: "text-brand-info",
                 },
                 {
                   title: "Current Streak",
                   value: streakValue,
                   icon: Flame,
-                  gradient: "from-brand-accent/20 via-brand-accent/5 to-transparent",
+                  gradient:
+                    "from-brand-accent/20 via-brand-accent/5 to-transparent",
                   accent: "text-brand-accent",
                 },
               ].map((item, i) => {
@@ -615,9 +640,13 @@ export default function Analytics() {
                       boxShadow: "0 10px 28px rgba(0,0,0,0.08)",
                     }}
                   >
-                    <div className={`absolute inset-0 bg-gradient-to-br ${item.gradient}`} />
+                    <div
+                      className={`absolute inset-0 bg-gradient-to-br ${item.gradient}`}
+                    />
                     <div className="relative z-10 flex flex-col gap-3">
-                      <div className={`w-10 h-10 rounded-xl bg-surface-elevated/80 glass-panel flex items-center justify-center ${item.accent}`}>
+                      <div
+                        className={`w-10 h-10 rounded-xl bg-surface-elevated/80 glass-panel flex items-center justify-center ${item.accent}`}
+                      >
                         <Icon className="w-5 h-5" />
                       </div>
                       <div>
@@ -639,13 +668,21 @@ export default function Analytics() {
         {/* ==== INSIGHTS ==== */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
           {[
-            { title: "Most Common Stress", value: getStressLabel(modeStress), icon: TrendingUp },
+            {
+              title: "Most Common Stress",
+              value: getStressLabel(modeStress),
+              icon: TrendingUp,
+            },
             {
               title: "Most Common Mood",
               value: modeMood ? moodEmojis[modeMood - 1] : "-",
               icon: Sparkles,
             },
-            { title: "Average Stress Level", value: getStressLabel(avgStress), icon: BarChart3 },
+            {
+              title: "Average Stress Level",
+              value: getStressLabel(avgStress),
+              icon: BarChart3,
+            },
           ].map((item, i) => {
             const Icon = item.icon;
             return (

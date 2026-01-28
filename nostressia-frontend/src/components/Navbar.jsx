@@ -1,9 +1,9 @@
 // src/components/Navbar.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
-import LogoImage from "../assets/images/Logo-Nostressia.png"; 
+import LogoImage from "../assets/images/Logo-Nostressia.png";
 import { DEFAULT_AVATAR, resolveAvatarUrl } from "../utils/avatar";
-import { Flame } from "lucide-react"; 
+import { Flame } from "lucide-react";
 
 // --- Data Menu Navigasi ---
 const navLinks = [
@@ -20,7 +20,7 @@ const TODAY_LOG_STORAGE_KEY = "nostressia_today_log";
 const Navbar = ({ user }) => {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
+
   const navbarRef = useRef(null);
   const isActive = (path) => location.pathname === path;
 
@@ -42,26 +42,33 @@ const Navbar = ({ user }) => {
   // --- LOGIKA WARNA API BERDASARKAN STREAK ---
   const getFlameColor = (streakCount, hasLoggedToday) => {
     const count = streakCount || 0;
-    if (!hasLoggedToday || count <= 1) {
+
+    // kalau belum log hari ini, atau streak <= 0 -> muted
+    if (!hasLoggedToday || count <= 0) {
       return "text-text-muted fill-text-muted/40";
     }
+
+    // >=60 -> info
     if (count >= 60) {
-      return "text-brand-info fill-brand-info/25";
+      return "text-brand-info fill-brand-info/30";
     }
+
+    // >=7 -> warning
     if (count >= 7) {
       return "text-brand-warning fill-brand-warning/30";
     }
-    if (count >= 2) {
-      return "text-brand-primary fill-brand-primary/20";
+
+    // >=1 -> accent
+    if (count >= 1) {
+      return "text-brand-accent fill-brand-accent/30";
     }
+
     return "text-text-muted fill-text-muted/40";
   };
 
   const streakVal = user?.streak || 0;
   const todayKey =
-    typeof window !== "undefined"
-      ? new Date().toISOString().slice(0, 10)
-      : "";
+    typeof window !== "undefined" ? new Date().toISOString().slice(0, 10) : "";
   const hasLoggedToday =
     typeof window !== "undefined" &&
     localStorage.getItem(TODAY_LOG_STORAGE_KEY) === todayKey;
@@ -132,9 +139,8 @@ const Navbar = ({ user }) => {
 
         {/* KANAN: STREAK & PROFIL */}
         <div className="flex items-center gap-2 md:gap-4">
-          
           {/* [FINAL] STREAK PILL - API BERUBAH WARNA */}
-          <Link 
+          <Link
             to="/profile"
             className="
               flex items-center gap-2 
@@ -150,8 +156,10 @@ const Navbar = ({ user }) => {
             title={`Current Streak: ${streakVal} days`}
           >
             {/* Ikon Flame berubah warna sesuai logika di atas */}
-            <Flame className={`w-4 h-4 md:w-5 md:h-5 transition-colors duration-500 ${flameClass}`} />
-            
+            <Flame
+              className={`w-4 h-4 md:w-5 md:h-5 transition-colors duration-500 ${flameClass}`}
+            />
+
             {/* Angka tetap abu-abu netral */}
             <span>{streakVal}</span>
           </Link>
@@ -174,9 +182,35 @@ const Navbar = ({ user }) => {
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? (
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-7 h-7"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="w-7 h-7"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
             ) : (
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-7 h-7"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="w-7 h-7"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+                />
+              </svg>
             )}
           </button>
         </div>
@@ -227,7 +261,9 @@ const Navbar = ({ user }) => {
                 event.currentTarget.src = fallbackAvatar;
               }}
             />
-            <span className="text-text-secondary font-semibold dark:text-text-secondary">My Profile</span>
+            <span className="text-text-secondary font-semibold dark:text-text-secondary">
+              My Profile
+            </span>
           </Link>
         </div>
       </div>

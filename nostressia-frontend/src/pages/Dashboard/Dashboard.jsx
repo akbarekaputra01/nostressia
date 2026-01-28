@@ -1,6 +1,6 @@
 // src/pages/Dashboard/Dashboard.jsx
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate, useOutletContext } from "react-router-dom"; 
+import { useNavigate, useOutletContext } from "react-router-dom";
 import {
   addStressLog,
   getGlobalForecast,
@@ -10,7 +10,10 @@ import {
   restoreStressLog,
 } from "../../services/stressService";
 import { getMotivations } from "../../services/motivationService";
-import { getTipCategories, getTipsByCategory } from "../../services/tipsService";
+import {
+  getTipCategories,
+  getTipsByCategory,
+} from "../../services/tipsService";
 import Footer from "../../components/Footer";
 import Navbar from "../../components/Navbar";
 
@@ -28,8 +31,18 @@ const colorGray = "rgb(var(--neutral-300))";
 
 // TRANSLATED: Month Names
 const monthNames = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ];
 const moods = ["😢", "😕", "😐", "😊", "😄"];
 const PERSONALIZED_STREAK_THRESHOLD = 60;
@@ -114,8 +127,10 @@ function getStatusFromLevel(level) {
 
 // Helper mapping API Result (0, 1, 2) ke UI
 function mapPredictionToUI(label) {
-  if (label === "High" || label === 2) return { score: 85, color: brandRed, status: 2 };
-  if (label === "Moderate" || label === 1) return { score: 50, color: brandOrange, status: 1 };
+  if (label === "High" || label === 2)
+    return { score: 85, color: brandRed, status: 2 };
+  if (label === "Moderate" || label === 1)
+    return { score: 50, color: brandOrange, status: 1 };
   return { score: 20, color: brandGreen, status: 0 };
 }
 
@@ -141,12 +156,12 @@ function getMissingDateKeys(lastLogDate, todayDate) {
   const startDate = new Date(
     lastLogDate.getFullYear(),
     lastLogDate.getMonth(),
-    lastLogDate.getDate()
+    lastLogDate.getDate(),
   );
   const endDate = new Date(
     todayDate.getFullYear(),
     todayDate.getMonth(),
-    todayDate.getDate()
+    todayDate.getDate(),
   );
   const missing = [];
   startDate.setDate(startDate.getDate() + 1);
@@ -181,7 +196,7 @@ const highStressAdvices = [
   "Don't overwhelm yourself. Pick just 3 major tasks for today and focus only on them.",
   "High pressure detected. Take a 10-minute walk outside to reset your cortisol levels.",
   "It's okay to say no. Delegate tasks where possible and focus on your mental well-being.",
-  "Avoid excessive caffeine today; it might heighten anxiety. Opt for herbal tea or water."
+  "Avoid excessive caffeine today; it might heighten anxiety. Opt for herbal tea or water.",
 ];
 
 const lowStressAdvices = [
@@ -190,21 +205,27 @@ const lowStressAdvices = [
   "You are in a good flow. Consider helping a friend or socializing to boost your mood further.",
   "Mental clarity is high. Plan your schedule for the upcoming busy week.",
   "Take advantage of this calm. Push your physical limits with a slightly more intense workout.",
-  "Enjoy the balance. Treat yourself to a good book or a creative activity you love."
+  "Enjoy the balance. Treat yourself to a good book or a creative activity you love.",
 ];
 
 const moderateStressAdvices = [
   "Balance looks steady. Keep your routine consistent and avoid overcommitting.",
   "Stress is manageable. Schedule a short break to keep your energy stable.",
-  "You're in the middle zone—prioritize the tasks that matter most today."
+  "You're in the middle zone—prioritize the tasks that matter most today.",
 ];
 
-function resolveForecastStatus({ predictionLabel, predictionBinary, chancePercent, threshold }) {
+function resolveForecastStatus({
+  predictionLabel,
+  predictionBinary,
+  chancePercent,
+  threshold,
+}) {
   const normalized = String(predictionLabel || "").toLowerCase();
   if (normalized.includes("high")) return "High";
   if (normalized.includes("moderate")) return "Moderate";
   if (normalized.includes("low")) return "Low";
-  if (typeof predictionBinary === "number") return predictionBinary === 1 ? "High" : "Low";
+  if (typeof predictionBinary === "number")
+    return predictionBinary === 1 ? "High" : "Low";
   if (typeof chancePercent === "number" && typeof threshold === "number") {
     return chancePercent >= threshold * 100 ? "High" : "Low";
   }
@@ -219,7 +240,7 @@ function getForecastTheme(status) {
       panelTheme:
         "bg-gradient-to-b from-brand-accent/15 via-surface-elevated/90 to-surface-elevated/80 dark:from-brand-accent/20 dark:via-surface dark:to-surface",
       border: "border-brand-accent/30 dark:border-brand-accent/40",
-      icon: "ph-warning"
+      icon: "ph-warning",
     };
   }
   if (status === "Moderate") {
@@ -229,7 +250,7 @@ function getForecastTheme(status) {
       panelTheme:
         "bg-gradient-to-b from-brand-warning/20 via-surface-elevated/90 to-surface-elevated/80 dark:from-brand-warning/25 dark:via-surface dark:to-surface",
       border: "border-brand-warning/30 dark:border-brand-warning/40",
-      icon: "ph-activity"
+      icon: "ph-activity",
     };
   }
   return {
@@ -238,7 +259,7 @@ function getForecastTheme(status) {
     panelTheme:
       "bg-gradient-to-b from-brand-info/15 via-surface-elevated/90 to-surface-elevated/80 dark:from-brand-info/25 dark:via-surface dark:to-surface",
     border: "border-brand-info/30 dark:border-brand-info/40",
-    icon: "ph-plant"
+    icon: "ph-plant",
   };
 }
 
@@ -260,50 +281,68 @@ function buildForecastList(baseForecast) {
     entry?.prediction_date;
 
   const resolveChancePercent = (entry, fallbackChance) => {
-    const rawChance = entry?.chancePercent ?? entry?.probability ?? entry?.chance;
-    const chance = Number.isFinite(Number(rawChance)) ? Number(rawChance) : fallbackChance;
+    const rawChance =
+      entry?.chancePercent ?? entry?.probability ?? entry?.chance;
+    const chance = Number.isFinite(Number(rawChance))
+      ? Number(rawChance)
+      : fallbackChance;
     return Math.round(chance * 10) / 10;
   };
 
   const threshold = Number(baseForecast?.threshold ?? 0.5);
-  const baseChance = Number(baseForecast?.chancePercent ?? baseForecast?.probability ?? 0);
+  const baseChance = Number(
+    baseForecast?.chancePercent ?? baseForecast?.probability ?? 0,
+  );
   const baseProbability = Math.max(0, Math.min(baseChance, 100)) / 100;
 
   if (Array.isArray(forecastArray)) {
-    return forecastArray.slice(0, 3).map((entry, idx) => {
-      const entryDate = getForecastDate(entry) || getForecastDate(baseForecast);
-      const resolvedDate = entryDate ? new Date(entryDate) : null;
-      if (!resolvedDate || Number.isNaN(resolvedDate.getTime())) {
-        return null;
-      }
-      const chancePercent = resolveChancePercent(entry, baseChance);
-      const status = resolveForecastStatus({
-        predictionLabel: entry?.predictionLabel ?? baseForecast?.predictionLabel,
-        predictionBinary: entry?.predictionBinary ?? baseForecast?.predictionBinary,
-        chancePercent,
-        threshold
-      });
-      const adviceOptions =
-        status === "High"
-          ? highStressAdvices
-          : status === "Moderate"
-          ? moderateStressAdvices
-          : lowStressAdvices;
-      const adviceText =
-        adviceOptions[Math.floor(Math.random() * adviceOptions.length)];
-      const theme = getForecastTheme(status);
+    return forecastArray
+      .slice(0, 3)
+      .map((entry, idx) => {
+        const entryDate =
+          getForecastDate(entry) || getForecastDate(baseForecast);
+        const resolvedDate = entryDate ? new Date(entryDate) : null;
+        if (!resolvedDate || Number.isNaN(resolvedDate.getTime())) {
+          return null;
+        }
+        const chancePercent = resolveChancePercent(entry, baseChance);
+        const status = resolveForecastStatus({
+          predictionLabel:
+            entry?.predictionLabel ?? baseForecast?.predictionLabel,
+          predictionBinary:
+            entry?.predictionBinary ?? baseForecast?.predictionBinary,
+          chancePercent,
+          threshold,
+        });
+        const adviceOptions =
+          status === "High"
+            ? highStressAdvices
+            : status === "Moderate"
+              ? moderateStressAdvices
+              : lowStressAdvices;
+        const adviceText =
+          adviceOptions[Math.floor(Math.random() * adviceOptions.length)];
+        const theme = getForecastTheme(status);
 
-      return {
-        dateStr: resolvedDate.toLocaleDateString("en-US", { weekday: "short", day: "numeric" }),
-        fullDate: resolvedDate.toLocaleDateString("en-US", { weekday: "long", day: "numeric", month: "long" }),
-        status,
-        probability: chancePercent,
-        advice: adviceText,
-        modelType: entry?.modelType ?? baseForecast?.modelType,
-        threshold,
-        ...theme
-      };
-    }).filter(Boolean);
+        return {
+          dateStr: resolvedDate.toLocaleDateString("en-US", {
+            weekday: "short",
+            day: "numeric",
+          }),
+          fullDate: resolvedDate.toLocaleDateString("en-US", {
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+          }),
+          status,
+          probability: chancePercent,
+          advice: adviceText,
+          modelType: entry?.modelType ?? baseForecast?.modelType,
+          threshold,
+          ...theme,
+        };
+      })
+      .filter(Boolean);
   }
 
   const forecastDate = getForecastDate(baseForecast);
@@ -319,14 +358,14 @@ function buildForecastList(baseForecast) {
       predictionLabel: baseForecast?.predictionLabel,
       predictionBinary: baseForecast?.predictionBinary,
       chancePercent,
-      threshold
+      threshold,
     });
     const adviceOptions =
       status === "High"
         ? highStressAdvices
         : status === "Moderate"
-        ? moderateStressAdvices
-        : lowStressAdvices;
+          ? moderateStressAdvices
+          : lowStressAdvices;
     const adviceText =
       adviceOptions[Math.floor(Math.random() * adviceOptions.length)];
     const iterDate = new Date(startDate);
@@ -334,14 +373,21 @@ function buildForecastList(baseForecast) {
     const theme = getForecastTheme(status);
 
     return {
-      dateStr: iterDate.toLocaleDateString("en-US", { weekday: "short", day: "numeric" }),
-      fullDate: iterDate.toLocaleDateString("en-US", { weekday: "long", day: "numeric", month: "long" }),
+      dateStr: iterDate.toLocaleDateString("en-US", {
+        weekday: "short",
+        day: "numeric",
+      }),
+      fullDate: iterDate.toLocaleDateString("en-US", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+      }),
       status,
       probability: chancePercent,
       advice: adviceText,
       modelType: baseForecast?.modelType,
       threshold,
-      ...theme
+      ...theme,
     };
   });
 }
@@ -352,13 +398,13 @@ function normalizeEligibility(payload) {
 
   const streak = Number(eligibility?.streak ?? eligibility?.streakCount ?? 0);
   const requiredStreak = Number(
-    eligibility?.requiredStreak ?? eligibility?.required_streak ?? 7
+    eligibility?.requiredStreak ?? eligibility?.required_streak ?? 7,
   );
   const restoreUsed = Number(
-    eligibility?.restoreUsed ?? eligibility?.restore_used ?? 0
+    eligibility?.restoreUsed ?? eligibility?.restore_used ?? 0,
   );
   const restoreLimit = Number(
-    eligibility?.restoreLimit ?? eligibility?.restore_limit ?? 3
+    eligibility?.restoreLimit ?? eligibility?.restore_limit ?? 3,
   );
 
   return {
@@ -397,11 +443,13 @@ function buildForecastEligibilityMessage({
   restoreUsed,
   restoreRemaining,
   requiredStreak = 7,
-  restoreLimit = 3
+  restoreLimit = 3,
 } = {}) {
   const safeStreak = Number.isFinite(Number(streakCount)) ? streakCount : "-";
   const safeUsed = Number.isFinite(Number(restoreUsed)) ? restoreUsed : "-";
-  const safeRemaining = Number.isFinite(Number(restoreRemaining)) ? restoreRemaining : "-";
+  const safeRemaining = Number.isFinite(Number(restoreRemaining))
+    ? restoreRemaining
+    : "-";
 
   return [
     "Forecast is not available because your data does not meet the minimum requirement yet.",
@@ -410,7 +458,7 @@ function buildForecastEligibilityMessage({
     `• Requires ${requiredStreak} logs (not necessarily consecutive).`,
     `• Restore can be used (max ${restoreLimit}/month).`,
     "• Minimum 4 original logs within the 7-day window.",
-    `Restore used: ${safeUsed} • Remaining: ${safeRemaining}.`
+    `Restore used: ${safeUsed} • Remaining: ${safeRemaining}.`,
   ]
     .filter(Boolean)
     .join("\n");
@@ -425,9 +473,11 @@ export default function Dashboard() {
   const TODAY_KEY = formatDate(today);
 
   const [isFlipped, setIsFlipped] = useState(false);
-   
+
   // State Data Utama
-  const [stressData, setStressData] = useState(() => createEmptyTodayData(TODAY_KEY));
+  const [stressData, setStressData] = useState(() =>
+    createEmptyTodayData(TODAY_KEY),
+  );
   const [hasSubmittedToday, setHasSubmittedToday] = useState(false);
   const [stressScore, setStressScore] = useState(0);
   const [todayLogId, setTodayLogId] = useState(null);
@@ -436,16 +486,20 @@ export default function Dashboard() {
   const [isSaving, setIsSaving] = useState(false);
 
   // Success Modal & Detail
-  const [successModal, setSuccessModal] = useState({ visible: false, title: "", text: "" });
+  const [successModal, setSuccessModal] = useState({
+    visible: false,
+    title: "",
+    text: "",
+  });
   const [dayDetail, setDayDetail] = useState(null);
   const [activeTip, setActiveTip] = useState(null);
   const [tipCards, setTipCards] = useState([]);
   const [tipsLoading, setTipsLoading] = useState(true);
   const [tipsError, setTipsError] = useState("");
-  
+
   // Forecast State
-  const [forecastDetail, setForecastDetail] = useState(null); 
-  const [forecastList, setForecastList] = useState([]); 
+  const [forecastDetail, setForecastDetail] = useState(null);
+  const [forecastList, setForecastList] = useState([]);
   const [forecastLoading, setForecastLoading] = useState(false);
   const [forecastError, setForecastError] = useState("");
   const [forecastMode, setForecastMode] = useState("global");
@@ -482,7 +536,9 @@ export default function Dashboard() {
   const [isQuoteAnimating, setIsQuoteAnimating] = useState(false);
 
   // Calendar State
-  const [calendarDate, setCalendarDate] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
+  const [calendarDate, setCalendarDate] = useState(
+    new Date(today.getFullYear(), today.getMonth(), 1),
+  );
   const [selectedDate, setSelectedDate] = useState(today);
   const [activeLogDate, setActiveLogDate] = useState(TODAY_KEY);
   const [isRestoreMode, setIsRestoreMode] = useState(false);
@@ -496,16 +552,20 @@ export default function Dashboard() {
   const selectedDateKey = formatDate(selectedDate);
   const selectedDayData = stressData[selectedDateKey];
   const selectedDayHasData = selectedDayData && !selectedDayData.isEmpty;
-  const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const todayDate = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate(),
+  );
   const selectedCalendarDate = new Date(
     selectedDate.getFullYear(),
     selectedDate.getMonth(),
-    selectedDate.getDate()
+    selectedDate.getDate(),
   );
   const isSelectedPast = selectedCalendarDate < todayDate;
   const normalizedEligibility = useMemo(
     () => normalizeEligibility(eligibilityData),
-    [eligibilityData]
+    [eligibilityData],
   );
   const restoreUsed = normalizedEligibility?.restoreUsed ?? 0;
   const restoreLimit = normalizedEligibility?.restoreLimit ?? 3;
@@ -514,7 +574,8 @@ export default function Dashboard() {
   const restoreHint = (() => {
     if (eligibilityLoading) return "Loading restore eligibility...";
     if (eligibilityError) return "Failed to load restore eligibility.";
-    if (restoreRemaining <= 0) return "Your restore limit for this month is used up.";
+    if (restoreRemaining <= 0)
+      return "Your restore limit for this month is used up.";
     if (!isSelectedPast) return "Select a date before today to restore.";
     if (selectedDayHasData) return "This date already has data.";
     return "No data found for this date. You can restore it.";
@@ -566,10 +627,12 @@ export default function Dashboard() {
         const data = await getMotivations();
         if (!mounted) return;
 
-        const normalized = (Array.isArray(data) ? data : []).map((item) => ({
-          text: item?.quote ?? item?.text ?? "",
-          author: item?.authorName ?? item?.author ?? "Anonymous",
-        })).filter((item) => item.text);
+        const normalized = (Array.isArray(data) ? data : [])
+          .map((item) => ({
+            text: item?.quote ?? item?.text ?? "",
+            author: item?.authorName ?? item?.author ?? "Anonymous",
+          }))
+          .filter((item) => item.text);
 
         setQuotePool(normalized);
         if (normalized.length > 0) {
@@ -598,19 +661,26 @@ export default function Dashboard() {
       setTipsError("");
       try {
         const categories = await getTipCategories();
-        const normalizedCategories = Array.isArray(categories) ? categories : [];
+        const normalizedCategories = Array.isArray(categories)
+          ? categories
+          : [];
 
         const entries = await Promise.all(
           normalizedCategories.map(async (category, index) => {
             const categoryId = category?.tipCategoryId ?? category?.id;
             if (!categoryId) return null;
-            const categoryName = category?.categoryName ?? category?.name ?? "Tips";
+            const categoryName =
+              category?.categoryName ?? category?.name ?? "Tips";
 
             let tips = [];
             try {
               tips = await getTipsByCategory(categoryId);
             } catch (error) {
-              console.warn("Failed to load tips for category", categoryId, error);
+              console.warn(
+                "Failed to load tips for category",
+                categoryId,
+                error,
+              );
               tips = [];
             }
 
@@ -632,7 +702,8 @@ export default function Dashboard() {
             const palette = tipThemePalette[index % tipThemePalette.length];
 
             return {
-              id: primaryTip?.tipId ?? primaryTip?.id ?? `${categoryId}-${index}`,
+              id:
+                primaryTip?.tipId ?? primaryTip?.id ?? `${categoryId}-${index}`,
               category: categoryName,
               emoji: palette?.emoji ?? "💡",
               title,
@@ -640,7 +711,7 @@ export default function Dashboard() {
               fullDetail: detail || "Tips tersedia",
               theme: palette?.theme ?? tipThemePalette[0].theme,
             };
-          })
+          }),
         );
 
         if (!mounted) return;
@@ -661,11 +732,15 @@ export default function Dashboard() {
   }, []);
 
   // --- LOGIKA GRADIEN BACKGROUND ---
-  let gradientBg = 'radial-gradient(circle at 50% 30%, rgba(156, 163, 175, 0.15), transparent 70%)'; 
+  let gradientBg =
+    "radial-gradient(circle at 50% 30%, rgba(156, 163, 175, 0.15), transparent 70%)";
   if (hasSubmittedToday) {
-    if (stressScore > 60) gradientBg = `radial-gradient(circle at 50% 30%, ${brandRed}30, transparent 70%)`;
-    else if (stressScore > 30) gradientBg = `radial-gradient(circle at 50% 30%, ${brandOrange}30, transparent 70%)`;
-    else gradientBg = `radial-gradient(circle at 50% 30%, ${brandGreen}30, transparent 70%)`;
+    if (stressScore > 60)
+      gradientBg = `radial-gradient(circle at 50% 30%, ${brandRed}30, transparent 70%)`;
+    else if (stressScore > 30)
+      gradientBg = `radial-gradient(circle at 50% 30%, ${brandOrange}30, transparent 70%)`;
+    else
+      gradientBg = `radial-gradient(circle at 50% 30%, ${brandGreen}30, transparent 70%)`;
   }
 
   // --- MENGHITUNG TREND DOTS ---
@@ -675,22 +750,22 @@ export default function Dashboard() {
     const d = new Date(today);
     d.setDate(today.getDate() - i);
     const dateKey = formatDate(d);
-    
+
     const dataOnDate = stressData[dateKey];
-    let status = null; 
+    let status = null;
 
     if (dataOnDate && !dataOnDate.isEmpty) {
-        status = getStatusFromLevel(dataOnDate.level);
+      status = getStatusFromLevel(dataOnDate.level);
     }
-    
+
     if (i === 0 && hasSubmittedToday) {
-        status = getStatusFromLevel(stressScore);
+      status = getStatusFromLevel(stressScore);
     }
 
     trendDots.push({
-        day: daysShort[d.getDay()],
-        status: status, 
-        isToday: i === 0
+      day: daysShort[d.getDay()],
+      status: status,
+      isToday: i === 0,
     });
   }
 
@@ -708,7 +783,12 @@ export default function Dashboard() {
   }
 
   function resetFormToEmpty() {
-    setSleepHours(""); setStudyHours(""); setSocialHours(""); setExtraHours(""); setPhysicalHours(""); setMoodIndex(2);
+    setSleepHours("");
+    setStudyHours("");
+    setSocialHours("");
+    setExtraHours("");
+    setPhysicalHours("");
+    setMoodIndex(2);
   }
 
   function formatImputedValue(value, step = 0.5) {
@@ -732,7 +812,7 @@ export default function Dashboard() {
           entry.date &&
           entry.key !== dateKey &&
           entry.value &&
-          !entry.value.isEmpty
+          !entry.value.isEmpty,
       );
 
     if (entries.length === 0) return null;
@@ -760,7 +840,9 @@ export default function Dashboard() {
       acc[mood] = (acc[mood] || 0) + 1;
       return acc;
     }, {});
-    const mostFrequentMood = Object.entries(moodCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
+    const mostFrequentMood = Object.entries(moodCounts).sort(
+      (a, b) => b[1] - a[1],
+    )[0]?.[0];
 
     return {
       studyHours: average((value) => value.study),
@@ -779,7 +861,9 @@ export default function Dashboard() {
       const imputed = getImputedInputs(dateKey);
       if (!imputed) {
         resetFormToEmpty();
-        setRestoreImputeInfo("No previous data found. Please fill it manually first.");
+        setRestoreImputeInfo(
+          "No previous data found. Please fill it manually first.",
+        );
         return;
       }
       setStudyHours(formatImputedValue(imputed.studyHours));
@@ -790,7 +874,7 @@ export default function Dashboard() {
       const moodIdx = moods.indexOf(imputed.mood);
       setMoodIndex(moodIdx >= 0 ? moodIdx : 2);
       setRestoreImputeInfo(
-        "Values are auto-filled based on nearby averages. You can still edit them."
+        "Values are auto-filled based on nearby averages. You can still edit them.",
       );
       return;
     }
@@ -831,13 +915,13 @@ export default function Dashboard() {
         }
         const detail = error?.payload?.detail || error?.message;
         setEligibilityError(
-          `Failed to load eligibility.${detail ? ` ${detail}` : ""}`
+          `Failed to load eligibility.${detail ? ` ${detail}` : ""}`,
         );
       } finally {
         setEligibilityLoading(false);
       }
     },
-    [navigate]
+    [navigate],
   );
 
   useEffect(() => {
@@ -877,12 +961,20 @@ export default function Dashboard() {
         logList.forEach((log) => {
           const dt = log?.date ? new Date(log.date) : null;
           if (!dt || Number.isNaN(dt.getTime())) return;
-          const dateKey = formatDate(new Date(dt.getFullYear(), dt.getMonth(), dt.getDate()));
+          const dateKey = formatDate(
+            new Date(dt.getFullYear(), dt.getMonth(), dt.getDate()),
+          );
           if (!latestLogDate || dt > latestLogDate) {
-            latestLogDate = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
+            latestLogDate = new Date(
+              dt.getFullYear(),
+              dt.getMonth(),
+              dt.getDate(),
+            );
           }
           const prev = byDate.get(dateKey);
-          const prevTs = prev?.createdAt ? new Date(prev.createdAt).getTime() : 0;
+          const prevTs = prev?.createdAt
+            ? new Date(prev.createdAt).getTime()
+            : 0;
           const curTs = log?.createdAt ? new Date(log.createdAt).getTime() : 0;
           if (!prev || curTs >= prevTs) byDate.set(dateKey, log);
         });
@@ -984,10 +1076,13 @@ export default function Dashboard() {
         const restoreRemainingCalc = Math.max(
           (eligibilitySnapshot?.restoreLimit ?? 3) -
             (eligibilitySnapshot?.restoreUsed ?? 0),
-          0
+          0,
         );
 
-        if (!eligibilitySnapshot || eligibilitySnapshot.streak < requiredStreak) {
+        if (
+          !eligibilitySnapshot ||
+          eligibilitySnapshot.streak < requiredStreak
+        ) {
           setForecastMode(resolveForecastMode(eligibilitySnapshot));
           setForecastList([]);
           setForecastError(
@@ -998,7 +1093,7 @@ export default function Dashboard() {
               restoreRemaining: restoreRemainingCalc,
               requiredStreak,
               restoreLimit,
-            })
+            }),
           );
           return;
         }
@@ -1007,7 +1102,9 @@ export default function Dashboard() {
 
         const eligibilityFromForecast = normalizeEligibility(data?.eligibility);
         if (eligibilityFromForecast) {
-          if (!isSameEligibility(eligibilityFromForecast, eligibilitySnapshot)) {
+          if (
+            !isSameEligibility(eligibilityFromForecast, eligibilitySnapshot)
+          ) {
             setEligibilityData(data.eligibility);
           }
           setForecastMode(resolveForecastMode(eligibilityFromForecast));
@@ -1018,7 +1115,7 @@ export default function Dashboard() {
         const baseForecast =
           data?.forecast ?? data?.data ?? data?.forecastData ?? data;
         const resolvedMode = resolveForecastMode(
-          eligibilityFromForecast ?? eligibilitySnapshot
+          eligibilityFromForecast ?? eligibilitySnapshot,
         );
         const list = buildForecastList(baseForecast).map((item) => ({
           ...item,
@@ -1036,14 +1133,14 @@ export default function Dashboard() {
           return;
         }
         const normalizedErrorEligibility = normalizeEligibility(
-          error?.payload?.detail ?? error?.payload
+          error?.payload?.detail ?? error?.payload,
         );
         if (normalizedErrorEligibility) {
           setForecastMode(resolveForecastMode(normalizedErrorEligibility));
           const restoreRemainingCalc = Math.max(
             (normalizedErrorEligibility.restoreLimit ?? 3) -
               (normalizedErrorEligibility.restoreUsed ?? 0),
-            0
+            0,
           );
           setForecastError(
             buildForecastEligibilityMessage({
@@ -1053,7 +1150,7 @@ export default function Dashboard() {
               restoreRemaining: restoreRemainingCalc,
               requiredStreak: normalizedErrorEligibility.requiredStreak,
               restoreLimit: normalizedErrorEligibility.restoreLimit,
-            })
+            }),
           );
           return;
         }
@@ -1064,7 +1161,7 @@ export default function Dashboard() {
         const detail =
           error?.payload?.detail || error?.payload?.message || error?.message;
         setForecastError(
-          `Failed to load forecast.${detail ? ` ${detail}` : ""}`
+          `Failed to load forecast.${detail ? ` ${detail}` : ""}`,
         );
       } finally {
         setForecastLoading(false);
@@ -1075,7 +1172,11 @@ export default function Dashboard() {
     return () => controller.abort();
   }, [navigate, normalizedEligibility]);
 
-  function handleOpenForm({ mode = "today", dateKey = TODAY_KEY, restoreMode = "manual" } = {}) {
+  function handleOpenForm({
+    mode = "today",
+    dateKey = TODAY_KEY,
+    restoreMode = "manual",
+  } = {}) {
     if (mode === "restore") {
       setIsRestoreMode(true);
       setActiveLogDate(dateKey);
@@ -1109,8 +1210,14 @@ export default function Dashboard() {
     const [year, month, day] = missingDates[0].split("-").map(Number);
     const targetDate = new Date(year, month - 1, day);
     setSelectedDate(targetDate);
-    setCalendarDate(new Date(targetDate.getFullYear(), targetDate.getMonth(), 1));
-    handleOpenForm({ mode: "restore", dateKey: missingDates[0], restoreMode: mode });
+    setCalendarDate(
+      new Date(targetDate.getFullYear(), targetDate.getMonth(), 1),
+    );
+    handleOpenForm({
+      mode: "restore",
+      dateKey: missingDates[0],
+      restoreMode: mode,
+    });
     setMissingRestorePopup(null);
     setDismissedMissingPopup(true);
   }
@@ -1127,7 +1234,7 @@ export default function Dashboard() {
 
   const focusFirstEmptyField = (form) => {
     const requiredFields = Array.from(
-      form.querySelectorAll("[data-required='true']")
+      form.querySelectorAll("[data-required='true']"),
     );
     const emptyField = requiredFields.find((field) => !field.value);
     if (emptyField) {
@@ -1152,7 +1259,7 @@ export default function Dashboard() {
     if (Number.isNaN(num) || num < 0 || num > 4) {
       return alert("GPA must be between 0 and 4.");
     }
-    
+
     setGpa(num);
     localStorage.setItem("user_gpa", num); // Simpan ke browser
     setIsEditingGpa(false);
@@ -1175,11 +1282,15 @@ export default function Dashboard() {
       emoji: moodIndex,
     };
     try {
-      const logData = await (isRestore ? restoreStressLog : addStressLog)(logPayload);
+      const logData = await (isRestore ? restoreStressLog : addStressLog)(
+        logPayload,
+      );
       return logData?.stressLevelId ?? logData?.id ?? logData?._id ?? null;
     } catch (error) {
       if (error?.status === 409) {
-        alert("Data already exists for this date. Updates are not available yet.");
+        alert(
+          "Data already exists for this date. Updates are not available yet.",
+        );
         return null;
       }
       if (error?.status === 403 && isRestore) {
@@ -1195,7 +1306,7 @@ export default function Dashboard() {
     e.preventDefault();
 
     if (isSaving) return;
-    
+
     // VALIDASI: GPA WAJIB DIISI SEBELUM SUBMIT
     if (gpa === "" || gpa === null) {
       setIsEditingGpa(true); // Otomatis buka mode edit
@@ -1222,20 +1333,20 @@ export default function Dashboard() {
       const apiData = await predictCurrentStress(payload);
 
       const { score, color, status } = mapPredictionToUI(apiData.result);
-      
+
       const savedLogId = await saveStressLog(status, {
         dateKey: targetDateKey,
         isRestore: isRestoreMode,
       });
       if (!savedLogId) return;
       setSuccessModal({
-        visible: true, 
+        visible: true,
         title: isRestoreMode
           ? "Restore Complete!"
           : hasSubmittedToday
-          ? "Data Updated!"
-          : "Analysis Complete!",
-        text: apiData.message
+            ? "Data Updated!"
+            : "Analysis Complete!",
+        text: apiData.message,
       });
 
       if (isTargetToday) {
@@ -1249,9 +1360,13 @@ export default function Dashboard() {
       setStressData((prev) => ({
         ...prev,
         [targetDateKey]: {
-          level: score, label: apiData.result, 
-          sleep: Number(sleepHours), study: Number(studyHours),
-          extra: Number(extraHours), social: Number(socialHours), physical: Number(physicalHours),
+          level: score,
+          label: apiData.result,
+          sleep: Number(sleepHours),
+          study: Number(studyHours),
+          extra: Number(extraHours),
+          social: Number(socialHours),
+          physical: Number(physicalHours),
           mood: moods[moodIndex],
           color: color,
           isToday: isTargetToday,
@@ -1274,7 +1389,6 @@ export default function Dashboard() {
         refreshEligibility();
         window.dispatchEvent(new Event("nostressia:user-update"));
       }
-
     } catch (error) {
       console.error("❌ Failed to connect:", error);
       alert("Failed to reach the server.");
@@ -1349,14 +1463,20 @@ export default function Dashboard() {
       `}</style>
 
       {/* NAVBAR */}
-      <Navbar activeLink="Dashboard" onPredictClick={handleOpenForm} user={user} />
+      <Navbar
+        activeLink="Dashboard"
+        onPredictClick={handleOpenForm}
+        user={user}
+      />
 
       <main className="max-w-[1400px] mx-auto p-6 md:p-8 lg:p-10 pt-28">
         <div className="mb-8 animate-slide-down">
           <h1 className="text-3xl md:text-4xl font-extrabold text-text-primary flex items-center gap-2">
             Hello, <span style={{ color: brandBlue }}>{username}!</span> 👋
           </h1>
-          <p className="text-text-secondary mt-2 text-lg font-medium">Ready to navigate the day with more calm?</p>
+          <p className="text-text-secondary mt-2 text-lg font-medium">
+            Ready to navigate the day with more calm?
+          </p>
         </div>
         {!isLoadingLogs && loadError && (
           <div className="mb-6 flex items-center gap-2 rounded-xl bg-red-50 text-red-700 px-4 py-3 text-sm font-semibold">
@@ -1367,19 +1487,30 @@ export default function Dashboard() {
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {/* FLIP CARD SECTION */}
-          <section className="col-span-1 md:col-span-2 relative overflow-hidden" style={{ minHeight: 600 }}>
+          <section
+            className="col-span-1 md:col-span-2 relative overflow-hidden"
+            style={{ minHeight: 600 }}
+          >
             {isLoadingLogs && (
               <div className="absolute inset-0 z-20 flex items-center justify-center rounded-[20px] bg-surface-elevated/70 glass-panel backdrop-blur-sm">
                 <div className="h-14 w-14 rounded-full border-4 border-blue-200 border-t-blue-500 animate-spin" />
               </div>
             )}
-            <div style={{ perspective: 1500 }} className={`w-full h-full ${isLoadingLogs ? "opacity-0 pointer-events-none" : ""}`}>
-              <div className={`absolute inset-0 transition-transform duration-700 transform-style-preserve-3d ${isFlipped ? "rotate-y-180" : ""}`}>
-                
+            <div
+              style={{ perspective: 1500 }}
+              className={`w-full h-full ${isLoadingLogs ? "opacity-0 pointer-events-none" : ""}`}
+            >
+              <div
+                className={`absolute inset-0 transition-transform duration-700 transform-style-preserve-3d ${isFlipped ? "rotate-y-180" : ""}`}
+              >
                 {/* FRONT CARD (PREDICTION) */}
                 <div
                   className="absolute inset-0 rounded-[20px] p-6 md:p-8 backface-hidden flex flex-col border border-white/20 overflow-hidden shadow-[0_18px_45px_rgba(15,23,42,0.12)]"
-                  style={{ backgroundColor: "rgb(var(--glass-bg) / 0.7)", zIndex: isFlipped ? 0 : 10, pointerEvents: isFlipped ? "none" : "auto" }}
+                  style={{
+                    backgroundColor: "rgb(var(--glass-bg) / 0.7)",
+                    zIndex: isFlipped ? 0 : 10,
+                    pointerEvents: isFlipped ? "none" : "auto",
+                  }}
                 >
                   <div
                     className="absolute inset-0 rounded-[20px] transition-all duration-1000 ease-in-out"
@@ -1387,55 +1518,118 @@ export default function Dashboard() {
                   />
 
                   {hasSubmittedToday && (
-                    <div className="absolute -top-[4.5rem] -right-[4.5rem] text-[11rem] opacity-[0.08] pointer-events-none select-none grayscale filter" style={{ zIndex: 0 }}>
+                    <div
+                      className="absolute -top-[4.5rem] -right-[4.5rem] text-[11rem] opacity-[0.08] pointer-events-none select-none grayscale filter"
+                      style={{ zIndex: 0 }}
+                    >
                       {moods[moodIndex]}
                     </div>
                   )}
 
                   <header className="flex justify-between items-center mb-4 relative z-10">
-                    <h2 className="text-xl font-bold text-text-primary flex items-center gap-2">Today's Stress Prediction</h2>
-                    <div className="text-2xl text-text-muted"><i className="ph ph-cloud-sun mr-2" /> <i className="ph ph-smiley" /></div>
+                    <h2 className="text-xl font-bold text-text-primary flex items-center gap-2">
+                      Today's Stress Prediction
+                    </h2>
+                    <div className="text-2xl text-text-muted">
+                      <i className="ph ph-cloud-sun mr-2" />{" "}
+                      <i className="ph ph-smiley" />
+                    </div>
                   </header>
                   <div className="flex-grow flex flex-col items-center justify-center text-center relative z-10">
                     {(() => {
-                      let ui = { label: "NO DATA", sub: "Let's check your status", color: "rgb(var(--neutral-400))", icon: "ph-question", anim: "" };
+                      let ui = {
+                        label: "NO DATA",
+                        sub: "Let's check your status",
+                        color: "rgb(var(--neutral-400))",
+                        icon: "ph-question",
+                        anim: "",
+                      };
                       if (hasSubmittedToday) {
-                        if (stressScore > 60) ui = { label: "HIGH LEVEL", sub: "Please take a break!", color: brandRed, icon: "ph-warning-octagon", anim: "anim-heartbeat" };
-                        else if (stressScore > 30) ui = { label: "MODERATE", sub: "Keep it balanced.", color: brandOrange, icon: "ph-scales", anim: "anim-glow" };
-                        else ui = { label: "LOW STRESS", sub: "You are doing great!", color: brandGreen, icon: "ph-plant", anim: "anim-float" };
+                        if (stressScore > 60)
+                          ui = {
+                            label: "HIGH LEVEL",
+                            sub: "Please take a break!",
+                            color: brandRed,
+                            icon: "ph-warning-octagon",
+                            anim: "anim-heartbeat",
+                          };
+                        else if (stressScore > 30)
+                          ui = {
+                            label: "MODERATE",
+                            sub: "Keep it balanced.",
+                            color: brandOrange,
+                            icon: "ph-scales",
+                            anim: "anim-glow",
+                          };
+                        else
+                          ui = {
+                            label: "LOW STRESS",
+                            sub: "You are doing great!",
+                            color: brandGreen,
+                            icon: "ph-plant",
+                            anim: "anim-float",
+                          };
                       }
                       return (
                         <div className="flex flex-col items-center gap-4">
-                          <div className={`text-[8rem] leading-none ${ui.anim} drop-shadow-lg`} style={{ color: ui.color, transition: "color 0.5s" }}><i className={`ph ${ui.icon}`}></i></div>
-                          <div><h2 className="text-4xl font-black tracking-wider uppercase mb-1" style={{ color: ui.color }}>{ui.label}</h2><p className="text-lg font-semibold text-text-secondary">{ui.sub}</p></div>
+                          <div
+                            className={`text-[8rem] leading-none ${ui.anim} drop-shadow-lg`}
+                            style={{
+                              color: ui.color,
+                              transition: "color 0.5s",
+                            }}
+                          >
+                            <i className={`ph ${ui.icon}`}></i>
+                          </div>
+                          <div>
+                            <h2
+                              className="text-4xl font-black tracking-wider uppercase mb-1"
+                              style={{ color: ui.color }}
+                            >
+                              {ui.label}
+                            </h2>
+                            <p className="text-lg font-semibold text-text-secondary">
+                              {ui.sub}
+                            </p>
+                          </div>
                         </div>
                       );
                     })()}
                   </div>
 
                   <hr className="border-t border-white/30 my-6 relative z-10" />
-                  
+
                   {/* TREND DOTS */}
-                  <h4 className="text-base font-bold text-text-primary mb-3 relative z-10">Last 7 Days Trend</h4>
+                  <h4 className="text-base font-bold text-text-primary mb-3 relative z-10">
+                    Last 7 Days Trend
+                  </h4>
                   <div className="flex justify-between items-end w-full relative z-10 h-16 px-2">
                     {trendDots.map((d, i) => {
                       const isToday = d.isToday;
-                      let dotColor = colorGray; 
+                      let dotColor = colorGray;
                       if (d.status === 0) dotColor = brandGreen;
                       if (d.status === 1) dotColor = brandOrange;
                       if (d.status === 2) dotColor = brandRed;
-                      
+
                       const sizeClass = isToday ? "w-5 h-5" : "w-3 h-3";
                       return (
-                        <div key={i} className="flex flex-col items-center gap-2 flex-1">
-                           <div 
-                              className={`rounded-full transition-all duration-500 shadow-sm ${sizeClass} border-2 border-white/60`}
-                              style={{ 
-                                backgroundColor: dotColor,
-                                boxShadow: (isToday && d.status !== null) ? `0 0 6px ${dotColor}` : 'none' 
-                              }}
-                           />
-                           <span className="text-xs font-bold text-text-muted opacity-80">{d.day}</span>
+                        <div
+                          key={i}
+                          className="flex flex-col items-center gap-2 flex-1"
+                        >
+                          <div
+                            className={`rounded-full transition-all duration-500 shadow-sm ${sizeClass} border-2 border-white/60`}
+                            style={{
+                              backgroundColor: dotColor,
+                              boxShadow:
+                                isToday && d.status !== null
+                                  ? `0 0 6px ${dotColor}`
+                                  : "none",
+                            }}
+                          />
+                          <span className="text-xs font-bold text-text-muted opacity-80">
+                            {d.day}
+                          </span>
                         </div>
                       );
                     })}
@@ -1445,25 +1639,46 @@ export default function Dashboard() {
                   <button
                     className="w-full py-3 rounded-xl font-bold text-white shadow-md pressable transition-colors duration-300 relative z-10 cursor-pointer"
                     onClick={handleOpenForm}
-                    style={{ backgroundColor: hasSubmittedToday ? brandOrange : brandBlue }}
+                    style={{
+                      backgroundColor: hasSubmittedToday
+                        ? brandOrange
+                        : brandBlue,
+                    }}
                   >
-                    {hasSubmittedToday ? <><i className="ph ph-pencil-simple mr-2" /> Edit Prediction Data</> : <><i className="ph ph-note-pencil mr-2" /> Fill Stress Prediction Data</>}
+                    {hasSubmittedToday ? (
+                      <>
+                        <i className="ph ph-pencil-simple mr-2" /> Edit
+                        Prediction Data
+                      </>
+                    ) : (
+                      <>
+                        <i className="ph ph-note-pencil mr-2" /> Fill Stress
+                        Prediction Data
+                      </>
+                    )}
                   </button>
                 </div>
 
                 {/* BACK CARD (FORM) */}
                 <div
                   className="absolute inset-0 rounded-[20px] p-6 md:p-8 rotate-y-180 backface-hidden flex flex-col border border-white/20 overflow-hidden shadow-[0_18px_45px_rgba(15,23,42,0.12)]"
-                  style={{ backgroundColor: "rgb(var(--glass-bg) / 0.7)", zIndex: isFlipped ? 10 : 0, pointerEvents: isFlipped ? "auto" : "none" }}
+                  style={{
+                    backgroundColor: "rgb(var(--glass-bg) / 0.7)",
+                    zIndex: isFlipped ? 10 : 0,
+                    pointerEvents: isFlipped ? "auto" : "none",
+                  }}
                 >
-                  <header className="flex justify-between items-center mb-4 transition-opacity duration-300" style={{ opacity: successModal.visible ? 0 : 1 }}>
+                  <header
+                    className="flex justify-between items-center mb-4 transition-opacity duration-300"
+                    style={{ opacity: successModal.visible ? 0 : 1 }}
+                  >
                     <div>
                       <h3 className="text-xl font-bold text-text-primary">
                         {isRestoreMode
                           ? "Restore Data"
                           : hasSubmittedToday
-                          ? "Edit Today's Data"
-                          : "Log Today's Data"}
+                            ? "Edit Today's Data"
+                            : "Log Today's Data"}
                       </h3>
                       {isRestoreMode && (
                         <p className="text-xs font-semibold text-text-muted mt-1">
@@ -1482,7 +1697,20 @@ export default function Dashboard() {
                         setRestoreImputeInfo("");
                       }}
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={2.5}
+                        stroke="currentColor"
+                        className="w-6 h-6"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
                     </button>
                   </header>
                   <form
@@ -1491,8 +1719,11 @@ export default function Dashboard() {
                     className="flex h-full flex-col gap-3 transition-all duration-500 custom-scroll"
                     style={{
                       opacity: successModal.visible ? 0 : 1,
-                      transform: successModal.visible ? "scale(0.95)" : "scale(1)",
-                      pointerEvents: successModal.visible || isSaving ? "none" : "auto",
+                      transform: successModal.visible
+                        ? "scale(0.95)"
+                        : "scale(1)",
+                      pointerEvents:
+                        successModal.visible || isSaving ? "none" : "auto",
                     }}
                   >
                     <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pr-2">
@@ -1504,7 +1735,9 @@ export default function Dashboard() {
                           <div className="mt-2 grid grid-cols-2 gap-2">
                             <button
                               type="button"
-                              onClick={() => applyRestoreInputMode("manual", activeLogDate)}
+                              onClick={() =>
+                                applyRestoreInputMode("manual", activeLogDate)
+                              }
                               className={`rounded-lg px-3 py-2 text-xs font-bold transition-all ${
                                 restoreInputMode === "manual"
                                   ? "bg-blue-600 text-white shadow-md"
@@ -1515,7 +1748,9 @@ export default function Dashboard() {
                             </button>
                             <button
                               type="button"
-                              onClick={() => applyRestoreInputMode("auto", activeLogDate)}
+                              onClick={() =>
+                                applyRestoreInputMode("auto", activeLogDate)
+                              }
                               className={`rounded-lg px-3 py-2 text-xs font-bold transition-all ${
                                 restoreInputMode === "auto"
                                   ? "bg-emerald-600 text-white shadow-md"
@@ -1534,57 +1769,222 @@ export default function Dashboard() {
                       )}
                       {/* GPA SECTION (UPDATED LOGIC) */}
                       <div>
-                        <label className="block text-sm font-semibold text-text-primary mb-2">GPA <span className="text-red-500">*</span></label>
+                        <label className="block text-sm font-semibold text-text-primary mb-2">
+                          GPA <span className="text-red-500">*</span>
+                        </label>
                         {!isEditingGpa ? (
                           <div className="flex items-center gap-3">
                             {/* Tampilan jika GPA kosong vs ada isinya */}
                             {gpa !== "" ? (
-                              <span className="text-2xl font-bold" style={{ color: brandOrange }}>{Number(gpa).toFixed(2)}</span>
+                              <span
+                                className="text-2xl font-bold"
+                                style={{ color: brandOrange }}
+                              >
+                                {Number(gpa).toFixed(2)}
+                              </span>
                             ) : (
-                              <span className="text-lg font-bold text-text-muted italic border-b-2 border-dashed border-border">Set GPA</span>
+                              <span className="text-lg font-bold text-text-muted italic border-b-2 border-dashed border-border">
+                                Set GPA
+                              </span>
                             )}
-                            
-                            <button type="button" className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors cursor-pointer ${gpa === "" ? "bg-red-100 text-red-600 animate-pulse" : "bg-blue-100 text-blue-600 hover:bg-blue-200"}`} onClick={() => setIsEditingGpa(true)}>
-                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125"/></svg>
+
+                            <button
+                              type="button"
+                              className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors cursor-pointer ${gpa === "" ? "bg-red-100 text-red-600 animate-pulse" : "bg-blue-100 text-blue-600 hover:bg-blue-200"}`}
+                              onClick={() => setIsEditingGpa(true)}
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth="2"
+                                stroke="currentColor"
+                                className="w-5 h-5"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125"
+                                />
+                              </svg>
                             </button>
                           </div>
                         ) : (
                           <div className="flex items-center gap-3">
-                            <input 
-                              type="number" 
-                              defaultValue={gpa === "" ? "" : gpa} 
+                            <input
+                              type="number"
+                              defaultValue={gpa === "" ? "" : gpa}
                               placeholder="0.00"
-                              step="0.01" min="0" max="4" 
-                              className="w-24 p-2 border border-border rounded-lg text-center font-bold focus:outline-none focus:ring-2 focus:ring-blue-500" 
-                              id="gpaInput" 
-                              style={{ color: "rgb(var(--text-primary))" }} 
+                              step="0.01"
+                              min="0"
+                              max="4"
+                              className="w-24 p-2 border border-border rounded-lg text-center font-bold focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              id="gpaInput"
+                              style={{ color: "rgb(var(--text-primary))" }}
                               autoFocus
                               data-required="true"
                             />
-                            <button type="button" className="w-9 h-9 rounded-xl flex items-center justify-center bg-green-100 text-green-600 hover:bg-green-200 transition-colors cursor-pointer" onClick={() => handleGpaSave(document.getElementById("gpaInput").value)}>
-                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+                            <button
+                              type="button"
+                              className="w-9 h-9 rounded-xl flex items-center justify-center bg-green-100 text-green-600 hover:bg-green-200 transition-colors cursor-pointer"
+                              onClick={() =>
+                                handleGpaSave(
+                                  document.getElementById("gpaInput").value,
+                                )
+                              }
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth="2.5"
+                                stroke="currentColor"
+                                className="w-5 h-5"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M4.5 12.75l6 6 9-13.5"
+                                />
+                              </svg>
                             </button>
-                            <button type="button" className="w-9 h-9 rounded-xl flex items-center justify-center bg-red-100 text-red-600 hover:bg-red-200 transition-colors cursor-pointer" onClick={() => setIsEditingGpa(false)}>
-                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                            <button
+                              type="button"
+                              className="w-9 h-9 rounded-xl flex items-center justify-center bg-red-100 text-red-600 hover:bg-red-200 transition-colors cursor-pointer"
+                              onClick={() => setIsEditingGpa(false)}
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth="2.5"
+                                stroke="currentColor"
+                                className="w-5 h-5"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M6 18L18 6M6 6l12 12"
+                                />
+                              </svg>
                             </button>
                           </div>
                         )}
                       </div>
 
                       <div className="flex flex-col gap-3">
-                        <div><label className="text-sm font-semibold text-text-primary mb-1 block">Study Hours <span className="text-text-muted text-xs font-normal">(Hrs)</span></label><input type="number" value={studyHours} onChange={(e) => setStudyHours(e.target.value)} min="0" max="24" step="0.5" placeholder="0" className="w-full p-2.5 border border-white/50 bg-surface-elevated/50 glass-panel rounded-lg focus:ring-2 focus:ring-blue-400 placeholder:text-text-muted"/></div>
-                        <div><label className="text-sm font-semibold text-text-primary mb-1 block">Extracurricular <span className="text-text-muted text-xs font-normal">(Hrs)</span></label><input type="number" value={extraHours} onChange={(e) => setExtraHours(e.target.value)} min="0" max="24" step="0.5" placeholder="0" className="w-full p-2.5 border border-white/50 bg-surface-elevated/50 glass-panel rounded-lg focus:ring-2 focus:ring-blue-400 placeholder:text-text-muted"/></div>
-                        <div><label className="text-sm font-semibold text-text-primary mb-1 block">Sleep Hours <span className="text-text-muted text-xs font-normal">(Hrs)</span></label><input type="number" value={sleepHours} onChange={(e) => setSleepHours(e.target.value)} min="0" max="24" step="0.5" placeholder="0" className="w-full p-2.5 border border-white/50 bg-surface-elevated/50 glass-panel rounded-lg focus:ring-2 focus:ring-blue-400 placeholder:text-text-muted" data-required="true"/></div>
-                        <div><label className="text-sm font-semibold text-text-primary mb-1 block">Social Hours <span className="text-text-muted text-xs font-normal">(Hrs)</span></label><input type="number" value={socialHours} onChange={(e) => setSocialHours(e.target.value)} min="0" max="24" step="0.5" placeholder="0" className="w-full p-2.5 border border-white/50 bg-surface-elevated/50 glass-panel rounded-lg focus:ring-2 focus:ring-blue-400 placeholder:text-text-muted"/></div>
-                        <div><label className="text-sm font-semibold text-text-primary mb-1 block">Physical Activity <span className="text-text-muted text-xs font-normal">(Exercise Hrs)</span></label><input type="number" value={physicalHours} onChange={(e) => setPhysicalHours(e.target.value)} min="0" max="24" step="0.5" placeholder="0" className="w-full p-2.5 border border-white/50 bg-surface-elevated/50 glass-panel rounded-lg focus:ring-2 focus:ring-blue-400 placeholder:text-text-muted"/></div>
+                        <div>
+                          <label className="text-sm font-semibold text-text-primary mb-1 block">
+                            Study Hours{" "}
+                            <span className="text-text-muted text-xs font-normal">
+                              (Hrs)
+                            </span>
+                          </label>
+                          <input
+                            type="number"
+                            value={studyHours}
+                            onChange={(e) => setStudyHours(e.target.value)}
+                            min="0"
+                            max="24"
+                            step="0.5"
+                            placeholder="0"
+                            className="w-full p-2.5 border border-white/50 bg-surface-elevated/50 glass-panel rounded-lg focus:ring-2 focus:ring-blue-400 placeholder:text-text-muted"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-sm font-semibold text-text-primary mb-1 block">
+                            Extracurricular{" "}
+                            <span className="text-text-muted text-xs font-normal">
+                              (Hrs)
+                            </span>
+                          </label>
+                          <input
+                            type="number"
+                            value={extraHours}
+                            onChange={(e) => setExtraHours(e.target.value)}
+                            min="0"
+                            max="24"
+                            step="0.5"
+                            placeholder="0"
+                            className="w-full p-2.5 border border-white/50 bg-surface-elevated/50 glass-panel rounded-lg focus:ring-2 focus:ring-blue-400 placeholder:text-text-muted"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-sm font-semibold text-text-primary mb-1 block">
+                            Sleep Hours{" "}
+                            <span className="text-text-muted text-xs font-normal">
+                              (Hrs)
+                            </span>
+                          </label>
+                          <input
+                            type="number"
+                            value={sleepHours}
+                            onChange={(e) => setSleepHours(e.target.value)}
+                            min="0"
+                            max="24"
+                            step="0.5"
+                            placeholder="0"
+                            className="w-full p-2.5 border border-white/50 bg-surface-elevated/50 glass-panel rounded-lg focus:ring-2 focus:ring-blue-400 placeholder:text-text-muted"
+                            data-required="true"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-sm font-semibold text-text-primary mb-1 block">
+                            Social Hours{" "}
+                            <span className="text-text-muted text-xs font-normal">
+                              (Hrs)
+                            </span>
+                          </label>
+                          <input
+                            type="number"
+                            value={socialHours}
+                            onChange={(e) => setSocialHours(e.target.value)}
+                            min="0"
+                            max="24"
+                            step="0.5"
+                            placeholder="0"
+                            className="w-full p-2.5 border border-white/50 bg-surface-elevated/50 glass-panel rounded-lg focus:ring-2 focus:ring-blue-400 placeholder:text-text-muted"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-sm font-semibold text-text-primary mb-1 block">
+                            Physical Activity{" "}
+                            <span className="text-text-muted text-xs font-normal">
+                              (Exercise Hrs)
+                            </span>
+                          </label>
+                          <input
+                            type="number"
+                            value={physicalHours}
+                            onChange={(e) => setPhysicalHours(e.target.value)}
+                            min="0"
+                            max="24"
+                            step="0.5"
+                            placeholder="0"
+                            className="w-full p-2.5 border border-white/50 bg-surface-elevated/50 glass-panel rounded-lg focus:ring-2 focus:ring-blue-400 placeholder:text-text-muted"
+                          />
+                        </div>
                       </div>
 
                       <hr className="border-t border-white/20 my-1" />
                       <div>
-                        <label className="block text-sm font-semibold text-text-primary mb-3 text-center">How are you feeling today?</label>
+                        <label className="block text-sm font-semibold text-text-primary mb-3 text-center">
+                          How are you feeling today?
+                        </label>
                         <div className="flex justify-around">
                           {moods.map((emo, idx) => (
-                            <button key={idx} type="button" className={`w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center text-2xl md:text-3xl transition-transform cursor-pointer ${moodIndex === idx ? "scale-110 shadow-lg" : "hover:scale-105"}`} onClick={() => setMoodIndex(idx)} style={{ backgroundColor: moodIndex === idx ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.45)" }}>
+                            <button
+                              key={idx}
+                              type="button"
+                              className={`w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center text-2xl md:text-3xl transition-transform cursor-pointer ${moodIndex === idx ? "scale-110 shadow-lg" : "hover:scale-105"}`}
+                              onClick={() => setMoodIndex(idx)}
+                              style={{
+                                backgroundColor:
+                                  moodIndex === idx
+                                    ? "rgba(255,255,255,0.9)"
+                                    : "rgba(255,255,255,0.45)",
+                              }}
+                            >
                               {emo}
                             </button>
                           ))}
@@ -1601,8 +2001,8 @@ export default function Dashboard() {
                         backgroundColor: isRestoreMode
                           ? brandOrange
                           : hasSubmittedToday
-                          ? brandOrange
-                          : brandBlue,
+                            ? brandOrange
+                            : brandBlue,
                       }}
                     >
                       {isSaving ? (
@@ -1612,19 +2012,27 @@ export default function Dashboard() {
                         </span>
                       ) : isRestoreMode ? (
                         <span className="flex items-center justify-center">
-                          <i className="ph ph-clock-counter-clockwise mr-2" /> Restore Data
+                          <i className="ph ph-clock-counter-clockwise mr-2" />{" "}
+                          Restore Data
                         </span>
                       ) : hasSubmittedToday ? (
-                        <span className="flex items-center justify-center"><i className="ph ph-floppy-disk mr-2" /> Update Data</span>
+                        <span className="flex items-center justify-center">
+                          <i className="ph ph-floppy-disk mr-2" /> Update Data
+                        </span>
                       ) : (
-                        <span className="flex items-center justify-center"><i className="ph ph-check-circle mr-2" /> Save Data</span>
+                        <span className="flex items-center justify-center">
+                          <i className="ph ph-check-circle mr-2" /> Save Data
+                        </span>
                       )}
                     </button>
                   </form>
 
                   {isSaving && (
                     <div className="absolute inset-0 z-40 flex items-center justify-center rounded-[20px] bg-surface-elevated/70 glass-panel backdrop-blur-sm">
-                      <div className="flex items-center justify-center rounded-2xl bg-surface-elevated glass-panel px-4 py-3 shadow-lg" aria-label="Processing entry">
+                      <div
+                        className="flex items-center justify-center rounded-2xl bg-surface-elevated glass-panel px-4 py-3 shadow-lg"
+                        aria-label="Processing entry"
+                      >
                         <span className="h-5 w-5 rounded-full border-2 border-blue-500 border-t-transparent animate-spin" />
                       </div>
                     </div>
@@ -1632,28 +2040,67 @@ export default function Dashboard() {
 
                   {/* INTERNAL SUCCESS OVERLAY */}
                   {successModal.visible && (
-                    <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-surface-elevated/90 dark:bg-surface/90 backdrop-blur-md rounded-[20px]" style={{ animation: "fadeIn 0.3s ease-out" }}>
-                      
-                      <div className="w-24 h-24 rounded-full flex items-center justify-center shadow-lg mb-4 animate-success-icon" style={{ backgroundColor: "rgb(var(--surface-elevated))", border: `4px solid ${brandGreen}` }}>
-                        <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke={brandGreen} strokeWidth="3">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" style={{ animation: "circle-draw 0.8s ease-out forwards 0.3s" }} />
+                    <div
+                      className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-surface-elevated/90 dark:bg-surface/90 backdrop-blur-md rounded-[20px]"
+                      style={{ animation: "fadeIn 0.3s ease-out" }}
+                    >
+                      <div
+                        className="w-24 h-24 rounded-full flex items-center justify-center shadow-lg mb-4 animate-success-icon"
+                        style={{
+                          backgroundColor: "rgb(var(--surface-elevated))",
+                          border: `4px solid ${brandGreen}`,
+                        }}
+                      >
+                        <svg
+                          className="w-12 h-12"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke={brandGreen}
+                          strokeWidth="3"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M4.5 12.75l6 6 9-13.5"
+                            style={{
+                              animation:
+                                "circle-draw 0.8s ease-out forwards 0.3s",
+                            }}
+                          />
                         </svg>
                       </div>
 
-                      <h2 className="text-2xl font-bold text-text-primary mb-2" style={{ opacity: 0, animation: "fadeInUp 0.5s ease-out forwards 0.5s" }}>
+                      <h2
+                        className="text-2xl font-bold text-text-primary mb-2"
+                        style={{
+                          opacity: 0,
+                          animation: "fadeInUp 0.5s ease-out forwards 0.5s",
+                        }}
+                      >
                         {successModal.title}
                       </h2>
 
-                      <p className="text-text-secondary text-center px-8 mb-4" style={{ opacity: 0, animation: "fadeInUp 0.5s ease-out forwards 0.7s" }}>
+                      <p
+                        className="text-text-secondary text-center px-8 mb-4"
+                        style={{
+                          opacity: 0,
+                          animation: "fadeInUp 0.5s ease-out forwards 0.7s",
+                        }}
+                      >
                         {successModal.text}
                       </p>
 
-                      <div className="px-6 border-t border-border pt-3 mt-1" style={{ opacity: 0, animation: "fadeInUp 0.5s ease-out forwards 0.9s" }}>
+                      <div
+                        className="px-6 border-t border-border pt-3 mt-1"
+                        style={{
+                          opacity: 0,
+                          animation: "fadeInUp 0.5s ease-out forwards 0.9s",
+                        }}
+                      >
                         <p className="text-[10px] text-text-muted font-medium text-center">
-                           🤖 AI prediction only. Not a medical diagnosis.
+                          🤖 AI prediction only. Not a medical diagnosis.
                         </p>
                       </div>
-
                     </div>
                   )}
                 </div>
@@ -1662,24 +2109,40 @@ export default function Dashboard() {
           </section>
 
           {/* CALENDAR SECTION (FIXED BUTTONS) */}
-          <section className="col-span-1 md:col-span-2 p-6 md:p-8 rounded-[20px] bg-surface-elevated/40 glass-panel backdrop-blur-md border border-white/20 shadow-xl relative overflow-hidden" style={{ minHeight: 600 }}>
+          <section
+            className="col-span-1 md:col-span-2 p-6 md:p-8 rounded-[20px] bg-surface-elevated/40 glass-panel backdrop-blur-md border border-white/20 shadow-xl relative overflow-hidden"
+            style={{ minHeight: 600 }}
+          >
             {isLoadingLogs && (
               <div className="absolute inset-0 z-20 flex items-center justify-center bg-surface-elevated/70 glass-panel backdrop-blur-sm">
                 <div className="h-12 w-12 rounded-full border-4 border-blue-200 border-t-blue-500 animate-spin" />
               </div>
             )}
 
-            <div className={`flex flex-col h-full ${isLoadingLogs ? "opacity-0 pointer-events-none" : ""}`}>
+            <div
+              className={`flex flex-col h-full ${isLoadingLogs ? "opacity-0 pointer-events-none" : ""}`}
+            >
               <header className="flex justify-between items-center mb-6">
                 {/* Tombol Back (Previous Month) - MENGGUNAKAN SVG AGAR PASTI MUNCUL */}
-                <button 
+                <button
                   type="button"
-                  className="w-10 h-10 flex items-center justify-center rounded-full bg-surface-elevated/50 glass-panel hover:bg-surface-elevated glass-panel text-text-secondary hover:text-brandBlue shadow-sm transition-all cursor-pointer border border-white/20" 
+                  className="w-10 h-10 flex items-center justify-center rounded-full bg-surface-elevated/50 glass-panel hover:bg-surface-elevated glass-panel text-text-secondary hover:text-brandBlue shadow-sm transition-all cursor-pointer border border-white/20"
                   onClick={() => changeMonth(-1)}
                   title="Previous Month"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={2.5}
+                    stroke="currentColor"
+                    className="w-5 h-5"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M15.75 19.5L8.25 12l7.5-7.5"
+                    />
                   </svg>
                 </button>
 
@@ -1688,8 +2151,9 @@ export default function Dashboard() {
                   <h3 className="text-xl font-extrabold text-text-primary tracking-tight">
                     {monthNames[month]} {year}
                   </h3>
-                  {(month !== today.getMonth() || year !== today.getFullYear()) && (
-                    <button 
+                  {(month !== today.getMonth() ||
+                    year !== today.getFullYear()) && (
+                    <button
                       onClick={() => setCalendarDate(new Date())}
                       className="text-xs text-blue-600 font-bold mt-1 hover:underline cursor-pointer"
                     >
@@ -1699,14 +2163,25 @@ export default function Dashboard() {
                 </div>
 
                 {/* Tombol Next (Next Month) - MENGGUNAKAN SVG AGAR PASTI MUNCUL */}
-                <button 
+                <button
                   type="button"
-                  className="w-10 h-10 flex items-center justify-center rounded-full bg-surface-elevated/50 glass-panel hover:bg-surface-elevated glass-panel text-text-secondary hover:text-brandBlue shadow-sm transition-all cursor-pointer border border-white/20" 
+                  className="w-10 h-10 flex items-center justify-center rounded-full bg-surface-elevated/50 glass-panel hover:bg-surface-elevated glass-panel text-text-secondary hover:text-brandBlue shadow-sm transition-all cursor-pointer border border-white/20"
                   onClick={() => changeMonth(1)}
                   title="Next Month"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={2.5}
+                    stroke="currentColor"
+                    className="w-5 h-5"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M8.25 4.5l7.5 7.5-7.5 7.5"
+                    />
                   </svg>
                 </button>
               </header>
@@ -1714,7 +2189,12 @@ export default function Dashboard() {
               {/* Nama Hari */}
               <div className="grid grid-cols-7 gap-1 mb-3 text-center">
                 {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
-                  <div key={d} className="text-xs font-bold text-text-muted uppercase tracking-wider">{d}</div>
+                  <div
+                    key={d}
+                    className="text-xs font-bold text-text-muted uppercase tracking-wider"
+                  >
+                    {d}
+                  </div>
                 ))}
               </div>
 
@@ -1726,19 +2206,21 @@ export default function Dashboard() {
 
                 {[...Array(daysInMonth)].map((_, i) => {
                   const day = i + 1;
-                  const d = new Date(year, month, day); 
+                  const d = new Date(year, month, day);
                   const ds = formatDate(d);
-                  
+
                   const has = stressData[ds];
                   const hasData = has && !has.isEmpty;
-                  
-                  const isSel = selectedDate.getDate() === day && 
-                                selectedDate.getMonth() === month && 
-                                selectedDate.getFullYear() === year;
 
-                  const isRealToday = day === today.getDate() && 
-                                      month === today.getMonth() && 
-                                      year === today.getFullYear();
+                  const isSel =
+                    selectedDate.getDate() === day &&
+                    selectedDate.getMonth() === month &&
+                    selectedDate.getFullYear() === year;
+
+                  const isRealToday =
+                    day === today.getDate() &&
+                    month === today.getMonth() &&
+                    year === today.getFullYear();
 
                   return (
                     <div
@@ -1751,14 +2233,21 @@ export default function Dashboard() {
                       `}
                       style={{
                         background: isSel ? brandBlue : "transparent",
-                        border: (!isSel && hasData) ? `2px solid ${has.color}40` : (!isSel && isRealToday) ? "2px solid rgba(1, 98, 241, 0.25)" : "none"
+                        border:
+                          !isSel && hasData
+                            ? `2px solid ${has.color}40`
+                            : !isSel && isRealToday
+                              ? "2px solid rgba(1, 98, 241, 0.25)"
+                              : "none",
                       }}
                     >
                       <span className="relative z-10">{day}</span>
                       {hasData && (
-                        <div 
-                          className={`mt-1 w-1.5 h-1.5 rounded-full transition-all duration-300 ${isSel ? "bg-surface-elevated" : ""}`} 
-                          style={{ backgroundColor: isSel ? "white" : has.color }} 
+                        <div
+                          className={`mt-1 w-1.5 h-1.5 rounded-full transition-all duration-300 ${isSel ? "bg-surface-elevated" : ""}`}
+                          style={{
+                            backgroundColor: isSel ? "white" : has.color,
+                          }}
                         />
                       )}
                     </div>
@@ -1773,7 +2262,9 @@ export default function Dashboard() {
                       <span className="text-lg">🔥</span>
                     </div>
                     <div>
-                      <h4 className="text-sm font-bold text-text-primary dark:text-text-primary">Restore Streak</h4>
+                      <h4 className="text-sm font-bold text-text-primary dark:text-text-primary">
+                        Restore Streak
+                      </h4>
                       <p className="text-xs text-text-muted dark:text-text-muted">
                         Remaining:{" "}
                         <span className="font-semibold text-text-secondary dark:text-text-primary">
@@ -1785,7 +2276,10 @@ export default function Dashboard() {
                   <button
                     type="button"
                     onClick={() =>
-                      handleOpenForm({ mode: "restore", dateKey: selectedDateKey })
+                      handleOpenForm({
+                        mode: "restore",
+                        dateKey: selectedDateKey,
+                      })
                     }
                     disabled={
                       eligibilityLoading ||
@@ -1803,9 +2297,13 @@ export default function Dashboard() {
                     Restore {selectedDateKey}
                   </button>
                 </div>
-                <p className="text-xs text-text-muted mt-2 dark:text-text-muted">{restoreHint}</p>
+                <p className="text-xs text-text-muted mt-2 dark:text-text-muted">
+                  {restoreHint}
+                </p>
                 {eligibilityError && (
-                  <p className="text-xs text-red-500 mt-1">{eligibilityError}</p>
+                  <p className="text-xs text-red-500 mt-1">
+                    {eligibilityError}
+                  </p>
                 )}
               </div>
 
@@ -1813,70 +2311,82 @@ export default function Dashboard() {
               <div className="mt-auto pt-6 pb-2">
                 <div className="w-full h-px bg-gradient-to-r from-transparent via-border to-transparent mb-4 dark:via-border"></div>
                 <div className="flex items-center justify-between mb-3">
-                   <h4 className="text-sm font-bold text-text-secondary dark:text-text-primary flex items-center gap-2">
-                      <i className="ph ph-crystal-ball text-brand-info text-lg"></i>
-                      3-Day Forecast
-                   </h4>
-                   <div className="relative group">
-                      <span
-                        className="text-[10px] bg-brand-info/10 text-brand-primary px-2 py-0.5 rounded font-bold uppercase tracking-wider cursor-help dark:bg-brand-info/20 dark:text-brand-info"
-                        title={forecastModeDescription}
-                      >
-                        {forecastModeLabel}
-                      </span>
-                      <div className="pointer-events-none absolute right-0 bottom-full mb-2 w-52 max-w-[220px] rounded-lg border border-brand-info/20 bg-surface-elevated/95 p-2 text-[10px] text-brand-primary shadow-lg opacity-0 transition-opacity duration-200 group-hover:opacity-100 dark:border-brand-info/30 dark:bg-surface/95 dark:text-brand-info">
-                        {forecastModeDescription}
-                      </div>
-                   </div>
+                  <h4 className="text-sm font-bold text-text-secondary dark:text-text-primary flex items-center gap-2">
+                    <i className="ph ph-crystal-ball text-brand-info text-lg"></i>
+                    3-Day Forecast
+                  </h4>
+                  <div className="relative group">
+                    <span
+                      className="text-[10px] bg-brand-info/10 text-brand-primary px-2 py-0.5 rounded font-bold uppercase tracking-wider cursor-help dark:bg-brand-info/20 dark:text-brand-info"
+                      title={forecastModeDescription}
+                    >
+                      {forecastModeLabel}
+                    </span>
+                    <div className="pointer-events-none absolute right-0 bottom-full mb-2 w-52 max-w-[220px] rounded-lg border border-brand-info/20 bg-surface-elevated/95 p-2 text-[10px] text-brand-primary shadow-lg opacity-0 transition-opacity duration-200 group-hover:opacity-100 dark:border-brand-info/30 dark:bg-surface/95 dark:text-brand-info">
+                      {forecastModeDescription}
+                    </div>
+                  </div>
                 </div>
-                
+
                 <div className="grid grid-cols-3 gap-3">
-                    {forecastLoading && (
-                      Array.from({ length: 3 }).map((_, idx) => (
-                        <div
-                          key={`forecast-loading-${idx}`}
-                          className="relative rounded-xl p-3 flex flex-col items-center text-center border border-white/40 bg-surface-elevated/50 glass-panel animate-pulse dark:border-border dark:bg-surface/60"
-                        >
-                          <div className="h-3 w-12 bg-surface-muted rounded mb-3 dark:bg-surface-muted" />
-                          <div className="h-6 w-6 bg-surface-muted rounded-full mb-2 dark:bg-surface-muted" />
-                          <div className="h-4 w-14 bg-surface-muted rounded mb-2 dark:bg-surface-muted" />
-                          <div className="h-3 w-16 bg-surface-muted rounded-full dark:bg-surface-muted" />
-                        </div>
-                      ))
-                    )}
-                    {!forecastLoading && forecastError && (
-                      <div className="col-span-3 text-center text-xs font-semibold text-text-muted bg-surface-elevated/60 glass-panel border border-border rounded-xl px-3 py-4 whitespace-pre-line dark:bg-surface/70 dark:border-border dark:text-text-muted">
-                        {forecastError}
+                  {forecastLoading &&
+                    Array.from({ length: 3 }).map((_, idx) => (
+                      <div
+                        key={`forecast-loading-${idx}`}
+                        className="relative rounded-xl p-3 flex flex-col items-center text-center border border-white/40 bg-surface-elevated/50 glass-panel animate-pulse dark:border-border dark:bg-surface/60"
+                      >
+                        <div className="h-3 w-12 bg-surface-muted rounded mb-3 dark:bg-surface-muted" />
+                        <div className="h-6 w-6 bg-surface-muted rounded-full mb-2 dark:bg-surface-muted" />
+                        <div className="h-4 w-14 bg-surface-muted rounded mb-2 dark:bg-surface-muted" />
+                        <div className="h-3 w-16 bg-surface-muted rounded-full dark:bg-surface-muted" />
                       </div>
-                    )}
-                    {!forecastLoading && !forecastError && forecastList.length === 0 && (
+                    ))}
+                  {!forecastLoading && forecastError && (
+                    <div className="col-span-3 text-center text-xs font-semibold text-text-muted bg-surface-elevated/60 glass-panel border border-border rounded-xl px-3 py-4 whitespace-pre-line dark:bg-surface/70 dark:border-border dark:text-text-muted">
+                      {forecastError}
+                    </div>
+                  )}
+                  {!forecastLoading &&
+                    !forecastError &&
+                    forecastList.length === 0 && (
                       <div className="col-span-3 text-center text-xs font-semibold text-text-muted bg-surface-elevated/60 glass-panel border border-border rounded-xl px-3 py-4 dark:bg-surface/70 dark:border-border dark:text-text-muted">
                         Forecast is not available yet.
                       </div>
                     )}
-                    {!forecastLoading && !forecastError && forecastList.length > 0 && (
-                      forecastList.map((item, idx) => (
-                        <div 
-                          key={idx}
-                          onClick={() => setForecastDetail(item)}
-                          className={`
+                  {!forecastLoading &&
+                    !forecastError &&
+                    forecastList.length > 0 &&
+                    forecastList.map((item, idx) => (
+                      <div
+                        key={idx}
+                        onClick={() => setForecastDetail(item)}
+                        className={`
                             relative rounded-xl p-3 flex flex-col items-center text-center cursor-pointer 
                             transition-all duration-300 hover:scale-105 hover:shadow-md border border-transparent hover:border-border/60 active:scale-95
                             dark:hover:border-border/60
                             ${item.bg}
                           `}
+                      >
+                        <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest mb-1 dark:text-text-muted">
+                          {item.dateStr}
+                        </span>
+                        <div
+                          className="text-2xl mb-1"
+                          style={{ color: item.color }}
                         >
-                           <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest mb-1 dark:text-text-muted">{item.dateStr}</span>
-                           <div className="text-2xl mb-1" style={{ color: item.color }}>
-                              <i className={`ph ${item.icon}`}></i>
-                           </div>
-                           <div className="font-extrabold text-sm uppercase" style={{ color: item.color }}>{item.status}</div>
-                           <div className="text-[10px] font-medium text-text-muted mt-1 flex items-center gap-1 bg-surface-elevated/50 glass-panel px-2 py-0.5 rounded-full dark:bg-surface/70 dark:text-text-primary">
-                              <i className="ph ph-trend-up"></i> {item.probability}%
-                           </div>
+                          <i className={`ph ${item.icon}`}></i>
                         </div>
-                      ))
-                    )}
+                        <div
+                          className="font-extrabold text-sm uppercase"
+                          style={{ color: item.color }}
+                        >
+                          {item.status}
+                        </div>
+                        <div className="text-[10px] font-medium text-text-muted mt-1 flex items-center gap-1 bg-surface-elevated/50 glass-panel px-2 py-0.5 rounded-full dark:bg-surface/70 dark:text-text-primary">
+                          <i className="ph ph-trend-up"></i> {item.probability}%
+                        </div>
+                      </div>
+                    ))}
                 </div>
               </div>
               {/* --- END FORECAST SECTION --- */}
@@ -1884,63 +2394,145 @@ export default function Dashboard() {
 
             {/* DETAIL CARD OVERLAY (Calendar Day Click) */}
             {dayDetail && (
-              <div className="absolute inset-0 z-10 flex items-center justify-center bg-surface-elevated/10 backdrop-blur-sm p-4 animate-card-enter" onClick={() => setDayDetail(null)}>
-                <div className="relative w-full max-w-sm rounded-2xl p-6 shadow-2xl border border-border-subtle overflow-hidden bg-surface-elevated" onClick={(e) => e.stopPropagation()}>
-                  <div className="absolute -right-6 -bottom-6 text-9xl opacity-10 select-none pointer-events-none grayscale">{dayDetail.mood}</div>
+              <div
+                className="absolute inset-0 z-10 flex items-center justify-center bg-surface-elevated/10 backdrop-blur-sm p-4 animate-card-enter"
+                onClick={() => setDayDetail(null)}
+              >
+                <div
+                  className="relative w-full max-w-sm rounded-2xl p-6 shadow-2xl border border-border-subtle overflow-hidden bg-surface-elevated"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="absolute -right-6 -bottom-6 text-9xl opacity-10 select-none pointer-events-none grayscale">
+                    {dayDetail.mood}
+                  </div>
                   <div className="flex justify-between items-start mb-6">
                     <div>
-                        <h4 className="text-text-muted text-xs font-bold uppercase tracking-wider mb-1">Daily Recap</h4>
-                        <h2 className="text-2xl font-extrabold text-text-primary">{dayDetail.dateStr}</h2>
-                        {dayDetail.isRestored && (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-orange-600 bg-orange-50 border border-orange-100 rounded-full px-2 py-0.5 mt-2">
-                            <i className="ph ph-clock-counter-clockwise" />
-                            Restored
-                          </span>
-                        )}
+                      <h4 className="text-text-muted text-xs font-bold uppercase tracking-wider mb-1">
+                        Daily Recap
+                      </h4>
+                      <h2 className="text-2xl font-extrabold text-text-primary">
+                        {dayDetail.dateStr}
+                      </h2>
+                      {dayDetail.isRestored && (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-orange-600 bg-orange-50 border border-orange-100 rounded-full px-2 py-0.5 mt-2">
+                          <i className="ph ph-clock-counter-clockwise" />
+                          Restored
+                        </span>
+                      )}
                     </div>
-                    <button onClick={() => setDayDetail(null)} className="p-2 bg-surface-muted rounded-full hover:bg-surface-muted transition cursor-pointer">
-                        <i className="ph ph-x text-lg text-text-secondary"></i>
+                    <button
+                      onClick={() => setDayDetail(null)}
+                      className="p-2 bg-surface-muted rounded-full hover:bg-surface-muted transition cursor-pointer"
+                    >
+                      <i className="ph ph-x text-lg text-text-secondary"></i>
                     </button>
                   </div>
-                  
+
                   <div className="flex items-center gap-4 mb-6">
-                    <div className="relative w-24 h-24 rounded-full flex items-center justify-center border-[5px]" style={{ borderColor: dayDetail.color }}>
+                    <div
+                      className="relative w-24 h-24 rounded-full flex items-center justify-center border-[5px]"
+                      style={{ borderColor: dayDetail.color }}
+                    >
                       <div className="text-center">
-                        <div className="text-[10px] text-text-muted font-bold uppercase tracking-widest mb-1">Status</div>
-                        <div className="text-lg font-black uppercase leading-none" style={{ color: dayDetail.color }}>
-                           {getStatusFromLevel(dayDetail.level) === 2 ? "High" : getStatusFromLevel(dayDetail.level) === 1 ? "Mod" : "Low"}
+                        <div className="text-[10px] text-text-muted font-bold uppercase tracking-widest mb-1">
+                          Status
+                        </div>
+                        <div
+                          className="text-lg font-black uppercase leading-none"
+                          style={{ color: dayDetail.color }}
+                        >
+                          {getStatusFromLevel(dayDetail.level) === 2
+                            ? "High"
+                            : getStatusFromLevel(dayDetail.level) === 1
+                              ? "Mod"
+                              : "Low"}
                         </div>
                       </div>
                     </div>
-                    <div className="flex-1"><p className="text-sm font-semibold text-text-secondary italic">"{dayDetail.level > 60 ? "Take a break, you need it." : "Keep it up and maintain balance!"}"</p></div>
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold text-text-secondary italic">
+                        "
+                        {dayDetail.level > 60
+                          ? "Take a break, you need it."
+                          : "Keep it up and maintain balance!"}
+                        "
+                      </p>
+                    </div>
                   </div>
-                  
-                  <div className="space-y-3 custom-scroll" style={{ maxHeight: "220px", overflowY: "auto", paddingRight: "4px" }}>
+
+                  <div
+                    className="space-y-3 custom-scroll"
+                    style={{
+                      maxHeight: "220px",
+                      overflowY: "auto",
+                      paddingRight: "4px",
+                    }}
+                  >
                     {[
-                      { l: "Sleep", v: dayDetail.sleep, max: 10, c: "bg-purple-500", i: "ph-moon-stars" },
-                      { l: "Study", v: dayDetail.study, max: 12, c: "bg-blue-500", i: "ph-book-open" },
-                      { l: "Extra", v: dayDetail.extra || 0, max: 8, c: "bg-brand-warning", i: "ph-medal" },
-                      { l: "Social", v: dayDetail.social, max: 8, c: "bg-orange-500", i: "ph-users" },
-                      { l: "Exercise", v: dayDetail.physical || 0, max: 4, c: "bg-teal-500", i: "ph-sneaker" },
+                      {
+                        l: "Sleep",
+                        v: dayDetail.sleep,
+                        max: 10,
+                        c: "bg-purple-500",
+                        i: "ph-moon-stars",
+                      },
+                      {
+                        l: "Study",
+                        v: dayDetail.study,
+                        max: 12,
+                        c: "bg-blue-500",
+                        i: "ph-book-open",
+                      },
+                      {
+                        l: "Extra",
+                        v: dayDetail.extra || 0,
+                        max: 8,
+                        c: "bg-brand-warning",
+                        i: "ph-medal",
+                      },
+                      {
+                        l: "Social",
+                        v: dayDetail.social,
+                        max: 8,
+                        c: "bg-orange-500",
+                        i: "ph-users",
+                      },
+                      {
+                        l: "Exercise",
+                        v: dayDetail.physical || 0,
+                        max: 4,
+                        c: "bg-teal-500",
+                        i: "ph-sneaker",
+                      },
                     ].map((s, idx) => (
-                       <div key={idx}>
-                         <div className="flex justify-between text-xs font-bold text-text-secondary mb-1">
-                            <span className="flex items-center gap-1"><i className={`ph ${s.i} text-${s.c.split('-')[1]}-500`} /> {s.l}</span>
-                            <span>{s.v} hrs</span>
-                         </div>
-                         <div className="h-2 w-full bg-surface-muted rounded-full overflow-hidden">
-                            <div className={`h-full ${s.c} rounded-full`} style={{ width: `${Math.min((s.v / s.max) * 100, 100)}%` }} />
-                         </div>
-                       </div>
+                      <div key={idx}>
+                        <div className="flex justify-between text-xs font-bold text-text-secondary mb-1">
+                          <span className="flex items-center gap-1">
+                            <i
+                              className={`ph ${s.i} text-${s.c.split("-")[1]}-500`}
+                            />{" "}
+                            {s.l}
+                          </span>
+                          <span>{s.v} hrs</span>
+                        </div>
+                        <div className="h-2 w-full bg-surface-muted rounded-full overflow-hidden">
+                          <div
+                            className={`h-full ${s.c} rounded-full`}
+                            style={{
+                              width: `${Math.min((s.v / s.max) * 100, 100)}%`,
+                            }}
+                          />
+                        </div>
+                      </div>
                     ))}
                   </div>
                 </div>
               </div>
             )}
-            
+
             {/* --- SLIDE-UP PANEL (OPTION 1 - WITH SVG ICON & SOLID GRADIENT FIX) --- */}
             {forecastDetail && (
-              <div 
+              <div
                 // Disini kita gunakan forecastDetail.panelTheme untuk warna container (tanpa opacity class)
                 // Hapus bg-opacity-95 agar solid, tambahkan shadow-2xl agar lebih kontras dengan background
                 className={`
@@ -1950,73 +2542,111 @@ export default function Dashboard() {
                 `}
                 onClick={(e) => e.stopPropagation()}
               >
-                  {/* Handle Bar for aesthetics */}
-                  <div className="w-full flex justify-center pt-3 pb-1" onClick={handleCloseForecast}>
-                     <div className="w-12 h-1.5 bg-surface-muted/60 rounded-full cursor-pointer hover:bg-surface-muted/80 transition-colors dark:bg-surface-muted/70 dark:hover:bg-surface-muted/90" />
-                  </div>
+                {/* Handle Bar for aesthetics */}
+                <div
+                  className="w-full flex justify-center pt-3 pb-1"
+                  onClick={handleCloseForecast}
+                >
+                  <div className="w-12 h-1.5 bg-surface-muted/60 rounded-full cursor-pointer hover:bg-surface-muted/80 transition-colors dark:bg-surface-muted/70 dark:hover:bg-surface-muted/90" />
+                </div>
 
-                  <div className="p-6 pt-2">
-                     <div className="flex justify-between items-start mb-4">
-                        <div>
-                           <div className="flex items-center gap-2 mb-1">
-                              <span className="text-xs font-bold text-text-muted uppercase tracking-widest dark:text-text-muted">{forecastDetail.fullDate}</span>
-                              <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold bg-surface-elevated/60 glass-panel border ${forecastDetail.border}`} style={{ color: forecastDetail.color }}>
-                                 {forecastDetail.status} Risk
-                              </span>
-                           </div>
-                           <h3 className="text-xl font-bold text-text-primary dark:text-text-primary">Stress Forecast Advice</h3>
-                        </div>
-                        {/* TOMBOL X DIGANTI DENGAN SVG */}
-                        <button 
-                           onClick={handleCloseForecast} 
-                           className="w-8 h-8 rounded-full bg-surface-elevated/40 glass-panel text-text-secondary hover:bg-surface-elevated/60 glass-panel hover:text-text-primary flex items-center justify-center transition-all cursor-pointer dark:bg-surface/60 dark:text-text-primary dark:hover:bg-surface"
+                <div className="p-6 pt-2">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xs font-bold text-text-muted uppercase tracking-widest dark:text-text-muted">
+                          {forecastDetail.fullDate}
+                        </span>
+                        <span
+                          className={`text-[10px] px-2 py-0.5 rounded-full font-bold bg-surface-elevated/60 glass-panel border ${forecastDetail.border}`}
+                          style={{ color: forecastDetail.color }}
                         >
-                           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                           </svg>
-                        </button>
-                     </div>
-
-                     <div className={`p-4 rounded-xl border ${forecastDetail.border} bg-surface-elevated/40 glass-panel flex items-start gap-3 dark:bg-surface/60`}>
-                        <i className={`ph ${forecastDetail.icon} text-2xl mt-0.5`} style={{ color: forecastDetail.color }}></i>
-                        <div>
-                           <p className="text-sm text-text-primary font-medium leading-relaxed dark:text-text-primary">
-                              {forecastDetail.advice}
-                           </p>
-                           <div className="mt-2 flex items-center gap-1 text-xs font-bold opacity-70" style={{ color: forecastDetail.color }}>
-                              <i className="ph ph-lightning"></i> Confidence: {forecastDetail.probability}%
-                           </div>
-                           {(forecastDetail.forecastMode || forecastDetail.modelType || typeof forecastDetail.threshold === "number") && (
-                             <div className="mt-1 text-[11px] font-semibold text-text-muted dark:text-text-muted">
-                               {forecastDetail.forecastMode && (
-                                 <span>
-                                   Forecast:{" "}
-                                   {forecastDetail.forecastMode === "personalized"
-                                     ? "Personalized"
-                                     : "Global"}
-                                 </span>
-                               )}
-                               {forecastDetail.forecastMode && (forecastDetail.modelType || typeof forecastDetail.threshold === "number") && (
-                                 <span className="mx-1">·</span>
-                               )}
-                               {forecastDetail.modelType && (
-                                 <span>Model: {forecastDetail.modelType}</span>
-                               )}
-                               {forecastDetail.modelType && typeof forecastDetail.threshold === "number" && (
-                                 <span className="mx-1">·</span>
-                               )}
-                               {typeof forecastDetail.threshold === "number" && (
-                                 <span>Threshold: {forecastDetail.threshold}</span>
-                               )}
-                             </div>
-                           )}
-                        </div>
-                     </div>
-                     
-                    <button onClick={handleCloseForecast} className="w-full mt-4 py-3 bg-surface-muted text-text-primary rounded-xl font-bold text-sm shadow-lg hover:bg-surface-elevated glass-panel transition-transform active:scale-95 cursor-pointer dark:bg-surface dark:text-text-primary dark:hover:bg-surface">
-                        Got it!
-                     </button>
+                          {forecastDetail.status} Risk
+                        </span>
+                      </div>
+                      <h3 className="text-xl font-bold text-text-primary dark:text-text-primary">
+                        Stress Forecast Advice
+                      </h3>
+                    </div>
+                    {/* TOMBOL X DIGANTI DENGAN SVG */}
+                    <button
+                      onClick={handleCloseForecast}
+                      className="w-8 h-8 rounded-full bg-surface-elevated/40 glass-panel text-text-secondary hover:bg-surface-elevated/60 glass-panel hover:text-text-primary flex items-center justify-center transition-all cursor-pointer dark:bg-surface/60 dark:text-text-primary dark:hover:bg-surface"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={2.5}
+                        stroke="currentColor"
+                        className="w-5 h-5"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
+                    </button>
                   </div>
+
+                  <div
+                    className={`p-4 rounded-xl border ${forecastDetail.border} bg-surface-elevated/40 glass-panel flex items-start gap-3 dark:bg-surface/60`}
+                  >
+                    <i
+                      className={`ph ${forecastDetail.icon} text-2xl mt-0.5`}
+                      style={{ color: forecastDetail.color }}
+                    ></i>
+                    <div>
+                      <p className="text-sm text-text-primary font-medium leading-relaxed dark:text-text-primary">
+                        {forecastDetail.advice}
+                      </p>
+                      <div
+                        className="mt-2 flex items-center gap-1 text-xs font-bold opacity-70"
+                        style={{ color: forecastDetail.color }}
+                      >
+                        <i className="ph ph-lightning"></i> Confidence:{" "}
+                        {forecastDetail.probability}%
+                      </div>
+                      {(forecastDetail.forecastMode ||
+                        forecastDetail.modelType ||
+                        typeof forecastDetail.threshold === "number") && (
+                        <div className="mt-1 text-[11px] font-semibold text-text-muted dark:text-text-muted">
+                          {forecastDetail.forecastMode && (
+                            <span>
+                              Forecast:{" "}
+                              {forecastDetail.forecastMode === "personalized"
+                                ? "Personalized"
+                                : "Global"}
+                            </span>
+                          )}
+                          {forecastDetail.forecastMode &&
+                            (forecastDetail.modelType ||
+                              typeof forecastDetail.threshold === "number") && (
+                              <span className="mx-1">·</span>
+                            )}
+                          {forecastDetail.modelType && (
+                            <span>Model: {forecastDetail.modelType}</span>
+                          )}
+                          {forecastDetail.modelType &&
+                            typeof forecastDetail.threshold === "number" && (
+                              <span className="mx-1">·</span>
+                            )}
+                          {typeof forecastDetail.threshold === "number" && (
+                            <span>Threshold: {forecastDetail.threshold}</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={handleCloseForecast}
+                    className="w-full mt-4 py-3 bg-surface-muted text-text-primary rounded-xl font-bold text-sm shadow-lg hover:bg-surface-elevated glass-panel transition-transform active:scale-95 cursor-pointer dark:bg-surface dark:text-text-primary dark:hover:bg-surface"
+                  >
+                    Got it!
+                  </button>
+                </div>
               </div>
             )}
           </section>
@@ -2031,14 +2661,27 @@ export default function Dashboard() {
             <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-purple-300 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob animation-delay-2000"></div>
             <div className="relative z-10 p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-6">
               <div className="flex flex-col md:flex-row items-center md:items-start gap-6 text-center md:text-left flex-1">
-                <div className="w-16 h-16 flex-shrink-0 rounded-2xl bg-gradient-to-br from-orange-400 to-red-400 flex items-center justify-center shadow-lg text-white"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" className="w-8 h-8"><path d="M224,128a8,8,0,0,1-8,8c-30.85,0-57.5,12.72-76.32,34.4C120.86,192.11,128,218.85,128,248a8,8,0,0,1-16,0c0-29.15,7.14-55.89-11.68-77.6C81.5,148.72,54.85,136,24,136a8,8,0,0,1,0-16c30.85,0,57.5-12.72,76.32-34.4C119.14,63.89,112,37.15,112,8a8,8,0,0,1,16,0c0,29.15-7.14,55.89,11.68,77.6C158.5,107.28,185.15,120,216,120A8,8,0,0,1,224,128Z" /></svg></div>
+                <div className="w-16 h-16 flex-shrink-0 rounded-2xl bg-gradient-to-br from-orange-400 to-red-400 flex items-center justify-center shadow-lg text-white">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 256 256"
+                    fill="currentColor"
+                    className="w-8 h-8"
+                  >
+                    <path d="M224,128a8,8,0,0,1-8,8c-30.85,0-57.5,12.72-76.32,34.4C120.86,192.11,128,218.85,128,248a8,8,0,0,1-16,0c0-29.15,7.14-55.89-11.68-77.6C81.5,148.72,54.85,136,24,136a8,8,0,0,1,0-16c30.85,0,57.5-12.72,76.32-34.4C119.14,63.89,112,37.15,112,8a8,8,0,0,1,16,0c0,29.15-7.14,55.89,11.68,77.6C158.5,107.28,185.15,120,216,120A8,8,0,0,1,224,128Z" />
+                  </svg>
+                </div>
                 <div className="flex-1">
-                  <p className="text-xs font-bold tracking-widest text-orange-600 dark:text-orange-300 uppercase mb-2">
+                  <p className="text-xs font-bold tracking-widest text-orange-600 dark:text-orange-600 uppercase mb-2">
                     Daily Wisdom
                   </p>
-                  <div className={`transition-all duration-500 ${isQuoteAnimating ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"}`}>
+                  <div
+                    className={`transition-all duration-500 ${isQuoteAnimating ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"}`}
+                  >
                     {quoteLoading ? (
-                      <p className="text-text-muted dark:text-text-muted font-medium">Loading daily wisdom...</p>
+                      <p className="text-text-muted dark:text-text-muted font-medium">
+                        Loading daily wisdom...
+                      </p>
                     ) : quoteError ? (
                       <p className="text-rose-500 font-medium">{quoteError}</p>
                     ) : quoteData.text ? (
@@ -2046,21 +2689,29 @@ export default function Dashboard() {
                         <h3 className="text-2xl md:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-text-secondary to-text-muted dark:from-text-primary dark:to-text-secondary leading-tight mb-2">
                           "{quoteData.text}"
                         </h3>
-                        <p className="text-text-muted dark:text-text-muted font-medium italic">— {quoteData.author}</p>
+                        <p className="text-text-muted dark:text-text-muted font-medium italic">
+                          — {quoteData.author}
+                        </p>
                       </>
                     ) : (
-                      <p className="text-text-muted dark:text-text-muted font-medium">No quotes available yet.</p>
+                      <p className="text-text-muted dark:text-text-muted font-medium">
+                        No quotes available yet.
+                      </p>
                     )}
                   </div>
                 </div>
               </div>
               <button
                 onClick={handleNewQuote}
-                disabled={isQuoteAnimating || quoteLoading || quotePool.length === 0}
+                disabled={
+                  isQuoteAnimating || quoteLoading || quotePool.length === 0
+                }
                 className="flex-shrink-0 group relative px-6 py-3 rounded-xl bg-surface-elevated glass-panel border border-border text-text-secondary font-bold shadow-sm hover:shadow-md hover:border-orange-300 hover:text-orange-600 dark:bg-surface dark:border-border dark:text-text-primary dark:hover:text-orange-300 transition-all active:scale-95 disabled:opacity-70 cursor-pointer"
               >
                 <span className="flex items-center gap-2">
-                  <i className={`ph ph-arrows-clockwise text-xl transition-transform duration-700 ${isQuoteAnimating ? "rotate-180" : ""}`}></i>
+                  <i
+                    className={`ph ph-arrows-clockwise text-xl transition-transform duration-700 ${isQuoteAnimating ? "rotate-180" : ""}`}
+                  ></i>
                   <span>New Quote</span>
                 </span>
               </button>
@@ -2087,15 +2738,29 @@ export default function Dashboard() {
                   onClick={() => setActiveTip(item)}
                   className={`relative overflow-hidden rounded-[30px] p-6 h-64 transition-all duration-300 cursor-pointer hover:shadow-2xl hover:scale-[1.02] backdrop-blur-xl border border-white/40 shadow-lg ${item.theme.bg}`}
                 >
-                  <div className={`absolute -right-6 -top-6 w-32 h-32 rounded-full opacity-50 blur-2xl ${item.theme.accent}`} />
-                  <div className={`absolute -left-6 -bottom-6 w-24 h-24 rounded-full opacity-50 blur-xl ${item.theme.accent}`} />
+                  <div
+                    className={`absolute -right-6 -top-6 w-32 h-32 rounded-full opacity-50 blur-2xl ${item.theme.accent}`}
+                  />
+                  <div
+                    className={`absolute -left-6 -bottom-6 w-24 h-24 rounded-full opacity-50 blur-xl ${item.theme.accent}`}
+                  />
                   <div className="relative z-10 h-full flex flex-col justify-between">
                     <div className="flex justify-between items-start">
-                      <span className="text-4xl filter drop-shadow-sm">{item.emoji}</span>
+                      <span className="text-4xl filter drop-shadow-sm">
+                        {item.emoji}
+                      </span>
                     </div>
                     <div>
-                      <h3 className={`text-2xl font-bold mb-1 ${item.theme.text}`}>{item.title}</h3>
-                      <p className={`text-sm font-medium ${item.theme.subtext}`}>{item.desc}</p>
+                      <h3
+                        className={`text-2xl font-bold mb-1 ${item.theme.text}`}
+                      >
+                        {item.title}
+                      </h3>
+                      <p
+                        className={`text-sm font-medium ${item.theme.subtext}`}
+                      >
+                        {item.desc}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -2108,7 +2773,10 @@ export default function Dashboard() {
 
       {missingRestorePopup && (
         <div className="fixed inset-0 z-[1090] flex items-center justify-center p-4 bg-neutral-950/50 backdrop-blur-sm animate-fadeIn">
-          <div className="absolute inset-0 cursor-pointer" onClick={handleCloseMissingPopup} />
+          <div
+            className="absolute inset-0 cursor-pointer"
+            onClick={handleCloseMissingPopup}
+          />
           <div className="relative w-full max-w-md bg-surface-elevated glass-panel rounded-3xl shadow-2xl overflow-hidden animate-modal-slide">
             <div className="p-8">
               <div className="flex items-start justify-between gap-4 mb-2">
@@ -2120,13 +2788,27 @@ export default function Dashboard() {
                   onClick={handleCloseMissingPopup}
                   className="w-8 h-8 rounded-full flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-surface-muted transition-colors cursor-pointer"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={2.5}
+                    stroke="currentColor"
+                    className="w-5 h-5"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
                   </svg>
                 </button>
               </div>
               <p className="text-sm text-text-secondary mb-4">
-                You have <span className="font-semibold">{missingRestorePopup.count}</span>{" "}
+                You have{" "}
+                <span className="font-semibold">
+                  {missingRestorePopup.count}
+                </span>{" "}
                 missing dates. Use restore to fill these days:
               </p>
               <div className="flex flex-wrap gap-2 mb-6">
@@ -2154,7 +2836,8 @@ export default function Dashboard() {
                 </button>
               </div>
               <p className="mt-3 text-xs text-text-muted">
-                Auto fill uses nearby averages. You can still edit the data afterward.
+                Auto fill uses nearby averages. You can still edit the data
+                afterward.
               </p>
             </div>
           </div>
@@ -2163,7 +2846,10 @@ export default function Dashboard() {
 
       {showTodayReminder && (
         <div className="fixed inset-0 z-[1080] flex items-center justify-center p-4 bg-neutral-950/50 backdrop-blur-sm animate-fadeIn">
-          <div className="absolute inset-0 cursor-pointer" onClick={() => setShowTodayReminder(false)} />
+          <div
+            className="absolute inset-0 cursor-pointer"
+            onClick={() => setShowTodayReminder(false)}
+          />
           <div className="relative w-full max-w-md bg-surface-elevated glass-panel rounded-3xl shadow-2xl overflow-hidden animate-modal-slide">
             <div className="p-8">
               <h2 className="text-xl font-extrabold text-text-primary mb-2">
@@ -2190,37 +2876,42 @@ export default function Dashboard() {
           </div>
         </div>
       )}
-       
+
       {/* MODAL TIPS */}
       {activeTip && (
         <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4 bg-neutral-950/50 backdrop-blur-sm animate-fadeIn">
-          <div className="absolute inset-0 cursor-pointer" onClick={() => setActiveTip(null)} />
-           
+          <div
+            className="absolute inset-0 cursor-pointer"
+            onClick={() => setActiveTip(null)}
+          />
+
           <div className="relative w-full max-w-md bg-surface-elevated glass-panel rounded-3xl shadow-2xl overflow-hidden animate-modal-slide">
-             <div className={`h-32 w-full ${activeTip.theme.bg} relative flex items-center justify-center`}>
-                <div className="text-6xl animate-bounce">{activeTip.emoji}</div>
-             </div>
+            <div
+              className={`h-32 w-full ${activeTip.theme.bg} relative flex items-center justify-center`}
+            >
+              <div className="text-6xl animate-bounce">{activeTip.emoji}</div>
+            </div>
 
-             <div className="p-8 pt-10 relative">
-               <div className="absolute -top-5 left-8 px-4 py-2 bg-surface-elevated glass-panel rounded-xl shadow-lg text-sm font-bold tracking-wide text-text-primary uppercase">
-                 {activeTip.category}
-               </div>
-               
-               <h2 className="text-2xl font-extrabold text-text-primary mb-3">
-                 {activeTip.title}
-               </h2>
-               
-               <div className="p-4 bg-surface-muted rounded-2xl border border-border-subtle text-text-secondary leading-relaxed text-sm">
-                 {activeTip.fullDetail}
-               </div>
+            <div className="p-8 pt-10 relative">
+              <div className="absolute -top-5 left-8 px-4 py-2 bg-surface-elevated glass-panel rounded-xl shadow-lg text-sm font-bold tracking-wide text-text-primary uppercase">
+                {activeTip.category}
+              </div>
 
-               <button 
-                 onClick={() => setActiveTip(null)} 
-                 className={`w-full mt-6 py-3 rounded-xl font-bold shadow-lg shadow-brand-primary/20 transition-transform active:scale-95 cursor-pointer ${activeTip.theme.btn}`}
-               >
-                 Got it!
-               </button>
-             </div>
+              <h2 className="text-2xl font-extrabold text-text-primary mb-3">
+                {activeTip.title}
+              </h2>
+
+              <div className="p-4 bg-surface-muted rounded-2xl border border-border-subtle text-text-secondary leading-relaxed text-sm">
+                {activeTip.fullDetail}
+              </div>
+
+              <button
+                onClick={() => setActiveTip(null)}
+                className={`w-full mt-6 py-3 rounded-xl font-bold shadow-lg shadow-brand-primary/20 transition-transform active:scale-95 cursor-pointer ${activeTip.theme.btn}`}
+              >
+                Got it!
+              </button>
+            </div>
           </div>
         </div>
       )}

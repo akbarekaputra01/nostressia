@@ -2,7 +2,11 @@
 import { useState, useEffect, useRef } from "react";
 import { useOutletContext } from "react-router-dom";
 import html2canvas from "html2canvas";
-import { addBookmark, deleteBookmark, getMyBookmarks } from "../../services/bookmarkService";
+import {
+  addBookmark,
+  deleteBookmark,
+  getMyBookmarks,
+} from "../../services/bookmarkService";
 import {
   RefreshCw,
   Bookmark,
@@ -60,9 +64,9 @@ const EXPORT_SIZES = [{ id: "original", name: "Original", w: 464, h: 264 }];
 export default function Motivation() {
   const [likedIndex, setLikedIndex] = useState([]);
   const [toastMessage, setToastMessage] = useState("");
-  
+
   // 3. AMBIL DATA USER DARI WRAPPER (MAINLAYOUT)
-  const { user } = useOutletContext() || { user: {} }; 
+  const { user } = useOutletContext() || { user: {} };
 
   const showToast = (msg) => {
     setToastMessage(msg);
@@ -134,7 +138,7 @@ export default function Motivation() {
           }
         });
       },
-      { threshold: 0.18 }
+      { threshold: 0.18 },
     );
 
     if (headerRef.current) io.observe(headerRef.current);
@@ -216,38 +220,40 @@ export default function Motivation() {
   const toggleLike = async (id) => {
     const token = localStorage.getItem("token");
     if (!token) {
-        showToast("Please login first! 🔒");
-        return;
+      showToast("Please login first! 🔒");
+      return;
     }
-    
+
     // Jangan proses bookmark untuk Hero Quote yang belum punya ID (statis)
     if (!id || id === HERO_INDEX) {
-        showToast("Cannot bookmark this yet.");
-        return;
+      showToast("Cannot bookmark this yet.");
+      return;
     }
 
     const isLiked = likedIndex.includes(id);
 
     // Optimistic Update (Update UI dulu)
     setLikedIndex((prev) =>
-      isLiked ? prev.filter((i) => i !== id) : [...prev, id]
+      isLiked ? prev.filter((i) => i !== id) : [...prev, id],
     );
 
     try {
-        if (isLiked) {
-            // Hapus Bookmark
-            await deleteBookmark(id);
-            showToast("Bookmark removed 🗑️");
-        } else {
-            // Tambah Bookmark
-            await addBookmark(id);
-            showToast("Saved to profile ❤️");
-        }
+      if (isLiked) {
+        // Hapus Bookmark
+        await deleteBookmark(id);
+        showToast("Bookmark removed 🗑️");
+      } else {
+        // Tambah Bookmark
+        await addBookmark(id);
+        showToast("Saved to profile ❤️");
+      }
     } catch (err) {
-        console.error("Bookmark API Error:", err);
-        showToast("Failed to bookmark.");
-        // Rollback state jika gagal
-        setLikedIndex((prev) => isLiked ? [...prev, id] : prev.filter((i) => i !== id));
+      console.error("Bookmark API Error:", err);
+      showToast("Failed to bookmark.");
+      // Rollback state jika gagal
+      setLikedIndex((prev) =>
+        isLiked ? [...prev, id] : prev.filter((i) => i !== id),
+      );
     }
   };
   // ----------------------------------------------------
@@ -369,10 +375,18 @@ export default function Motivation() {
               }}
             />
             <div style={{ textAlign: "left" }}>
-              <div style={{ fontSize: 13, color: "rgb(var(--brand-primary))", fontWeight: 700 }}>
+              <div
+                style={{
+                  fontSize: 13,
+                  color: "rgb(var(--brand-primary))",
+                  fontWeight: 700,
+                }}
+              >
                 Motivation
               </div>
-              <div style={{ fontSize: 11, color: "rgb(var(--text-muted))" }}>Share Card</div>
+              <div style={{ fontSize: 11, color: "rgb(var(--text-muted))" }}>
+                Share Card
+              </div>
             </div>
           </div>
           <p
@@ -425,7 +439,7 @@ export default function Motivation() {
           {toastMessage}
         </div>
       )}
-      
+
       {/* 4. PASS USER KE NAVBAR */}
       <Navbar activeLink="Motivation" user={user} />
 
@@ -458,14 +472,16 @@ export default function Motivation() {
           }}
         >
           <div className="relative z-10">
-            <div className="inline-flex rounded-full bg-surface-elevated glass-panel border text-orange-700 text-sm font-medium shadow-sm px-3 py-1 mb-4 cursor-default dark:bg-surface dark:border-border dark:text-orange-300">
+            <div className="inline-flex rounded-full bg-surface-elevated glass-panel border text-orange-700 text-sm font-medium shadow-sm px-3 py-1 mb-4 cursor-default dark:bg-surface dark:border-border dark:text-orange-600">
               ✨ Today's Quote
             </div>
             <h2 className="text-2xl md:text-3xl font-bold mb-3 text-text-primary dark:text-text-primary">
               Featured Motivation
             </h2>
             <p className="text-lg md:text-xl italic text-text-secondary max-w-3xl dark:text-text-primary">
-              {hasHeroQuote ? `"${heroQuote.text}"` : "No motivations available yet."}
+              {hasHeroQuote
+                ? `"${heroQuote.text}"`
+                : "No motivations available yet."}
             </p>
             <div className="flex gap-3 mt-6 flex-wrap justify-end">
               <button
@@ -476,7 +492,7 @@ export default function Motivation() {
                 <RefreshCw className="w-4 h-4" />
                 New Quote
               </button>
-              
+
               {/* MODIFIKASI: Passing ID yang benar ke toggleLike */}
               <button
                 onClick={() => toggleLike(heroQuote.motivationId)}
@@ -492,7 +508,9 @@ export default function Motivation() {
                   }`}
                 />
                 <span className="hidden sm:inline">
-                  {likedIndex.includes(heroQuote.motivationId) ? "Saved" : "Save"}
+                  {likedIndex.includes(heroQuote.motivationId)
+                    ? "Saved"
+                    : "Save"}
                 </span>
               </button>
 
@@ -518,8 +536,8 @@ export default function Motivation() {
             {loading
               ? "Loading..."
               : error
-              ? error
-              : "Inspiration for every moment"}
+                ? error
+                : "Inspiration for every moment"}
           </p>
         </div>
 
@@ -546,7 +564,6 @@ export default function Motivation() {
                   Author: {quoteObj.authorName ?? "-"}
                 </div>
                 <div className="mt-4 pt-4 border-t border-border/60 flex justify-end gap-3 items-center">
-                  
                   {/* MODIFIKASI: Tombol Bookmark pada List */}
                   <button
                     onClick={() => toggleLike(id)}
@@ -714,7 +731,8 @@ export default function Motivation() {
         .animate-slide-up {
           opacity: 1 !important;
           transform: translateY(0) !important;
-          transition: transform 900ms cubic-bezier(0.16, 1, 0.3, 1),
+          transition:
+            transform 900ms cubic-bezier(0.16, 1, 0.3, 1),
             opacity 600ms ease;
         }
         .translate-y-6 {
@@ -735,7 +753,7 @@ export default function Motivation() {
           }
         }
       `}</style>
-      
+
       {/* 5. FOOTER */}
       <Footer />
     </div>
