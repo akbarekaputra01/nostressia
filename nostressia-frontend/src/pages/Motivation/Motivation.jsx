@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
+import PageMeta from "../../components/PageMeta";
 import Logo from "../../assets/images/Logo-Nostressia.png";
 import { getMotivations } from "../../services/motivationService";
 import { readAuthToken } from "../../utils/auth";
@@ -434,6 +435,10 @@ export default function Motivation() {
   return (
     // Tambahkan flex-col agar footer turun ke bawah
     <div style={backgroundStyle} className="min-h-screen flex flex-col">
+      <PageMeta
+        title="Motivation"
+        description="Dapatkan kutipan motivasi harian dan simpan favoritmu untuk menjaga semangat."
+      />
       <style>{`
         @keyframes gradient-bg { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
       `}</style>

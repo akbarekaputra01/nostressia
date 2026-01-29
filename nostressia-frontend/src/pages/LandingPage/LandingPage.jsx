@@ -17,6 +17,7 @@ import {
   Bell,
 } from "lucide-react";
 import Footer from "../../components/Footer";
+import PageMeta from "../../components/PageMeta";
 
 // --- Assets ---
 import LogoNostressia from "../../assets/images/Logo-Nostressia.png";
@@ -642,6 +643,10 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen font-sans bg-surface dark:bg-surface text-text-primary dark:text-text-primary overflow-x-hidden selection:bg-brand-accent selection:text-text-inverse">
+      <PageMeta
+        title="Landing Page"
+        description="Kenali Nostressia: pantau stres harian, jurnal refleksi, tips kesehatan mental, dan motivasi dalam satu aplikasi."
+      />
       {/* Background Pattern */}
       <div
         className="fixed inset-0 z-0 opacity-[0.4] pointer-events-none"

@@ -9,6 +9,7 @@ import {
   persistAdminToken,
 } from "../../utils/auth";
 import { createLogger } from "../../utils/logger";
+import PageMeta from "../../components/PageMeta";
 // Nostressia logo asset.
 import LogoNostressia from "../../assets/images/Logo-Nostressia.png";
 
@@ -97,6 +98,11 @@ export default function AdminLogin() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-surface px-4 font-sans text-text-primary">
+      <PageMeta
+        title="Admin Login"
+        description="Akses administratif Nostressia untuk mengelola data pengguna, tips, dan motivasi."
+        noindex
+      />
       <div className="max-w-md w-full bg-surface-elevated glass-panel dark:bg-surface rounded-2xl shadow-xl overflow-hidden border border-border-subtle dark:border-border glass-panel-strong">
         {/* Header with a pastel orange-blue gradient */}
         <div className="bg-linear-to-br from-brand-warning/20 via-brand-warning/10 to-brand-primary/20 dark:from-brand-warning/20 dark:via-surface/80 dark:to-brand-primary/20 p-8 text-center relative overflow-hidden">

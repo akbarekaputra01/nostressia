@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { storage, STORAGE_KEYS } from "../utils/storage";
 
-const THEME_KEY = "nostressia_theme";
 const AVAILABLE_THEMES = ["light", "dark", "system"];
 
 const ThemeContext = createContext(null);
@@ -31,14 +31,14 @@ const applyResolvedTheme = (preference, resolvedTheme) => {
 export function ThemeProvider({ children }) {
   const [preference, setPreferenceState] = useState(() => {
     if (typeof window === "undefined") return "system";
-    return normalizeTheme(localStorage.getItem(THEME_KEY));
+    return normalizeTheme(storage.getItem(STORAGE_KEYS.THEME_PREFERENCE));
   });
   const [resolvedTheme, setResolvedTheme] = useState(() => resolveTheme(preference));
 
   const setPreference = useCallback((nextPreference) => {
     const normalized = normalizeTheme(nextPreference);
     if (typeof window !== "undefined") {
-      localStorage.setItem(THEME_KEY, normalized);
+      storage.setItem(STORAGE_KEYS.THEME_PREFERENCE, normalized);
     }
     const nextResolved = resolveTheme(normalized);
     setPreferenceState(normalized);

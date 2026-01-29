@@ -1,12 +1,18 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { readAuthToken } from "../../utils/auth";
+import PageMeta from "../../components/PageMeta";
 
 export default function NotFound() {
   const isAuthenticated = Boolean(readAuthToken());
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-surface px-6 text-text-primary">
+      <PageMeta
+        title="404"
+        description="Halaman yang kamu cari tidak ditemukan di Nostressia."
+        noindex
+      />
       <div className="max-w-md text-center bg-surface-elevated glass-panel p-8 rounded-3xl border border-border">
         <p className="text-sm font-semibold text-brand-primary">404</p>
         <h1 className="mt-2 text-3xl font-extrabold text-text-primary dark:text-text-primary">

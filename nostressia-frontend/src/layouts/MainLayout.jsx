@@ -6,6 +6,7 @@ import { getStressEligibility } from "../services/stressService";
 import { clearAuthToken, readAuthToken } from "../utils/auth";
 import { restoreDailyReminderSubscription } from "../utils/notificationService";
 import { createLogger } from "../utils/logger";
+import { resolveLegacyJson, storage, STORAGE_KEYS } from "../utils/storage";
 
 const logger = createLogger("LAYOUT");
 
@@ -28,8 +29,12 @@ export default function MainLayout() {
   // 1. Load initial data from cache.
   // If a complete JSON payload exists, use it; otherwise fall back to defaults.
   const [user, setUser] = useState(() => {
-    const savedData = localStorage.getItem("cache_userData");
-    return savedData ? JSON.parse(savedData) : { name: "User", avatar: null };
+    const savedData = resolveLegacyJson({
+      key: STORAGE_KEYS.CACHE_USER_DATA,
+      legacyKeys: ["cache_userData"],
+      fallback: null,
+    });
+    return savedData || { name: "User", avatar: null };
   });
 
   const fetchUserData = useCallback(async () => {
@@ -70,12 +75,12 @@ export default function MainLayout() {
       };
 
       setUser(enrichedUserData);
-      localStorage.setItem("cache_userData", JSON.stringify(enrichedUserData));
+      storage.setJson(STORAGE_KEYS.CACHE_USER_DATA, enrichedUserData);
     } catch (error) {
       logger.error("Failed to refresh user data in layout:", error);
       if ([401, 403].includes(error?.status)) {
         clearAuthToken();
-        localStorage.removeItem("cache_userData");
+        storage.removeItem(STORAGE_KEYS.CACHE_USER_DATA);
         navigate("/login", { replace: true });
       }
     }

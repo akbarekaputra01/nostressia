@@ -6,11 +6,11 @@ import { ArrowLeft, Lightbulb, RefreshCw, CheckCircle2, AlertCircle } from "luci
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import { createLogger } from "../../utils/logger";
-
-const logger = createLogger("TIPS");
-
+import PageMeta from "../../components/PageMeta";
 // --- API URL ---
 import { getTipCategories, getTipsByCategory } from "../../services/tipsService";
+
+const logger = createLogger("TIPS");
 
 // --- COLOR CONFIGURATION ---
 const bgSun = "rgb(var(--bg-gradient-sun))";
@@ -214,6 +214,10 @@ export default function Tips() {
       className="min-h-screen text-text-primary dark:text-text-primary flex flex-col"
       style={bgStyle}
     >
+      <PageMeta
+        title="Tips"
+        description="Eksplorasi tips kesehatan mental dan kebiasaan sehat yang dipersonalisasi di Nostressia."
+      />
       <style>{`@keyframes gradient-bg { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }`}</style>
 
       <div className="fixed top-0 left-0 right-0 z-50 pt-4">

@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from "react";
 import Router from "./router";
+import { storage, STORAGE_KEYS } from "./utils/storage";
 
 function App() {
-  const authKey = "nostressia_internal_access";
   const [isAuthorized, setIsAuthorized] = useState(
-    () => localStorage.getItem(authKey) === "granted"
+    () => storage.getItem(STORAGE_KEYS.INTERNAL_ACCESS) === "granted"
   );
   const [credentials, setCredentials] = useState({ username: "", password: "" });
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     if (isAuthorized) {
-      localStorage.setItem(authKey, "granted");
+      storage.setItem(STORAGE_KEYS.INTERNAL_ACCESS, "granted");
     }
   }, [isAuthorized]);
 
@@ -43,7 +43,7 @@ function App() {
     const { username, password } = credentials;
 
     if (username === internalUser && password === internalPass) {
-      localStorage.setItem(authKey, "granted");
+      storage.setItem(STORAGE_KEYS.INTERNAL_ACCESS, "granted");
       setIsAuthorized(true);
       return;
     }
