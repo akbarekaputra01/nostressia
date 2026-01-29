@@ -35,7 +35,7 @@ const createApiClient = ({ authMode = AUTH_SCOPE.USER } = {}) => {
   });
 
   instance.interceptors.request.use((config) => {
-    const resolvedAuth = config?.auth ?? authMode;
+    const resolvedAuth = config?.authScope ?? config?.auth ?? authMode;
     if (resolvedAuth === false) {
       return config;
     }
@@ -47,6 +47,10 @@ const createApiClient = ({ authMode = AUTH_SCOPE.USER } = {}) => {
         ...config.headers,
         Authorization: `Bearer ${token}`,
       };
+    }
+
+    if (typeof config?.auth === "string" || typeof config?.auth === "boolean") {
+      delete config.auth;
     }
 
     return config;
@@ -73,7 +77,7 @@ const createApiClient = ({ authMode = AUTH_SCOPE.USER } = {}) => {
 
   const shouldLogAdminUnauthorized = (config, status) => {
     if (status !== 401) return false;
-    const resolvedAuth = config?.auth ?? authMode;
+    const resolvedAuth = config?.authScope ?? config?.auth ?? authMode;
     if (resolvedAuth !== AUTH_SCOPE.ADMIN) return false;
     const requestUrl = config?.url ?? "";
     return requestUrl.includes("/admin");
@@ -104,7 +108,7 @@ const createApiClient = ({ authMode = AUTH_SCOPE.USER } = {}) => {
       normalizedError.status = status;
       normalizedError.payload = payload;
 
-      const resolvedAuth = error?.config?.auth ?? authMode;
+      const resolvedAuth = error?.config?.authScope ?? error?.config?.auth ?? authMode;
       const token = resolvedAuth === false ? null : readTokenForScope(resolvedAuth);
       const isTokenInvalid = status === 401 && isInvalidTokenResponse(payload, message);
       const shouldRedirect =

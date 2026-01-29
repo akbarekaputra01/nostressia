@@ -34,7 +34,9 @@ describe("api client auth handling", () => {
     persistAdminToken("expired-token");
     persistAdminProfile({ id: 1, name: "Admin" });
 
-    await expect(adminClient.get("/admin/users", { auth: "admin" })).rejects.toThrow();
+    await expect(
+      adminClient.get("/admin/users", { authScope: "admin" }),
+    ).rejects.toThrow();
 
     expect(readAdminToken()).toBeNull();
     expect(readAdminProfile()).toBeNull();
