@@ -1105,6 +1105,20 @@ export default function Profile() {
   };
 
   const handlePermissionAllow = async () => {
+    if (
+      typeof window !== "undefined" &&
+      "Notification" in window &&
+      Notification.permission === "denied"
+    ) {
+      setPermissionStatus("denied");
+      setShowPermissionPrompt(true);
+      showNotification(
+        "Notifications are blocked. Enable permission in your browser settings.",
+        "error"
+      );
+      return;
+    }
+
     setShowPermissionPrompt(false);
     setPermissionStatus(null);
     try {
@@ -1299,7 +1313,7 @@ export default function Profile() {
               </button>
               <button
                 onClick={handlePermissionDismiss}
-                className="flex-1 py-2.5 bg-surface-muted hover:bg-surface-muted text-text-secondary dark:bg-surface dark:hover:bg-surface-muted dark:text-text-primary font-bold rounded-xl transition-all cursor-pointer"
+                className="flex-1 py-2.5 bg-surface-muted hover:bg-surface-elevated text-text-primary dark:bg-surface dark:hover:bg-surface-muted dark:text-text-primary font-bold rounded-xl border border-border/60 shadow-sm transition-all cursor-pointer"
               >
                 Not now
               </button>
