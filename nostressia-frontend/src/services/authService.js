@@ -2,7 +2,7 @@ import client, { unwrapResponse } from "../api/client";
 
 export const login = async (payload) => {
   const response = await client.post("/auth/login", payload, {
-    auth: false,
+    authScope: false,
     skipAuthRedirect: true,
   });
   return unwrapResponse(response);
@@ -10,7 +10,7 @@ export const login = async (payload) => {
 
 export const register = async (payload) => {
   const response = await client.post("/auth/register", payload, {
-    auth: false,
+    authScope: false,
     skipAuthRedirect: true,
   });
   return unwrapResponse(response);
@@ -18,7 +18,7 @@ export const register = async (payload) => {
 
 export const verifyOtp = async (payload) => {
   const response = await client.post("/auth/verify-otp", payload, {
-    auth: false,
+    authScope: false,
     skipAuthRedirect: true,
   });
   return unwrapResponse(response);
@@ -26,7 +26,7 @@ export const verifyOtp = async (payload) => {
 
 export const forgotPassword = async (payload) => {
   const response = await client.post("/auth/forgot-password", payload, {
-    auth: false,
+    authScope: false,
     skipAuthRedirect: true,
   });
   return unwrapResponse(response);
@@ -34,7 +34,7 @@ export const forgotPassword = async (payload) => {
 
 export const resetPasswordConfirm = async (payload) => {
   const response = await client.post("/auth/reset-password-confirm", payload, {
-    auth: false,
+    authScope: false,
     skipAuthRedirect: true,
   });
   return unwrapResponse(response);
@@ -42,7 +42,7 @@ export const resetPasswordConfirm = async (payload) => {
 
 export const verifyResetPasswordOtp = async (payload) => {
   const response = await client.post("/auth/reset-password-verify", payload, {
-    auth: false,
+    authScope: false,
     skipAuthRedirect: true,
   });
   return unwrapResponse(response);
@@ -79,7 +79,7 @@ export const verifyCurrentPassword = async (payload) => {
 
 export const adminLogin = async (payload) => {
   const response = await client.post("/auth/admin/login", payload, {
-    auth: false,
+    authScope: false,
     skipAuthRedirect: true,
   });
   return unwrapResponse(response);
