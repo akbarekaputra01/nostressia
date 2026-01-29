@@ -5,6 +5,9 @@ import { motion as Motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Lightbulb, RefreshCw, CheckCircle2, AlertCircle } from "lucide-react";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
+import { createLogger } from "../../utils/logger";
+
+const logger = createLogger("TIPS");
 
 // --- API URL ---
 import { getTipCategories, getTipsByCategory } from "../../services/tipsService";
@@ -149,7 +152,7 @@ export default function Tips() {
       setCategories(updatedCategories);
       setSyncStatus("updated");
     } catch {
-      console.warn("Sync failed, no tips data loaded.");
+      logger.warn("Sync failed, no tips data loaded.");
       setCategories([]);
       setSyncStatus("error");
     }

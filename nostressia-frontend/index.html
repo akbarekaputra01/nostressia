@@ -2,15 +2,39 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    
+
     <link rel="icon" type="image/png" href="/Logo-Nostressia.png" />
     
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Nostressia</title> 
+    <title>Nostressia</title>
+    <meta
+      name="description"
+      content="Nostressia membantu memantau stres harian, memberikan tips kesehatan mental, dan memudahkan refleksi lewat jurnal serta motivasi."
+    />
+    <meta name="theme-color" content="#0162F1" />
+    <meta property="og:title" content="Nostressia" />
+    <meta
+      property="og:description"
+      content="Pantau stres harian, dapatkan tips kesehatan mental, dan bangun kebiasaan sehat bersama Nostressia."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="/Logo-Nostressia.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Nostressia" />
+    <meta
+      name="twitter:description"
+      content="Pantau stres harian, dapatkan tips kesehatan mental, dan bangun kebiasaan sehat bersama Nostressia."
+    />
+    <meta name="twitter:image" content="/Logo-Nostressia.png" />
     <script>
       (() => {
         const themeKey = "nostressia_theme";
-        const storedTheme = localStorage.getItem(themeKey);
+        let storedTheme = null;
+        try {
+          storedTheme = localStorage.getItem(themeKey);
+        } catch (error) {
+          storedTheme = null;
+        }
         const normalizedTheme = ["light", "dark", "system"].includes(
           String(storedTheme || "").toLowerCase()
         )

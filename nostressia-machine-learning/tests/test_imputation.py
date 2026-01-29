@@ -31,3 +31,14 @@ def test_impute_latest_gpa_per_user_uses_latest_value():
 
     assert user1 == [3.2, 3.6, 3.6]
     assert pd.isna(user2).all()
+
+
+def test_impute_latest_gpa_per_user_requires_columns():
+    df = pd.DataFrame({"user_id": [1, 2], "date": ["2024-01-01", "2024-01-02"]})
+
+    try:
+        impute_latest_gpa_per_user(df)
+    except ValueError as error:
+        assert "DataFrame must include user and GPA columns." in str(error)
+    else:
+        raise AssertionError("Expected ValueError when GPA column is missing.")

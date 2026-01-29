@@ -6,6 +6,9 @@ import {
   clearAuthToken,
   readTokenForScope,
 } from "../utils/auth";
+import { createLogger } from "../utils/logger";
+
+const logger = createLogger("API");
 
 const rawBaseUrl = import.meta.env.VITE_API_BASE_URL || "";
 const normalizedBaseUrl = rawBaseUrl.replace(/\/$/, "");
@@ -111,14 +114,14 @@ const createApiClient = ({ authMode = AUTH_SCOPE.USER } = {}) => {
       const resolvedAuth = error?.config?.authScope ?? error?.config?.auth ?? authMode;
       const token = resolvedAuth === false ? null : readTokenForScope(resolvedAuth);
       const isTokenInvalid = status === 401 && isInvalidTokenResponse(payload, message);
+      const shouldClearSession = status === 401 && Boolean(token) && resolvedAuth !== false;
       const shouldRedirect =
-        isTokenInvalid &&
+        shouldClearSession &&
         !error?.config?.skipAuthRedirect &&
-        Boolean(token) &&
-        resolvedAuth !== false;
+        (isTokenInvalid || resolvedAuth === AUTH_SCOPE.ADMIN);
 
       if (shouldLogAdminUnauthorized(error?.config, status)) {
-        console.warn("[AUTH][ADMIN] 401 response", {
+        logger.warn("[AUTH][ADMIN] 401 response", {
           url: error?.config?.url,
           message,
           payload,
@@ -127,9 +130,12 @@ const createApiClient = ({ authMode = AUTH_SCOPE.USER } = {}) => {
         });
       }
 
+      if (shouldClearSession) {
+        handleUnauthorized(resolvedAuth);
+      }
+
       if (shouldRedirect && typeof window !== "undefined") {
         const isAdmin = resolvedAuth === AUTH_SCOPE.ADMIN;
-        handleUnauthorized(resolvedAuth);
         const currentPath = window.location?.pathname;
         if (shouldRedirectToLogin(isAdmin, currentPath)) {
           window.location.assign(isAdmin ? "/admin/login" : "/login");

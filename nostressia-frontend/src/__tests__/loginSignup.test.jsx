@@ -32,7 +32,6 @@ describe("Login signup flow", () => {
 
   it("submits the signup form and shows the OTP step", async () => {
     register.mockResolvedValueOnce({});
-    vi.spyOn(window, "confirm").mockReturnValue(true);
     const user = userEvent.setup();
     render(
       <MemoryRouter>
@@ -65,6 +64,7 @@ describe("Login signup flow", () => {
     await user.click(
       screen.getAllByRole("button", { name: /sign up free/i }).at(-1),
     );
+    await user.click(screen.getByRole("button", { name: /confirm/i }));
 
     expect(register).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -80,9 +80,7 @@ describe("Login signup flow", () => {
 
   it("shows a friendly error when signup fails", async () => {
     register.mockRejectedValueOnce(new Error("Registration failed."));
-    vi.spyOn(window, "confirm").mockReturnValue(true);
     const user = userEvent.setup();
-    const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
 
     render(
       <MemoryRouter>
@@ -114,8 +112,8 @@ describe("Login signup flow", () => {
     await user.click(
       screen.getAllByRole("button", { name: /sign up free/i }).at(-1),
     );
+    await user.click(screen.getByRole("button", { name: /confirm/i }));
 
-    expect(alertSpy).toHaveBeenCalledWith("Registration failed.");
-    alertSpy.mockRestore();
+    expect(await screen.findByText("Registration failed.")).toBeInTheDocument();
   });
 });

@@ -39,6 +39,9 @@ import { clearAdminSession, readAdminProfile, readAdminToken } from "../../utils
 import { useTheme } from "../../theme/ThemeProvider";
 import Toast from "../../components/Toast";
 import ConfirmModal from "../../components/ConfirmModal";
+import { createLogger } from "../../utils/logger";
+
+const logger = createLogger("ADMIN_PAGE");
 
 export default function AdminPage({ skipAuth = false }) {
   const navigate = useNavigate();
@@ -124,7 +127,7 @@ export default function AdminPage({ skipAuth = false }) {
           return;
         }
       } catch (error) {
-        console.warn("[ADMINPAGE] Failed to parse stored admin profile. Attempting fallback.", {
+        logger.warn("Failed to parse stored admin profile. Attempting fallback.", {
           error,
           rawStoredUser,
         });
@@ -136,15 +139,15 @@ export default function AdminPage({ skipAuth = false }) {
     }
 
     const token = readAdminToken();
-    console.warn("Admin token present:", Boolean(token));
+    logger.warn("Admin token present:", Boolean(token));
     if (token) {
       setCurrentUser({ id: 0, name: "Admin", role: "admin" });
       return;
     }
 
     clearAdminSession();
-    console.warn(
-      "[ADMINPAGE] redirect to /admin/login because admin token/profile are missing or invalid",
+    logger.warn(
+      "Redirect to /admin/login because admin token/profile are missing or invalid.",
     );
     navigate("/admin/login");
   }, [navigate, skipAuth]);
@@ -180,7 +183,7 @@ export default function AdminPage({ skipAuth = false }) {
         }));
         setQuotes(formatted);
       })
-      .catch((err) => console.log("Offline or API error:", err));
+      .catch((err) => logger.warn("Offline or API error:", err));
 
     // 2. Fetch dashboard statistics for verified users and diaries.
     const fetchStats = async () => {
@@ -199,7 +202,7 @@ export default function AdminPage({ skipAuth = false }) {
         const diaryData = await getAdminDiaries({ limit: 1 });
         setTotalDiariesCount(diaryData.total || 0);
       } catch (error) {
-        console.error("Failed to calculate stats:", error);
+        logger.error("Failed to calculate stats:", error);
       }
     };
 
@@ -242,7 +245,7 @@ export default function AdminPage({ skipAuth = false }) {
           setQuotes(quotes.filter((q) => q.id !== id));
           showToast("Quote deleted.", "success");
         } catch (err) {
-          console.error(err);
+          logger.error("Failed to delete quote.", err);
           showToast("Failed to delete quote.", "error");
         }
       },
@@ -478,7 +481,7 @@ export default function AdminPage({ skipAuth = false }) {
       // If the filtered list is empty but the source data exists,
       // Backend does not include the "isVerified" field.
       if (validUsers.length === 0 && normalizedUsers.length > 0) {
-        console.warn(
+        logger.warn(
           "Warning: the API did not return 'isVerified'. Filtering could not be applied.",
         );
         setUsers(normalizedUsers); // Show all users instead of an empty list.
@@ -490,7 +493,7 @@ export default function AdminPage({ skipAuth = false }) {
       // Note: client-side filtering makes pagination approximate.
       setTotalPages(Math.ceil(data.total / 10));
     } catch (error) {
-      console.error(error);
+      logger.error("Failed to fetch users.", error);
     } finally {
       setLoadingUsers(false);
     }
@@ -550,7 +553,7 @@ export default function AdminPage({ skipAuth = false }) {
       setDiaries(normalizedDiaries);
       setTotalPages(Math.ceil(data.total / 10));
     } catch (error) {
-      console.error(error);
+      logger.error("Failed to fetch diaries.", error);
     } finally {
       setLoadingDiaries(false);
     }
