@@ -1108,8 +1108,27 @@ export default function Profile() {
     setShowPermissionPrompt(false);
     setPermissionStatus(null);
     try {
+      if (typeof window !== "undefined" && "Notification" in window) {
+        const permissionResult = await Notification.requestPermission();
+        if (permissionResult !== "granted") {
+          const disabledSettings = { ...notifSettings, dailyReminder: false };
+          setNotifSettings(disabledSettings);
+          saveNotificationSettings(disabledSettings);
+          setPermissionStatus(permissionResult);
+          setShowPermissionPrompt(true);
+          showNotification(
+            permissionResult === "default"
+              ? "Notification permission request was dismissed."
+              : "Notification permission was denied.",
+            "error"
+          );
+          return;
+        }
+      }
       saveNotificationSettings(notifSettings);
-      const result = await subscribeDailyReminder(notifSettings.reminderTime);
+      const result = await subscribeDailyReminder(notifSettings.reminderTime, {
+        skipPermissionPrompt: true,
+      });
       if (!result.ok) {
         const disabledSettings = { ...notifSettings, dailyReminder: false };
         setNotifSettings(disabledSettings);
