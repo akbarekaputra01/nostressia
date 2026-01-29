@@ -49,7 +49,24 @@ export default function AdminPage({ skipAuth = false }) {
       return; 
     }
     const storedUser = readAdminProfile();
-    console.warn("Admin profile payload before parse:", storedUser);
+    const rawStoredUser = localStorage.getItem("nostressia_adminProfile");
+    if (!storedUser && rawStoredUser) {
+      try {
+        const parsedUser = JSON.parse(rawStoredUser);
+        if (parsedUser && typeof parsedUser === "object") {
+          setCurrentUser(parsedUser);
+          return;
+        }
+      } catch (error) {
+        console.warn(
+          "[ADMINPAGE] Failed to parse stored admin profile. Attempting fallback.",
+          {
+            error,
+            rawStoredUser,
+          },
+        );
+      }
+    }
     if (storedUser && typeof storedUser === "object") {
       setCurrentUser(storedUser);
       return;
@@ -63,6 +80,9 @@ export default function AdminPage({ skipAuth = false }) {
     }
 
     clearAdminSession();
+    console.warn(
+      "[ADMINPAGE] redirect to /admin/login because admin token/profile are missing or invalid",
+    );
     navigate("/admin/login");
   }, [navigate, skipAuth]);
 
