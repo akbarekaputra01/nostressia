@@ -146,7 +146,7 @@ export const readAdminProfile = () => {
  */
 export const persistAdminProfile = (profile) => {
   if (!profile) return;
-  const payload = typeof profile === "string" ? profile : JSON.stringify(profile);
+  const payload = JSON.stringify(profile);
   localStorage.setItem(ADMIN_PROFILE_KEY, payload);
 };
 
@@ -161,7 +161,19 @@ export const clearAdminProfile = () => {
 /**
  * Determine whether the admin session is fully populated.
  */
-export const hasAdminSession = () => Boolean(readAdminToken() && readAdminProfile());
+export const hasAdminSession = () => {
+  const token = readAdminToken();
+  const storedProfile = readAdminProfile();
+  if (!token || !storedProfile) return false;
+
+  try {
+    JSON.parse(storedProfile);
+    return true;
+  } catch (error) {
+    console.warn("Invalid admin profile payload in storage:", error);
+    return false;
+  }
+};
 
 /**
  * Remove all admin session artifacts (token + profile).

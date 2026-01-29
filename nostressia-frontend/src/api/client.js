@@ -89,7 +89,9 @@ const createApiClient = ({ authMode = AUTH_SCOPE.USER } = {}) => {
       normalizedError.payload = payload;
 
       const resolvedAuth = error?.config?.auth ?? authMode;
-      const shouldRedirect = status === 401 && !error?.config?.skipAuthRedirect;
+      const token = resolvedAuth === false ? null : readTokenForScope(resolvedAuth);
+      const shouldRedirect =
+        status === 401 && !error?.config?.skipAuthRedirect && Boolean(token);
       if (shouldRedirect && typeof window !== "undefined" && resolvedAuth !== false) {
         const isAdmin = resolvedAuth === AUTH_SCOPE.ADMIN;
         handleUnauthorized(resolvedAuth);

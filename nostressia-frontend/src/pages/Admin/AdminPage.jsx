@@ -49,16 +49,21 @@ export default function AdminPage({ skipAuth = false }) {
       return; 
     }
     const storedUser = readAdminProfile();
+    console.warn("Admin profile payload before parse:", storedUser);
     if (storedUser) {
       try {
-        setCurrentUser(JSON.parse(storedUser));
-        return;
+        const parsedUser = JSON.parse(storedUser);
+        if (parsedUser && typeof parsedUser === "object") {
+          setCurrentUser(parsedUser);
+          return;
+        }
       } catch (error) {
         console.error("Failed to parse stored admin profile:", error);
       }
     }
 
     const token = readAdminToken();
+    console.warn("Admin token present:", Boolean(token));
     if (token) {
       setCurrentUser({ id: 0, name: "Admin", role: "admin" });
       return;
