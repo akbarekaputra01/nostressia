@@ -53,7 +53,7 @@ def send_otp_email(to_email: str, otp_code: str) -> Tuple[bool, Optional[str]]:
                 {otp_code}
             </h1>
             <p style="margin-top: 20px; font-size: 12px; color: #888;">
-                This code is valid for 10 minutes.<br>
+                This code is valid for 5 minutes. OTP berlaku 5 menit.<br>
                 If you did not sign up, you can ignore this email.
             </p>
         </div>
@@ -105,6 +105,7 @@ def send_reset_password_email(to_email: str, otp_code: str) -> Tuple[bool, Optio
                 {otp_code}
             </h1>
             <p style="margin-top: 20px; font-size: 12px; color: #888;">
+                OTP berlaku 5 menit.<br>
                 If this was not you, you can ignore this email. Your account remains safe.
             </p>
         </div>

@@ -1,5 +1,5 @@
 // src/pages/admin/AdminPage.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   LayoutDashboard,
   Sparkles,
@@ -36,6 +36,9 @@ import {
   updateTip,
 } from "../../services/tipsService";
 import { clearAdminSession, readAdminProfile, readAdminToken } from "../../utils/auth";
+import { useTheme } from "../../theme/ThemeProvider";
+import Toast from "../../components/Toast";
+import ConfirmModal from "../../components/ConfirmModal";
 
 export default function AdminPage({ skipAuth = false }) {
   const navigate = useNavigate();
@@ -68,6 +71,42 @@ export default function AdminPage({ skipAuth = false }) {
   // Modal State
   const [isEditUserModalOpen, setIsEditUserModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
+  const [toast, setToast] = useState(null);
+  const [confirmState, setConfirmState] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    confirmLabel: "Yes",
+    onConfirm: null,
+  });
+
+  const { preference: themePreference, setPreference } = useTheme();
+
+  const showToast = useCallback((message, type = "info") => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  }, []);
+
+  const openConfirm = useCallback((config) => {
+    setConfirmState({
+      isOpen: true,
+      title: config.title || "Confirm action",
+      message: config.message || "Are you sure?",
+      confirmLabel: config.confirmLabel || "Yes",
+      onConfirm: config.onConfirm || null,
+    });
+  }, []);
+
+  const handleConfirm = async () => {
+    if (confirmState.onConfirm) {
+      await confirmState.onConfirm();
+    }
+    setConfirmState((prev) => ({ ...prev, isOpen: false, onConfirm: null }));
+  };
+
+  const handleCancelConfirm = () => {
+    setConfirmState((prev) => ({ ...prev, isOpen: false, onConfirm: null }));
+  };
 
   // Auth gate: load the admin profile or redirect to the login screen.
   useEffect(() => {
@@ -116,6 +155,11 @@ export default function AdminPage({ skipAuth = false }) {
   };
 
   const token = readAdminToken();
+  const themeOptions = [
+    { value: "light", label: "Light" },
+    { value: "dark", label: "Dark" },
+    { value: "system", label: "System" },
+  ];
 
   // ==============================
   // 1. MOTIVATION & DASHBOARD STATS
@@ -183,18 +227,26 @@ export default function AdminPage({ skipAuth = false }) {
       ]);
       setQuoteForm({ text: "", author: "" });
     } catch {
-      alert("Failed to save.");
+      showToast("Failed to save.", "error");
     }
   };
 
   const handleDeleteQuote = async (id) => {
-    if (!confirm("Delete this quote?")) return;
-    try {
-      await deleteMotivation(id);
-      setQuotes(quotes.filter((q) => q.id !== id));
-    } catch (err) {
-      console.error(err);
-    }
+    openConfirm({
+      title: "Delete quote",
+      message: "Delete this quote?",
+      confirmLabel: "Delete",
+      onConfirm: async () => {
+        try {
+          await deleteMotivation(id);
+          setQuotes(quotes.filter((q) => q.id !== id));
+          showToast("Quote deleted.", "success");
+        } catch (err) {
+          console.error(err);
+          showToast("Failed to delete quote.", "error");
+        }
+      },
+    });
   };
 
   // ==============================
@@ -284,22 +336,32 @@ export default function AdminPage({ skipAuth = false }) {
       setTipCountByCategory((prev) => ({ ...prev, [catId]: (prev[catId] || 0) + 1 }));
       setCurrentTipInput("");
     } catch {
-      alert("Failed to add tip.");
+      showToast("Failed to add tip.", "error");
     }
   };
 
   const handleDeleteTipFromCategory = async (catId, tipId) => {
-    if (!confirm("Delete this tip?")) return;
-    try {
-      await deleteTip(tipId);
-      setTipsByCategory((prev) => ({
-        ...prev,
-        [catId]: (prev[catId] || []).filter((t) => t.id !== tipId),
-      }));
-      setTipCountByCategory((prev) => ({ ...prev, [catId]: Math.max(0, (prev[catId] || 1) - 1) }));
-    } catch {
-      alert("Failed to delete tip.");
-    }
+    openConfirm({
+      title: "Delete tip",
+      message: "Delete this tip?",
+      confirmLabel: "Delete",
+      onConfirm: async () => {
+        try {
+          await deleteTip(tipId);
+          setTipsByCategory((prev) => ({
+            ...prev,
+            [catId]: (prev[catId] || []).filter((t) => t.id !== tipId),
+          }));
+          setTipCountByCategory((prev) => ({
+            ...prev,
+            [catId]: Math.max(0, (prev[catId] || 1) - 1),
+          }));
+          showToast("Tip deleted.", "success");
+        } catch {
+          showToast("Failed to delete tip.", "error");
+        }
+      },
+    });
   };
 
   const handleStartEditTip = (tip) => {
@@ -331,7 +393,7 @@ export default function AdminPage({ skipAuth = false }) {
       }));
       handleCancelEditTip();
     } catch {
-      alert("Failed to update tip.");
+      showToast("Failed to update tip.", "error");
     } finally {
       setIsUpdatingTip(false);
     }
@@ -352,23 +414,30 @@ export default function AdminPage({ skipAuth = false }) {
       setTipCountByCategory((prev) => ({ ...prev, [newCategoryId]: 0 }));
       setNewCategoryName("");
     } catch {
-      alert("Failed to create category.");
+      showToast("Failed to create category.", "error");
     }
   };
 
   const handleDeleteCategory = async (categoryId) => {
-    if (!confirm("Delete this category? Tips under it will be removed.")) return;
-    try {
-      await deleteTipCategory(categoryId);
-      setTipCategories((prev) => prev.filter((cat) => cat.id !== categoryId));
-      setTipCountByCategory((prev) => {
-        const next = { ...prev };
-        delete next[categoryId];
-        return next;
-      });
-    } catch {
-      alert("Failed to delete category.");
-    }
+    openConfirm({
+      title: "Delete category",
+      message: "Delete this category? Tips under it will be removed.",
+      confirmLabel: "Delete",
+      onConfirm: async () => {
+        try {
+          await deleteTipCategory(categoryId);
+          setTipCategories((prev) => prev.filter((cat) => cat.id !== categoryId));
+          setTipCountByCategory((prev) => {
+            const next = { ...prev };
+            delete next[categoryId];
+            return next;
+          });
+          showToast("Category deleted.", "success");
+        } catch {
+          showToast("Failed to delete category.", "error");
+        }
+      },
+    });
   };
 
   const closeModal = () => {
@@ -428,15 +497,21 @@ export default function AdminPage({ skipAuth = false }) {
   };
 
   const handleDeleteUser = async (userId) => {
-    if (!confirm("Are you sure you want to DELETE this user permanently?")) return;
-    try {
-      await deleteAdminUser(userId);
-      alert("User deleted successfully");
-      fetchUsers();
-      setTotalUserCount((prev) => Math.max(0, prev - 1));
-    } catch (error) {
-      alert(error.message);
-    }
+    openConfirm({
+      title: "Delete user",
+      message: "Are you sure you want to DELETE this user permanently?",
+      confirmLabel: "Delete",
+      onConfirm: async () => {
+        try {
+          await deleteAdminUser(userId);
+          showToast("User deleted successfully.", "success");
+          fetchUsers();
+          setTotalUserCount((prev) => Math.max(0, prev - 1));
+        } catch (error) {
+          showToast(error.message || "Failed to delete user.", "error");
+        }
+      },
+    });
   };
 
   const handleSaveUser = async (e) => {
@@ -449,11 +524,11 @@ export default function AdminPage({ skipAuth = false }) {
         gender: editingUser.gender,
         userDob: editingUser.userDob,
       });
-      alert("User updated!");
+      showToast("User updated!", "success");
       setIsEditUserModalOpen(false);
       fetchUsers();
     } catch (error) {
-      alert(error.message);
+      showToast(error.message || "Failed to update user.", "error");
     }
   };
 
@@ -482,15 +557,21 @@ export default function AdminPage({ skipAuth = false }) {
   };
 
   const handleDeleteDiary = async (diaryId) => {
-    if (!confirm("Delete this diary entry permanently?")) return;
-    try {
-      await deleteAdminDiary(diaryId);
-      alert("Diary deleted");
-      fetchDiaries();
-      setTotalDiariesCount((prev) => Math.max(0, prev - 1));
-    } catch (error) {
-      alert(error.message);
-    }
+    openConfirm({
+      title: "Delete diary entry",
+      message: "Delete this diary entry permanently?",
+      confirmLabel: "Delete",
+      onConfirm: async () => {
+        try {
+          await deleteAdminDiary(diaryId);
+          showToast("Diary deleted.", "success");
+          fetchDiaries();
+          setTotalDiariesCount((prev) => Math.max(0, prev - 1));
+        } catch (error) {
+          showToast(error.message || "Failed to delete diary.", "error");
+        }
+      },
+    });
   };
 
   // SWITCHER LOGIC
@@ -842,6 +923,21 @@ export default function AdminPage({ skipAuth = false }) {
 
           {/* User Profile & Logout */}
           <div className="flex items-center gap-4 w-full md:w-auto justify-end">
+            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-surface-muted border border-border-subtle shadow-inner">
+              <span className="text-xs font-semibold text-text-muted">Theme</span>
+              <select
+                value={themePreference}
+                onChange={(e) => setPreference(e.target.value)}
+                className="text-sm font-semibold bg-transparent text-text-primary focus:outline-hidden cursor-pointer"
+                aria-label="Select theme"
+              >
+                {themeOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
             {/* User Pill */}
             <div className="hidden md:flex items-center gap-3 pl-2 pr-5 py-1.5 rounded-full bg-surface-muted border border-border-subtle shadow-inner">
               <div className="bg-surface-elevated glass-panel p-1 rounded-full border border-border">
@@ -1278,6 +1374,20 @@ export default function AdminPage({ skipAuth = false }) {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={confirmState.isOpen}
+        title={confirmState.title}
+        message={confirmState.message}
+        confirmLabel={confirmState.confirmLabel}
+        onConfirm={handleConfirm}
+        onCancel={handleCancelConfirm}
+      />
+      <Toast
+        message={toast?.message}
+        type={toast?.type}
+        onClose={() => setToast(null)}
+      />
 
       <style>{`
         @keyframes fade-in { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } } 
