@@ -1,5 +1,6 @@
 import client from "../api/client";
 import { createLogger } from "./logger";
+import { storage } from "./storage";
 
 const logger = createLogger("NOTIFICATIONS");
 
@@ -65,19 +66,14 @@ const ensurePushSubscription = async (registration) => {
 
 export const saveNotificationSettings = (settings) => {
   if (typeof window === "undefined") return;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+  storage.setJson(STORAGE_KEY, settings);
 };
 
 export const getSavedNotificationSettings = () => {
   if (typeof window === "undefined") return null;
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (!stored) return null;
-  try {
-    return JSON.parse(stored);
-  } catch (error) {
-    logger.warn("Failed to parse notification settings:", error);
-    return null;
-  }
+  const parsed = storage.getJson(STORAGE_KEY, null);
+  if (!parsed) return null;
+  return parsed;
 };
 
 export const subscribeDailyReminder = async (

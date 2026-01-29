@@ -14,8 +14,10 @@ import { getTipCategories, getTipsByCategory } from "../../services/tipsService"
 import Footer from "../../components/Footer";
 import Navbar from "../../components/Navbar";
 import Toast from "../../components/Toast";
+import PageMeta from "../../components/PageMeta";
 import { clearAuthToken, readAuthToken } from "../../utils/auth";
 import { createLogger } from "../../utils/logger";
+import { resolveLegacyValue, storage, STORAGE_KEYS } from "../../utils/storage";
 
 const logger = createLogger("DASHBOARD");
 
@@ -25,7 +27,6 @@ const brandOrange = "#FFBF00";
 const brandGreen = "#00A4FF";
 const brandRed = "#FF6700";
 
-const TODAY_LOG_STORAGE_KEY = "nostressia_today_log";
 const bgSun = "rgb(var(--bg-gradient-sun))";
 const bgOrange = "rgb(var(--bg-gradient-orange))";
 const bgSky = "rgb(var(--bg-gradient-sky))";
@@ -490,7 +491,10 @@ export default function Dashboard() {
 
   // --- FORM STATE ---
   const [gpa, setGpa] = useState(() => {
-    const saved = localStorage.getItem("user_gpa");
+    const saved = resolveLegacyValue({
+      key: STORAGE_KEYS.USER_GPA,
+      legacyKeys: ["user_gpa"],
+    });
     return saved ? Number(saved) : "";
   });
   const [latestKnownGpa, setLatestKnownGpa] = useState(null);
@@ -888,7 +892,7 @@ export default function Dashboard() {
           setHasSubmittedToday(false);
           setStressScore(0);
           setTodayLogId(null);
-          localStorage.removeItem(TODAY_LOG_STORAGE_KEY);
+          storage.removeItem(STORAGE_KEYS.TODAY_LOG);
           setMissingDateKeys([]);
           setMissingRestorePopup(null);
           setDismissedMissingPopup(false);
@@ -927,7 +931,8 @@ export default function Dashboard() {
         if (latestGpa !== null) {
           setGpa((prev) => {
             if (prev === "" || prev === null || Number.isNaN(Number(prev))) {
-              localStorage.setItem("user_gpa", String(latestGpa));
+              storage.setItem(STORAGE_KEYS.USER_GPA, String(latestGpa));
+              storage.removeItem("user_gpa");
               return latestGpa;
             }
             return prev;
@@ -986,13 +991,13 @@ export default function Dashboard() {
           setMoodIndex(moodIdx >= 0 ? moodIdx : 2);
           setPendingTodayReminder(false);
           setShowTodayReminder(false);
-          localStorage.setItem(TODAY_LOG_STORAGE_KEY, TODAY_KEY);
+          storage.setItem(STORAGE_KEYS.TODAY_LOG, TODAY_KEY);
         } else {
           setHasSubmittedToday(false);
           setStressScore(0);
           setTodayLogId(null);
           setPendingTodayReminder(true);
-          localStorage.removeItem(TODAY_LOG_STORAGE_KEY);
+          storage.removeItem(STORAGE_KEYS.TODAY_LOG);
         }
       } catch (error) {
         if (error?.name === "AbortError") return;
@@ -1001,7 +1006,7 @@ export default function Dashboard() {
         setHasSubmittedToday(false);
         setStressScore(0);
         setTodayLogId(null);
-        localStorage.removeItem(TODAY_LOG_STORAGE_KEY);
+        storage.removeItem(STORAGE_KEYS.TODAY_LOG);
         setMissingDateKeys([]);
         setMissingRestorePopup(null);
         setDismissedMissingPopup(false);
@@ -1211,7 +1216,8 @@ export default function Dashboard() {
     }
 
     setGpa(num);
-    localStorage.setItem("user_gpa", num); // Persist to browser storage.
+    storage.setItem(STORAGE_KEYS.USER_GPA, num); // Persist to browser storage.
+    storage.removeItem("user_gpa");
     setIsEditingGpa(false);
   }
 
@@ -1272,7 +1278,8 @@ export default function Dashboard() {
     }
     if (gpa === "" || gpa === null) {
       setGpa(resolvedGpa);
-      localStorage.setItem("user_gpa", resolvedGpa);
+      storage.setItem(STORAGE_KEYS.USER_GPA, resolvedGpa);
+      storage.removeItem("user_gpa");
     }
 
     if (sleepHours === "" || sleepHours < 0 || sleepHours > 24) {
@@ -1315,7 +1322,7 @@ export default function Dashboard() {
       if (isTargetToday) {
         setStressScore(score);
         setHasSubmittedToday(true);
-        localStorage.setItem(TODAY_LOG_STORAGE_KEY, TODAY_KEY);
+        storage.setItem(STORAGE_KEYS.TODAY_LOG, TODAY_KEY);
       }
       const resolvedLogId = savedLogId ?? todayLogId ?? null;
       if (savedLogId && isTargetToday) setTodayLogId(savedLogId);
@@ -1392,6 +1399,10 @@ export default function Dashboard() {
       }}
       className="relative"
     >
+      <PageMeta
+        title="Dashboard"
+        description="Pantau stres harian, prediksi mood, dan ringkasan statistik pribadi di dashboard Nostressia."
+      />
       <style>{`
         @keyframes gradient-bg { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         .backface-hidden { backface-visibility: hidden; -webkit-backface-visibility: hidden; }

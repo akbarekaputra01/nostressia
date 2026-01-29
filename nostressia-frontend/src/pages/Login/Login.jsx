@@ -31,6 +31,7 @@ import {
 import { motion as Motion, AnimatePresence } from "framer-motion";
 import Toast from "../../components/Toast";
 import ConfirmModal from "../../components/ConfirmModal";
+import PageMeta from "../../components/PageMeta";
 
 import logoBuka from "../../assets/images/Logo-Buka.png";
 import logoKedip from "../../assets/images/Logo-Kedip.png";
@@ -404,6 +405,10 @@ export default function Login() {
 
   return (
     <div className="h-screen w-full flex font-sans bg-surface text-text-primary overflow-hidden">
+      <PageMeta
+        title="Login"
+        description="Masuk ke akun Nostressia untuk mengakses dashboard stres, jurnal harian, dan tips kesehatan mental."
+      />
       {/* BACKGROUND DECORATION */}
       <div className="hidden lg:flex w-1/2 h-full relative bg-surface-muted dark:bg-surface items-center justify-center p-10 overflow-hidden">
         <div className="absolute top-[-20%] left-[-20%] w-[600px] h-[600px] bg-brand-primary/10 rounded-full blur-[120px] animate-pulse-slow" />

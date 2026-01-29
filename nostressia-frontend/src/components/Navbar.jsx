@@ -4,6 +4,7 @@ import { Link, useLocation } from "react-router-dom";
 import LogoImage from "../assets/images/Logo-Nostressia.png";
 import { DEFAULT_AVATAR, resolveAvatarUrl } from "../utils/avatar";
 import { Flame } from "lucide-react";
+import { storage, STORAGE_KEYS } from "../utils/storage";
 
 // --- Navigation menu data ---
 const navLinks = [
@@ -13,8 +14,6 @@ const navLinks = [
   { name: "Tips", href: "/tips" },
   { name: "Diary", href: "/diary" },
 ];
-
-const TODAY_LOG_STORAGE_KEY = "nostressia_today_log";
 
 // --- Receive the 'user' prop here ---
 const Navbar = ({ user }) => {
@@ -71,7 +70,7 @@ const Navbar = ({ user }) => {
     typeof window !== "undefined" ? new Date().toISOString().slice(0, 10) : "";
   const hasLoggedToday =
     typeof window !== "undefined" &&
-    localStorage.getItem(TODAY_LOG_STORAGE_KEY) === todayKey;
+    storage.getItem(STORAGE_KEYS.TODAY_LOG) === todayKey;
   const flameClass = getFlameColor(streakVal, hasLoggedToday);
 
   return (

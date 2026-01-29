@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { useOutletContext } from "react-router-dom";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
+import PageMeta from "../../components/PageMeta";
 import {
   Activity,
   BarChart3,
@@ -340,6 +341,10 @@ export default function Analytics() {
         animation: "gradient-bg 20s ease infinite",
       }}
     >
+      <PageMeta
+        title="Analytics"
+        description="Analisis tren stres dan perkembangan kesehatan mental melalui statistik dan grafik Nostressia."
+      />
       <style>{`
         @keyframes gradient-bg { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         @keyframes shimmer-slide { 100% { transform: translateX(100%); } }

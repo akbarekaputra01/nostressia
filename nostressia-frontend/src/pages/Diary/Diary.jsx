@@ -5,6 +5,7 @@ import { Heart, Calendar, X, Loader2, CheckCircle } from "lucide-react";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import Toast from "../../components/Toast";
+import PageMeta from "../../components/PageMeta";
 
 import { createDiary, getMyDiaries, updateDiary } from "../../services/diaryService";
 import { clearAuthToken, readAuthToken } from "../../utils/auth";
@@ -216,6 +217,10 @@ export default function Diary() {
         fontFamily: baseFont,
       }}
     >
+      <PageMeta
+        title="Diary"
+        description="Tulis jurnal harian untuk refleksi diri dan lacak perkembangan emosionalmu di Nostressia."
+      />
       <style>{`
         @keyframes gradient-bg { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         .no-scrollbar::-webkit-scrollbar { display: none; }

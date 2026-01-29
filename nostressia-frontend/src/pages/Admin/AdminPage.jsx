@@ -39,6 +39,7 @@ import { clearAdminSession, readAdminProfile, readAdminToken } from "../../utils
 import { useTheme } from "../../theme/ThemeProvider";
 import Toast from "../../components/Toast";
 import ConfirmModal from "../../components/ConfirmModal";
+import PageMeta from "../../components/PageMeta";
 import { createLogger } from "../../utils/logger";
 
 const logger = createLogger("ADMIN_PAGE");
@@ -118,21 +119,6 @@ export default function AdminPage({ skipAuth = false }) {
       return;
     }
     const storedUser = readAdminProfile();
-    const rawStoredUser = localStorage.getItem("nostressia_adminProfile");
-    if (!storedUser && rawStoredUser) {
-      try {
-        const parsedUser = JSON.parse(rawStoredUser);
-        if (parsedUser && typeof parsedUser === "object") {
-          setCurrentUser(parsedUser);
-          return;
-        }
-      } catch (error) {
-        logger.warn("Failed to parse stored admin profile. Attempting fallback.", {
-          error,
-          rawStoredUser,
-        });
-      }
-    }
     if (storedUser && typeof storedUser === "object") {
       setCurrentUser(storedUser);
       return;
@@ -908,6 +894,11 @@ export default function AdminPage({ skipAuth = false }) {
   // ==============================
   return (
     <div className="min-h-screen bg-surface-muted font-sans text-text-primary">
+      <PageMeta
+        title="Admin Dashboard"
+        description="Panel admin Nostressia untuk mengelola pengguna, motivasi, tips, dan diary."
+        noindex
+      />
       {/* NAVBAR CANTIK */}
       <nav className="sticky top-0 z-50 bg-surface-elevated/90 dark:bg-surface/90 backdrop-blur-lg border-b border-border dark:border-border shadow-sm px-6 py-4 transition-all duration-300 glass-panel">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 md:gap-0">

@@ -17,6 +17,7 @@ Checklist of exported functions, components, and flows with test coverage.
 - [x] `src/utils/auth.js` (token storage + migration helpers) — `src/__tests__/authStorage.test.js`, `src/__tests__/exportSmoke.test.js`
 - [x] `src/utils/avatar.js` (`DEFAULT_AVATAR`, `resolveAvatarUrl`) — `src/__tests__/exportSmoke.test.js`
 - [x] `src/utils/notificationService.js` (notification helpers) — `src/__tests__/exportSmoke.test.js`
+- [x] `src/utils/storage.js` (storage wrapper + legacy migration) — `src/__tests__/storage.test.js`
 
 ## Router (`src/router/**`)
 - [x] `src/router/index.jsx` (`ProtectedRoute`, `PublicRoute`, `AdminProtectedRoute`, `AdminPublicRoute`, `AppRouter`) — `src/__tests__/routerGuards.test.jsx`, `src/__tests__/exportSmoke.test.js`

@@ -1,4 +1,5 @@
 import { createLogger } from "./logger";
+import { storage } from "./storage";
 
 /**
  * Centralized auth storage helpers to keep naming consistent across the app.
@@ -37,9 +38,9 @@ const resolveStoredToken = (token) => (isValidTokenValue(token) ? token : null);
  */
 const cleanupLegacyTokens = (keys) => {
   keys.forEach((key) => {
-    const stored = localStorage.getItem(key);
+    const stored = storage.getItem(key);
     if (stored && !isValidTokenValue(stored)) {
-      localStorage.removeItem(key);
+      storage.removeItem(key);
     }
   });
 };
@@ -53,18 +54,18 @@ export const isAuthTokenValid = (token) => isValidTokenValue(token);
  * Read the user access token, migrating from legacy keys when needed.
  */
 export const readAuthToken = () => {
-  const currentToken = resolveStoredToken(localStorage.getItem(ACCESS_TOKEN_KEY));
+  const currentToken = resolveStoredToken(storage.getItem(ACCESS_TOKEN_KEY));
   if (currentToken) {
     cleanupLegacyTokens(LEGACY_USER_TOKEN_KEYS);
     return currentToken;
   }
 
   const legacyToken = LEGACY_USER_TOKEN_KEYS.map((key) =>
-    resolveStoredToken(localStorage.getItem(key)),
+    resolveStoredToken(storage.getItem(key)),
   ).find(Boolean);
 
   if (legacyToken) {
-    localStorage.setItem(ACCESS_TOKEN_KEY, legacyToken);
+    storage.setItem(ACCESS_TOKEN_KEY, legacyToken);
   }
 
   cleanupLegacyTokens([ACCESS_TOKEN_KEY, ...LEGACY_USER_TOKEN_KEYS]);
@@ -76,39 +77,39 @@ export const readAuthToken = () => {
  */
 export const persistAuthToken = (token) => {
   if (!isValidTokenValue(token)) return;
-  localStorage.setItem(ACCESS_TOKEN_KEY, token);
+  storage.setItem(ACCESS_TOKEN_KEY, token);
 };
 
 /**
  * Clear user access tokens from storage.
  */
 export const clearAuthToken = () => {
-  localStorage.removeItem(ACCESS_TOKEN_KEY);
-  LEGACY_USER_TOKEN_KEYS.forEach((key) => localStorage.removeItem(key));
+  storage.removeItem(ACCESS_TOKEN_KEY);
+  LEGACY_USER_TOKEN_KEYS.forEach((key) => storage.removeItem(key));
 };
 
 /**
  * Read the admin access token, migrating from legacy keys when needed.
  */
 export const readAdminToken = () => {
-  const currentToken = resolveStoredToken(localStorage.getItem(ADMIN_TOKEN_KEY));
+  const currentToken = resolveStoredToken(storage.getItem(ADMIN_TOKEN_KEY));
   if (currentToken) {
     cleanupLegacyTokens(LEGACY_ADMIN_TOKEN_KEYS);
-    logger.debug("[ADMIN] readAdminToken found token", currentToken);
+    logger.debug("[ADMIN] readAdminToken found token");
     return currentToken;
   }
 
   const legacyToken = LEGACY_ADMIN_TOKEN_KEYS.map((key) =>
-    resolveStoredToken(localStorage.getItem(key)),
+    resolveStoredToken(storage.getItem(key)),
   ).find(Boolean);
 
   if (legacyToken) {
-    localStorage.setItem(ADMIN_TOKEN_KEY, legacyToken);
-    logger.debug("[ADMIN] readAdminToken migrated legacy token", legacyToken);
+    storage.setItem(ADMIN_TOKEN_KEY, legacyToken);
+    logger.debug("[ADMIN] readAdminToken migrated legacy token");
   }
 
   cleanupLegacyTokens([ADMIN_TOKEN_KEY, ...LEGACY_ADMIN_TOKEN_KEYS]);
-  logger.debug("[ADMIN] readAdminToken resolved token", legacyToken || null);
+  logger.debug("[ADMIN] readAdminToken resolved token", Boolean(legacyToken));
   return legacyToken || null;
 };
 
@@ -123,8 +124,8 @@ export const readTokenForScope = (scope) =>
  */
 export const persistAdminToken = (token) => {
   if (!isValidTokenValue(token)) return;
-  localStorage.setItem(ADMIN_TOKEN_KEY, token);
-  logger.debug("[ADMIN] set token", token);
+  storage.setItem(ADMIN_TOKEN_KEY, token);
+  logger.debug("[ADMIN] set token");
 };
 
 /**
@@ -144,32 +145,30 @@ const parseAdminProfilePayload = (payload) => {
 };
 
 export const readAdminProfile = () => {
-  const storedProfile = localStorage.getItem(ADMIN_PROFILE_KEY);
+  const storedProfile = storage.getItem(ADMIN_PROFILE_KEY);
   if (storedProfile) {
     const parsed = parseAdminProfilePayload(storedProfile);
     logger.debug("[ADMIN] readAdminProfile from storage", {
       parsed,
-      raw: storedProfile,
+      hasRaw: true,
     });
     return parsed;
   }
 
   const legacyProfile = LEGACY_ADMIN_PROFILE_KEYS.map((key) =>
-    localStorage.getItem(key),
+    storage.getItem(key),
   ).find(Boolean);
 
   if (legacyProfile) {
-    localStorage.setItem(ADMIN_PROFILE_KEY, legacyProfile);
-    logger.debug("[ADMIN] readAdminProfile migrated legacy profile", {
-      raw: legacyProfile,
-    });
+    storage.setItem(ADMIN_PROFILE_KEY, legacyProfile);
+    logger.debug("[ADMIN] readAdminProfile migrated legacy profile");
   }
 
-  LEGACY_ADMIN_PROFILE_KEYS.forEach((key) => localStorage.removeItem(key));
+  LEGACY_ADMIN_PROFILE_KEYS.forEach((key) => storage.removeItem(key));
   const parsedLegacy = parseAdminProfilePayload(legacyProfile);
   logger.debug("[ADMIN] readAdminProfile resolved profile", {
     parsed: parsedLegacy,
-    raw: legacyProfile,
+    hasRaw: Boolean(legacyProfile),
   });
   return parsedLegacy;
 };
@@ -180,16 +179,16 @@ export const readAdminProfile = () => {
 export const persistAdminProfile = (profile) => {
   if (!profile) return;
   const payload = JSON.stringify(profile);
-  localStorage.setItem(ADMIN_PROFILE_KEY, payload);
-  logger.debug("[ADMIN] set profile", profile);
+  storage.setItem(ADMIN_PROFILE_KEY, payload);
+  logger.debug("[ADMIN] set profile");
 };
 
 /**
  * Remove stored admin profile data.
  */
 export const clearAdminProfile = () => {
-  localStorage.removeItem(ADMIN_PROFILE_KEY);
-  LEGACY_ADMIN_PROFILE_KEYS.forEach((key) => localStorage.removeItem(key));
+  storage.removeItem(ADMIN_PROFILE_KEY);
+  LEGACY_ADMIN_PROFILE_KEYS.forEach((key) => storage.removeItem(key));
 };
 
 /**
@@ -212,7 +211,7 @@ export const hasAdminSession = () => {
  */
 export const clearAdminSession = () => {
   logger.warn("[ADMIN] clearAdminSession called", new Error().stack);
-  localStorage.removeItem(ADMIN_TOKEN_KEY);
-  LEGACY_ADMIN_TOKEN_KEYS.forEach((key) => localStorage.removeItem(key));
+  storage.removeItem(ADMIN_TOKEN_KEY);
+  LEGACY_ADMIN_TOKEN_KEYS.forEach((key) => storage.removeItem(key));
   clearAdminProfile();
 };

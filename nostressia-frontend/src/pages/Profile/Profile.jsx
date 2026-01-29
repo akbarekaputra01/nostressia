@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Link, useOutletContext } from "react-router-dom";
 import Navbar from "../../components/Navbar";
+import PageMeta from "../../components/PageMeta";
 import { changePassword, updateProfile, verifyCurrentPassword } from "../../services/authService";
 import { deleteBookmark, getMyBookmarks } from "../../services/bookmarkService";
 import {
@@ -39,8 +40,7 @@ import {
 import { DEFAULT_AVATAR, resolveAvatarUrl } from "../../utils/avatar";
 import { clearAuthToken, readAuthToken } from "../../utils/auth";
 import { createLogger } from "../../utils/logger";
-
-const logger = createLogger("PROFILE");
+import { resolveLegacyValue, storage, STORAGE_KEYS } from "../../utils/storage";
 import {
   requestProfilePictureSas,
   saveProfilePictureUrl,
@@ -63,6 +63,8 @@ import avatar2 from "../../assets/images/avatar2.png";
 import avatar3 from "../../assets/images/avatar3.png";
 import avatar4 from "../../assets/images/avatar4.png";
 import avatar5 from "../../assets/images/avatar5.png";
+
+const logger = createLogger("PROFILE");
 
 const AVATAR_OPTIONS = [avatar1, avatar4, avatar3, avatar5, avatar2];
 
@@ -142,7 +144,11 @@ const FishGameModal = ({ onClose }) => {
       timer,
       frame,
       explosions;
-    let highScore = parseInt(localStorage.getItem("fishWormHighScore")) || 0;
+    const storedHighScore = resolveLegacyValue({
+      key: STORAGE_KEYS.FISH_WORM_HIGH_SCORE,
+      legacyKeys: ["fishWormHighScore"],
+    });
+    let highScore = parseInt(storedHighScore || "0", 10) || 0;
     let lives;
     let audioCtx = null;
     let animationFrameId;
@@ -379,7 +385,8 @@ const FishGameModal = ({ onClose }) => {
       playSound(150, "sawtooth", 0.5);
       if (score > highScore) {
         highScore = score;
-        localStorage.setItem("fishWormHighScore", highScore);
+        storage.setItem(STORAGE_KEYS.FISH_WORM_HIGH_SCORE, String(highScore));
+        storage.removeItem("fishWormHighScore");
         msg += " 🏆 New Record!";
       }
       updateStatus(`${msg} Score: ${score}`);
@@ -1044,7 +1051,7 @@ export default function Profile() {
       confirmLabel: "Log out",
       onConfirm: async () => {
         clearAuthToken();
-        localStorage.removeItem("cache_userData");
+        storage.removeItem(STORAGE_KEYS.CACHE_USER_DATA);
         window.location.href = "/";
       },
     });
@@ -1277,6 +1284,10 @@ export default function Profile() {
         backgroundAttachment: "fixed",
       }}
     >
+      <PageMeta
+        title="Profile"
+        description="Kelola profil, preferensi, notifikasi, dan keamanan akun Nostressia."
+      />
       <Navbar user={contextUser} />
       {showGameModal && <FishGameModal onClose={() => setShowGameModal(false)} />}
       {showAvatarModal && (

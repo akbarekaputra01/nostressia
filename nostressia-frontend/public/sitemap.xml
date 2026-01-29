@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://nostressia.app/</loc>
+  </url>
+  <url>
+    <loc>https://nostressia.app/login</loc>
+  </url>
+  <url>
+    <loc>https://nostressia.app/dashboard</loc>
+  </url>
+  <url>
+    <loc>https://nostressia.app/analytics</loc>
+  </url>
+  <url>
+    <loc>https://nostressia.app/motivation</loc>
+  </url>
+  <url>
+    <loc>https://nostressia.app/tips</loc>
+  </url>
+  <url>
+    <loc>https://nostressia.app/diary</loc>
+  </url>
+  <url>
+    <loc>https://nostressia.app/profile</loc>
+  </url>
+</urlset>
