@@ -57,6 +57,13 @@ export default function AdminPage({ skipAuth = false }) {
         console.error("Failed to parse stored admin profile:", error);
       }
     }
+
+    const token = readAdminToken();
+    if (token) {
+      setCurrentUser({ id: 0, name: "Admin", role: "admin" });
+      return;
+    }
+
     clearAdminSession();
     navigate("/admin/login");
   }, [navigate, skipAuth]);
