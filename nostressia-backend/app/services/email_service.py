@@ -1,19 +1,16 @@
 """Email delivery utilities for OTP and weekly reports."""
 import logging
-import os
 from typing import Optional, Tuple
 
-from dotenv import load_dotenv
 import sib_api_v3_sdk
 from sib_api_v3_sdk.rest import ApiException
 
-# Load environment variables.
-load_dotenv()
-
-# Read the API key from the environment.
-BREVO_API_KEY = os.getenv("BREVO_API_KEY")
+from app.core.config import settings
 
 logger = logging.getLogger(__name__)
+
+# Read the API key from the environment.
+BREVO_API_KEY = settings.brevo_api_key
 
 # Sender email used for Brevo.
 SENDER_EMAIL = "nostressia.official@gmail.com"
