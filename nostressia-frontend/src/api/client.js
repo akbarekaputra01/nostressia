@@ -63,6 +63,22 @@ const createApiClient = ({ authMode = AUTH_SCOPE.USER } = {}) => {
     }
   };
 
+  const isInvalidTokenResponse = (payload, message) => {
+    const combined = [message, payload?.message, payload?.detail]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+    return /(token|jwt|expired|invalid)/i.test(combined);
+  };
+
+  const shouldLogAdminUnauthorized = (config, status) => {
+    if (status !== 401) return false;
+    const resolvedAuth = config?.auth ?? authMode;
+    if (resolvedAuth !== AUTH_SCOPE.ADMIN) return false;
+    const requestUrl = config?.url ?? "";
+    return requestUrl.includes("/admin");
+  };
+
   instance.interceptors.response.use(
     (response) => {
       if (response?.data?.success === false) {
@@ -90,9 +106,24 @@ const createApiClient = ({ authMode = AUTH_SCOPE.USER } = {}) => {
 
       const resolvedAuth = error?.config?.auth ?? authMode;
       const token = resolvedAuth === false ? null : readTokenForScope(resolvedAuth);
+      const isTokenInvalid = status === 401 && isInvalidTokenResponse(payload, message);
       const shouldRedirect =
-        status === 401 && !error?.config?.skipAuthRedirect && Boolean(token);
-      if (shouldRedirect && typeof window !== "undefined" && resolvedAuth !== false) {
+        isTokenInvalid &&
+        !error?.config?.skipAuthRedirect &&
+        Boolean(token) &&
+        resolvedAuth !== false;
+
+      if (shouldLogAdminUnauthorized(error?.config, status)) {
+        console.warn("[AUTH][ADMIN] 401 response", {
+          url: error?.config?.url,
+          message,
+          payload,
+          tokenPresent: Boolean(token),
+          tokenInvalid: isTokenInvalid,
+        });
+      }
+
+      if (shouldRedirect && typeof window !== "undefined") {
         const isAdmin = resolvedAuth === AUTH_SCOPE.ADMIN;
         handleUnauthorized(resolvedAuth);
         const currentPath = window.location?.pathname;
