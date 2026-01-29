@@ -29,6 +29,7 @@ vi.mock("../services/tipsService", () => ({
 }));
 
 vi.mock("../utils/auth", () => ({
+  AUTH_SCOPE: { USER: "user", ADMIN: "admin" },
   readAuthToken: vi.fn().mockReturnValue("token"),
   clearAuthToken: vi.fn(),
 }));
@@ -52,6 +53,7 @@ describe("Dashboard scroll behavior", () => {
 
     const saveButton = await screen.findByText(/save data/i);
     const form = saveButton.closest("form");
-    expect(form).toHaveClass("overflow-y-auto");
+    const scrollArea = form?.querySelector(".overflow-y-auto");
+    expect(scrollArea).toBeInTheDocument();
   });
 });

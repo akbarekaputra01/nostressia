@@ -28,6 +28,7 @@ vi.mock("../utils/notificationService", () => ({
 }));
 
 vi.mock("../utils/auth", () => ({
+  AUTH_SCOPE: { USER: "user", ADMIN: "admin" },
   readAuthToken: vi.fn().mockReturnValue("token"),
   clearAuthToken: vi.fn(),
 }));

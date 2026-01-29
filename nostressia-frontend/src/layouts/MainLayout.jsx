@@ -5,6 +5,9 @@ import { getProfile } from "../services/authService";
 import { getStressEligibility } from "../services/stressService";
 import { clearAuthToken, readAuthToken } from "../utils/auth";
 import { restoreDailyReminderSubscription } from "../utils/notificationService";
+import { createLogger } from "../utils/logger";
+
+const logger = createLogger("LAYOUT");
 
 const resolveStreakCount = (payload) => {
   const candidates = [
@@ -69,7 +72,7 @@ export default function MainLayout() {
       setUser(enrichedUserData);
       localStorage.setItem("cache_userData", JSON.stringify(enrichedUserData));
     } catch (error) {
-      console.error("Failed to refresh user data in layout:", error);
+      logger.error("Failed to refresh user data in layout:", error);
       if ([401, 403].includes(error?.status)) {
         clearAuthToken();
         localStorage.removeItem("cache_userData");

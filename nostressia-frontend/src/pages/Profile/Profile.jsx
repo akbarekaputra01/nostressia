@@ -38,6 +38,9 @@ import {
 } from "lucide-react";
 import { DEFAULT_AVATAR, resolveAvatarUrl } from "../../utils/avatar";
 import { clearAuthToken, readAuthToken } from "../../utils/auth";
+import { createLogger } from "../../utils/logger";
+
+const logger = createLogger("PROFILE");
 import {
   requestProfilePictureSas,
   saveProfilePictureUrl,
@@ -159,7 +162,7 @@ const FishGameModal = ({ onClose }) => {
         osc.start();
         osc.stop(audioCtx.currentTime + duration);
       } catch (e) {
-        console.error(e);
+        logger.error("Failed to fetch profile data.", e);
       }
     };
 
@@ -671,7 +674,7 @@ export default function Profile() {
       }));
       setBookmarks(normalizedBookmarks);
     } catch (err) {
-      console.error("Failed to load bookmarks", err);
+      logger.error("Failed to load bookmarks", err);
       showNotification("Failed to load bookmarks", "error");
     } finally {
       setLoadingBookmarks(false);
@@ -855,7 +858,7 @@ export default function Profile() {
           });
         }
       } catch (error) {
-        console.warn("Failed to load stress summary:", error);
+        logger.warn("Failed to load stress summary:", error);
       }
     };
 

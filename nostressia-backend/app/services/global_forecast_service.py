@@ -1,3 +1,4 @@
+import logging
 import os
 import re
 from datetime import timedelta
@@ -9,6 +10,8 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.models.stress_log_model import StressLevel
+
+logger = logging.getLogger(__name__)
 
 
 class GlobalForecastService:
@@ -303,13 +306,10 @@ class GlobalForecastService:
         forecast_date = last_date + timedelta(days=1)
 
         model_type = self._resolve_model_type(artifact)
-        print(
-            "📌 GlobalForecast",
-            "| rows=",
+        logger.info(
+            "GlobalForecast | rows=%s | last_date=%s | model_type=%s",
             len(df),
-            "| last_date=",
             last_date.isoformat(),
-            "| model_type=",
             model_type,
         )
 

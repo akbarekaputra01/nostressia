@@ -1,5 +1,6 @@
 """User authentication routes and profile endpoints."""
 
+import logging
 from datetime import date, datetime, timedelta
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
@@ -34,6 +35,7 @@ from app.services.azure_storage_service import upload_avatar
 from app.schemas.response_schema import APIResponse
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 # --- CONFIGURATION ---
 OTP_EXPIRE_MINUTES = 5  # OTP expiration in minutes.
@@ -154,7 +156,11 @@ def register(user_in: UserRegister, db: Session = Depends(get_db)):
     email_sent, email_error = send_otp_email(new_user.email, otp_code)
     
     if not email_sent:
-        print(f"Failed to send OTP email to {new_user.email}: {email_error}")
+        logger.warning(
+            "Failed to send OTP email to %s: %s",
+            new_user.email,
+            email_error,
+        )
 
     return success_response(
         data=EmailResponse(email=new_user.email),

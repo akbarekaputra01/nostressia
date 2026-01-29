@@ -15,6 +15,9 @@ import Footer from "../../components/Footer";
 import Navbar from "../../components/Navbar";
 import Toast from "../../components/Toast";
 import { clearAuthToken, readAuthToken } from "../../utils/auth";
+import { createLogger } from "../../utils/logger";
+
+const logger = createLogger("DASHBOARD");
 
 // --- COLOR CONFIGURATION ---
 const brandBlue = "#0162F1";
@@ -639,7 +642,7 @@ export default function Dashboard() {
             try {
               tips = await getTipsByCategory(categoryId);
             } catch (error) {
-              console.warn("Failed to load tips for category", categoryId, error);
+              logger.warn("Failed to load tips for category", categoryId, error);
               tips = [];
             }
 
@@ -993,7 +996,7 @@ export default function Dashboard() {
         }
       } catch (error) {
         if (error?.name === "AbortError") return;
-        console.error("Failed to fetch stress logs:", error);
+        logger.error("Failed to fetch stress logs:", error);
         setStressData(createEmptyTodayData(TODAY_KEY));
         setHasSubmittedToday(false);
         setStressScore(0);
@@ -1251,7 +1254,7 @@ export default function Dashboard() {
         showToast("Your monthly restore limit has been reached.", "warning");
         return null;
       }
-      console.error("Failed to save stress log:", error);
+      logger.error("Failed to save stress log:", error);
       return null;
     }
   }
@@ -1350,7 +1353,7 @@ export default function Dashboard() {
         window.dispatchEvent(new Event("nostressia:user-update"));
       }
     } catch (error) {
-      console.error("❌ Failed to connect:", error);
+      logger.error("Failed to connect:", error);
       showToast("Failed to reach the server.", "error");
     } finally {
       setIsSaving(false);

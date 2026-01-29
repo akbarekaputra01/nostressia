@@ -8,6 +8,9 @@ import Toast from "../../components/Toast";
 
 import { createDiary, getMyDiaries, updateDiary } from "../../services/diaryService";
 import { clearAuthToken, readAuthToken } from "../../utils/auth";
+import { createLogger } from "../../utils/logger";
+
+const logger = createLogger("DIARY");
 
 // --- COLOR CONFIGURATION ---
 const bgSun = "rgb(var(--bg-gradient-sun))";
@@ -87,7 +90,7 @@ export default function Diary() {
 
         setEntries(formattedEntries);
       } catch (error) {
-        console.error("Failed to fetch diary:", error);
+        logger.error("Failed to fetch diary:", error);
       } finally {
         setTimeout(() => setIsLoading(false), 800);
       }
@@ -162,7 +165,7 @@ export default function Diary() {
         setShowSuccessModal(false);
       }, 2500);
     } catch (error) {
-      console.error("Failed to save diary:", error);
+      logger.error("Failed to save diary:", error);
       showToast("Failed to save diary.", "error");
     } finally {
       setIsSubmitting(false);

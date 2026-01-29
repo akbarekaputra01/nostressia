@@ -1,7 +1,10 @@
+import { createLogger } from "./logger";
+
 /**
  * Centralized auth storage helpers to keep naming consistent across the app.
  * Tokens are stored with Nostressia-specific keys to avoid collisions.
  */
+const logger = createLogger("AUTH");
 const ACCESS_TOKEN_KEY = "nostressia_accessToken";
 const ADMIN_TOKEN_KEY = "nostressia_adminAccessToken";
 const ADMIN_PROFILE_KEY = "nostressia_adminProfile";
@@ -91,7 +94,7 @@ export const readAdminToken = () => {
   const currentToken = resolveStoredToken(localStorage.getItem(ADMIN_TOKEN_KEY));
   if (currentToken) {
     cleanupLegacyTokens(LEGACY_ADMIN_TOKEN_KEYS);
-    console.debug("[AUTH][ADMIN] readAdminToken found token", currentToken);
+    logger.debug("[ADMIN] readAdminToken found token", currentToken);
     return currentToken;
   }
 
@@ -101,11 +104,11 @@ export const readAdminToken = () => {
 
   if (legacyToken) {
     localStorage.setItem(ADMIN_TOKEN_KEY, legacyToken);
-    console.debug("[AUTH][ADMIN] readAdminToken migrated legacy token", legacyToken);
+    logger.debug("[ADMIN] readAdminToken migrated legacy token", legacyToken);
   }
 
   cleanupLegacyTokens([ADMIN_TOKEN_KEY, ...LEGACY_ADMIN_TOKEN_KEYS]);
-  console.debug("[AUTH][ADMIN] readAdminToken resolved token", legacyToken || null);
+  logger.debug("[ADMIN] readAdminToken resolved token", legacyToken || null);
   return legacyToken || null;
 };
 
@@ -121,7 +124,7 @@ export const readTokenForScope = (scope) =>
 export const persistAdminToken = (token) => {
   if (!isValidTokenValue(token)) return;
   localStorage.setItem(ADMIN_TOKEN_KEY, token);
-  console.debug("[AUTH][ADMIN] set token", token);
+  logger.debug("[ADMIN] set token", token);
 };
 
 /**
@@ -135,7 +138,7 @@ const parseAdminProfilePayload = (payload) => {
   try {
     return JSON.parse(payload);
   } catch (error) {
-    console.warn("Invalid admin profile payload in storage:", error);
+    logger.warn("Invalid admin profile payload in storage:", error);
     return null;
   }
 };
@@ -144,7 +147,7 @@ export const readAdminProfile = () => {
   const storedProfile = localStorage.getItem(ADMIN_PROFILE_KEY);
   if (storedProfile) {
     const parsed = parseAdminProfilePayload(storedProfile);
-    console.debug("[AUTH][ADMIN] readAdminProfile from storage", {
+    logger.debug("[ADMIN] readAdminProfile from storage", {
       parsed,
       raw: storedProfile,
     });
@@ -157,14 +160,14 @@ export const readAdminProfile = () => {
 
   if (legacyProfile) {
     localStorage.setItem(ADMIN_PROFILE_KEY, legacyProfile);
-    console.debug("[AUTH][ADMIN] readAdminProfile migrated legacy profile", {
+    logger.debug("[ADMIN] readAdminProfile migrated legacy profile", {
       raw: legacyProfile,
     });
   }
 
   LEGACY_ADMIN_PROFILE_KEYS.forEach((key) => localStorage.removeItem(key));
   const parsedLegacy = parseAdminProfilePayload(legacyProfile);
-  console.debug("[AUTH][ADMIN] readAdminProfile resolved profile", {
+  logger.debug("[ADMIN] readAdminProfile resolved profile", {
     parsed: parsedLegacy,
     raw: legacyProfile,
   });
@@ -178,7 +181,7 @@ export const persistAdminProfile = (profile) => {
   if (!profile) return;
   const payload = JSON.stringify(profile);
   localStorage.setItem(ADMIN_PROFILE_KEY, payload);
-  console.debug("[AUTH][ADMIN] set profile", profile);
+  logger.debug("[ADMIN] set profile", profile);
 };
 
 /**
@@ -195,7 +198,7 @@ export const clearAdminProfile = () => {
 export const hasAdminSession = () => {
   const token = readAdminToken();
   const storedProfile = readAdminProfile();
-  console.debug("[AUTH][ADMIN] hasAdminSession check", {
+  logger.debug("[ADMIN] hasAdminSession check", {
     hasToken: Boolean(token),
     profileType: typeof storedProfile,
   });
@@ -208,10 +211,7 @@ export const hasAdminSession = () => {
  * Remove all admin session artifacts (token + profile).
  */
 export const clearAdminSession = () => {
-  console.warn(
-    "[AUTH][ADMIN] clearAdminSession CALLED",
-    new Error().stack,
-  );
+  logger.warn("[ADMIN] clearAdminSession called", new Error().stack);
   localStorage.removeItem(ADMIN_TOKEN_KEY);
   LEGACY_ADMIN_TOKEN_KEYS.forEach((key) => localStorage.removeItem(key));
   clearAdminProfile();

@@ -21,6 +21,9 @@ import Footer from "../../components/Footer";
 import Logo from "../../assets/images/Logo-Nostressia.png";
 import { getMotivations } from "../../services/motivationService";
 import { readAuthToken } from "../../utils/auth";
+import { createLogger } from "../../utils/logger";
+
+const logger = createLogger("MOTIVATION");
 
 // --- COLOR CONFIGURATION (MATCHING DASHBOARD) ---
 const BG_SUN = "rgb(var(--bg-gradient-sun))";
@@ -108,7 +111,7 @@ export default function Motivation() {
         const ids = (data || []).map((item) => item.motivationId);
         setLikedIndex(ids);
       } catch (e) {
-        console.error("Bookmark sync error:", e);
+        logger.error("Bookmark sync error:", e);
       }
     };
     fetchBookmarks();
@@ -120,7 +123,7 @@ export default function Motivation() {
       try {
         window.history.scrollRestoration = "manual";
       } catch (error) {
-        console.warn("Scroll restoration update failed", error);
+        logger.warn("Scroll restoration update failed", error);
       }
     }
     if (!initialScrollResetDone.current) {
@@ -181,7 +184,7 @@ export default function Motivation() {
           });
         }
       } catch (err) {
-        console.error("Failed fetching motivations:", err);
+        logger.error("Failed fetching motivations:", err);
         setError("Failed to load motivations. Using local data.");
       } finally {
         if (mounted) setLoading(false);
@@ -249,7 +252,7 @@ export default function Motivation() {
         showToast("Saved to profile ❤️");
       }
     } catch (err) {
-      console.error("Bookmark API Error:", err);
+      logger.error("Bookmark API Error:", err);
       showToast("Failed to bookmark.");
       // Roll back local state if the API request fails.
       setLikedIndex((prev) =>
@@ -319,7 +322,7 @@ export default function Motivation() {
 
       showToast("Download complete 🎉");
     } catch (err) {
-      console.error("Download failed:", err);
+      logger.error("Download failed:", err);
       showToast("Download failed.");
     }
   };

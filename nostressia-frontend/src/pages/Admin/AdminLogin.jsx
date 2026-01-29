@@ -8,8 +8,11 @@ import {
   persistAdminProfile,
   persistAdminToken,
 } from "../../utils/auth";
+import { createLogger } from "../../utils/logger";
 // Nostressia logo asset.
 import LogoNostressia from "../../assets/images/Logo-Nostressia.png";
+
+const logger = createLogger("ADMIN_LOGIN");
 
 export default function AdminLogin() {
   const navigate = useNavigate();
@@ -61,7 +64,7 @@ export default function AdminLogin() {
 
       navigate("/admin");
     } catch (err) {
-      console.error("Admin login API error:", err);
+      logger.error("Admin login API error:", err);
 
       // Only use offline credentials if the API is unreachable.
       if (
@@ -80,7 +83,7 @@ export default function AdminLogin() {
           persistAdminToken("offline-token");
           persistAdminProfile(offlineAdmin);
 
-          console.warn("API unavailable. Using offline admin mode.");
+          logger.warn("API unavailable. Using offline admin mode.");
           navigate("/admin");
           return;
         }

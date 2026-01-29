@@ -1,4 +1,7 @@
 import client from "../api/client";
+import { createLogger } from "./logger";
+
+const logger = createLogger("NOTIFICATIONS");
 
 const STORAGE_KEY = "nostressia_notification_settings";
 const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY || "";
@@ -19,13 +22,13 @@ const getRegistration = async () => {
   try {
     await navigator.serviceWorker.register("/notification-sw.js");
   } catch (error) {
-    console.warn("Failed to register the notification service worker:", error);
+    logger.warn("Failed to register the notification service worker:", error);
     return null;
   }
   try {
     return await navigator.serviceWorker.ready;
   } catch (error) {
-    console.warn("Service worker is not ready yet:", error);
+    logger.warn("Service worker is not ready yet:", error);
     return null;
   }
 };
@@ -72,7 +75,7 @@ export const getSavedNotificationSettings = () => {
   try {
     return JSON.parse(stored);
   } catch (error) {
-    console.warn("Failed to parse notification settings:", error);
+    logger.warn("Failed to parse notification settings:", error);
     return null;
   }
 };
@@ -170,7 +173,7 @@ export const unsubscribeDailyReminder = async () => {
       try {
         await subscription.unsubscribe();
       } catch (error) {
-        console.warn("Failed to unsubscribe from push notifications:", error);
+        logger.warn("Failed to unsubscribe from push notifications:", error);
       }
     }
   }
@@ -178,7 +181,7 @@ export const unsubscribeDailyReminder = async () => {
   try {
     await client.delete("/notifications/unsubscribe");
   } catch (error) {
-    console.warn("Failed to remove the subscription on the backend:", error);
+    logger.warn("Failed to remove the subscription on the backend:", error);
     return { ok: false, reason: "backend-failed" };
   }
 
