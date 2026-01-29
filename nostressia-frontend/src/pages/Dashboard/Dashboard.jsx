@@ -1220,9 +1220,7 @@ export default function Dashboard() {
 
     if (!token) return null;
 
-    const resolvedGpaValue = Number.isFinite(Number(gpaValue))
-      ? Number(gpaValue)
-      : Number(gpa);
+    const resolvedGpaValue = Number.isFinite(Number(gpaValue)) ? Number(gpaValue) : Number(gpa);
     const logPayload = {
       date: dateKey,
       stressLevel: status,
@@ -1655,14 +1653,14 @@ export default function Dashboard() {
                   <form
                     onSubmit={handleSaveForm}
                     onKeyDown={handleFormKeyDown}
-                    className="flex h-full min-h-0 flex-col gap-3 overflow-y-auto pr-2 transition-all duration-500 custom-scroll"
+                    className="flex h-full min-h-0 flex-col gap-3 transition-all duration-500"
                     style={{
                       opacity: successModal.visible ? 0 : 1,
                       transform: successModal.visible ? "scale(0.95)" : "scale(1)",
                       pointerEvents: successModal.visible || isSaving ? "none" : "auto",
                     }}
                   >
-                    <div className="flex min-h-0 flex-1 flex-col gap-3">
+                    <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pr-2 custom-scroll pb-10">
                       {isRestoreMode && (
                         <div className="rounded-xl border border-white/40 bg-surface-elevated/60 glass-panel p-3 shadow-sm">
                           <p className="text-xs font-semibold uppercase tracking-wider text-text-muted">
@@ -2600,7 +2598,7 @@ export default function Dashboard() {
               <button
                 onClick={handleNewQuote}
                 disabled={isQuoteAnimating || quoteLoading || quotePool.length === 0}
-                className="flex-shrink-0 group relative px-6 py-3 rounded-xl bg-surface-elevated glass-panel border border-border text-text-secondary font-bold shadow-sm hover:shadow-md hover:border-orange-300 hover:text-orange-600 dark:bg-surface dark:border-border dark:text-text-primary dark:hover:text-orange-300 transition-all active:scale-95 disabled:opacity-70 cursor-pointer"
+                className="flex-shrink-0 group relative px-6 py-3 rounded-xl bg-surface-elevated glass-panel border border-border text-text-secondary font-bold shadow-sm hover:shadow-md hover:border-orange-300 hover:text-orange-600 dark:bg-surface dark:border-border dark:text-text-primary dark:hover:text-orange-600 transition-all active:scale-95 disabled:opacity-70 cursor-pointer"
               >
                 <span className="flex items-center gap-2">
                   <i

@@ -24,9 +24,7 @@ export default function AdminLogin() {
   }, [navigate]);
 
   const focusFirstEmptyField = (form) => {
-    const requiredFields = Array.from(
-      form.querySelectorAll("[data-required='true']"),
-    );
+    const requiredFields = Array.from(form.querySelectorAll("[data-required='true']"));
     const emptyField = requiredFields.find((field) => !field.value);
     if (emptyField) {
       emptyField.focus();
@@ -98,7 +96,7 @@ export default function AdminLogin() {
     <div className="min-h-screen flex items-center justify-center bg-surface px-4 font-sans text-text-primary">
       <div className="max-w-md w-full bg-surface-elevated glass-panel dark:bg-surface rounded-2xl shadow-xl overflow-hidden border border-border-subtle dark:border-border glass-panel-strong">
         {/* Header with a pastel orange-blue gradient */}
-        <div className="bg-gradient-to-br from-brand-warning/20 via-brand-warning/10 to-brand-primary/20 dark:from-brand-warning/20 dark:via-surface/80 dark:to-brand-primary/20 p-8 text-center relative overflow-hidden">
+        <div className="bg-linear-to-br from-brand-warning/20 via-brand-warning/10 to-brand-primary/20 dark:from-brand-warning/20 dark:via-surface/80 dark:to-brand-primary/20 p-8 text-center relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-full bg-surface-elevated/40 glass-panel dark:bg-surface/40 opacity-50 transform -rotate-6 scale-125"></div>
           <div className="relative z-10 flex flex-col items-center">
             <img
@@ -117,11 +115,7 @@ export default function AdminLogin() {
 
         {/* Form Section */}
         <div className="p-8">
-          <form
-            onSubmit={handleLogin}
-            onKeyDown={handleFormKeyDown}
-            className="space-y-6"
-          >
+          <form onSubmit={handleLogin} onKeyDown={handleFormKeyDown} className="space-y-6">
             {/* Error Message */}
             {error && (
               <div className="bg-brand-accent/10 dark:bg-brand-accent/20 text-brand-accent dark:text-brand-accent text-sm p-3 rounded-lg border border-brand-accent/20 dark:border-brand-accent/30 text-center animate-pulse">
@@ -142,9 +136,7 @@ export default function AdminLogin() {
                     placeholder="Enter admin username"
                     className="w-full pl-12 pr-4 py-3 glass-input border border-border rounded-xl focus:bg-surface-elevated glass-panel focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all text-text-primary"
                     value={formData.username}
-                    onChange={(e) =>
-                      setFormData({ ...formData, username: e.target.value })
-                    }
+                    onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                     data-required="true"
                   />
                 </div>
@@ -162,9 +154,7 @@ export default function AdminLogin() {
                     placeholder="••••••••"
                     className="w-full pl-12 pr-4 py-3 glass-input border border-border rounded-xl focus:bg-surface-elevated glass-panel focus:ring-2 focus:ring-brand-primary/20 focus:outline-none transition-all text-text-primary"
                     value={formData.password}
-                    onChange={(e) =>
-                      setFormData({ ...formData, password: e.target.value })
-                    }
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     data-required="true"
                   />
                 </div>
@@ -178,7 +168,7 @@ export default function AdminLogin() {
               className={`w-full py-3.5 rounded-xl font-bold text-white shadow-lg shadow-blue-200 transition-all transform flex justify-center items-center ${
                 isLoading
                   ? "bg-surface-muted text-text-muted cursor-not-allowed"
-                  : "bg-gradient-to-r from-brand-primary to-brand-accent hover:from-brand-primary/90 hover:to-brand-accent/90 hover:-translate-y-0.5"
+                  : "bg-linear-to-r from-brand-primary to-brand-accent hover:from-brand-primary/90 hover:to-brand-accent/90 hover:-translate-y-0.5"
               }`}
             >
               {isLoading ? (
