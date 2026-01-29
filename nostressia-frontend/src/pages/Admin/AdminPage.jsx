@@ -50,16 +50,9 @@ export default function AdminPage({ skipAuth = false }) {
     }
     const storedUser = readAdminProfile();
     console.warn("Admin profile payload before parse:", storedUser);
-    if (storedUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        if (parsedUser && typeof parsedUser === "object") {
-          setCurrentUser(parsedUser);
-          return;
-        }
-      } catch (error) {
-        console.error("Failed to parse stored admin profile:", error);
-      }
+    if (storedUser && typeof storedUser === "object") {
+      setCurrentUser(storedUser);
+      return;
     }
 
     const token = readAdminToken();

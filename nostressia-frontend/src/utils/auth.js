@@ -123,10 +123,23 @@ export const persistAdminToken = (token) => {
 /**
  * Read the serialized admin profile, migrating from legacy keys when needed.
  */
+const parseAdminProfilePayload = (payload) => {
+  if (!payload) return null;
+  if (typeof payload === "object") return payload;
+  if (typeof payload !== "string") return null;
+
+  try {
+    return JSON.parse(payload);
+  } catch (error) {
+    console.warn("Invalid admin profile payload in storage:", error);
+    return null;
+  }
+};
+
 export const readAdminProfile = () => {
   const storedProfile = localStorage.getItem(ADMIN_PROFILE_KEY);
   if (storedProfile) {
-    return storedProfile;
+    return parseAdminProfilePayload(storedProfile);
   }
 
   const legacyProfile = LEGACY_ADMIN_PROFILE_KEYS.map((key) =>
@@ -138,7 +151,7 @@ export const readAdminProfile = () => {
   }
 
   LEGACY_ADMIN_PROFILE_KEYS.forEach((key) => localStorage.removeItem(key));
-  return legacyProfile || null;
+  return parseAdminProfilePayload(legacyProfile);
 };
 
 /**
@@ -146,7 +159,8 @@ export const readAdminProfile = () => {
  */
 export const persistAdminProfile = (profile) => {
   if (!profile) return;
-  const payload = JSON.stringify(profile);
+  const payload =
+    typeof profile === "string" ? profile : JSON.stringify(profile);
   localStorage.setItem(ADMIN_PROFILE_KEY, payload);
 };
 
@@ -166,13 +180,7 @@ export const hasAdminSession = () => {
   const storedProfile = readAdminProfile();
   if (!token || !storedProfile) return false;
 
-  try {
-    JSON.parse(storedProfile);
-    return true;
-  } catch (error) {
-    console.warn("Invalid admin profile payload in storage:", error);
-    return false;
-  }
+  return typeof storedProfile === "object";
 };
 
 /**

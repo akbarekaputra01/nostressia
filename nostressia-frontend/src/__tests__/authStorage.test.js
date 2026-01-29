@@ -28,7 +28,7 @@ describe("auth storage helpers", () => {
     persistAdminToken("admin-token");
     persistAdminProfile({ id: 1, name: "Admin" });
     expect(readAdminToken()).toBe("admin-token");
-    expect(readAdminProfile()).toContain("Admin");
+    expect(readAdminProfile()).toEqual({ id: 1, name: "Admin" });
     expect(hasAdminSession()).toBe(true);
     clearAdminSession();
     expect(readAdminToken()).toBeNull();
