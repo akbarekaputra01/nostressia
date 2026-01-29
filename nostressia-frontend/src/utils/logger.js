@@ -10,7 +10,7 @@ const resolveDefaultLevel = () => {
   if (envLevel && LOG_LEVEL_ORDER[envLevel]) {
     return envLevel;
   }
-  return import.meta.env?.DEV ? "debug" : "info";
+  return import.meta.env?.DEV ? "debug" : "error";
 };
 
 const shouldLog = (level, minimumLevel) =>
@@ -18,14 +18,18 @@ const shouldLog = (level, minimumLevel) =>
 
 /**
  * Create a scoped logger that respects build-time log levels.
- * Default level is debug in development, info in production.
+ * Default level is debug in development, error in production.
  */
 export const createLogger = (scope, options = {}) => {
   const minimumLevel = options.level || resolveDefaultLevel();
+  const loggingEnabled =
+    typeof options.enabled === "boolean"
+      ? options.enabled
+      : Boolean(import.meta.env?.DEV || import.meta.env?.VITE_LOG_LEVEL);
   const prefix = scope ? `[${scope}]` : "[NOSTRESSIA]";
 
   const write = (level, message, ...meta) => {
-    if (!shouldLog(level, minimumLevel)) return;
+    if (!loggingEnabled || !shouldLog(level, minimumLevel)) return;
     const output = `${prefix} ${message}`;
     const consoleMethod = console[level] || console.log;
     if (meta.length > 0) {
