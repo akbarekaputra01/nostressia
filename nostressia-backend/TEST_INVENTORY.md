@@ -22,26 +22,34 @@ Checklist of routes, services, utilities, and schemas with test coverage.
 - [x] `DELETE /api/admin/users/{user_id}` — `tests/routes/test_admin_routes.py`
 - [x] `GET /api/admin/diaries/` — `tests/routes/test_admin_routes.py`
 - [x] `DELETE /api/admin/diaries/{diary_id}` — `tests/routes/test_admin_routes.py`
-- [x] `GET /api/diary/` — `tests/routes/test_motivation_routes.py` (integration smoke)
-- [x] `POST /api/diary/` — `tests/routes/test_motivation_routes.py` (integration smoke)
-- [x] `PUT /api/diary/{id}` — `tests/routes/test_motivation_routes.py` (integration smoke)
+- [x] `GET /api/diary/` — `tests/routes/test_diary_routes.py`
+- [x] `POST /api/diary/` — `tests/routes/test_diary_routes.py`
+- [x] `GET /api/diary/{id}` — `tests/routes/test_diary_routes.py`
+- [x] `PUT /api/diary/{id}` — `tests/routes/test_diary_routes.py`
 - [x] `GET /api/motivations/` — `tests/routes/test_motivation_routes.py`
 - [x] `POST /api/motivations/` — `tests/routes/test_motivation_routes.py`
-- [x] `DELETE /api/motivations/{id}` — `tests/routes/test_motivation_routes.py`
-- [x] `GET /api/tips/categories` — `tests/routes/test_motivation_routes.py` (integration smoke)
-- [x] `POST /api/tips/categories` — `tests/routes/test_motivation_routes.py` (integration smoke)
-- [x] `DELETE /api/tips/categories/{id}` — `tests/routes/test_motivation_routes.py` (integration smoke)
-- [x] `GET /api/tips/` — `tests/routes/test_motivation_routes.py` (integration smoke)
-- [x] `GET /api/tips/by-category/{id}` — `tests/routes/test_motivation_routes.py` (integration smoke)
-- [x] `POST /api/tips/` — `tests/routes/test_motivation_routes.py` (integration smoke)
-- [x] `PUT /api/tips/{id}` — `tests/routes/test_motivation_routes.py` (integration smoke)
-- [x] `DELETE /api/tips/{id}` — `tests/routes/test_motivation_routes.py` (integration smoke)
-- [x] `POST /api/stress/current` — `tests/unit/test_service_exports.py` (service smoke)
-- [x] `GET /api/stress/global-forecast` — `tests/unit/test_service_exports.py` (service smoke)
+- [x] `DELETE /api/motivations/{id}` — `tests/routes/test_admin_routes.py`
+- [x] `GET /api/tips/categories` — `tests/routes/test_tips_routes.py`
+- [x] `POST /api/tips/categories` — `tests/routes/test_tips_routes.py`
+- [x] `DELETE /api/tips/categories/{id}` — `tests/routes/test_tips_routes.py`
+- [x] `GET /api/tips/` — `tests/routes/test_tips_routes.py`
+- [x] `GET /api/tips/by-category/{id}` — `tests/routes/test_tips_routes.py`
+- [x] `POST /api/tips/` — `tests/routes/test_tips_routes.py`
+- [x] `PUT /api/tips/{id}` — `tests/routes/test_tips_routes.py`
+- [x] `DELETE /api/tips/{id}` — `tests/routes/test_tips_routes.py`
+- [x] `POST /api/stress/current` — `tests/routes/test_stress_insight_routes.py`
+- [x] `GET /api/stress/global-forecast` — `tests/routes/test_stress_insight_routes.py`
 - [x] `POST /api/stress-levels/` — `tests/unit/test_stress_service.py`
 - [x] `POST /api/stress-levels/restore` — `tests/unit/test_stress_service.py`
 - [x] `GET /api/stress-levels/my-logs` — `tests/unit/test_stress_service.py`
 - [x] `GET /api/stress-levels/eligibility` — `tests/unit/test_stress_service.py`
+- [x] `GET /api/analytics/summary` — `tests/routes/test_analytics_routes.py`
+- [x] `POST /api/analytics/weekly-report` — `tests/routes/test_analytics_routes.py`
+- [x] `POST /api/bookmarks/{motivation_id}` — `tests/routes/test_bookmark_routes.py`
+- [x] `GET /api/bookmarks/me` — `tests/routes/test_bookmark_routes.py`
+- [x] `DELETE /api/bookmarks/{motivation_id}` — `tests/routes/test_bookmark_routes.py`
+- [x] `POST /api/profile/picture/sas` — `tests/routes/test_profile_picture_routes.py`
+- [x] `PUT /api/profile/picture` — `tests/routes/test_profile_picture_routes.py`
 - [x] `POST /api/notifications/subscribe` — `tests/routes/test_notification_routes.py`
 - [x] `DELETE /api/notifications/unsubscribe` — `tests/routes/test_notification_routes.py`
 - [x] `GET /api/notifications/status` — `tests/routes/test_notification_routes.py`
@@ -49,8 +57,16 @@ Checklist of routes, services, utilities, and schemas with test coverage.
 
 ## Services / Utilities
 - [x] `app/services/*` (auth, user auth, forecast, stress, diary, profile, notifications, ML, storage) — `tests/unit/test_service_exports.py`
+- [x] `app/services/auth_service` — `tests/unit/test_service_functions.py`
+- [x] `app/services/user_auth_service` — `tests/unit/test_service_functions.py`
+- [x] `app/services/diary_service` — `tests/unit/test_service_functions.py`
+- [x] `app/services/profile_service` — `tests/unit/test_service_functions.py`
+- [x] `app/services/email_service` — `tests/unit/test_service_functions.py`
 - [x] `app/utils/hashing.py` — `tests/unit/test_utils.py`
 - [x] `app/utils/jwt_handler.py` — `tests/unit/test_utils.py`
+- [x] `app/utils/otp_generator.py` — `tests/unit/test_utils.py`
+- [x] `app/utils/response.py` — `tests/unit/test_utils.py`
+- [x] `app/utils/azure_sas.py` — `tests/unit/test_azure_sas_utils.py`
 - [x] `app/services/stress_service` GPA imputation — `tests/unit/test_stress_service.py`
 - [x] `app/services/notification_scheduler` send log + dedupe — `tests/routes/test_notification_routes.py`
 

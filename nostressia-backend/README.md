@@ -9,78 +9,119 @@ pinned: false
 
 # Nostressia Backend (FastAPI)
 
-## Model Details
-The Nostressia backend is a FastAPI service that provides authentication, stress insights, diary management, motivations, and administrative moderation features. It supports machine-learning-driven forecasts via stored model artifacts and maintains a consistent authentication contract with the frontend.
+## Overview
+Nostressia Backend adalah layanan FastAPI yang menyediakan autentikasi, diary, motivasi, tips kesehatan mental, stress tracking + insight, serta fitur admin moderation. Backend ini juga terhubung dengan model ML untuk prediksi stress dan menyediakan integrasi push notification + Azure Blob Storage untuk upload avatar. Layanan dibuat agar konsisten dengan kontrak frontend dan aman untuk production. 
 
-## Intended Use
-This API is intended for the Nostressia web application and internal tooling. It provides user-facing endpoints for stress tracking and admin-only endpoints for moderation.
+## Arsitektur Folder
+```
+nostressia-backend/
+├── app/
+│   ├── api/              # API router utama
+│   ├── core/             # konfigurasi & database
+│   ├── models/           # SQLAlchemy models
+│   ├── routes/           # endpoint FastAPI
+│   ├── schemas/          # Pydantic schemas
+│   ├── services/         # service layer
+│   └── utils/            # helper (JWT, hashing, response, azure sas)
+├── tests/                # unit + route tests
+├── main.py               # entrypoint
+└── .env.example          # contoh konfigurasi environment
+```
 
-## Limitations
-- The backend serves predictions from pre-trained artifacts and does not retrain models in production.
-- Forecast accuracy depends on the quality and completeness of user-provided logs.
-- Reminder delivery depends on the client maintaining an active push subscription.
-
-## How to Get Started with the Model
-Even though this is an API, the service is packaged for Hugging Face Spaces using the Docker SDK.
-
-### Local Development
+## Setup Environment
 1. Install dependencies:
    ```bash
    pip install -r requirements.txt
    ```
-2. Set up environment variables:
+2. Siapkan environment:
    ```bash
    cp .env.example .env
    ```
-3. Run the API:
-   ```bash
-   uvicorn app.main:app --reload
-   ```
+3. Isi `.env` dengan kredensial yang sesuai.
 
-### Useful Endpoints
-- `GET /docs` — Swagger UI
-- `GET /openapi.json` — OpenAPI specification
+### Environment Variables (ringkas)
+- `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`, `DB_NAME`
+- `JWT_SECRET`, `JWT_ALGORITHM`, `ACCESS_TOKEN_EXPIRE_MINUTES`
+- `BREVO_API_KEY`
+- `AZURE_STORAGE_CONNECTION_STRING`, `AZURE_STORAGE_ACCOUNT_NAME`
+- `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`
 
-## Training Data
-Training data for machine learning artifacts lives in the `/nostressia-machine-learning` folder. This backend consumes pre-generated artifacts and does not train models directly.
+## Menjalankan Server
+```bash
+uvicorn app.main:app --reload
+```
 
-## Evaluation
-Model evaluation is performed in the machine learning notebooks. See `/nostressia-machine-learning` for the evaluation workflow and metrics.
+## Endpoint Utama (contoh)
+> Semua endpoint memakai prefix `/api`.
 
-## Environmental Impact
-Not applicable. The backend consumes pre-trained artifacts rather than training models in production.
+### Auth & User
+- `POST /api/auth/register`
+  ```bash
+  curl -X POST http://localhost:8000/api/auth/register \
+    -H "Content-Type: application/json" \
+    -d '{"name":"User","username":"user1","email":"user@example.com","password":"StrongPass123!","gender":"female","userDob":"2000-01-01"}'
+  ```
+- `POST /api/auth/login`
+  ```bash
+  curl -X POST http://localhost:8000/api/auth/login \
+    -H "Content-Type: application/json" \
+    -d '{"identifier":"user@example.com","password":"StrongPass123!"}'
+  ```
+- `GET /api/auth/me`
+  ```bash
+  curl -H "Authorization: Bearer <accessToken>" http://localhost:8000/api/auth/me
+  ```
 
-## Technical Specifications
-- **Framework:** FastAPI
-- **Database:** SQLAlchemy (MySQL in production; SQLite overrides supported for testing)
-- **Auth:** JWT-based access tokens (Authorization: Bearer \<accessToken\>)
-- **ML Artifacts:** Joblib models for current stress and forecasts
-- **Storage:** Azure Blob Storage for profile photos
-- **Push Notifications:** VAPID + web push
-- **Code Quality:** Ruff + Black + isort (see `requirements-dev.txt`)
+### Diary
+- `POST /api/diary/`
+  ```bash
+  curl -X POST http://localhost:8000/api/diary/ \
+    -H "Authorization: Bearer <accessToken>" \
+    -H "Content-Type: application/json" \
+    -d '{"title":"Hari Ini","note":"Merasa lebih baik","date":"2024-01-01","emoji":"😊","font":"sans-serif"}'
+  ```
+
+### Stress Insight
+- `POST /api/stress/current`
+  ```bash
+  curl -X POST http://localhost:8000/api/stress/current \
+    -H "Content-Type: application/json" \
+    -d '{"studyHours":4,"extracurricularHours":1,"sleepHours":7,"socialHours":2,"physicalHours":1,"gpa":3.5}'
+  ```
+
+### Notifications
+- `POST /api/notifications/subscribe`
+  ```bash
+  curl -X POST http://localhost:8000/api/notifications/subscribe \
+    -H "Authorization: Bearer <accessToken>" \
+    -H "Content-Type: application/json" \
+    -d '{"subscription":{"endpoint":"https://example.com","keys":{"p256dh":"key","auth":"auth"}},"reminderTime":"08:00","timezone":"Asia/Jakarta"}'
+  ```
 
 ## Testing
-### Run the test suite
+Backend menggunakan pytest + TestClient dengan SQLite in-memory untuk isolasi.
+
 ```bash
 pytest
 ```
 
-### Test Structure
-- `tests/routes/` for API route coverage
-- `tests/unit/` for helper/service unit tests
-- `tests/integration/` for workflow tests
-- `tests/security/` for authentication and authorization checks
+### Strategi Database Test
+- SQLite in-memory (`sqlite+pysqlite:///:memory:`)
+- Fixture `db_session` melakukan rollback setiap test
+- Dependency `get_db` di-override agar endpoint test menggunakan DB test
 
-## Citation
-```
-@misc{nostressia-backend,
-  title = {Nostressia Backend API},
-  author = {Nostressia Team},
-  year = {2025},
-  howpublished = {\url{https://github.com/nostressia/nostressia}}
-}
-```
+## Troubleshooting
+- **Startup gagal**: pastikan `JWT_SECRET`, `DB_*`, dan `BREVO_API_KEY` tersedia.
+- **Avatar upload gagal**: pastikan `AZURE_STORAGE_CONNECTION_STRING` tersedia.
+- **Push notification gagal**: pastikan `VAPID_PRIVATE_KEY` terisi.
 
-### Notes
-- Tests use an in-memory SQLite database and override dependencies for isolation.
-- Ensure environment variables in `.env.example` are available in your shell if needed.
+## Technical Specs
+- **Framework:** FastAPI
+- **Database:** SQLAlchemy (MySQL di production, SQLite untuk testing)
+- **Auth:** JWT Bearer
+- **Storage:** Azure Blob Storage
+- **Notifications:** Web Push (VAPID)
+
+## Catatan
+- ML model hanya dipakai untuk inference (tidak training ulang di backend).
+- Jalankan `pytest` sebelum rilis untuk memastikan coverage endpoint lengkap.

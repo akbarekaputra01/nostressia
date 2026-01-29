@@ -11,6 +11,9 @@ os.environ.setdefault("DB_PASSWORD", "test")
 os.environ.setdefault("DB_HOST", "localhost")
 os.environ.setdefault("DB_NAME", "nostressia_test")
 os.environ.setdefault("BREVO_API_KEY", "test")
+os.environ.setdefault("JWT_SECRET", "test-secret")
+os.environ.setdefault("JWT_ALGORITHM", "HS256")
+os.environ.setdefault("ACCESS_TOKEN_EXPIRE_MINUTES", "30")
 
 import pytest
 from fastapi.testclient import TestClient

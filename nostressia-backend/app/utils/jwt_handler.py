@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta
 import logging
-import os
 from typing import Union
 
 from jose import jwt, JWTError
@@ -9,12 +8,13 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
 # Database dependency and User model.
+from app.core.config import settings
 from app.core.database import get_db
 from app.models.user_model import User
 
-SECRET_KEY = os.getenv("JWT_SECRET", "supersecretkey")
-ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "1440"))
+SECRET_KEY = settings.jwt_secret
+ALGORITHM = settings.jwt_algorithm
+ACCESS_TOKEN_EXPIRE_MINUTES = settings.access_token_expire_minutes
 
 logger = logging.getLogger(__name__)
 

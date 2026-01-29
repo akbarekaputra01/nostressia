@@ -31,6 +31,11 @@ class Settings(BaseSettings):
     # Extra settings needed for email delivery.
     brevo_api_key: str = Field(..., env="BREVO_API_KEY")
 
+    # --- JWT CONFIG ---
+    jwt_secret: str = Field(..., env="JWT_SECRET")
+    jwt_algorithm: str = Field("HS256", env="JWT_ALGORITHM")
+    access_token_expire_minutes: int = Field(1440, env="ACCESS_TOKEN_EXPIRE_MINUTES")
+
     azure_storage_connection_string: str = Field(
         "", env="AZURE_STORAGE_CONNECTION_STRING"
     )
