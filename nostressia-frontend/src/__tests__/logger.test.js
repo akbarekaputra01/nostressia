@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { createLogger } from "../src/utils/logger";
+import { createLogger } from "../utils/logger";
 
 describe("logger", () => {
   it("writes formatted messages with scope prefixes", () => {
     const infoSpy = vi.spyOn(console, "info").mockImplementation(() => {});
-    const logger = createLogger("TEST", { level: "debug" });
+    const logger = createLogger("TEST", { level: "debug", enabled: true });
 
     logger.info("Hello", { ok: true });
 
@@ -16,7 +16,7 @@ describe("logger", () => {
   it("respects the minimum log level", () => {
     const infoSpy = vi.spyOn(console, "info").mockImplementation(() => {});
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-    const logger = createLogger("TEST", { level: "warn" });
+    const logger = createLogger("TEST", { level: "warn", enabled: true });
 
     logger.info("Should be hidden");
     logger.warn("Visible");
