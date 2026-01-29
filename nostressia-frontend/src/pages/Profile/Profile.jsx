@@ -52,6 +52,7 @@ import {
 } from "../../utils/notificationService";
 import { useTheme } from "../../theme/ThemeProvider";
 import { getMyStressLogs } from "../../services/stressService";
+import ConfirmModal from "../../components/ConfirmModal";
 
 // --- AVATAR ASSETS ---
 import avatar1 from "../../assets/images/avatar1.png";
@@ -557,6 +558,13 @@ export default function Profile() {
   const [showGameModal, setShowGameModal] = useState(false);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
   const [isLoadingSave, setIsLoadingSave] = useState(false);
+  const [confirmState, setConfirmState] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    confirmLabel: "Yes",
+    onConfirm: null,
+  });
 
   const [isLoadingPassword, setIsLoadingPassword] = useState(false);
   const [isVerifyingCurrentPassword, setIsVerifyingCurrentPassword] = useState(false);
@@ -626,6 +634,27 @@ export default function Profile() {
     setTimeout(() => setNotification(null), 3000);
   }, []);
 
+  const openConfirm = useCallback((config) => {
+    setConfirmState({
+      isOpen: true,
+      title: config.title || "Confirm action",
+      message: config.message || "Are you sure?",
+      confirmLabel: config.confirmLabel || "Yes",
+      onConfirm: config.onConfirm || null,
+    });
+  }, []);
+
+  const handleConfirm = async () => {
+    if (confirmState.onConfirm) {
+      await confirmState.onConfirm();
+    }
+    setConfirmState((prev) => ({ ...prev, isOpen: false, onConfirm: null }));
+  };
+
+  const handleCancelConfirm = () => {
+    setConfirmState((prev) => ({ ...prev, isOpen: false, onConfirm: null }));
+  };
+
   const fetchBookmarks = useCallback(async () => {
     setLoadingBookmarks(true);
     const token = readAuthToken();
@@ -656,6 +685,11 @@ export default function Profile() {
   }, [activeTab, fetchBookmarks]);
 
   const { preference: themePreference, resolvedTheme, setPreference } = useTheme();
+  const getSystemTheme = () => {
+    if (typeof window === "undefined") return "light";
+    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  };
+  const [systemTheme, setSystemTheme] = useState(getSystemTheme);
 
   const handleUnsave = async (motivationId) => {
     try {
@@ -689,7 +723,27 @@ export default function Profile() {
   });
   const [passwordStep, setPasswordStep] = useState(1);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
-  const systemLabel = resolvedTheme === "dark" ? "Always dark" : "Always light";
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+    const mediaQueryList = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleChange = (event) => {
+      setSystemTheme(event.matches ? "dark" : "light");
+    };
+    if (mediaQueryList.addEventListener) {
+      mediaQueryList.addEventListener("change", handleChange);
+    } else {
+      mediaQueryList.addListener(handleChange);
+    }
+    return () => {
+      if (mediaQueryList.removeEventListener) {
+        mediaQueryList.removeEventListener("change", handleChange);
+      } else {
+        mediaQueryList.removeListener(handleChange);
+      }
+    };
+  }, []);
+
+  const systemLabel = systemTheme === "dark" ? "Always dark" : "Always light";
   const themeLabels = {
     light: "Light",
     dark: "Dark",
@@ -981,11 +1035,16 @@ export default function Profile() {
   };
 
   const handleLogout = () => {
-    if (window.confirm("Are you sure you want to log out?")) {
-      clearAuthToken();
-      localStorage.removeItem("cache_userData");
-      window.location.href = "/";
-    }
+    openConfirm({
+      title: "Log out",
+      message: "Are you sure you want to log out?",
+      confirmLabel: "Log out",
+      onConfirm: async () => {
+        clearAuthToken();
+        localStorage.removeItem("cache_userData");
+        window.location.href = "/";
+      },
+    });
   };
 
   const getNotificationPermissionStatus = () => {
@@ -1253,6 +1312,15 @@ export default function Profile() {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={confirmState.isOpen}
+        title={confirmState.title}
+        message={confirmState.message}
+        confirmLabel={confirmState.confirmLabel}
+        onConfirm={handleConfirm}
+        onCancel={handleCancelConfirm}
+      />
 
       {/* SETTINGS MODAL */}
       {showNotifModal && (

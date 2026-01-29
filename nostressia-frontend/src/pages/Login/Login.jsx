@@ -29,6 +29,8 @@ import {
   Clock,
 } from "lucide-react";
 import { motion as Motion, AnimatePresence } from "framer-motion";
+import Toast from "../../components/Toast";
+import ConfirmModal from "../../components/ConfirmModal";
 
 import logoBuka from "../../assets/images/Logo-Buka.png";
 import logoKedip from "../../assets/images/Logo-Kedip.png";
@@ -87,6 +89,14 @@ export default function Login() {
 
   // --- Countdown state ---
   const [countdown, setCountdown] = useState(0);
+  const [toast, setToast] = useState(null);
+  const [confirmState, setConfirmState] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    confirmLabel: "Yes",
+    onConfirm: null,
+  });
 
   // --- Blink effect ---
   useEffect(() => {
@@ -127,6 +137,32 @@ export default function Login() {
     return `${m}:${s < 10 ? "0" : ""}${s}`;
   };
 
+  const showToast = (message, type = "info") => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const openConfirm = (config) => {
+    setConfirmState({
+      isOpen: true,
+      title: config.title || "Confirm action",
+      message: config.message || "Are you sure?",
+      confirmLabel: config.confirmLabel || "Yes",
+      onConfirm: config.onConfirm || null,
+    });
+  };
+
+  const handleConfirm = async () => {
+    if (confirmState.onConfirm) {
+      await confirmState.onConfirm();
+    }
+    setConfirmState((prev) => ({ ...prev, isOpen: false, onConfirm: null }));
+  };
+
+  const handleCancelConfirm = () => {
+    setConfirmState((prev) => ({ ...prev, isOpen: false, onConfirm: null }));
+  };
+
   const focusFirstEmptyField = (form) => {
     const requiredFields = Array.from(form.querySelectorAll("[data-required='true']"));
     const emptyField = requiredFields.find((field) => !field.value);
@@ -157,14 +193,37 @@ export default function Login() {
       });
       const token = response?.accessToken;
       if (!isAuthTokenValid(token)) {
-        alert("Login succeeded, but the token is invalid.");
+        showToast("Login succeeded, but the token is invalid.", "error");
         return;
       }
       persistAuthToken(token);
       setIsSuccess(true);
       setTimeout(() => navigate("/dashboard"), 1000);
     } catch (error) {
-      alert(error?.message || "Login failed.");
+      showToast(error?.message || "Login failed.", "error");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const submitSignUp = async () => {
+    setIsLoading(true);
+    try {
+      await register({
+        name: formData.name,
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
+        gender: formData.gender,
+        userDob: formData.dob,
+        avatar: formData.avatar,
+      });
+
+      setOtp("");
+      setShowOTPForm(true);
+      setCountdown(60);
+    } catch (error) {
+      showToast(error?.message || "Registration failed.", "error");
     } finally {
       setIsLoading(false);
     }
@@ -182,46 +241,26 @@ export default function Login() {
       !formData.gender ||
       !formData.dob
     ) {
-      alert("Please complete all required fields.");
+      showToast("Please complete all required fields.", "warning");
       return;
     }
     if (formData.password !== formData.confirmPassword) {
-      alert("Password and confirmation do not match.");
+      showToast("Password and confirmation do not match.", "error");
       return;
     }
-    if (
-      !window.confirm(
-        `Please confirm your details:\n\nName: ${formData.name}\nEmail: ${formData.email}\n\nCorrect?`,
-      )
-    )
-      return;
 
-    setIsLoading(true);
-    try {
-      await register({
-        name: formData.name,
-        username: formData.username,
-        email: formData.email,
-        password: formData.password,
-        gender: formData.gender,
-        userDob: formData.dob,
-        avatar: formData.avatar,
-      });
-
-      setOtp("");
-      setShowOTPForm(true);
-      setCountdown(60);
-    } catch (error) {
-      alert(error?.message || "Registration failed.");
-    } finally {
-      setIsLoading(false);
-    }
+    openConfirm({
+      title: "Confirm registration",
+      message: `Please confirm your details:\n\nName: ${formData.name}\nEmail: ${formData.email}\n\nCorrect?`,
+      confirmLabel: "Confirm",
+      onConfirm: submitSignUp,
+    });
   };
 
   // --- 3. OTP verification for registration ---
   const handleVerifyOTP = async (e) => {
     e.preventDefault();
-    if (otp.length !== 6) return alert("Please enter the 6-digit OTP code.");
+    if (otp.length !== 6) return showToast("Please enter the 6-digit OTP code.", "warning");
 
     setIsLoading(true);
     try {
@@ -238,7 +277,7 @@ export default function Login() {
         setFormData((prev) => ({ ...prev, password: "", confirmPassword: "" }));
       }, 2000);
     } catch (error) {
-      alert(error?.message || "Invalid OTP code.");
+      showToast(error?.message || "Invalid OTP code.", "error");
     } finally {
       setIsLoading(false);
     }
@@ -251,7 +290,7 @@ export default function Login() {
   // Step 1: Request OTP
   const handleForgotRequest = async (e) => {
     e.preventDefault();
-    if (!forgotEmail) return alert("Please enter your email.");
+    if (!forgotEmail) return showToast("Please enter your email.", "warning");
     setLoadingForgot(true);
     try {
       await forgotPassword({ email: forgotEmail });
@@ -261,7 +300,7 @@ export default function Login() {
       setForgotOtpValues(new Array(6).fill(""));
       setForgotOtpVerified(false);
     } catch (error) {
-      alert(error?.message || "Email not found.");
+      showToast(error?.message || "Email not found.", "error");
     } finally {
       setLoadingForgot(false);
     }
@@ -295,7 +334,7 @@ export default function Login() {
 
     const code = forgotOtpValues.join("");
     if (code.length !== 6) {
-      alert("Please enter the 6-digit OTP code.");
+      showToast("Please enter the 6-digit OTP code.", "warning");
       return;
     }
 
@@ -305,7 +344,7 @@ export default function Login() {
       setForgotOtpVerified(true);
       setForgotStep(3);
     } catch (error) {
-      alert(error?.message || "Invalid OTP code.");
+      showToast(error?.message || "Invalid OTP code.", "error");
       setForgotOtpVerified(false);
     } finally {
       setLoadingForgot(false);
@@ -316,12 +355,14 @@ export default function Login() {
   const handleForgotConfirm = async (e) => {
     e.preventDefault();
     if (!forgotOtpVerified) {
-      alert("Please verify your OTP first.");
+      showToast("Please verify your OTP first.", "warning");
       setForgotStep(2);
       return;
     }
-    if (!newPassword || !confirmNewPassword) return alert("Please enter a new password.");
-    if (newPassword !== confirmNewPassword) return alert("Password confirmation does not match.");
+    if (!newPassword || !confirmNewPassword)
+      return showToast("Please enter a new password.", "warning");
+    if (newPassword !== confirmNewPassword)
+      return showToast("Password confirmation does not match.", "error");
 
     const code = forgotOtpValues.join("");
     setLoadingForgot(true);
@@ -332,7 +373,7 @@ export default function Login() {
         newPassword,
       });
 
-      alert("Password reset successfully. Please sign in.");
+      showToast("Password reset successfully. Please sign in.", "success");
       setCountdown(0);
       setShowForgotModal(false);
       setForgotStep(1);
@@ -343,7 +384,7 @@ export default function Login() {
       setConfirmNewPassword("");
       setForgotOtpVerified(false);
     } catch (error) {
-      alert(error?.message || "Failed to reset password.");
+      showToast(error?.message || "Failed to reset password.", "error");
     } finally {
       setLoadingForgot(false);
     }
@@ -636,7 +677,7 @@ export default function Login() {
                           type="button"
                           onClick={() => {
                             setCountdown(60);
-                            alert("Code resent!");
+                            showToast("Code resent!", "success");
                           }}
                           className="text-sm font-bold text-brand-warning hover:underline cursor-pointer"
                         >
@@ -1045,7 +1086,7 @@ export default function Login() {
                             type="button"
                             onClick={() => {
                               setCountdown(60);
-                              alert("Code resent!");
+                              showToast("Code resent!", "success");
                             }}
                             className="text-sm font-bold text-orange-600 hover:underline cursor-pointer"
                           >
@@ -1162,6 +1203,20 @@ export default function Login() {
           </div>
         )}
       </AnimatePresence>
+
+      <ConfirmModal
+        isOpen={confirmState.isOpen}
+        title={confirmState.title}
+        message={confirmState.message}
+        confirmLabel={confirmState.confirmLabel}
+        onConfirm={handleConfirm}
+        onCancel={handleCancelConfirm}
+      />
+      <Toast
+        message={toast?.message}
+        type={toast?.type}
+        onClose={() => setToast(null)}
+      />
 
       <style>{`
         @keyframes pulse-slow { 0%, 100% { opacity: 0.4; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.1); } }

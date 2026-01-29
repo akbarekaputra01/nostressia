@@ -3,7 +3,8 @@ import { useOutletContext } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Heart, Calendar, X, Loader2, CheckCircle } from "lucide-react"; 
 import Navbar from "../../components/Navbar";
-import Footer from "../../components/Footer"; 
+import Footer from "../../components/Footer";
+import Toast from "../../components/Toast";
 
 import { createDiary, getMyDiaries, updateDiary } from "../../services/diaryService";
 import { clearAuthToken, readAuthToken } from "../../utils/auth";
@@ -38,6 +39,7 @@ export default function Diary() {
   const [isLoading, setIsLoading] = useState(true); 
   const [isSubmitting, setIsSubmitting] = useState(false); 
   const [showSuccessModal, setShowSuccessModal] = useState(false); 
+  const [toast, setToast] = useState(null);
 
   const { user } = useOutletContext() || { user: {} }; 
 
@@ -52,6 +54,11 @@ export default function Diary() {
     { emoji: "😊", label: "Happy" },
     { emoji: "😄", label: "Excited" },
   ];
+
+  const showToast = (message, type = "info") => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
 
   // --- 2. Fetch data logic (GET) ---
   useEffect(() => {
@@ -100,7 +107,7 @@ export default function Diary() {
       setIsSubmitting(true); 
       const token = readAuthToken();
       if (!token) {
-        alert("You are not logged in.");
+        showToast("You are not logged in.", "warning");
         setIsSubmitting(false);
         return;
       }
@@ -150,7 +157,7 @@ export default function Diary() {
 
     } catch (error) {
       console.error("Failed to save diary:", error);
-      alert("Failed to save diary.");
+      showToast("Failed to save diary.", "error");
     } finally {
       setIsSubmitting(false); 
     }
@@ -509,6 +516,12 @@ export default function Diary() {
             </div>
         )}
       </AnimatePresence>
+
+      <Toast
+        message={toast?.message}
+        type={toast?.type}
+        onClose={() => setToast(null)}
+      />
       
       <Footer />
     </div>

@@ -13,6 +13,7 @@ import { getMotivations } from "../../services/motivationService";
 import { getTipCategories, getTipsByCategory } from "../../services/tipsService";
 import Footer from "../../components/Footer";
 import Navbar from "../../components/Navbar";
+import Toast from "../../components/Toast";
 import { clearAuthToken, readAuthToken } from "../../utils/auth";
 
 // --- COLOR CONFIGURATION ---
@@ -455,6 +456,7 @@ export default function Dashboard() {
     title: "",
     text: "",
   });
+  const [toast, setToast] = useState(null);
   const [dayDetail, setDayDetail] = useState(null);
   const [activeTip, setActiveTip] = useState(null);
   const [tipCards, setTipCards] = useState([]);
@@ -477,6 +479,11 @@ export default function Dashboard() {
   const [dismissedMissingPopup, setDismissedMissingPopup] = useState(false);
   const [pendingTodayReminder, setPendingTodayReminder] = useState(false);
   const [showTodayReminder, setShowTodayReminder] = useState(false);
+
+  const showToast = useCallback((message, type = "info") => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  }, []);
 
   // --- FORM STATE ---
   const [gpa, setGpa] = useState(() => {
@@ -1194,10 +1201,10 @@ export default function Dashboard() {
 
   // GPA persistence logic (local only)
   function handleGpaSave(val) {
-    if (val === "") return alert("GPA cannot be empty.");
+    if (val === "") return showToast("GPA cannot be empty.", "warning");
     const num = parseFloat(val);
     if (Number.isNaN(num) || num < 0 || num > 4) {
-      return alert("GPA must be between 0 and 4.");
+      return showToast("GPA must be between 0 and 4.", "warning");
     }
 
     setGpa(num);
@@ -1237,11 +1244,11 @@ export default function Dashboard() {
       return logData?.stressLevelId ?? logData?.id ?? logData?._id ?? null;
     } catch (error) {
       if (error?.status === 409) {
-        alert("Data already exists for this date. Updates are not available yet.");
+        showToast("Data already exists for this date. Updates are not available yet.", "info");
         return null;
       }
       if (error?.status === 403 && isRestore) {
-        alert("Your monthly restore limit has been reached.");
+        showToast("Your monthly restore limit has been reached.", "warning");
         return null;
       }
       console.error("Failed to save stress log:", error);
@@ -1258,7 +1265,7 @@ export default function Dashboard() {
     const resolvedGpa = resolveGpaForSubmit();
     if (resolvedGpa === null) {
       setIsEditingGpa(true);
-      return alert("Please set your GPA before submitting the data.");
+      return showToast("Please set your GPA before submitting the data.", "warning");
     }
     if (gpa === "" || gpa === null) {
       setGpa(resolvedGpa);
@@ -1266,7 +1273,7 @@ export default function Dashboard() {
     }
 
     if (sleepHours === "" || sleepHours < 0 || sleepHours > 24) {
-      return alert("Please enter valid sleep hours (0-24).");
+      return showToast("Please enter valid sleep hours (0-24).", "warning");
     }
 
     try {
@@ -1344,7 +1351,7 @@ export default function Dashboard() {
       }
     } catch (error) {
       console.error("❌ Failed to connect:", error);
-      alert("Failed to reach the server.");
+      showToast("Failed to reach the server.", "error");
     } finally {
       setIsSaving(false);
     }
@@ -2777,6 +2784,12 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+
+      <Toast
+        message={toast?.message}
+        type={toast?.type}
+        onClose={() => setToast(null)}
+      />
     </div>
   );
 }
