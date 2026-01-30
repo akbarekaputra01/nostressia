@@ -1489,7 +1489,7 @@ export default function Dashboard() {
 
                   {hasSubmittedToday && (
                     <div
-                      className="absolute -top-[4.5rem] -right-[4.5rem] text-[11rem] opacity-[0.08] pointer-events-none select-none grayscale filter"
+                      className="absolute -top-18 -right-18 text-[11rem] opacity-[0.08] pointer-events-none select-none grayscale filter"
                       style={{ zIndex: 0 }}
                     >
                       {moods[moodIndex]}
@@ -1504,7 +1504,7 @@ export default function Dashboard() {
                       <i className="ph ph-cloud-sun mr-2" /> <i className="ph ph-smiley" />
                     </div>
                   </header>
-                  <div className="flex-grow flex flex-col items-center justify-center text-center relative z-10">
+                  <div className="grow flex flex-col items-center justify-center text-center relative z-10">
                     {(() => {
                       let ui = {
                         label: "NO DATA",
@@ -2234,7 +2234,7 @@ export default function Dashboard() {
 
               {/* --- NEW SECTION: 3-DAY FORECAST --- */}
               <div className="mt-auto pt-6 pb-2">
-                <div className="w-full h-px bg-gradient-to-r from-transparent via-border to-transparent mb-4 dark:via-border"></div>
+                <div className="w-full h-px bg-linear-to-r from-transparent via-border to-transparent mb-4 dark:via-border"></div>
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="text-sm font-bold text-text-secondary dark:text-text-primary flex items-center gap-2">
                     <i className="ph ph-crystal-ball text-brand-info text-lg"></i>
@@ -2451,10 +2451,10 @@ export default function Dashboard() {
             {forecastDetail && (
               <div
                 className={`
-                  absolute inset-x-0 bottom-0 z-30 rounded-t-[24px]
+                  absolute inset-x-0 bottom-0 z-30 rounded-t-3xl
                   shadow-2xl border-t border-border-subtle overflow-hidden dark:border-border
                   ${isClosingPanel ? "animate-slide-down-panel" : "animate-slide-up-panel"}
-                  backdrop-blur-xl supports-[backdrop-filter]:backdrop-blur-xl
+                  backdrop-blur-xl supports-backdrop-filter:backdrop-blur-xl
                   bg-white/10 dark:bg-black/20
                   ring-1 ring-white/10 dark:ring-white/10
                 `}
@@ -2570,13 +2570,13 @@ export default function Dashboard() {
         {/* MOTIVATION & TIPS SECTIONS */}
         <div className="mt-8 grid grid-cols-1">
           {/* ... (Motivation section remains unchanged) ... */}
-          <section className="col-span-4 relative overflow-hidden rounded-[24px] shadow-xl group transition-all duration-500 hover:shadow-orange-100">
+          <section className="col-span-4 relative overflow-hidden rounded-3xl shadow-xl group transition-all duration-500 hover:shadow-orange-100">
             <div className="absolute inset-0 bg-surface-elevated/60 glass-panel backdrop-blur-xl border border-white/40 dark:bg-surface/80 dark:border-border/60 z-0"></div>
             <div className="absolute -left-10 -top-10 w-40 h-40 bg-orange-300 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob"></div>
             <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-purple-300 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob animation-delay-2000"></div>
             <div className="relative z-10 p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-6">
               <div className="flex flex-col md:flex-row items-center md:items-start gap-6 text-center md:text-left flex-1">
-                <div className="w-16 h-16 flex-shrink-0 rounded-2xl bg-gradient-to-br from-orange-400 to-red-400 flex items-center justify-center shadow-lg text-white">
+                <div className="w-16 h-16 shrink-0 rounded-2xl bg-linear-to-br from-orange-400 to-red-400 flex items-center justify-center shadow-lg text-white">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 256 256"
@@ -2601,7 +2601,7 @@ export default function Dashboard() {
                       <p className="text-rose-500 font-medium">{quoteError}</p>
                     ) : quoteData.text ? (
                       <>
-                        <h3 className="text-2xl md:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-text-secondary to-text-muted dark:from-text-primary dark:to-text-secondary leading-tight mb-2">
+                        <h3 className="text-2xl md:text-3xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-text-secondary to-text-muted dark:from-text-primary dark:to-text-secondary leading-tight mb-2">
                           "{quoteData.text}"
                         </h3>
                         <p className="text-text-muted dark:text-text-muted font-medium italic">
@@ -2619,7 +2619,7 @@ export default function Dashboard() {
               <button
                 onClick={handleNewQuote}
                 disabled={isQuoteAnimating || quoteLoading || quotePool.length === 0}
-                className="flex-shrink-0 group relative px-6 py-3 rounded-xl bg-surface-elevated glass-panel border border-border text-text-secondary font-bold shadow-sm hover:shadow-md hover:border-orange-300 hover:text-orange-600 dark:bg-surface dark:border-border dark:text-text-primary dark:hover:text-orange-600 transition-all active:scale-95 disabled:opacity-70 cursor-pointer"
+                className="shrink-0 group relative px-6 py-3 rounded-xl bg-surface-elevated glass-panel border border-border text-text-secondary font-bold shadow-sm hover:shadow-md hover:border-orange-300 hover:text-orange-600 dark:bg-surface dark:border-border dark:text-text-primary dark:hover:text-orange-600 transition-all active:scale-95 disabled:opacity-70 cursor-pointer"
               >
                 <span className="flex items-center gap-2">
                   <i
@@ -2675,7 +2675,7 @@ export default function Dashboard() {
       <Footer />
 
       {missingRestorePopup && (
-        <div className="fixed inset-0 z-[1090] flex items-center justify-center p-4 bg-neutral-950/50 backdrop-blur-sm animate-fadeIn">
+        <div className="fixed inset-0 z-1090 flex items-center justify-center p-4 bg-neutral-950/50 backdrop-blur-sm animate-fadeIn">
           <div className="absolute inset-0 cursor-pointer" onClick={handleCloseMissingPopup} />
           <div className="relative w-full max-w-md bg-surface-elevated glass-panel rounded-3xl shadow-2xl overflow-hidden animate-modal-slide">
             <div className="p-8">
@@ -2735,7 +2735,7 @@ export default function Dashboard() {
       )}
 
       {showTodayReminder && (
-        <div className="fixed inset-0 z-[1080] flex items-center justify-center p-4 bg-neutral-950/50 backdrop-blur-sm animate-fadeIn">
+        <div className="fixed inset-0 z-1080 flex items-center justify-center p-4 bg-neutral-950/50 backdrop-blur-sm animate-fadeIn">
           <div
             className="absolute inset-0 cursor-pointer"
             onClick={() => setShowTodayReminder(false)}
@@ -2767,7 +2767,7 @@ export default function Dashboard() {
 
       {/* MODAL TIPS */}
       {activeTip && (
-        <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4 bg-neutral-950/50 backdrop-blur-sm animate-fadeIn">
+        <div className="fixed inset-0 z-1100 flex items-center justify-center p-4 bg-neutral-950/50 backdrop-blur-sm animate-fadeIn">
           <div className="absolute inset-0 cursor-pointer" onClick={() => setActiveTip(null)} />
 
           <div className="relative w-full max-w-md bg-surface-elevated glass-panel rounded-3xl shadow-2xl overflow-hidden animate-modal-slide">
