@@ -1,20 +1,38 @@
 import sys
 import os
+import logging
 from sqlalchemy import create_engine, text
 
 # 1. SETUP PATH
 # Menambahkan folder saat ini ke path agar bisa import model dari folder 'app'
 sys.path.append(os.getcwd())
 
-# 2. CONFIG DATABASE (Hardcoded sesuai request)
-DB_USER = "Nostressia_nationalas"
-DB_PASSWORD = "2f5d922599f787ad53a4a1c7a243e24be84a5be7"
-DB_HOST = "mfv81z.h.filess.io"
-DB_PORT = "3306"
-DB_NAME = "Nostressia_nationalas"
+logging.basicConfig(level=logging.INFO, format="%(message)s")
+logger = logging.getLogger(__name__)
+
+# 2. CONFIG DATABASE (via environment variables)
+DB_USER = os.getenv("DB_USER")
+DB_PASSWORD = os.getenv("DB_PASSWORD")
+DB_HOST = os.getenv("DB_HOST")
+DB_PORT = os.getenv("DB_PORT", "3306")
+DB_NAME = os.getenv("DB_NAME")
+
+def require_env(value, name):
+    if not value:
+        logger.error("❌ Missing required environment variable: %s", name)
+        sys.exit(1)
+    return value
+
+
+DB_USER = require_env(DB_USER, "DB_USER")
+DB_PASSWORD = require_env(DB_PASSWORD, "DB_PASSWORD")
+DB_HOST = require_env(DB_HOST, "DB_HOST")
+DB_NAME = require_env(DB_NAME, "DB_NAME")
 
 # String koneksi manual
-SQLALCHEMY_DATABASE_URL = f"mysql+mysqlconnector://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+SQLALCHEMY_DATABASE_URL = (
+    f"mysql+mysqlconnector://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+)
 
 # 3. BUAT KONEKSI (ENGINE) SENDIRI
 # echo=True supaya kamu bisa liat log SQL yang jalan di terminal
@@ -31,48 +49,50 @@ try:
     from app.models.motivation_model import Motivation
     from app.models.tips_model import Tips
     from app.models.bookmark_model import Bookmark
-    print("✅ Berhasil memuat Model dari aplikasi.")
+    logger.info("✅ Berhasil memuat Model dari aplikasi.")
 except ImportError as e:
-    print(f"❌ Gagal import model: {e}")
-    print("Pastikan kamu menjalankan script ini dari folder root project (sejajar dengan folder 'app').")
+    logger.error("❌ Gagal import model: %s", e)
+    logger.error(
+        "Pastikan kamu menjalankan script ini dari folder root project (sejajar dengan folder 'app')."
+    )
     sys.exit(1)
 
 def reset_database():
-    print(f"\n🔌 Menghubungkan ke Database: {DB_HOST}...")
+    logger.info("\n🔌 Menghubungkan ke Database: %s...", DB_HOST)
     
     with engine.connect() as connection:
-        print("🛡️  Matikan Foreign Key Checks...")
+        logger.info("🛡️  Matikan Foreign Key Checks...")
         connection.execute(text("SET FOREIGN_KEY_CHECKS = 0;"))
         
         # --- HAPUS TABEL LAMA ---
-        print("🗑️  DROP TABLE users...")
+        logger.info("🗑️  DROP TABLE users...")
         connection.execute(text("DROP TABLE IF EXISTS users;"))
         
         # Opsional: Uncomment jika ingin reset tabel lain juga
         # connection.execute(text("DROP TABLE IF EXISTS diaries;"))
         # connection.execute(text("DROP TABLE IF EXISTS stress_levels;"))
 
-        print("🛡️  Hidupkan Foreign Key Checks...")
+        logger.info("🛡️  Hidupkan Foreign Key Checks...")
         connection.execute(text("SET FOREIGN_KEY_CHECKS = 1;"))
         connection.commit()
-        print("✅ Tabel lama berhasil dihapus.")
+        logger.info("✅ Tabel lama berhasil dihapus.")
 
     # --- BUAT TABEL BARU ---
-    print("\n✨ Membuat ulang tabel berdasarkan kodingan Python terbaru...")
+    logger.info("\n✨ Membuat ulang tabel berdasarkan kodingan Python terbaru...")
     # Ini akan membaca file user_model.py kamu dan bikin tabel sesuai isinya (termasuk avatar)
     Base.metadata.create_all(bind=engine)
-    print("🚀 SUKSES! Database sudah di-reset.")
+    logger.info("🚀 SUKSES! Database sudah di-reset.")
 
 if __name__ == "__main__":
-    print("⚠️  PERINGATAN: Script ini akan menghapus data di tabel USERS!")
-    print(f"Target Database: {DB_NAME} di {DB_HOST}")
+    logger.warning("⚠️  PERINGATAN: Script ini akan menghapus data di tabel USERS!")
+    logger.warning("Target Database: %s di %s", DB_NAME, DB_HOST)
     
     confirm = input("\nKetik 'gas' untuk lanjut reset: ")
     if confirm.lower() == 'gas':
         try:
             reset_database()
         except Exception as e:
-            print(f"\n❌ Terjadi Error Koneksi: {e}")
-            print("Cek kembali koneksi internet atau kredensial database.")
+            logger.error("\n❌ Terjadi Error Koneksi: %s", e)
+            logger.error("Cek kembali koneksi internet atau kredensial database.")
     else:
-        print("Batal.")
+        logger.info("Batal.")
