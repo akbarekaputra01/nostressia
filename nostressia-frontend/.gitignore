@@ -4,6 +4,10 @@
 **/.env
 **/.env.*
 
+# Allow env examples
+!.env.example
+!**/.env.example
+
 # Node / build artifacts
 node_modules/
 dist/
