@@ -31,7 +31,7 @@ export const createLogger = (scope, options = {}) => {
   const write = (level, message, ...meta) => {
     if (!loggingEnabled || !shouldLog(level, minimumLevel)) return;
     const output = `${prefix} ${message}`;
-    const consoleMethod = console[level] || console.log;
+    const consoleMethod = console[level] || console.info;
     if (meta.length > 0) {
       consoleMethod(output, ...meta);
     } else {
