@@ -1,5 +1,4 @@
 export const STORAGE_KEYS = {
-  INTERNAL_ACCESS: "nostressia_internal_access",
   THEME_PREFERENCE: "nostressia_theme",
   CACHE_USER_DATA: "nostressia_cache_user_data",
   TODAY_LOG: "nostressia_today_log",
