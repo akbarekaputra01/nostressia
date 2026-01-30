@@ -4,6 +4,10 @@
 **/.env
 **/.env.*
 
+# Allow env examples
+!.env.example
+!**/.env.example
+
 # Python artifacts
 __pycache__/
 *.pyc
