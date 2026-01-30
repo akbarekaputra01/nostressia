@@ -1458,7 +1458,7 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {/* FLIP CARD SECTION */}
           <section
-            className="col-span-1 md:col-span-2 relative overflow-hidden"
+            className="col-span-1 md:col-span-2 relative overflow-visible"
             style={{ minHeight: 600 }}
           >
             {isLoadingLogs && (
@@ -1683,7 +1683,7 @@ export default function Dashboard() {
                   >
                     <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pr-2 custom-scroll pb-10">
                       {isRestoreMode && (
-                        <div className="rounded-xl border border-white/40 bg-surface-elevated/60 glass-panel p-3 shadow-sm">
+                        <div className="rounded-xl border border-white/40 bg-surface-elevated/60 p-3 shadow-sm">
                           <p className="text-xs font-semibold uppercase tracking-wider text-text-muted">
                             Restore input mode
                           </p>
@@ -1832,7 +1832,7 @@ export default function Dashboard() {
                             max="24"
                             step="0.5"
                             placeholder="0"
-                            className="w-full p-2.5 border border-white/50 bg-surface-elevated/50 glass-panel rounded-lg focus:ring-2 focus:ring-blue-400 placeholder:text-text-muted"
+                            className="w-full p-2.5 border border-white/50 bg-surface-elevated/80 shadow-sm rounded-lg focus:ring-2 focus:ring-blue-400 placeholder:text-text-muted"
                           />
                         </div>
                         <div>
@@ -1848,7 +1848,7 @@ export default function Dashboard() {
                             max="24"
                             step="0.5"
                             placeholder="0"
-                            className="w-full p-2.5 border border-white/50 bg-surface-elevated/50 glass-panel rounded-lg focus:ring-2 focus:ring-blue-400 placeholder:text-text-muted"
+                            className="w-full p-2.5 border border-white/50 bg-surface-elevated/80 shadow-sm rounded-lg focus:ring-2 focus:ring-blue-400 placeholder:text-text-muted"
                           />
                         </div>
                         <div>
@@ -1864,7 +1864,7 @@ export default function Dashboard() {
                             max="24"
                             step="0.5"
                             placeholder="0"
-                            className="w-full p-2.5 border border-white/50 bg-surface-elevated/50 glass-panel rounded-lg focus:ring-2 focus:ring-blue-400 placeholder:text-text-muted"
+                            className="w-full p-2.5 border border-white/50 bg-surface-elevated/80 shadow-sm rounded-lg focus:ring-2 focus:ring-blue-400 placeholder:text-text-muted"
                             data-required="true"
                           />
                         </div>
@@ -1881,7 +1881,7 @@ export default function Dashboard() {
                             max="24"
                             step="0.5"
                             placeholder="0"
-                            className="w-full p-2.5 border border-white/50 bg-surface-elevated/50 glass-panel rounded-lg focus:ring-2 focus:ring-blue-400 placeholder:text-text-muted"
+                            className="w-full p-2.5 border border-white/50 bg-surface-elevated/80 shadow-sm rounded-lg focus:ring-2 focus:ring-blue-400 placeholder:text-text-muted"
                           />
                         </div>
                         <div>
@@ -1899,7 +1899,7 @@ export default function Dashboard() {
                             max="24"
                             step="0.5"
                             placeholder="0"
-                            className="w-full p-2.5 border border-white/50 bg-surface-elevated/50 glass-panel rounded-lg focus:ring-2 focus:ring-blue-400 placeholder:text-text-muted"
+                            className="w-full p-2.5 border border-white/50 bg-surface-elevated/80 shadow-sm rounded-lg focus:ring-2 focus:ring-blue-400 placeholder:text-text-muted"
                           />
                         </div>
                       </div>
@@ -2799,11 +2799,7 @@ export default function Dashboard() {
         </div>
       )}
 
-      <Toast
-        message={toast?.message}
-        type={toast?.type}
-        onClose={() => setToast(null)}
-      />
+      <Toast message={toast?.message} type={toast?.type} onClose={() => setToast(null)} />
     </div>
   );
 }
