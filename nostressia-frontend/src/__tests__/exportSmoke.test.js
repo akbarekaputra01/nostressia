@@ -58,8 +58,8 @@ describe("export smoke tests", () => {
     expect(tipsApi.createTip).toBeInstanceOf(Function);
     expect(tipsApi.updateTip).toBeInstanceOf(Function);
     expect(tipsApi.deleteTip).toBeInstanceOf(Function);
-    expect(profilePictureApi.requestProfilePictureSas).toBeInstanceOf(Function);
-    expect(profilePictureApi.uploadProfilePictureToAzure).toBeInstanceOf(Function);
+    expect(profilePictureApi.requestUploadSas).toBeInstanceOf(Function);
+    expect(profilePictureApi.uploadToAzure).toBeInstanceOf(Function);
     expect(profilePictureApi.saveProfilePictureUrl).toBeInstanceOf(Function);
     expect(profilePictureApi.validateProfilePictureFile).toBeInstanceOf(Function);
     expect(stressLevelsApi.addStressLog).toBeInstanceOf(Function);

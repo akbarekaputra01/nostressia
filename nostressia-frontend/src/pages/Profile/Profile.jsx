@@ -42,9 +42,8 @@ import { clearAuthToken, readAuthToken } from "../../utils/auth";
 import { createLogger } from "../../utils/logger";
 import { resolveLegacyValue, storage, STORAGE_KEYS } from "../../utils/storage";
 import {
-  requestProfilePictureSas,
   saveProfilePictureUrl,
-  uploadProfilePictureToAzure,
+  uploadToAzure,
   validateProfilePictureFile,
 } from "../../api/profilePicture";
 import {
@@ -67,9 +66,6 @@ import avatar5 from "../../assets/images/avatar5.png";
 const logger = createLogger("PROFILE");
 
 const AVATAR_OPTIONS = [avatar1, avatar4, avatar3, avatar5, avatar2];
-
-const FALLBACK_SAS_URL = import.meta.env.VITE_AZURE_BLOB_SAS_URL || "";
-const FALLBACK_CONTAINER = import.meta.env.VITE_AZURE_BLOB_CONTAINER || "";
 
 // --- COMPONENT: AVATAR SELECTION MODAL ---
 const AvatarSelectionModal = ({ onClose, onSelect, onUpload, currentAvatar, uploading }) => {
@@ -994,31 +990,7 @@ export default function Profile() {
     setShouldClearProfilePicture(false);
     setIsUploadingAvatar(true);
     try {
-      let sasPayload = null;
-      try {
-        sasPayload = await requestProfilePictureSas(file);
-      } catch (error) {
-        if (!FALLBACK_SAS_URL || !FALLBACK_CONTAINER) {
-          throw error;
-        }
-      }
-      let uploadedUrl = null;
-
-      if (sasPayload?.sasUrl) {
-        const uploadResult = await uploadProfilePictureToAzure(file, {
-          sasUrl: sasPayload.sasUrl,
-        });
-        uploadedUrl = sasPayload?.blobUrl || uploadResult?.url;
-      } else if (FALLBACK_SAS_URL && FALLBACK_CONTAINER) {
-        const uploadResult = await uploadProfilePictureToAzure(file, {
-          sasUrl: FALLBACK_SAS_URL,
-          containerName: FALLBACK_CONTAINER,
-        });
-        uploadedUrl = uploadResult?.url;
-      } else {
-        throw new Error("The SAS response is invalid.");
-      }
-
+      const uploadedUrl = await uploadToAzure(file, "profile-pictures");
       if (!uploadedUrl) {
         throw new Error("The upload URL is not available.");
       }
