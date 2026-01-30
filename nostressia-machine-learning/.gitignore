@@ -1,2 +1,37 @@
-.env 
+# Environment files
+.env
+.env.*
+**/.env
+**/.env.*
+
+# Allow env examples
+!.env.example
+!**/.env.example
+
+# Jupyter artifacts
+.ipynb_checkpoints/
+**/.ipynb_checkpoints/
+
+# Local notebooks / utilities (do not commit)
 insert_to_db.ipynb
+
+# Python artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+.venv/
+venv/
+
+# Test/coverage caches
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
