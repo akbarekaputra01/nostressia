@@ -15,6 +15,7 @@ from app.api.api_router import api_router
 from app.core.config import settings
 from app.core.database import Base, engine
 from app.models import register_models
+from app.routes.root_route import router as root_router
 from app.services.notification_scheduler import (
     start_notification_scheduler,
     stop_notification_scheduler,
@@ -114,7 +115,8 @@ def create_app() -> FastAPI:
         stop_notification_scheduler(getattr(app.state, "notification_scheduler", None))
         logger.info("Notification scheduler stopped.")
 
-    # Router
+    # Routers
+    app.include_router(root_router)
     app.include_router(api_router, prefix=settings.api_prefix)
 
     return app
