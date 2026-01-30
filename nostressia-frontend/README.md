@@ -52,6 +52,13 @@ public/
 | `VITE_AZURE_BLOB_CONTAINER` | Container Azure Blob untuk upload avatar. |
 | `VITE_LOG_LEVEL` | Level logging (`debug`, `info`, `warn`, `error`). |
 
+## Backend Healthcheck
+Pastikan backend hidup sebelum menjalankan UI:
+```bash
+curl http://localhost:8000/
+curl http://localhost:8000/health
+```
+
 ## Available Scripts
 | Script | Description |
 | --- | --- |
