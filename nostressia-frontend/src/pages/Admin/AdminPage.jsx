@@ -132,9 +132,7 @@ export default function AdminPage({ skipAuth = false }) {
     }
 
     clearAdminSession();
-    logger.warn(
-      "Redirect to /admin/login because admin token/profile are missing or invalid.",
-    );
+    logger.warn("Redirect to /admin/login because admin token/profile are missing or invalid.");
     navigate("/admin/login");
   }, [navigate, skipAuth]);
 
@@ -922,7 +920,21 @@ export default function AdminPage({ skipAuth = false }) {
               <select
                 value={themePreference}
                 onChange={(e) => setPreference(e.target.value)}
-                className="text-sm font-semibold bg-transparent text-text-primary focus:outline-hidden cursor-pointer"
+                className="text-sm font-semibold rounded-lg px-2 py-1
+             bg-surface-elevated text-text-primary
+             border border-border-subtle
+             focus:outline-none focus:ring-2 focus:ring-brand-primary/30
+             cursor-pointer
+             dark:bg-surface dark:text-text-primary
+             dark:scheme-dark"
+                style={{
+                  colorScheme:
+                    themePreference === "dark"
+                      ? "dark"
+                      : themePreference === "light"
+                        ? "light"
+                        : "light dark",
+                }}
                 aria-label="Select theme"
               >
                 {themeOptions.map((option) => (
@@ -1377,11 +1389,7 @@ export default function AdminPage({ skipAuth = false }) {
         onConfirm={handleConfirm}
         onCancel={handleCancelConfirm}
       />
-      <Toast
-        message={toast?.message}
-        type={toast?.type}
-        onClose={() => setToast(null)}
-      />
+      <Toast message={toast?.message} type={toast?.type} onClose={() => setToast(null)} />
 
       <style>{`
         @keyframes fade-in { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } } 
