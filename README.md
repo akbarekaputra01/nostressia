@@ -45,6 +45,10 @@ Nostressia adalah platform pemantauan stres harian yang menggabungkan aplikasi w
 - Integrasi prediksi ML.
 - Push notification scheduler.
 
+**Healthcheck tanpa prefix `/api`:**
+- `GET /` → `{ "status": "ok", "message": "Nostressia API is running" }`
+- `GET /health` → `{ "status": "ok" }`
+
 **Dokumentasi API:**
 - `/docs` → Swagger UI
 - `/openapi.json`
