@@ -99,8 +99,6 @@ pip install -r requirements.txt
 ### Frontend (`nostressia-frontend/.env`)
 ```
 VITE_API_BASE_URL=
-VITE_INTERNAL_USER=
-VITE_INTERNAL_PASS=
 VITE_VAPID_PUBLIC_KEY=
 VITE_AZURE_BLOB_SAS_URL=
 VITE_AZURE_BLOB_CONTAINER=
