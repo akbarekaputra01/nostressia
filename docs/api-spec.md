@@ -1,6 +1,7 @@
 # API Specification (Ringkas)
 
-Semua endpoint menggunakan prefix `/api` dan response dibungkus dalam format `APIResponse`.
+Semua endpoint bisnis menggunakan prefix `/api` dan response dibungkus dalam format `APIResponse`.
+Endpoint root & health disediakan tanpa prefix untuk kebutuhan monitoring/healthcheck.
 
 ## Format Response Umum
 
@@ -131,3 +132,22 @@ Semua endpoint menggunakan prefix `/api` dan response dibungkus dalam format `AP
 ## Catatan
 - Semua endpoint privat memerlukan header `Authorization: Bearer <token>`.
 - Detail lengkap tersedia via Swagger UI `/docs` saat server berjalan.
+
+## Root & Health Endpoints
+Endpoint ini **tanpa prefix `/api`** agar healthcheck/monitoring bisa langsung mengakses root tanpa 404.
+
+### Root
+`GET /`
+
+**Response 200**
+```json
+{ "status": "ok", "message": "Nostressia API is running" }
+```
+
+### Health
+`GET /health`
+
+**Response 200**
+```json
+{ "status": "ok" }
+```

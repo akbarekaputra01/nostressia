@@ -52,7 +52,27 @@ uvicorn app.main:app --reload
 ```
 
 ## Endpoint Utama (contoh)
-> Semua endpoint memakai prefix `/api`.
+> Semua endpoint bisnis memakai prefix `/api`.
+
+### Root & Health Endpoints
+Endpoint ini **tanpa prefix `/api`** untuk kebutuhan monitoring/healthcheck dan memastikan root tidak 404.
+
+- `GET /`
+  ```bash
+  curl http://localhost:8000/
+  ```
+  **Response 200**
+  ```json
+  { "status": "ok", "message": "Nostressia API is running" }
+  ```
+- `GET /health`
+  ```bash
+  curl http://localhost:8000/health
+  ```
+  **Response 200**
+  ```json
+  { "status": "ok" }
+  ```
 
 ### Auth & User
 - `POST /api/auth/register`
