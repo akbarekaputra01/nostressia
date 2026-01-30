@@ -46,7 +46,6 @@ public/
 | --- | --- |
 | `VITE_API_BASE_URL` | Base URL backend API (contoh: `https://api.example.com`). |
 | `VITE_VAPID_PUBLIC_KEY` | VAPID public key untuk push notifications. |
-| `VITE_AZURE_BLOB_SAS_URL` | SAS URL untuk fallback upload avatar. |
 | `VITE_AZURE_BLOB_CONTAINER` | Container Azure Blob untuk upload avatar. |
 | `VITE_LOG_LEVEL` | Level logging (`debug`, `info`, `warn`, `error`). |
 

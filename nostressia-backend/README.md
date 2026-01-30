@@ -118,6 +118,28 @@ Endpoint ini **tanpa prefix `/api`** untuk kebutuhan monitoring/healthcheck dan 
     -d '{"subscription":{"endpoint":"https://example.com","keys":{"p256dh":"key","auth":"auth"}},"reminderTime":"08:00","timezone":"Asia/Jakarta"}'
   ```
 
+### Storage (SAS Upload)
+- `POST /api/storage/sas/upload`
+  ```bash
+  curl -X POST http://localhost:8000/api/storage/sas/upload \
+    -H "Authorization: Bearer <accessToken>" \
+    -H "Content-Type: application/json" \
+    -d '{"fileName":"avatar.png","contentType":"image/png","folder":"uploads"}'
+  ```
+  **Response 200**
+  ```json
+  {
+    "success": true,
+    "message": "SAS created",
+    "data": {
+      "uploadUrl": "https://<account>.blob.core.windows.net/<container>/<blobName>?<sas>",
+      "blobUrl": "https://<account>.blob.core.windows.net/<container>/<blobName>",
+      "blobName": "users/123/uploads/20240101120000-acde1234-avatar.png",
+      "expiresInMinutes": 10
+    }
+  }
+  ```
+
 ## Testing
 Backend menggunakan pytest + TestClient dengan SQLite in-memory untuk isolasi.
 

@@ -1,50 +1,46 @@
-import { BlobServiceClient, BlockBlobClient } from "@azure/storage-blob";
-
 import client, { unwrapResponse } from "./client";
 
 const MAX_PROFILE_PICTURE_SIZE = 2 * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
-export const requestProfilePictureSas = async (file) => {
-  // Request a short-lived SAS token so the browser never holds the storage key.
-  const response = await client.post("/profile/picture/sas", {
+export const requestUploadSas = async (file, folder = "uploads") => {
+  const response = await client.post("/storage/sas/upload", {
     fileName: file.name,
     contentType: file.type,
-    fileSize: file.size,
+    folder,
   });
   return unwrapResponse(response);
 };
 
-const sanitizeFilename = (fileName) =>
-  fileName.replace(/[^a-zA-Z0-9._-]/g, "_");
-
-export const uploadProfilePictureToAzure = async (
-  file,
-  { sasUrl, containerName, blobName } = {}
-) => {
-  if (!sasUrl) {
-    throw new Error("SAS URL is not available for upload.");
+export const uploadToAzure = async (file, folder = "uploads") => {
+  if (!file) {
+    throw new Error("No file selected.");
   }
 
-  if (containerName) {
-    const blobServiceClient = new BlobServiceClient(sasUrl);
-    const containerClient = blobServiceClient.getContainerClient(containerName);
-    const safeName = blobName || `${Date.now()}-${sanitizeFilename(file.name)}`;
-    const blobClient = containerClient.getBlockBlobClient(safeName);
+  const sasPayload = await requestUploadSas(file, folder);
+  const uploadUrl = sasPayload?.uploadUrl;
 
-    await blobClient.uploadBrowserData(file, {
-      blobHTTPHeaders: { blobContentType: file.type },
-    });
-
-    return { url: blobClient.url, blobName: safeName };
+  if (!uploadUrl) {
+    throw new Error("The upload URL is not available.");
   }
 
-  // Upload directly to Azure Blob using a single-blob SAS URL.
-  const blobClient = new BlockBlobClient(sasUrl);
-  await blobClient.uploadBrowserData(file, {
-    blobHTTPHeaders: { blobContentType: file.type },
+  const uploadResponse = await fetch(uploadUrl, {
+    method: "PUT",
+    headers: {
+      "x-ms-blob-type": "BlockBlob",
+      "Content-Type": file.type,
+    },
+    body: file,
   });
 
-  return { url: blobClient.url };
+  if (!uploadResponse.ok) {
+    if (uploadResponse.status === 401 || uploadResponse.status === 403) {
+      throw new Error("Upload token expired or invalid. Please try again.");
+    }
+    throw new Error("Upload failed. Please try again.");
+  }
+
+  return sasPayload?.blobUrl;
 };
 
 export const saveProfilePictureUrl = async (profileImageUrl) => {
@@ -59,8 +55,8 @@ export const validateProfilePictureFile = (file) => {
   if (!file) {
     return { ok: false, message: "No file selected." };
   }
-  if (!file.type?.startsWith("image/")) {
-    return { ok: false, message: "The file must be an image." };
+  if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+    return { ok: false, message: "Only JPG, PNG, or WebP images are allowed." };
   }
   if (file.size > MAX_PROFILE_PICTURE_SIZE) {
     return { ok: false, message: "The maximum file size is 2MB." };
