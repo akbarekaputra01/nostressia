@@ -41,19 +41,21 @@ vi.mock("../theme/ThemeProvider", () => ({
   }),
 }));
 
+const mockUser = {
+  username: "example",
+  name: "Example User",
+  email: "user@example.com",
+  avatar: "",
+  userDob: "2000-01-01",
+  gender: "male",
+};
+
 vi.mock("react-router-dom", async () => {
   const actual = await vi.importActual("react-router-dom");
   return {
     ...actual,
     useOutletContext: () => ({
-      user: {
-        username: "example",
-        name: "Example User",
-        email: "user@example.com",
-        avatar: "",
-        userDob: "2000-01-01",
-        gender: "male",
-      },
+      user: mockUser,
     }),
   };
 });

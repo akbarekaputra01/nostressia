@@ -41,19 +41,21 @@ vi.mock("../theme/ThemeProvider", () => ({
   }),
 }));
 
+const mockUser = {
+  username: "example",
+  name: "Example User",
+  email: "user@example.com",
+  avatar: "",
+  userDob: "2000-01-01",
+  gender: "male",
+};
+
 vi.mock("react-router-dom", async () => {
   const actual = await vi.importActual("react-router-dom");
   return {
     ...actual,
     useOutletContext: () => ({
-      user: {
-        username: "example",
-        name: "Example User",
-        email: "user@example.com",
-        avatar: "",
-        userDob: "2000-01-01",
-        gender: "male",
-      },
+      user: mockUser,
     }),
   };
 });
@@ -102,6 +104,6 @@ describe("Profile password flow", () => {
     await user.click(screen.getByRole("button", { name: /continue/i }));
 
     expect(verifyCurrentPassword).toHaveBeenCalled();
-    expect(await screen.findByLabelText(/new password/i)).toBeInTheDocument();
+    expect(await screen.findByLabelText(/^new password$/i)).toBeInTheDocument();
   });
 });

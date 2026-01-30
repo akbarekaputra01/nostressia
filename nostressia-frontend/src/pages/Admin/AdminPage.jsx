@@ -938,7 +938,11 @@ export default function AdminPage({ skipAuth = false }) {
                 aria-label="Select theme"
               >
                 {themeOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
+                  <option
+                    key={option.value}
+                    value={option.value}
+                    className="bg-surface-elevated text-text-primary dark:bg-surface-muted dark:text-text-primary"
+                  >
                     {option.label}
                   </option>
                 ))}
