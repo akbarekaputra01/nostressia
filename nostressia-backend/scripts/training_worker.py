@@ -1,6 +1,7 @@
 import argparse
 import os
 import subprocess
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
@@ -9,12 +10,16 @@ from azure.storage.blob import BlobServiceClient, ContentSettings
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
+ROOT = Path(__file__).resolve().parents[2]
+BACKEND_DIR = ROOT / "nostressia-backend"
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
+
 from app.core.config import settings
 from app.models.model_registry_model import ModelRegistry
 from app.models.training_job_model import TrainingJob
 from app.services.training_job_service import enqueue_global_training_if_due
 
-ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_CONTAINER = "model-artifacts"
 
 
