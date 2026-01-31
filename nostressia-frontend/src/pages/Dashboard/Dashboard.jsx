@@ -381,11 +381,15 @@ function normalizeEligibility(payload) {
   const requiredStreak = Number(eligibility?.requiredStreak ?? eligibility?.required_streak ?? 7);
   const restoreUsed = Number(eligibility?.restoreUsed ?? eligibility?.restore_used ?? 0);
   const restoreLimit = Number(eligibility?.restoreLimit ?? eligibility?.restore_limit ?? 3);
+  const restoreRemaining = Number(
+    eligibility?.restoreRemaining ?? eligibility?.restore_remaining ?? 0,
+  );
 
   return {
     streak,
     requiredStreak,
     restoreUsed,
+    restoreRemaining,
     restoreLimit,
     missing: eligibility?.missing,
     note: eligibility?.note,
@@ -544,7 +548,7 @@ export default function Dashboard() {
   );
   const restoreUsed = normalizedEligibility?.restoreUsed ?? 0;
   const restoreLimit = normalizedEligibility?.restoreLimit ?? 3;
-  const restoreRemaining = Math.max(restoreLimit - restoreUsed, 0);
+  const restoreRemaining = normalizedEligibility?.restoreRemaining ?? 0;
   const canRestoreSelectedDay = isSelectedPast && !selectedDayHasData;
   const restoreHint = (() => {
     if (eligibilityLoading) return "Loading restore eligibility...";
@@ -1048,10 +1052,7 @@ export default function Dashboard() {
 
         const requiredStreak = eligibilitySnapshot?.requiredStreak ?? 7;
         const restoreLimit = eligibilitySnapshot?.restoreLimit ?? 3;
-        const restoreRemainingCalc = Math.max(
-          (eligibilitySnapshot?.restoreLimit ?? 3) - (eligibilitySnapshot?.restoreUsed ?? 0),
-          0,
-        );
+        const restoreRemainingCalc = eligibilitySnapshot?.restoreRemaining ?? 0;
 
         if (!eligibilitySnapshot || eligibilitySnapshot.streak < requiredStreak) {
           setForecastMode(resolveForecastMode(eligibilitySnapshot));
@@ -1103,11 +1104,7 @@ export default function Dashboard() {
         );
         if (normalizedErrorEligibility) {
           setForecastMode(resolveForecastMode(normalizedErrorEligibility));
-          const restoreRemainingCalc = Math.max(
-            (normalizedErrorEligibility.restoreLimit ?? 3) -
-              (normalizedErrorEligibility.restoreUsed ?? 0),
-            0,
-          );
+          const restoreRemainingCalc = normalizedErrorEligibility.restoreRemaining ?? 0;
           setForecastError(
             buildForecastEligibilityMessage({
               reason: normalizedErrorEligibility.note,

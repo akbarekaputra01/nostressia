@@ -36,6 +36,7 @@ class EligibilityResponse(BaseSchema):
     streak: int
     required_streak: int = Field(default=REQUIRED_STREAK)
     restore_used: int
+    restore_remaining: int
     restore_limit: int = Field(default=RESTORE_LIMIT)
     missing: int
     note: str

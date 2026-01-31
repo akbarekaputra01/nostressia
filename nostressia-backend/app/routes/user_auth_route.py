@@ -1,7 +1,7 @@
 """User authentication routes and profile endpoints."""
 
 import logging
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm
@@ -9,6 +9,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from app.core.database import get_db
 from app.models.user_model import User
 from app.utils.jwt_handler import create_access_token, get_current_user
+from app.services import stress_service
 
 # Utilities
 from app.utils.hashing import verify_password, hash_password
@@ -46,10 +47,7 @@ def _serialize_user(user: User) -> UserResponse:
 
 def _issue_token_for_user(user: User, db: Session) -> UserTokenResponse:
     today = date.today()
-    if user.last_login == today - timedelta(days=1):
-        user.streak = (user.streak or 0) + 1
-    elif user.last_login != today:
-        user.streak = 1
+    user.streak = stress_service.get_user_current_streak(db, user.user_id)
     user.last_login = today
     db.commit()
 

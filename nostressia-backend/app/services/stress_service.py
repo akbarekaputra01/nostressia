@@ -1,10 +1,11 @@
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 
 from fastapi import HTTPException, status
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.models.stress_log_model import StressLevel
+from app.models.user_model import User
 from app.schemas.stress_schema import (
     EligibilityResponse,
     RESTORE_LIMIT,
@@ -23,13 +24,22 @@ def _month_bounds(ref_date: date) -> tuple[date, date]:
     return first_day, next_month
 
 
-def get_user_streak_count(db: Session, user_id: int) -> int:
-    return (
-        db.query(func.count(func.distinct(StressLevel.date)))
+def get_user_current_streak(db: Session, user_id: int) -> int:
+    dates = (
+        db.query(StressLevel.date)
         .filter(StressLevel.user_id == user_id)
-        .scalar()
-        or 0
+        .all()
     )
+    if not dates:
+        return 0
+    date_values = {row[0] for row in dates}
+    latest_date = max(date_values)
+    streak = 0
+    current_date = latest_date
+    while current_date in date_values:
+        streak += 1
+        current_date -= timedelta(days=1)
+    return streak
 
 
 def get_restore_used_in_month(db: Session, user_id: int, ref_date: date) -> int:
@@ -57,11 +67,12 @@ def _resolve_required_streak() -> int:
 
 def check_global_eligibility(db: Session, user_id: int) -> EligibilityResponse:
     required_streak = _resolve_required_streak()
-    log_streak = get_user_streak_count(db, user_id)
+    log_streak = get_user_current_streak(db, user_id)
     streak = log_streak
     eligible = streak >= required_streak
     today = datetime.now(tz=timezone.utc).date()
     restore_used = get_restore_used_in_month(db, user_id, today)
+    restore_remaining = max(RESTORE_LIMIT - restore_used, 0)
     missing = max(0, required_streak - streak)
     note = (
         "Eligible for global forecast."
@@ -75,6 +86,7 @@ def check_global_eligibility(db: Session, user_id: int) -> EligibilityResponse:
         streak=streak,
         required_streak=required_streak,
         restore_used=restore_used,
+        restore_remaining=restore_remaining,
         missing=missing,
         note=note,
     )
@@ -133,6 +145,11 @@ def create_stress_log(db: Session, stress_data: StressLevelCreate, user_id: int)
     stress_payload = _ensure_gpa_imputed(db, stress_data, user_id)
     new_log = _build_stress_level(stress_payload, user_id, is_restored=False)
     db.add(new_log)
+    db.flush()
+    current_streak = get_user_current_streak(db, user_id)
+    user = db.query(User).filter(User.user_id == user_id).first()
+    if user:
+        user.streak = current_streak
     db.commit()
     db.refresh(new_log)
     return new_log
@@ -149,6 +166,11 @@ def create_restore_log(db: Session, stress_data: StressLevelCreate, user_id: int
     stress_payload = _ensure_gpa_imputed(db, stress_data, user_id)
     new_log = _build_stress_level(stress_payload, user_id, is_restored=True)
     db.add(new_log)
+    db.flush()
+    current_streak = get_user_current_streak(db, user_id)
+    user = db.query(User).filter(User.user_id == user_id).first()
+    if user:
+        user.streak = current_streak
     db.commit()
     db.refresh(new_log)
     return new_log
