@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, Date, DateTime, Float, Integer, String, TIMESTAMP
+from sqlalchemy import Boolean, Column, Date, DateTime, Float, Integer, String, TIMESTAMP, text
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -14,19 +14,30 @@ class User(Base):
     email = Column(String(255), unique=True, nullable=False)
     password = Column(String(255), nullable=False)
     
-    # Data Tambahan
+    # Additional data
     gender = Column(String(50))
     user_gpa = Column(Float)
     
-    # ✅ Atribut Streak & LastLogin
+    # Streak and last login attributes
     streak = Column(Integer, default=0)
     last_login = Column(Date, nullable=True)
+    last_personalized_trained_milestone = Column(
+        "lastPersonalizedTrainedMilestone",
+        Integer,
+        nullable=False,
+        server_default=text("0"),
+    )
+    last_personalized_training_at = Column(
+        "lastPersonalizedTrainingAt",
+        TIMESTAMP,
+        nullable=True,
+    )
     
     user_dob = Column(Date)
     avatar = Column(String(255), nullable=True)
     created_at = Column(TIMESTAMP, server_default=func.now())
 
-    # Relasi
+    # Relationships
     diaries = relationship("Diary", back_populates="user")
     stress_levels = relationship("StressLevel", back_populates="user")
     bookmarks = relationship("Bookmark", back_populates="user")
