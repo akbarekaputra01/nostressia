@@ -354,10 +354,10 @@ Response:
 }
 ```
 
-### 7.2 Global Forecast (Butuh Token)
+### 7.2 Global Forecast (Token Required)
 **GET** `/api/stress/global-forecast`
 
-Response (jika eligible):
+Response (when eligible):
 ```json
 {
   "message": "Global forecast not integrated yet.",
@@ -367,6 +367,7 @@ Response (jika eligible):
     "streak": 7,
     "requiredStreak": 7,
     "restoreUsed": 0,
+    "restoreRemaining": 3,
     "restoreLimit": 3,
     "missing": 0,
     "note": "OK"
@@ -374,11 +375,11 @@ Response (jika eligible):
 }
 ```
 
-Jika belum memenuhi syarat, server mengembalikan **403** dengan payload `eligibility` di field `detail`.
+If eligibility is not met, the server returns **403** with the `eligibility` payload in the `detail` field.
 
 ---
 
-## 8) Stress Levels (Butuh Token)
+## 8) Stress Levels (Token Required)
 
 ### 8.1 Add Stress Log
 **POST** `/api/stress-levels/`
@@ -425,7 +426,7 @@ Response:
 ### 8.2 Restore Stress Log
 **POST** `/api/stress-levels/restore`
 
-Request body sama seperti add stress log.
+Request body is the same as add stress log.
 
 ### 8.3 Get My Stress Logs
 **GET** `/api/stress-levels/my-logs`
@@ -441,15 +442,22 @@ Response:
   "streak": 7,
   "requiredStreak": 7,
   "restoreUsed": 0,
+  "restoreRemaining": 3,
   "restoreLimit": 3,
   "missing": 0,
   "note": "OK"
 }
 ```
 
+### 8.5 Streak and Restore Rules
+- Streak is the count of consecutive calendar days ending at the latest stress log date.
+- Restored entries (`isRestored=true`) count toward continuity.
+- If any day is missing and not restored, the streak breaks and resets.
+- Restore is limited to three restored days per calendar month.
+
 ---
 
-## 9) Bookmarks (Butuh Token)
+## 9) Bookmarks (Token Required)
 
 ### 9.1 Add Bookmark
 **POST** `/api/bookmarks/{motivationId}`
