@@ -3,3 +3,6 @@ numpy
 pytest
 nbval
 nbformat
+nbconvert
+sqlalchemy
+mysql-connector-python
