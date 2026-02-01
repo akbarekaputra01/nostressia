@@ -18,6 +18,7 @@ from app.routes.analytics_route import router as analytics_router
 from app.routes.profile_route import router as profile_router
 from app.routes.notification_route import router as notification_router
 from app.routes.storage_route import router as storage_router
+from app.routes.ml_training_data_route import router as ml_training_data_router
 
 api_router = APIRouter()
 
@@ -35,3 +36,4 @@ api_router.include_router(analytics_router)
 api_router.include_router(profile_router)
 api_router.include_router(notification_router)
 api_router.include_router(storage_router)
+api_router.include_router(ml_training_data_router)
