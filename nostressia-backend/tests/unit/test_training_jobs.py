@@ -6,7 +6,10 @@ from app.models.user_model import User
 from app.schemas.stress_schema import EligibilityResponse, StressLevelCreate
 from app.services import forecast_service, personalized_forecast_service, stress_service
 from app.services.model_registry_service import model_registry_service
-from app.services.training_job_service import enqueue_global_training_if_due
+from app.services.training_job_service import (
+    GLOBAL_RETRAIN_INTERVAL_DAYS,
+    enqueue_global_training_if_due,
+)
 from app.utils.hashing import hash_password
 
 
@@ -79,7 +82,7 @@ def test_global_training_job_enqueued_after_interval(db_session):
     model = ModelRegistry(
         model_type="global",
         artifact_url="https://example.com/global.joblib",
-        trained_at=now - timedelta(days=61),
+        trained_at=now - timedelta(days=GLOBAL_RETRAIN_INTERVAL_DAYS + 1),
         is_active=True,
     )
     db_session.add(model)
@@ -97,7 +100,7 @@ def test_global_training_job_not_enqueued_before_interval(db_session):
     model = ModelRegistry(
         model_type="global",
         artifact_url="https://example.com/global.joblib",
-        trained_at=now - timedelta(days=10),
+        trained_at=now - timedelta(days=GLOBAL_RETRAIN_INTERVAL_DAYS - 1),
         is_active=True,
     )
     db_session.add(model)

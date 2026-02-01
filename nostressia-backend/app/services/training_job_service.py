@@ -9,7 +9,7 @@ from app.models.training_job_model import TrainingJob
 from app.models.user_model import User
 
 MILESTONE_INTERVAL_DAYS = 60
-GLOBAL_RETRAIN_INTERVAL_DAYS = 60
+GLOBAL_RETRAIN_INTERVAL_DAYS = 1
 
 
 def handle_personalized_training_trigger(db: Session, user: User) -> Optional[TrainingJob]:
