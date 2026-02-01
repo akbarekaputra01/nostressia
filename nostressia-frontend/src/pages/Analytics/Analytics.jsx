@@ -22,6 +22,7 @@ import {
 } from "recharts";
 import { getAnalyticsSummary } from "../../services/analyticsService";
 import { getMyStressLogs } from "../../services/stressService";
+import { resolveDisplayedStreak } from "../../utils/streak";
 
 // --- BACKGROUND CONFIGURATION (SAME AS DASHBOARD) ---
 const bgSun = "rgb(var(--bg-gradient-sun))";
@@ -328,7 +329,7 @@ export default function Analytics() {
     [rangeLogs],
   );
 
-  const streakValue = user?.streak ?? summary?.streak ?? 0;
+  const streakValue = resolveDisplayedStreak(user?.streak ?? summary?.streak ?? 0);
   const modeLabel = mode === "week" ? "Weekly" : "Monthly";
 
   return (

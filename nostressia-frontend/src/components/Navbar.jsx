@@ -4,7 +4,7 @@ import { Link, useLocation } from "react-router-dom";
 import LogoImage from "../assets/images/Logo-Nostressia.png";
 import { DEFAULT_AVATAR, resolveAvatarUrl } from "../utils/avatar";
 import { Flame } from "lucide-react";
-import { storage, STORAGE_KEYS } from "../utils/storage";
+import { hasLoggedToday as resolveHasLoggedToday, resolveDisplayedStreak } from "../utils/streak";
 
 // --- Navigation menu data ---
 const navLinks = [
@@ -66,12 +66,9 @@ const Navbar = ({ user }) => {
   };
 
   const streakVal = user?.streak || 0;
-  const todayKey =
-    typeof window !== "undefined" ? new Date().toISOString().slice(0, 10) : "";
-  const hasLoggedToday =
-    typeof window !== "undefined" &&
-    storage.getItem(STORAGE_KEYS.TODAY_LOG) === todayKey;
-  const flameClass = getFlameColor(streakVal, hasLoggedToday);
+  const hasLoggedToday = resolveHasLoggedToday();
+  const displayStreak = resolveDisplayedStreak(streakVal);
+  const flameClass = getFlameColor(displayStreak, hasLoggedToday);
 
   return (
     <header
@@ -152,7 +149,7 @@ const Navbar = ({ user }) => {
               cursor-pointer
               dark:text-text-secondary dark:border-border/70 dark:hover:bg-surface-muted dark:hover:border-border
             "
-            title={`Current Streak: ${streakVal} days`}
+            title={`Current Streak: ${displayStreak} days`}
           >
             {/* The flame icon changes color based on the logic above */}
             <Flame
@@ -160,7 +157,7 @@ const Navbar = ({ user }) => {
             />
 
             {/* Keep the number neutral gray */}
-            <span>{streakVal}</span>
+            <span>{displayStreak}</span>
           </Link>
 
           {/* Profile photo (desktop) */}

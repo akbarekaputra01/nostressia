@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom
 import { readAdminToken, readAuthToken } from "../utils/auth";
 
 import MainLayout from "../layouts/MainLayout";
+import ScrollToTop from "../components/ScrollToTop";
 
 // Import User Pages
 import Dashboard from "../pages/Dashboard/Dashboard";
@@ -47,6 +48,7 @@ export const AdminPublicRoute = ({ redirectTo = "/admin" }) => {
 function AppRouter() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route element={<PublicRoute />}>
