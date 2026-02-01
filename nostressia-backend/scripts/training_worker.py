@@ -9,6 +9,7 @@ from typing import Optional
 from azure.storage.blob import BlobServiceClient, ContentSettings
 from sqlalchemy import create_engine
 from sqlalchemy.engine import make_url
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session, sessionmaker
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -48,6 +49,15 @@ def _normalize_database_url(database_url: str) -> str:
 def _get_session() -> Session:
     register_models()
     engine = create_engine(_build_database_url())
+    try:
+        with engine.connect():
+            pass
+    except SQLAlchemyError as exc:
+        raise RuntimeError(
+            "Unable to connect to the database for training jobs. "
+            "Verify DATABASE_URL/DB_* credentials and ensure the database allows "
+            "connections from this environment."
+        ) from exc
     session_local = sessionmaker(bind=engine)
     return session_local()
 
