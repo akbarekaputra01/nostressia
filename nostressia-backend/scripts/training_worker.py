@@ -16,6 +16,7 @@ if str(BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(BACKEND_DIR))
 
 from app.core.config import settings
+from app.models import register_models
 from app.models.model_registry_model import ModelRegistry
 from app.models.training_job_model import TrainingJob
 from app.services.training_job_service import enqueue_global_training_if_due
@@ -34,6 +35,7 @@ def _build_database_url() -> str:
 
 
 def _get_session() -> Session:
+    register_models()
     engine = create_engine(_build_database_url())
     session_local = sessionmaker(bind=engine)
     return session_local()
