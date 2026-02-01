@@ -67,10 +67,14 @@ def _upload_artifact(file_path: Path, job_type: str, user_id: Optional[int]) -> 
     return blob_client.url
 
 
+def _resolve_backend_artifact_path(job_type: str) -> Path:
+    file_name = f"{job_type}_forecast.joblib"
+    return ROOT / "nostressia-backend" / "app" / "models_ml" / file_name
+
+
 def _run_training(job: TrainingJob) -> Path:
-    output_dir = ROOT / "artifacts"
-    output_dir.mkdir(parents=True, exist_ok=True)
-    output_path = output_dir / f"job_{job.job_id}.joblib"
+    output_path = _resolve_backend_artifact_path(job.job_type)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
 
     command = [
         "python",
