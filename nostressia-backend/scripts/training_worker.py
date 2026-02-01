@@ -32,8 +32,9 @@ def _build_database_url() -> str:
     user = settings.db_user
     password = settings.db_password
     host = settings.db_host
+    port = settings.db_port
     name = settings.db_name
-    return f"mysql+mysqlconnector://{user}:{password}@{host}/{name}"
+    return f"mysql+mysqlconnector://{user}:{password}@{host}:{port}/{name}"
 
 
 def _normalize_database_url(database_url: str) -> str:
