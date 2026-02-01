@@ -8,7 +8,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
-from sqlalchemy import inspect
+from sqlalchemy import inspect, text
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.api.api_router import api_router
@@ -98,6 +98,32 @@ def create_app() -> FastAPI:
                 )
                 logger.error(message)
                 raise RuntimeError(message)
+
+            missing_column_clauses = []
+            if "lastPersonalizedTrainedMilestone" not in user_columns:
+                missing_column_clauses.append(
+                    "ADD COLUMN lastPersonalizedTrainedMilestone INT NOT NULL DEFAULT 0"
+                )
+            if "lastPersonalizedTrainingAt" not in user_columns:
+                missing_column_clauses.append(
+                    "ADD COLUMN lastPersonalizedTrainingAt TIMESTAMP NULL"
+                )
+
+            if missing_column_clauses:
+                logger.warning(
+                    "Users table missing personalization columns: %s. Applying migration.",
+                    sorted(
+                        {
+                            "lastPersonalizedTrainedMilestone",
+                            "lastPersonalizedTrainingAt",
+                        }
+                        - user_columns
+                    ),
+                )
+                alter_statement = f"ALTER TABLE users {', '.join(missing_column_clauses)}"
+                with engine.begin() as connection:
+                    connection.execute(text(alter_statement))
+                logger.info("Users table personalization columns added.")
 
         except SQLAlchemyError as exc:
             logger.exception("Startup check failed due to database error.")
