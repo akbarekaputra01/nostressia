@@ -16,6 +16,7 @@ joblib
 scikit-learn
 numpy
 pandas
+papermill
 scipy
 python-dotenv
 requests

@@ -20,6 +20,10 @@ from app.services.notification_scheduler import (
     start_notification_scheduler,
     stop_notification_scheduler,
 )
+from app.services.retraining_scheduler import (
+    start_retraining_scheduler,
+    stop_retraining_scheduler,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -108,6 +112,26 @@ def create_app() -> FastAPI:
                 missing_column_clauses.append(
                     "ADD COLUMN lastPersonalizedTrainingAt TIMESTAMP NULL"
                 )
+            if "lastPersonalizedTrainingStatus" not in user_columns:
+                missing_column_clauses.append(
+                    "ADD COLUMN lastPersonalizedTrainingStatus VARCHAR(32) NULL"
+                )
+            if "lastPersonalizedModelDataStart" not in user_columns:
+                missing_column_clauses.append(
+                    "ADD COLUMN lastPersonalizedModelDataStart DATE NULL"
+                )
+            if "lastPersonalizedModelDataEnd" not in user_columns:
+                missing_column_clauses.append(
+                    "ADD COLUMN lastPersonalizedModelDataEnd DATE NULL"
+                )
+            if "lastPersonalizedMetrics" not in user_columns:
+                missing_column_clauses.append(
+                    "ADD COLUMN lastPersonalizedMetrics TEXT NULL"
+                )
+            if "lifetimeValidCount" not in user_columns:
+                missing_column_clauses.append(
+                    "ADD COLUMN lifetimeValidCount INT NOT NULL DEFAULT 0"
+                )
 
             if missing_column_clauses:
                 logger.warning(
@@ -116,6 +140,11 @@ def create_app() -> FastAPI:
                         {
                             "lastPersonalizedTrainedMilestone",
                             "lastPersonalizedTrainingAt",
+                            "lastPersonalizedTrainingStatus",
+                            "lastPersonalizedModelDataStart",
+                            "lastPersonalizedModelDataEnd",
+                            "lastPersonalizedMetrics",
+                            "lifetimeValidCount",
                         }
                         - user_columns
                     ),
@@ -134,12 +163,18 @@ def create_app() -> FastAPI:
         app.state.notification_scheduler = start_notification_scheduler()
         logger.info("Notification scheduler started.")
 
+        logger.info("Starting retraining scheduler.")
+        app.state.retraining_scheduler = start_retraining_scheduler()
+        logger.info("Retraining scheduler started.")
+
     # SHUTDOWN
     @app.on_event("shutdown")
     def on_shutdown() -> None:
         logger.info("FastAPI shutdown")
         stop_notification_scheduler(getattr(app.state, "notification_scheduler", None))
         logger.info("Notification scheduler stopped.")
+        stop_retraining_scheduler(getattr(app.state, "retraining_scheduler", None))
+        logger.info("Retraining scheduler stopped.")
 
     # Routers
     app.include_router(root_router)

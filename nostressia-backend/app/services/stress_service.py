@@ -151,9 +151,16 @@ def create_stress_log(db: Session, stress_data: StressLevelCreate, user_id: int)
     db.add(new_log)
     db.flush()
     current_streak = get_user_current_streak(db, user_id)
+    lifetime_count = (
+        db.query(func.count(StressLevel.stress_level_id))
+        .filter(StressLevel.user_id == user_id)
+        .scalar()
+        or 0
+    )
     user = db.query(User).filter(User.user_id == user_id).first()
     if user:
         user.streak = current_streak
+        user.lifetime_valid_count = lifetime_count
         handle_personalized_training_trigger(db, user)
     db.commit()
     db.refresh(new_log)
@@ -173,9 +180,16 @@ def create_restore_log(db: Session, stress_data: StressLevelCreate, user_id: int
     db.add(new_log)
     db.flush()
     current_streak = get_user_current_streak(db, user_id)
+    lifetime_count = (
+        db.query(func.count(StressLevel.stress_level_id))
+        .filter(StressLevel.user_id == user_id)
+        .scalar()
+        or 0
+    )
     user = db.query(User).filter(User.user_id == user_id).first()
     if user:
         user.streak = current_streak
+        user.lifetime_valid_count = lifetime_count
         handle_personalized_training_trigger(db, user)
     db.commit()
     db.refresh(new_log)

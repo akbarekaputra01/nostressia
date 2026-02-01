@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, Date, DateTime, Float, Integer, String, TIMESTAMP, text
+from sqlalchemy import Boolean, Column, Date, DateTime, Float, Integer, String, TIMESTAMP, Text, text
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -31,6 +31,32 @@ class User(Base):
         "lastPersonalizedTrainingAt",
         TIMESTAMP,
         nullable=True,
+    )
+    last_personalized_training_status = Column(
+        "lastPersonalizedTrainingStatus",
+        String(32),
+        nullable=True,
+    )
+    last_personalized_model_data_start = Column(
+        "lastPersonalizedModelDataStart",
+        Date,
+        nullable=True,
+    )
+    last_personalized_model_data_end = Column(
+        "lastPersonalizedModelDataEnd",
+        Date,
+        nullable=True,
+    )
+    last_personalized_metrics = Column(
+        "lastPersonalizedMetrics",
+        Text,
+        nullable=True,
+    )
+    lifetime_valid_count = Column(
+        "lifetimeValidCount",
+        Integer,
+        nullable=False,
+        server_default=text("0"),
     )
     
     user_dob = Column(Date)

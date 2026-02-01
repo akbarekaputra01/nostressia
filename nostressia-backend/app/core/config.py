@@ -47,6 +47,8 @@ class Settings(BaseSettings):
     vapid_private_key: str = Field("", env="VAPID_PRIVATE_KEY")
     vapid_subject: str = Field("mailto:nostressia.official@gmail.com", env="VAPID_SUBJECT")
 
+    internal_training_token: str = Field("", env="INTERNAL_TOKEN")
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

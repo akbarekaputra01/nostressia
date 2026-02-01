@@ -8,7 +8,7 @@ from app.models.model_registry_model import ModelRegistry
 from app.models.training_job_model import TrainingJob
 from app.models.user_model import User
 
-MILESTONE_INTERVAL_DAYS = 60
+MILESTONE_INTERVAL_COUNT = 60
 GLOBAL_RETRAIN_INTERVAL_DAYS = 1
 
 
@@ -17,16 +17,25 @@ def handle_personalized_training_trigger(db: Session, user: User) -> Optional[Tr
         return None
 
     last_milestone = user.last_personalized_trained_milestone or 0
-    if user.streak < last_milestone:
-        user.last_personalized_trained_milestone = 0
-        user.last_personalized_training_at = None
+    lifetime_count = user.lifetime_valid_count or 0
+
+    if lifetime_count <= 0 or lifetime_count % MILESTONE_INTERVAL_COUNT != 0:
         return None
 
-    if user.streak <= 0 or user.streak % MILESTONE_INTERVAL_DAYS != 0:
-        return None
-
-    milestone = int(user.streak)
+    milestone = int(lifetime_count)
     if milestone <= last_milestone:
+        return None
+
+    existing_job = (
+        db.query(TrainingJob)
+        .filter(
+            TrainingJob.job_type == "personalized",
+            TrainingJob.user_id == user.user_id,
+            TrainingJob.status.in_(["queued", "running"]),
+        )
+        .first()
+    )
+    if existing_job:
         return None
 
     job = TrainingJob(
@@ -36,8 +45,6 @@ def handle_personalized_training_trigger(db: Session, user: User) -> Optional[Tr
         status="queued",
     )
     db.add(job)
-    user.last_personalized_trained_milestone = milestone
-    user.last_personalized_training_at = datetime.now(timezone.utc)
     return job
 
 
