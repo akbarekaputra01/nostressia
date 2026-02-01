@@ -1,7 +1,7 @@
 from functools import lru_cache
 from typing import List, Optional
 
-from pydantic import Field
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings
 
 
@@ -52,6 +52,15 @@ class Settings(BaseSettings):
         env_file_encoding = "utf-8"
         # Ignore unknown env vars so optional entries do not crash the app.
         extra = "ignore"
+
+    @field_validator("db_port", mode="before")
+    @classmethod
+    def parse_db_port(cls, value: object) -> object:
+        if value is None:
+            return 3306
+        if isinstance(value, str) and not value.strip():
+            return 3306
+        return value
 
     @property
     def database_url(self) -> str:
