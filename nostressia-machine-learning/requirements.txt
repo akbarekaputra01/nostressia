@@ -6,3 +6,4 @@ nbformat
 nbconvert
 sqlalchemy
 mysql-connector-python
+pymysql
