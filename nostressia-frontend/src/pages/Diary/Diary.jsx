@@ -48,7 +48,16 @@ export default function Diary() {
 
   const { user } = useOutletContext() || { user: {} };
 
-  const fontOptions = [{ name: "Manrope", value: baseFont, label: "Aa" }];
+  const fontOptions = [
+    { name: "Manrope", value: baseFont, label: "Aa" },
+    { name: "Serif", value: "Georgia, 'Times New Roman', serif", label: "Bb" },
+    {
+      name: "Mono",
+      value:
+        "'Courier New', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace",
+      label: "Cc",
+    },
+  ];
 
   const moods = [
     { emoji: "😢", label: "Stressed" },
@@ -76,7 +85,7 @@ export default function Diary() {
 
         const data = await getMyDiaries();
         const formattedEntries = (data || []).map((item) => ({
-          id: item.diaryId,
+          id: item.diaryId ?? item.diary_id ?? item.id,
           title: item.title,
           content: item.note,
           mood: item.emoji,
@@ -133,7 +142,7 @@ export default function Diary() {
         : await createDiary(payload);
 
       const updatedEntry = {
-        id: savedData.diaryId,
+        id: savedData.diaryId ?? savedData.diary_id ?? savedData.id,
         title: savedData.title,
         content: savedData.note,
         mood: savedData.emoji,
@@ -531,7 +540,7 @@ export default function Diary() {
                           <span className="text-2xl md:text-3xl">{entry.mood}</span>
                         </div>
                         <h4
-                          className="font-bold text-base md:text-lg mb-1 truncate dark:text-text-primary"
+                          className="font-bold text-base md:text-lg mb-1 truncate leading-snug dark:text-text-primary"
                           style={{ fontFamily: entry.font || baseFont }}
                         >
                           {entry.title}
@@ -613,7 +622,7 @@ export default function Diary() {
                           </span>
                         </div>
                         <h2
-                          className="text-lg md:text-3xl font-extrabold text-text-primary dark:text-text-primary leading-[32px] h-[32px] truncate"
+                          className="text-lg md:text-3xl font-extrabold text-text-primary dark:text-text-primary leading-tight truncate pb-1"
                           style={{ fontFamily: selectedEntry.font || baseFont }}
                         >
                           {selectedEntry.title}

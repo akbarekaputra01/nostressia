@@ -24,6 +24,11 @@ const resolveStreakCount = (payload) => {
   return Number.isFinite(Number(value)) ? Number(value) : null;
 };
 
+const normalizeGender = (value) => {
+  if (typeof value !== "string") return "";
+  return value.trim().toLowerCase();
+};
+
 export default function MainLayout() {
   const navigate = useNavigate();
   // 1. Load initial data from cache.
@@ -44,14 +49,18 @@ export default function MainLayout() {
 
       const backendData = await getProfile();
 
+      const normalizedDob =
+        backendData.userDob || backendData.user_dob || backendData.birthday || backendData.dob || "";
+
       const completeUserData = {
         ...backendData,
         name: backendData.name || backendData.fullName || "User",
         username: backendData.username || "user",
         email: backendData.email || "",
         avatar: backendData.avatar || backendData.profilePicture || null,
-        birthday: backendData.birthday || backendData.dob || "",
-        gender: backendData.gender || backendData.sex || "",
+        birthday: normalizedDob,
+        userDob: normalizedDob,
+        gender: normalizeGender(backendData.gender || backendData.sex || ""),
         diaryCount:
           backendData.diaryCount ??
           backendData.diary_count ??

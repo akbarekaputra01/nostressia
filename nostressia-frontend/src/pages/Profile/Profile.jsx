@@ -41,6 +41,7 @@ import { DEFAULT_AVATAR, resolveAvatarUrl } from "../../utils/avatar";
 import { clearAuthToken, readAuthToken } from "../../utils/auth";
 import { createLogger } from "../../utils/logger";
 import { resolveLegacyValue, storage, STORAGE_KEYS } from "../../utils/storage";
+import { resolveDisplayedStreak } from "../../utils/streak";
 import {
   saveProfilePictureUrl,
   uploadToAzure,
@@ -606,6 +607,11 @@ export default function Profile() {
     return "";
   };
 
+  const normalizeGender = (value) => {
+    if (typeof value !== "string") return "";
+    return value.trim().toLowerCase();
+  };
+
   const [formData, setFormData] = useState({
     username: "",
     fullName: "",
@@ -628,7 +634,7 @@ export default function Profile() {
         email: contextUser.email || "",
         avatar: contextUser.avatar || AVATAR_OPTIONS[0],
         birthday: contextUser.userDob || contextUser.birthday || "",
-        gender: contextUser.gender || "",
+        gender: normalizeGender(contextUser.gender || contextUser.sex || ""),
       });
       setLocalAvatarPreview(null);
       setShouldClearProfilePicture(false);
@@ -797,7 +803,7 @@ export default function Profile() {
     return { iconColor: "text-text-muted", bgColor: "bg-surface-muted" };
   };
 
-  const streakVal = contextUser?.streak || 0;
+  const streakVal = resolveDisplayedStreak(contextUser?.streak || 0);
   const streakStyle = getStreakStyle(streakVal);
 
   const resolveStressLabel = (value) => {
@@ -952,7 +958,47 @@ export default function Profile() {
         userDob: formData.birthday || null,
       };
 
-      await updateProfile(payload);
+      const updatedProfile = await updateProfile(payload);
+      const cachedUser = storage.getJson(STORAGE_KEYS.CACHE_USER_DATA, contextUser || {});
+      const normalizedDob =
+        updatedProfile?.userDob ||
+        updatedProfile?.user_dob ||
+        updatedProfile?.birthday ||
+        updatedProfile?.dob ||
+        payload.userDob ||
+        cachedUser?.userDob ||
+        cachedUser?.birthday ||
+        "";
+      const normalizedGender = normalizeGender(
+        updatedProfile?.gender ?? payload.gender ?? cachedUser?.gender ?? "",
+      );
+
+      const nextUser = {
+        ...cachedUser,
+        ...updatedProfile,
+        name:
+          updatedProfile?.name ||
+          updatedProfile?.fullName ||
+          cachedUser?.name ||
+          formData.fullName,
+        username: updatedProfile?.username || cachedUser?.username || formData.username,
+        email: updatedProfile?.email || cachedUser?.email || formData.email,
+        avatar: updatedProfile?.avatar || cachedUser?.avatar || formData.avatar,
+        gender: normalizedGender,
+        birthday: normalizedDob,
+        userDob: normalizedDob,
+      };
+
+      storage.setJson(STORAGE_KEYS.CACHE_USER_DATA, nextUser);
+      setFormData((prev) => ({
+        ...prev,
+        username: nextUser.username || "",
+        fullName: nextUser.name || "",
+        email: nextUser.email || "",
+        avatar: nextUser.avatar || prev.avatar,
+        birthday: normalizedDob,
+        gender: normalizedGender,
+      }));
       showNotification("Profile updated successfully!");
       setEditableFields({
         username: false,
@@ -962,7 +1008,7 @@ export default function Profile() {
         gender: false,
       });
       setShouldClearProfilePicture(false);
-      setTimeout(() => window.location.reload(), 1000);
+      window.dispatchEvent(new Event("nostressia:user-update"));
     } catch (error) {
       showNotification(error?.message || "Failed to update profile", "error");
     } finally {
@@ -1310,7 +1356,7 @@ export default function Profile() {
 
       {/* NOTIFICATIONS */}
       {notification && (
-        <div className="fixed top-24 right-4 z-[100] animate-bounce-in">
+        <div className="fixed top-24 right-4 z-[300] animate-bounce-in">
           <div
             className={`flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl border ${
               notification.type === "success"
@@ -1815,7 +1861,7 @@ export default function Profile() {
                           value={formData.gender}
                           onChange={handleInputChange}
                           disabled={!editableFields.gender}
-                          className={`w-full pl-12 pr-4 py-3 rounded-xl bg-surface-elevated glass-panel border ${editableFields.gender ? "border-blue-400 ring-2 ring-blue-100" : "border-border bg-surface-muted text-text-muted"} focus:outline-none transition-all appearance-none`}
+                          className={`w-full pl-12 pr-4 py-3 rounded-xl bg-surface-elevated glass-panel border text-text-primary dark:text-text-primary ${editableFields.gender ? "border-blue-400 ring-2 ring-blue-100" : "border-border bg-surface-muted text-text-secondary"} focus:outline-none transition-all appearance-none disabled:text-text-muted disabled:opacity-100`}
                         >
                           <option value="">Select Gender</option>
                           <option value="male">Male</option>

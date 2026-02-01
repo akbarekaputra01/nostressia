@@ -24,7 +24,7 @@ export default function Toast({ message, type = "info", onClose }) {
   const styleClass = typeStyles[type] || typeStyles.info;
 
   return (
-    <div className="fixed top-6 right-4 z-[100] animate-bounce-in">
+    <div className="fixed top-6 right-4 z-[300] animate-bounce-in">
       <div
         className={`flex items-center gap-3 px-5 py-4 rounded-xl shadow-2xl border glass-panel ${styleClass}`}
       >

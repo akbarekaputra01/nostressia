@@ -114,7 +114,11 @@ const createApiClient = ({ authMode = AUTH_SCOPE.USER } = {}) => {
       const resolvedAuth = error?.config?.authScope ?? error?.config?.auth ?? authMode;
       const token = resolvedAuth === false ? null : readTokenForScope(resolvedAuth);
       const isTokenInvalid = status === 401 && isInvalidTokenResponse(payload, message);
-      const shouldClearSession = status === 401 && Boolean(token) && resolvedAuth !== false;
+      const shouldClearSession =
+        status === 401 &&
+        Boolean(token) &&
+        resolvedAuth !== false &&
+        (isTokenInvalid || resolvedAuth === AUTH_SCOPE.ADMIN);
       const shouldRedirect =
         shouldClearSession &&
         !error?.config?.skipAuthRedirect &&
