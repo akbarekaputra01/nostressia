@@ -1,6 +1,6 @@
 import argparse
-import json
 import os
+import pprint
 from datetime import date
 from pathlib import Path
 from typing import Optional
@@ -74,7 +74,7 @@ def _fetch_training_data(
 def _execute_notebook(notebook_path: Path, parameters: dict, timeout_seconds: int) -> None:
     notebook = nbformat.read(str(notebook_path), as_version=4)
     param_cell = nbformat.v4.new_code_cell(
-        "PARAMETERS = " + json.dumps(parameters, default=str)
+        f"PARAMETERS = {pprint.pformat(parameters, sort_dicts=False)}"
     )
     notebook.cells.insert(0, param_cell)
     executor = ExecutePreprocessor(timeout=timeout_seconds, kernel_name="python3")
