@@ -106,6 +106,7 @@ def run_training(mode: str, user_id: Optional[int], milestone: Optional[int], ou
         "milestone": milestone,
         "training_data_path": str(training_data_path),
         "output_path": str(output_path),
+        "enable_eda": False,
     }
     _execute_notebook(notebook_path, parameters, DEFAULT_TIMEOUT_SECONDS)
 
