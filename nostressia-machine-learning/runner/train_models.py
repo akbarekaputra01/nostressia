@@ -9,6 +9,7 @@ import nbformat
 import pandas as pd
 from nbconvert.preprocessors import ExecutePreprocessor
 from sqlalchemy import create_engine, text
+from sqlalchemy.engine import make_url
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -18,7 +19,7 @@ DEFAULT_TIMEOUT_SECONDS = 600
 def _build_database_url() -> str:
     database_url = os.environ.get("DATABASE_URL")
     if database_url:
-        return database_url
+        return _normalize_database_url(database_url)
     user = os.environ.get("DB_USER")
     password = os.environ.get("DB_PASSWORD")
     host = os.environ.get("DB_HOST")
@@ -27,6 +28,16 @@ def _build_database_url() -> str:
     if not all([user, password, host, name]):
         raise RuntimeError("Database credentials are required for training.")
     return f"mysql+mysqlconnector://{user}:{password}@{host}:{port}/{name}"
+
+
+def _normalize_database_url(database_url: str) -> str:
+    try:
+        url = make_url(database_url)
+    except Exception:
+        return database_url
+    if url.drivername == "mysql+pymysql":
+        url = url.set(drivername="mysql+mysqlconnector")
+    return str(url)
 
 
 def _fetch_training_data(
