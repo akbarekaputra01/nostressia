@@ -77,3 +77,41 @@ def enqueue_global_training_if_due(db: Session, now: Optional[datetime] = None) 
     job = TrainingJob(job_type="global", status="queued")
     db.add(job)
     return job
+
+
+def enqueue_personalized_training_if_due(db: Session) -> int:
+    in_progress_subquery = (
+        db.query(TrainingJob.user_id)
+        .filter(
+            TrainingJob.job_type == "personalized",
+            TrainingJob.status.in_(["queued", "running"]),
+        )
+        .subquery()
+    )
+
+    eligible_users = (
+        db.query(User)
+        .filter(
+            User.lifetime_valid_count.isnot(None),
+            User.lifetime_valid_count > 0,
+            (User.lifetime_valid_count % MILESTONE_INTERVAL_COUNT) == 0,
+            User.last_personalized_trained_milestone < User.lifetime_valid_count,
+            ~User.user_id.in_(in_progress_subquery),
+        )
+        .all()
+    )
+
+    created = 0
+    for user in eligible_users:
+        milestone = int(user.lifetime_valid_count or 0)
+        if milestone <= (user.last_personalized_trained_milestone or 0):
+            continue
+        job = TrainingJob(
+            job_type="personalized",
+            user_id=user.user_id,
+            milestone=milestone,
+            status="queued",
+        )
+        db.add(job)
+        created += 1
+    return created
