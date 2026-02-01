@@ -10,6 +10,7 @@ import pandas as pd
 from nbconvert.preprocessors import ExecutePreprocessor
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import make_url
+from sqlalchemy.engine import URL
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -27,7 +28,16 @@ def _build_database_url() -> str:
     name = os.environ.get("DB_NAME")
     if not all([user, password, host, name]):
         raise RuntimeError("Database credentials are required for training.")
-    return f"mysql+mysqlconnector://{user}:{password}@{host}:{port}/{name}"
+    return str(
+        URL.create(
+            "mysql+mysqlconnector",
+            username=user,
+            password=password,
+            host=host,
+            port=port,
+            database=name,
+        )
+    )
 
 
 def _normalize_database_url(database_url: str) -> str:

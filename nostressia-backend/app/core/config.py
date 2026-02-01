@@ -3,6 +3,7 @@ from typing import List, Optional
 
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings
+from sqlalchemy.engine import URL
 
 
 class Settings(BaseSettings):
@@ -66,9 +67,15 @@ class Settings(BaseSettings):
     def database_url(self) -> str:
         if self.database_url_override:
             return self.database_url_override
-        return (
-            f"mysql+mysqlconnector://{self.db_user}:{self.db_password}"
-            f"@{self.db_host}:{self.db_port}/{self.db_name}"
+        return str(
+            URL.create(
+                "mysql+mysqlconnector",
+                username=self.db_user,
+                password=self.db_password,
+                host=self.db_host,
+                port=self.db_port,
+                database=self.db_name,
+            )
         )
 
 
