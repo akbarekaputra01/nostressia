@@ -19,7 +19,11 @@ from app.core.config import settings
 from app.models import register_models
 from app.models.model_registry_model import ModelRegistry
 from app.models.training_job_model import TrainingJob
-from app.services.training_job_service import enqueue_global_training_if_due
+from app.models.user_model import User
+from app.services.training_job_service import (
+    enqueue_global_training_if_due,
+    enqueue_personalized_training_if_due,
+)
 
 DEFAULT_CONTAINER = "model-artifacts"
 
@@ -141,6 +145,9 @@ def _run_worker(job_type: str) -> None:
         if job_type == "global":
             enqueue_global_training_if_due(session)
             session.commit()
+        if job_type == "personalized":
+            enqueue_personalized_training_if_due(session)
+            session.commit()
 
         job = _claim_next_job(session, job_type)
         if not job:
@@ -154,6 +161,14 @@ def _run_worker(job_type: str) -> None:
             job.status = "success"
             job.finished_at = datetime.now(timezone.utc)
             job.error_message = None
+            if job.job_type == "personalized" and job.user_id is not None:
+                user = session.query(User).filter(User.user_id == job.user_id).first()
+                if user:
+                    user.last_personalized_trained_milestone = (
+                        job.milestone or user.last_personalized_trained_milestone
+                    )
+                    user.last_personalized_training_at = datetime.now(timezone.utc)
+                    user.last_personalized_training_status = "success"
             session.commit()
         except Exception as exc:
             session.rollback()
