@@ -45,9 +45,24 @@ def _normalize_database_url(database_url: str) -> str:
         url = make_url(database_url)
     except Exception:
         return database_url
-    if url.drivername == "mysql+pymysql":
+    if url.drivername == "mysql":
         url = url.set(drivername="mysql+mysqlconnector")
     return str(url)
+
+
+def _build_ssl_connect_args(database_url: str) -> dict:
+    ssl_ca = os.environ.get("DB_SSL_CA") or os.environ.get("AIVEN_CA_CERT_PATH")
+    if not ssl_ca:
+        return {}
+    try:
+        url = make_url(database_url)
+    except Exception:
+        return {"ssl_ca": ssl_ca}
+    if url.drivername == "mysql+pymysql":
+        return {"ssl": {"ca": ssl_ca}}
+    if url.drivername in {"mysql+mysqlconnector", "mysql"}:
+        return {"ssl_ca": ssl_ca}
+    return {}
 
 
 def _fetch_training_data(
@@ -56,7 +71,8 @@ def _fetch_training_data(
     milestone: Optional[int],
     output_dir: Path,
 ) -> Path:
-    engine = create_engine(_build_database_url())
+    database_url = _build_database_url()
+    engine = create_engine(database_url, connect_args=_build_ssl_connect_args(database_url))
     if mode == "personalized":
         if not user_id or not milestone:
             raise ValueError("Personalized training requires user_id and milestone.")
