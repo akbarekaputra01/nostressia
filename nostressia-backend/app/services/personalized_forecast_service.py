@@ -22,6 +22,16 @@ class PersonalizedForecastService(GlobalForecastService):
 
     def predict_next_day_for_user(self, db: Session, user_id: int) -> Dict[str, Any]:
         bundle = self._load_artifact()
+        return self._predict_next_day_for_user(db, user_id, bundle)
+
+    def predict_next_day_for_user_with_artifact(
+        self, db: Session, user_id: int, bundle: Any
+    ) -> Dict[str, Any]:
+        return self._predict_next_day_for_user(db, user_id, bundle)
+
+    def _predict_next_day_for_user(
+        self, db: Session, user_id: int, bundle: Any
+    ) -> Dict[str, Any]:
         artifact = bundle.get("artifact", bundle) if isinstance(bundle, dict) else bundle
         meta = bundle.get("meta", {}) if isinstance(bundle, dict) else {}
 

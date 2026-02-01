@@ -56,6 +56,9 @@ class GlobalForecastService:
         except Exception:
             return None
 
+        return self.get_required_history_days_from_artifact(artifact)
+
+    def get_required_history_days_from_artifact(self, artifact: Any) -> Optional[int]:
         meta = artifact.get("meta", {}) if isinstance(artifact, dict) else {}
         try:
             window = int(meta.get("window", 0))
@@ -193,7 +196,17 @@ class GlobalForecastService:
 
     def predict_next_day_for_user(self, db: Session, user_id: int) -> Dict[str, Any]:
         artifact = self._load_artifact()
-        meta = artifact.get("meta", {})
+        return self._predict_next_day_for_user(db, user_id, artifact)
+
+    def predict_next_day_for_user_with_artifact(
+        self, db: Session, user_id: int, artifact: Any
+    ) -> Dict[str, Any]:
+        return self._predict_next_day_for_user(db, user_id, artifact)
+
+    def _predict_next_day_for_user(
+        self, db: Session, user_id: int, artifact: Any
+    ) -> Dict[str, Any]:
+        meta = artifact.get("meta", {}) if isinstance(artifact, dict) else {}
 
         date_col = meta.get("date_col", "date")
         # Default is aligned with stored records (user_id).

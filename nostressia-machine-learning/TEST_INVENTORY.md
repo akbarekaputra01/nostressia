@@ -8,11 +8,7 @@ Checklist of notebook workflows, preprocessing expectations, and tests.
 - [x] `Current-Stress/notebooks/predict.ipynb` — validated via artifact checks in `tests/test_model_artifacts.py`
 - [x] `Current-Stress/notebooks/predict_pipeline.ipynb` — validated via artifact checks in `tests/test_model_artifacts.py`
 - [x] `Stress-Forecast/notebooks/global_forecast.ipynb` — validated via schema tests in `tests/test_data_schema.py`
-- [x] `Stress-Forecast/notebooks/global_forecast_final.ipynb` — validated via schema tests in `tests/test_data_schema.py`
-- [x] `Stress-Forecast/notebooks/global_forecast_test.ipynb` — validated via schema tests in `tests/test_data_schema.py`
 - [x] `Stress-Forecast/notebooks/personalized_forecast.ipynb` — validated via schema tests in `tests/test_data_schema.py`
-- [x] `Stress-Forecast/notebooks/personalized_forecast_final.ipynb` — validated via schema tests in `tests/test_data_schema.py`
-- [x] `Stress-Forecast/notebooks/personalized_forecast_test.ipynb` — validated via schema tests in `tests/test_data_schema.py`
 
 ## Preprocessing / Imputation Logic
 - [x] GPA imputation uses latest known GPA per user (`imputation.py`) — `tests/test_imputation.py`
