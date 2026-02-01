@@ -8,7 +8,6 @@ from typing import Optional
 
 from azure.storage.blob import BlobServiceClient, ContentSettings
 from sqlalchemy import create_engine
-from sqlalchemy.engine import make_url
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -27,24 +26,16 @@ DEFAULT_CONTAINER = "model-artifacts"
 
 
 def _build_database_url() -> str:
+    if settings.database_url_override:
+        return settings.database_url_override
     if settings.database_url:
-        return _normalize_database_url(settings.database_url)
+        return settings.database_url
     user = settings.db_user
     password = settings.db_password
     host = settings.db_host
     port = settings.db_port
     name = settings.db_name
     return f"mysql+mysqlconnector://{user}:{password}@{host}:{port}/{name}"
-
-
-def _normalize_database_url(database_url: str) -> str:
-    try:
-        url = make_url(database_url)
-    except Exception:
-        return database_url
-    if url.drivername == "mysql+pymysql":
-        url = url.set(drivername="mysql+mysqlconnector")
-    return str(url)
 
 
 def _get_session() -> Session:
