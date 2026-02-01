@@ -2,6 +2,7 @@ fastapi
 uvicorn
 sqlalchemy
 mysql-connector-python
+pymysql
 pydantic
 pydantic-settings
 apscheduler
