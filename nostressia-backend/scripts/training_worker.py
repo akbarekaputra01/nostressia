@@ -91,6 +91,20 @@ def _run_training(job: TrainingJob) -> Path:
     output_path = _resolve_backend_artifact_path(job.job_type)
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
+    env = os.environ.copy()
+    if settings.database_url_override:
+        env["DATABASE_URL"] = settings.database_url_override
+    else:
+        env.update(
+            {
+                "DB_USER": settings.db_user,
+                "DB_PASSWORD": settings.db_password,
+                "DB_HOST": settings.db_host,
+                "DB_PORT": str(settings.db_port),
+                "DB_NAME": settings.db_name,
+            }
+        )
+
     command = [
         "python",
         str(ROOT / "nostressia-machine-learning" / "runner" / "train_models.py"),
@@ -104,7 +118,7 @@ def _run_training(job: TrainingJob) -> Path:
     if job.milestone is not None:
         command.extend(["--milestone", str(job.milestone)])
 
-    subprocess.run(command, check=True, cwd=ROOT)
+    subprocess.run(command, check=True, cwd=ROOT, env=env)
     if not output_path.exists():
         raise FileNotFoundError(f"Training output was not created at {output_path}.")
     return output_path
