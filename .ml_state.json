@@ -1,7 +1,7 @@
 {
   "global": {
-    "data_hash": null,
-    "last_trained_at": null
+    "data_hash": "a0dcdca5c3d6bc6b4d1cfd51e37130f662033e318e76dafff0dff657309eb26b",
+    "last_trained_at": "2026-02-02T07:14:07.055214+00:00"
   },
   "personalized": {
     "users": {}
