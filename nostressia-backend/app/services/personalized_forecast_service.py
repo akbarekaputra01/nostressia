@@ -28,7 +28,7 @@ class PersonalizedForecastService(GlobalForecastService):
         return float(probs[prev_high, dow, 1])
 
     def predict_next_day_for_user(self, db: Session, user_id: int) -> Dict[str, Any]:
-        bundle = self._load_artifact()
+        bundle = self._load_artifact_for_user(user_id)
         return self._predict_next_day_for_user(db, user_id, bundle)
 
     def predict_next_day_for_user_with_artifact(
