@@ -1,7 +1,7 @@
 """User authentication routes and profile endpoints."""
 
 import logging
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm
