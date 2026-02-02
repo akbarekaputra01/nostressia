@@ -2,6 +2,7 @@ import os
 from datetime import timedelta
 from typing import Any, Dict
 
+import joblib
 import pandas as pd
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
@@ -11,9 +12,44 @@ from app.services.global_forecast_service import GlobalForecastService
 
 
 class PersonalizedForecastService(GlobalForecastService):
-    def _artifact_path(self) -> str:
+    def __init__(self) -> None:
+        super().__init__()
+        self._artifact_cache: Dict[str, Any] = {}
+
+    def _default_artifact_path(self) -> str:
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         return os.path.join(base_dir, "models_ml", "personalized_forecast.joblib")
+
+    def _user_artifact_path(self, user_id: int) -> str:
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        return os.path.join(base_dir, "models_ml", "personalized", f"{user_id}.joblib")
+
+    def artifact_exists_for_user(self, user_id: int) -> bool:
+        return os.path.exists(self._user_artifact_path(user_id)) or os.path.exists(
+            self._default_artifact_path()
+        )
+
+    def _load_artifact_for_user(self, user_id: int) -> Dict[str, Any]:
+        preferred_path = self._user_artifact_path(user_id)
+        artifact_path = preferred_path if os.path.exists(preferred_path) else self._default_artifact_path()
+
+        if artifact_path in self._artifact_cache:
+            return self._artifact_cache[artifact_path]
+
+        if not os.path.exists(artifact_path):
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Model artifact not found: {artifact_path}",
+            )
+        try:
+            artifact = joblib.load(artifact_path)
+        except Exception as exc:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to load model artifact: {exc}",
+            ) from exc
+        self._artifact_cache[artifact_path] = artifact
+        return artifact
 
     def _markov_proba_user(self, probs: Any, row: pd.Series) -> float:
         prev_high = int(row["lag_sp_1"] >= 1)
@@ -21,7 +57,7 @@ class PersonalizedForecastService(GlobalForecastService):
         return float(probs[prev_high, dow, 1])
 
     def predict_next_day_for_user(self, db: Session, user_id: int) -> Dict[str, Any]:
-        bundle = self._load_artifact()
+        bundle = self._load_artifact_for_user(user_id)
         return self._predict_next_day_for_user(db, user_id, bundle)
 
     def predict_next_day_for_user_with_artifact(

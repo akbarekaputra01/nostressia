@@ -1,16 +1,21 @@
-name: Global Model Training Worker
+name: Global Forecast Training
 
 on:
   schedule:
     - cron: "0 2 * * *"
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
-  run-worker:
+  train-global:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -23,7 +28,7 @@ jobs:
           pip install -r nostressia-backend/requirements.txt
           pip install -r nostressia-machine-learning/requirements.txt
 
-      - name: Process global training jobs
+      - name: Refresh dataset
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           DB_USER: ${{ secrets.DB_USER }}
@@ -31,9 +36,23 @@ jobs:
           DB_HOST: ${{ secrets.DB_HOST }}
           DB_PORT: ${{ secrets.DB_PORT }}
           DB_NAME: ${{ secrets.DB_NAME }}
-          BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          AZURE_STORAGE_CONNECTION_STRING: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
-          AZURE_STORAGE_CONTAINER_NAME: ${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}
         run: |
-          python nostressia-backend/scripts/training_worker.py --job-type global
+          python nostressia-machine-learning/Stress-Forecast/scripts/refresh_dataset.py
+
+      - name: Train global model (60-day gate)
+        run: |
+          python nostressia-machine-learning/Stress-Forecast/scripts/train_global.py
+
+      - name: Commit updated artifacts
+        run: |
+          if [[ -n "$(git status --porcelain)" ]]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add .ml_state.json nostressia-machine-learning/Stress-Forecast/datasets/stress_forecast.csv \
+              nostressia-backend/app/models_ml/global_forecast.joblib \
+              nostressia-backend/app/models_ml/global_forecast.meta.json
+            git commit -m "Update global forecast model"
+            git push
+          else
+            echo "No changes to commit."
+          fi

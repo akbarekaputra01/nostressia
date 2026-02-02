@@ -132,12 +132,20 @@ cd ../nostressia-backend && pytest
 cd ../nostressia-machine-learning && pytest
 ```
 
+## ML Forecast Refresh & Training (Ringkas)
+```bash
+python nostressia-machine-learning/Stress-Forecast/scripts/refresh_dataset.py
+python nostressia-machine-learning/Stress-Forecast/scripts/train_global.py
+python nostressia-machine-learning/Stress-Forecast/scripts/train_personalized.py --update-default
+```
+
 ## Dokumentasi Teknis
 - Arsitektur: `docs/architecture.md`
 - API Spec: `docs/api-spec.md`
 - Database: `docs/database.md`
 - Logging Guidelines: `docs/logging-guidelines.md`
 - Testing Strategy: `docs/testing-strategy.md`
+- ML Training: `docs/ml-training.md`
 
 ## Deployment Notes (Ringkas)
 - Pastikan konfigurasi environment tersedia di platform target (Vercel/Docker/VM).
