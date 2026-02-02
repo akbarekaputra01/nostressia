@@ -237,7 +237,7 @@ def _resolve_date_range(rows: list[dict]) -> Optional[tuple[datetime.date, datet
     return min(parsed), max(parsed)
 
 
-def _safe_date(value: str | None) -> Optional[datetime.date]:
+def _safe_date(value: Optional[str]) -> Optional[datetime.date]:
     if not value:
         return None
     try:
