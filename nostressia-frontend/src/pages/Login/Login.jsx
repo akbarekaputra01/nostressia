@@ -10,6 +10,7 @@ import {
   verifyResetPasswordOtp,
 } from "../../services/authService";
 import { isAuthTokenValid, persistAuthToken } from "../../utils/auth";
+import { useTheme } from "../../theme/ThemeProvider"; // [CHECK] Pastikan path ini benar
 import {
   Mail,
   Lock,
@@ -33,8 +34,11 @@ import Toast from "../../components/Toast";
 import ConfirmModal from "../../components/ConfirmModal";
 import PageMeta from "../../components/PageMeta";
 
+// --- IMPORT LOGO (Light & Dark) ---
 import logoBuka from "../../assets/images/Logo-Buka.png";
+import logoBukaDark from "../../assets/images/Logo-Buka-Dark.png";
 import logoKedip from "../../assets/images/Logo-Kedip.png";
+import logoKedipDark from "../../assets/images/Logo-Kedip-Dark.png";
 
 import avatar1 from "../../assets/images/avatar1.png";
 import avatar2 from "../../assets/images/avatar2.png";
@@ -57,6 +61,10 @@ const INITIAL_FORM_DATA = {
 
 export default function Login() {
   const navigate = useNavigate();
+  
+  // [PERBAIKAN] Mengambil resolvedTheme dari ThemeProvider
+  // resolvedTheme nilainya otomatis 'light' atau 'dark' (sudah menghandle 'system')
+  const { resolvedTheme } = useTheme(); 
 
   // --- Core state ---
   const [formData, setFormData] = useState(INITIAL_FORM_DATA);
@@ -76,7 +84,7 @@ export default function Login() {
 
   // --- Forgot password state ---
   const [showForgotModal, setShowForgotModal] = useState(false);
-  const [forgotStep, setForgotStep] = useState(1); // 1: Email, 2: OTP, 3: Password
+  const [forgotStep, setForgotStep] = useState(1);
   const [forgotEmail, setForgotEmail] = useState("");
 
   const [forgotOtpValues, setForgotOtpValues] = useState(new Array(6).fill(""));
@@ -98,6 +106,9 @@ export default function Login() {
     confirmLabel: "Yes",
     onConfirm: null,
   });
+
+  // [PERBAIKAN] Gunakan resolvedTheme langsung
+  const isDarkMode = resolvedTheme === "dark";
 
   // --- Blink effect ---
   useEffect(() => {
@@ -284,18 +295,13 @@ export default function Login() {
     }
   };
 
-  // ==========================================
-  // Forgot password flow (3-step progress)
-  // ==========================================
-
-  // Step 1: Request OTP
+  // --- Forgot password flow ---
   const handleForgotRequest = async (e) => {
     e.preventDefault();
     if (!forgotEmail) return showToast("Please enter your email.", "warning");
     setLoadingForgot(true);
     try {
       await forgotPassword({ email: forgotEmail });
-
       setForgotStep(2);
       setCountdown(60);
       setForgotOtpValues(new Array(6).fill(""));
@@ -307,13 +313,11 @@ export default function Login() {
     }
   };
 
-  // OTP input helper
   const handleForgotOtpChange = (index, value) => {
     if (isNaN(value)) return;
     const newOtp = [...forgotOtpValues];
     newOtp[index] = value;
     setForgotOtpValues(newOtp);
-
     if (value && index < 5) {
       forgotOtpRefs.current[index + 1]?.focus();
     }
@@ -329,16 +333,13 @@ export default function Login() {
     }
   };
 
-  // Step 2: Verify OTP
   const handleForgotVerifyStep = async (e) => {
     if (e) e.preventDefault();
-
     const code = forgotOtpValues.join("");
     if (code.length !== 6) {
       showToast("Please enter the 6-digit OTP code.", "warning");
       return;
     }
-
     setLoadingForgot(true);
     try {
       await verifyResetPasswordOtp({ email: forgotEmail, otpCode: code });
@@ -352,7 +353,6 @@ export default function Login() {
     }
   };
 
-  // Step 3: Reset Password
   const handleForgotConfirm = async (e) => {
     e.preventDefault();
     if (!forgotOtpVerified) {
@@ -373,12 +373,10 @@ export default function Login() {
         otpCode: code,
         newPassword,
       });
-
       showToast("Password reset successfully. Please sign in.", "success");
       setCountdown(0);
       setShowForgotModal(false);
       setForgotStep(1);
-
       setForgotEmail("");
       setForgotOtpValues(new Array(6).fill(""));
       setNewPassword("");
@@ -416,13 +414,17 @@ export default function Login() {
         <div className="relative z-10 w-full max-w-[480px] group">
           <div className="absolute inset-0 bg-brand-info/10 blur-[60px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           <div className="relative w-full flex items-center justify-center">
+            
+            {/* LOGO BASE (KEDIP/WINK) */}
             <img
-              src={logoKedip}
+              src={isDarkMode ? logoKedipDark : logoKedip}
               alt="Nostressia Wink"
               className="w-full h-auto object-contain relative z-10"
             />
+
+            {/* LOGO OVERLAY (BUKA/OPEN) */}
             <Motion.img
-              src={logoBuka}
+              src={isDarkMode ? logoBukaDark : logoBuka}
               alt="Nostressia Open"
               className="absolute top-0 left-0 w-full h-full object-contain z-20"
               initial={{ opacity: 1 }}
@@ -449,9 +451,7 @@ export default function Login() {
           }}
           style={{ transformStyle: "preserve-3d" }}
         >
-          {/* =========================
-              FRONT: LOGIN (SIDE A)
-             ========================= */}
+          {/* FRONT: LOGIN (SIDE A) */}
           <div
             className="absolute inset-0 w-full h-full backface-hidden flex flex-col justify-center
               rounded-3xl px-7 sm:px-10 py-10
@@ -565,9 +565,7 @@ export default function Login() {
             </div>
           </div>
 
-          {/* =========================
-              BACK: REGISTER/OTP (SIDE B)
-             ========================= */}
+          {/* BACK: REGISTER/OTP (SIDE B) */}
           <div
             className="absolute inset-0 w-full h-full backface-hidden bg-surface-elevated glass-panel-strong flex flex-col rounded-2xl overflow-hidden"
             style={{
@@ -963,7 +961,7 @@ export default function Login() {
         </Motion.div>
       </div>
 
-      {/* --- MODAL FORGOT PASSWORD (STEPPER) --- */}
+      {/* MODAL FORGOT PASSWORD (STEPPER) */}
       <AnimatePresence>
         {showForgotModal && (
           <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-neutral-950/50 backdrop-blur-sm">
