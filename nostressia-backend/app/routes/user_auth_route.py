@@ -41,6 +41,18 @@ logger = logging.getLogger(__name__)
 # --- CONFIGURATION ---
 OTP_EXPIRE_MINUTES = 5  # OTP expiration in minutes.
 
+def _normalize_otp_created_at(value):
+    if value is None:
+        return None
+    if isinstance(value, datetime):
+        return value
+    if isinstance(value, str):
+        try:
+            return datetime.fromisoformat(value)
+        except ValueError:
+            return None
+    return None
+
 def _serialize_user(user: User) -> UserResponse:
     return UserResponse.model_validate(user)
 
@@ -183,9 +195,10 @@ def verify_otp_endpoint(payload: VerifyOTP, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Invalid OTP code")
 
     # 2. Check expiration window.
-    if user.otp_created_at:
+    otp_created_at = _normalize_otp_created_at(user.otp_created_at)
+    if otp_created_at:
         # Compute the time difference.
-        time_diff = datetime.utcnow() - user.otp_created_at
+        time_diff = datetime.utcnow() - otp_created_at
         if time_diff > timedelta(minutes=OTP_EXPIRE_MINUTES):
              raise HTTPException(
                  status_code=400,
@@ -330,8 +343,9 @@ def reset_password_verify(payload: ResetPasswordVerify, db: Session = Depends(ge
     if user.otp_code != payload.otp_code:
         raise HTTPException(status_code=400, detail="Incorrect OTP code.")
 
-    if user.otp_created_at:
-        time_diff = datetime.utcnow() - user.otp_created_at
+    otp_created_at = _normalize_otp_created_at(user.otp_created_at)
+    if otp_created_at:
+        time_diff = datetime.utcnow() - otp_created_at
         if time_diff > timedelta(minutes=OTP_EXPIRE_MINUTES):
              raise HTTPException(
                  status_code=400,
@@ -352,8 +366,9 @@ def reset_password_confirm(payload: ResetPasswordConfirm, db: Session = Depends(
         raise HTTPException(status_code=400, detail="Incorrect OTP code.")
 
     # 2. Check expiration.
-    if user.otp_created_at:
-        time_diff = datetime.utcnow() - user.otp_created_at
+    otp_created_at = _normalize_otp_created_at(user.otp_created_at)
+    if otp_created_at:
+        time_diff = datetime.utcnow() - otp_created_at
         if time_diff > timedelta(minutes=OTP_EXPIRE_MINUTES):
              raise HTTPException(
                  status_code=400,
