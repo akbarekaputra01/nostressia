@@ -13,8 +13,6 @@ from app.schemas.stress_schema import (
     StressLevelCreate,
 )
 from app.services.global_forecast_service import global_forecast_service
-from app.services.model_registry_service import model_registry_service
-from app.services.training_job_service import handle_personalized_training_trigger
 from typing import Optional
 
 def _month_bounds(ref_date: date) -> tuple[date, date]:
@@ -61,9 +59,7 @@ def get_restore_used_in_month(db: Session, user_id: int, ref_date: date) -> int:
 
 def _resolve_required_streak(db: Session) -> int:
     required_streak = REQUIRED_STREAK
-    model_required = model_registry_service.get_required_history_days(db)
-    if model_required is None:
-        model_required = global_forecast_service.get_required_history_days()
+    model_required = global_forecast_service.get_required_history_days()
     if model_required:
         required_streak = max(required_streak, model_required)
     return required_streak
@@ -151,17 +147,9 @@ def create_stress_log(db: Session, stress_data: StressLevelCreate, user_id: int)
     db.add(new_log)
     db.flush()
     current_streak = get_user_current_streak(db, user_id)
-    lifetime_count = (
-        db.query(func.count(StressLevel.stress_level_id))
-        .filter(StressLevel.user_id == user_id)
-        .scalar()
-        or 0
-    )
     user = db.query(User).filter(User.user_id == user_id).first()
     if user:
         user.streak = current_streak
-        user.lifetime_valid_count = lifetime_count
-        handle_personalized_training_trigger(db, user)
     db.commit()
     db.refresh(new_log)
     return new_log
@@ -180,17 +168,9 @@ def create_restore_log(db: Session, stress_data: StressLevelCreate, user_id: int
     db.add(new_log)
     db.flush()
     current_streak = get_user_current_streak(db, user_id)
-    lifetime_count = (
-        db.query(func.count(StressLevel.stress_level_id))
-        .filter(StressLevel.user_id == user_id)
-        .scalar()
-        or 0
-    )
     user = db.query(User).filter(User.user_id == user_id).first()
     if user:
         user.streak = current_streak
-        user.lifetime_valid_count = lifetime_count
-        handle_personalized_training_trigger(db, user)
     db.commit()
     db.refresh(new_log)
     return new_log

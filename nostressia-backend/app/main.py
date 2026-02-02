@@ -8,7 +8,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
-from sqlalchemy import inspect, text
+from sqlalchemy import inspect
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.api.api_router import api_router
@@ -19,10 +19,6 @@ from app.routes.root_route import router as root_router
 from app.services.notification_scheduler import (
     start_notification_scheduler,
     stop_notification_scheduler,
-)
-from app.services.retraining_scheduler import (
-    start_retraining_scheduler,
-    stop_retraining_scheduler,
 )
 
 logger = logging.getLogger(__name__)
@@ -103,56 +99,13 @@ def create_app() -> FastAPI:
                 logger.error(message)
                 raise RuntimeError(message)
 
-            missing_column_clauses = []
-            if "lastPersonalizedTrainedMilestone" not in user_columns:
-                missing_column_clauses.append(
-                    "ADD COLUMN lastPersonalizedTrainedMilestone INT NOT NULL DEFAULT 0"
+            if "streak" not in user_columns:
+                message = (
+                    "Startup check failed: column 'users.streak' not found. "
+                    "Ensure database migrations have been applied."
                 )
-            if "lastPersonalizedTrainingAt" not in user_columns:
-                missing_column_clauses.append(
-                    "ADD COLUMN lastPersonalizedTrainingAt TIMESTAMP NULL"
-                )
-            if "lastPersonalizedTrainingStatus" not in user_columns:
-                missing_column_clauses.append(
-                    "ADD COLUMN lastPersonalizedTrainingStatus VARCHAR(32) NULL"
-                )
-            if "lastPersonalizedModelDataStart" not in user_columns:
-                missing_column_clauses.append(
-                    "ADD COLUMN lastPersonalizedModelDataStart DATE NULL"
-                )
-            if "lastPersonalizedModelDataEnd" not in user_columns:
-                missing_column_clauses.append(
-                    "ADD COLUMN lastPersonalizedModelDataEnd DATE NULL"
-                )
-            if "lastPersonalizedMetrics" not in user_columns:
-                missing_column_clauses.append(
-                    "ADD COLUMN lastPersonalizedMetrics TEXT NULL"
-                )
-            if "lifetimeValidCount" not in user_columns:
-                missing_column_clauses.append(
-                    "ADD COLUMN lifetimeValidCount INT NOT NULL DEFAULT 0"
-                )
-
-            if missing_column_clauses:
-                logger.warning(
-                    "Users table missing personalization columns: %s. Applying migration.",
-                    sorted(
-                        {
-                            "lastPersonalizedTrainedMilestone",
-                            "lastPersonalizedTrainingAt",
-                            "lastPersonalizedTrainingStatus",
-                            "lastPersonalizedModelDataStart",
-                            "lastPersonalizedModelDataEnd",
-                            "lastPersonalizedMetrics",
-                            "lifetimeValidCount",
-                        }
-                        - user_columns
-                    ),
-                )
-                alter_statement = f"ALTER TABLE users {', '.join(missing_column_clauses)}"
-                with engine.begin() as connection:
-                    connection.execute(text(alter_statement))
-                logger.info("Users table personalization columns added.")
+                logger.error(message)
+                raise RuntimeError(message)
 
         except SQLAlchemyError as exc:
             logger.exception("Startup check failed due to database error.")
@@ -163,9 +116,6 @@ def create_app() -> FastAPI:
         app.state.notification_scheduler = start_notification_scheduler()
         logger.info("Notification scheduler started.")
 
-        logger.info("Starting retraining scheduler.")
-        app.state.retraining_scheduler = start_retraining_scheduler()
-        logger.info("Retraining scheduler started.")
 
     # SHUTDOWN
     @app.on_event("shutdown")
@@ -173,8 +123,6 @@ def create_app() -> FastAPI:
         logger.info("FastAPI shutdown")
         stop_notification_scheduler(getattr(app.state, "notification_scheduler", None))
         logger.info("Notification scheduler stopped.")
-        stop_retraining_scheduler(getattr(app.state, "retraining_scheduler", None))
-        logger.info("Retraining scheduler stopped.")
 
     # Routers
     app.include_router(root_router)
