@@ -31,10 +31,11 @@ Expected columns include:
 ## Model Artifacts
 - `Current-Stress/models/current_stress_pipeline.joblib`
 - `Current-Stress/models/current_stress_model.joblib`
-- `Stress-Forecast/models/global_forecast.joblib`
-- `Stress-Forecast/models/personalized_forecast.joblib`
+- `nostressia-backend/app/models_ml/global_forecast.joblib`
+- `nostressia-backend/app/models_ml/personalized_forecast.joblib`
 
-These artifacts are loaded by the backend services for prediction.
+These artifacts are loaded by the backend services for prediction. The personalized
+artifact contains per-user models inside a single file.
 
 ## GPA Imputation
 Missing GPA values should be filled using the latest known GPA per user. The helper
@@ -51,6 +52,31 @@ notebooks aligned with the backend/FE behavior.
    jupyter lab
    ```
 3. Open the notebooks from the `Current-Stress/notebooks/` or `Stress-Forecast/notebooks/` folders.
+
+## Refreshing the Stress Forecast Dataset
+To regenerate `Stress-Forecast/datasets/stress_forecast.csv` from the realtime database:
+```bash
+python Stress-Forecast/scripts/refresh_dataset.py
+```
+This logs row count, date range, SHA256 hash, and refresh timestamp.
+
+## Headless Training (Global & Personalized)
+Global training (respects the 60-day gate):
+```bash
+python Stress-Forecast/scripts/train_global.py
+```
+
+Personalized training (detects 60/120/180… streak milestones and writes a single model artifact):
+```bash
+python Stress-Forecast/scripts/train_personalized.py
+```
+The scripts write `.meta.json` sidecars next to the model artifacts with `trained_at`,
+`data_hash`, and `git_sha`.
+
+Manual force run (ignores the 60x milestone gate for testing):
+```bash
+python Stress-Forecast/scripts/train_personalized.py --force-user-id 123 --force-window-size 74
+```
 
 ## Testing Guide
 ### Dataset + Artifact Checks

@@ -2,6 +2,7 @@ import os
 from datetime import timedelta
 from typing import Any, Dict
 
+import joblib
 import pandas as pd
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
@@ -11,9 +12,15 @@ from app.services.global_forecast_service import GlobalForecastService
 
 
 class PersonalizedForecastService(GlobalForecastService):
+    def __init__(self) -> None:
+        super().__init__()
+
     def _artifact_path(self) -> str:
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         return os.path.join(base_dir, "models_ml", "personalized_forecast.joblib")
+
+    def artifact_exists_for_user(self, user_id: int) -> bool:
+        return os.path.exists(self._artifact_path())
 
     def _markov_proba_user(self, probs: Any, row: pd.Series) -> float:
         prev_high = int(row["lag_sp_1"] >= 1)
