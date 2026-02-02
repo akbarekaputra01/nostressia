@@ -14,6 +14,14 @@ vi.mock("../services/authService", () => ({
   verifyResetPasswordOtp: vi.fn(),
 }));
 
+vi.mock("../theme/ThemeProvider", () => ({
+  useTheme: () => ({
+    resolvedTheme: "light",
+    themePreference: "system",
+    setPreference: vi.fn(),
+  }),
+}));
+
 describe("Login signup flow", () => {
   it("flips to the signup card", async () => {
     const user = userEvent.setup();
