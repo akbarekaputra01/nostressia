@@ -4,6 +4,14 @@
     "last_trained_at": null
   },
   "personalized": {
-    "users": {}
+    "users": {
+      "1": {
+        "data_hash": "a0dcdca5c3d6bc6b4d1cfd51e37130f662033e318e76dafff0dff657309eb26b",
+        "last_trained_at": "2026-02-02T08:39:21.477726+00:00",
+        "last_trained_milestone": 74,
+        "streak_end_date": "2026-02-02",
+        "streak_start_date": "2025-11-21"
+      }
+    }
   }
 }
