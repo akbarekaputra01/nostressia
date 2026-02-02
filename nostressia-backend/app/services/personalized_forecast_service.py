@@ -22,6 +22,10 @@ class PersonalizedForecastService(GlobalForecastService):
     def artifact_exists_for_user(self, user_id: int) -> bool:
         return os.path.exists(self._artifact_path())
 
+    def _load_artifact_for_user(self, user_id: int) -> Any:
+        """Load the personalized forecast artifact bundle for a user."""
+        return self._load_artifact()
+
     def _markov_proba_user(self, probs: Any, row: pd.Series) -> float:
         prev_high = int(row["lag_sp_1"] >= 1)
         dow = int(row["dow"])
