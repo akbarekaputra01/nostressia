@@ -17,6 +17,7 @@ Dokumen ini menjelaskan arsitektur end-to-end Nostressia (Frontend, Backend, dan
 3. **Machine Learning (Notebook + Artefak .joblib)**
    - Menyediakan pipeline prediksi stress (current) dan forecast.
    - Backend melakukan load artefak ML dan memanggil helper inference, tanpa retraining di runtime.
+   - Dataset forecast direfresh dari database dan artefak forecast disimpan langsung di repo backend.
 
 ## Alur Data Utama
 
@@ -39,6 +40,11 @@ Dokumen ini menjelaskan arsitektur end-to-end Nostressia (Frontend, Backend, dan
 ### 4) Forecast Global
 1. Frontend memanggil `GET /api/stress/global-forecast`.
 2. Backend memuat artefak forecast dan mengembalikan dataset ringkas untuk chart.
+
+### 5) Retraining Forecast (Global & Personalized)
+1. Workflow GitHub Actions merefresh `stress_forecast.csv` dari database.
+2. Notebook forecast dieksekusi secara headless untuk melatih model baru.
+3. Artefak hasil training disimpan ke `nostressia-backend/app/models_ml/` beserta metadata `*.meta.json`.
 
 ## Standar Response API
 Semua response sukses menggunakan schema:

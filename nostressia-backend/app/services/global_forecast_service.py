@@ -23,6 +23,9 @@ class GlobalForecastService:
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         return os.path.join(base_dir, "models_ml", "global_forecast.joblib")
 
+    def artifact_exists(self) -> bool:
+        return os.path.exists(self._artifact_path())
+
     def _load_artifact(self) -> Dict[str, Any]:
         if self._artifact_loaded:
             return self._artifact

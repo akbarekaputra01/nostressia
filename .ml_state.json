@@ -1,0 +1,9 @@
+{
+  "global": {
+    "data_hash": null,
+    "last_trained_at": null
+  },
+  "personalized": {
+    "users": {}
+  }
+}
