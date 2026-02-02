@@ -43,8 +43,9 @@ nostressia-backend/
 - `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`, `DB_NAME`
 - `JWT_SECRET`, `JWT_ALGORITHM`, `ACCESS_TOKEN_EXPIRE_MINUTES`
 - `BREVO_API_KEY`
-- `AZURE_STORAGE_CONNECTION_STRING`, `AZURE_STORAGE_ACCOUNT_NAME`
+- `AZURE_STORAGE_CONNECTION_STRING`, `AZURE_STORAGE_ACCOUNT_NAME`, `AZURE_STORAGE_CONTAINER`, `AZURE_STORAGE_CONTAINER_NAME`
 - `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`
+- `INTERNAL_TOKEN` (opsional, untuk endpoint training data internal)
 
 ## Menjalankan Server
 ```bash
@@ -151,6 +152,25 @@ pytest
 - SQLite in-memory (`sqlite+pysqlite:///:memory:`)
 - Fixture `db_session` melakukan rollback setiap test
 - Dependency `get_db` di-override agar endpoint test menggunakan DB test
+
+## Standar Error Response
+Backend memakai format error konsisten untuk `HTTPException` dan `RequestValidationError`:
+
+```json
+{
+  "success": false,
+  "message": "Validation error",
+  "data": [
+    {
+      "loc": ["body", "field"],
+      "msg": "Field required",
+      "type": "missing"
+    }
+  ]
+}
+```
+
+Untuk error non-validasi, `message` berisi pesan singkat dan `data` berisi detail jika bukan string.
 
 ## Troubleshooting
 - **Startup gagal**: pastikan `JWT_SECRET`, `DB_*`, dan `BREVO_API_KEY` tersedia.
