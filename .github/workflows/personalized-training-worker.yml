@@ -17,6 +17,9 @@ on:
 permissions:
   contents: write
 
+permissions:
+  contents: write
+
 jobs:
   train-personalized:
     runs-on: ubuntu-latest
