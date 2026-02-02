@@ -2,7 +2,7 @@ import { useEffect } from "react";
 
 const DEFAULT_TITLE = "Nostressia";
 const DEFAULT_DESCRIPTION =
-  "Nostressia membantu memantau stres harian, memberikan tips kesehatan mental, dan memudahkan refleksi lewat jurnal serta motivasi.";
+  "Nostressia helps you track daily stress, discover mental wellness tips, and reflect through journaling and motivation.";
 const DEFAULT_IMAGE = "/Logo-Nostressia.png";
 
 const setMetaTag = ({ name, property, content }) => {
