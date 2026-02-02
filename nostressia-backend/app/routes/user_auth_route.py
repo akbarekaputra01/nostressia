@@ -1,7 +1,7 @@
 """User authentication routes and profile endpoints."""
 
 import logging
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm
@@ -45,13 +45,22 @@ def _normalize_otp_created_at(value):
     if value is None:
         return None
     if isinstance(value, datetime):
-        return value
+        if value.tzinfo is None:
+            return value.replace(tzinfo=timezone.utc)
+        return value.astimezone(timezone.utc)
     if isinstance(value, str):
         try:
-            return datetime.fromisoformat(value)
+            parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
         except ValueError:
             return None
+        if parsed.tzinfo is None:
+            return parsed.replace(tzinfo=timezone.utc)
+        return parsed.astimezone(timezone.utc)
     return None
+
+
+def _utcnow() -> datetime:
+    return datetime.now(timezone.utc)
 
 def _serialize_user(user: User) -> UserResponse:
     return UserResponse.model_validate(user)
@@ -110,7 +119,7 @@ def register(user_in: UserRegister, db: Session = Depends(get_db)):
     # Prepare OTP and user data.
     otp_code = generate_otp(6)
     hashed_pw = hash_password(user_in.password)
-    now = datetime.utcnow()
+    now = _utcnow()
 
     # 3. Main email workflow
     if existing_user_email:
@@ -198,7 +207,7 @@ def verify_otp_endpoint(payload: VerifyOTP, db: Session = Depends(get_db)):
     otp_created_at = _normalize_otp_created_at(user.otp_created_at)
     if otp_created_at:
         # Compute the time difference.
-        time_diff = datetime.utcnow() - otp_created_at
+        time_diff = _utcnow() - otp_created_at
         if time_diff > timedelta(minutes=OTP_EXPIRE_MINUTES):
              raise HTTPException(
                  status_code=400,
@@ -319,7 +328,7 @@ def forgot_password(payload: ForgotPasswordRequest, db: Session = Depends(get_db
     
     # Update OTP and timestamp.
     user.otp_code = otp_code
-    user.otp_created_at = datetime.utcnow()
+    user.otp_created_at = _utcnow()
     db.commit()
 
     # 4. Send email
@@ -345,7 +354,7 @@ def reset_password_verify(payload: ResetPasswordVerify, db: Session = Depends(ge
 
     otp_created_at = _normalize_otp_created_at(user.otp_created_at)
     if otp_created_at:
-        time_diff = datetime.utcnow() - otp_created_at
+        time_diff = _utcnow() - otp_created_at
         if time_diff > timedelta(minutes=OTP_EXPIRE_MINUTES):
              raise HTTPException(
                  status_code=400,
@@ -368,7 +377,7 @@ def reset_password_confirm(payload: ResetPasswordConfirm, db: Session = Depends(
     # 2. Check expiration.
     otp_created_at = _normalize_otp_created_at(user.otp_created_at)
     if otp_created_at:
-        time_diff = datetime.utcnow() - otp_created_at
+        time_diff = _utcnow() - otp_created_at
         if time_diff > timedelta(minutes=OTP_EXPIRE_MINUTES):
              raise HTTPException(
                  status_code=400,
