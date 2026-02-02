@@ -14,14 +14,10 @@ on:
         required: false
         type: string
 
-permissions:
-  contents: write
-
-permissions:
-  contents: write
-
 jobs:
   train-personalized:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
