@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
-from sqlalchemy import desc
+from sqlalchemy import desc, func
 from sqlalchemy.orm import Session
 
 from app.models.model_registry_model import ModelRegistry
@@ -95,7 +95,8 @@ def enqueue_personalized_training_if_due(db: Session) -> int:
             User.lifetime_valid_count.isnot(None),
             User.lifetime_valid_count > 0,
             (User.lifetime_valid_count % MILESTONE_INTERVAL_COUNT) == 0,
-            User.last_personalized_trained_milestone < User.lifetime_valid_count,
+            func.coalesce(User.last_personalized_trained_milestone, 0)
+            < User.lifetime_valid_count,
             ~User.user_id.in_(in_progress_subquery),
         )
         .all()
