@@ -13,4 +13,4 @@
 4. Commit the updated dataset, models, and `.ml_state.json` gate state back to the repo.
 
 The 60-day global gate and personalized milestone gates are implemented in scripts and tracked in `.ml_state.json`.
-For manual tests, the personalized workflow accepts `force_user_id`/`force_window_size` to bypass the 60x gate.
+For manual tests, the personalized workflow accepts `force_user_id`/`force_window_size` to bypass the 60x gate while still writing a single shared artifact.

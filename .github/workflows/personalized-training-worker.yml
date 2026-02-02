@@ -50,7 +50,6 @@ jobs:
       - name: Train personalized models (milestone gate)
         run: |
           python nostressia-machine-learning/Stress-Forecast/scripts/train_personalized.py \
-            --update-default \
             ${{ inputs.force_user_id && format('--force-user-id {0}', inputs.force_user_id) || '' }} \
             ${{ inputs.force_window_size && format('--force-window-size {0}', inputs.force_window_size) || '' }}
 
@@ -60,7 +59,6 @@ jobs:
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
             git add .ml_state.json nostressia-machine-learning/Stress-Forecast/datasets/stress_forecast.csv \
-              nostressia-backend/app/models_ml/personalized \
               nostressia-backend/app/models_ml/personalized_forecast.joblib \
               nostressia-backend/app/models_ml/personalized_forecast.meta.json
             git commit -m "Update personalized forecast models"

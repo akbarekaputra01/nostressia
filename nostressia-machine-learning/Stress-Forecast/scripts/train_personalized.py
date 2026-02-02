@@ -22,7 +22,6 @@ NOTEBOOK_PATH = (
 DATASET_PATH = (
     REPO_ROOT / "nostressia-machine-learning" / "Stress-Forecast" / "datasets" / "stress_forecast.csv"
 )
-MODEL_DIR = REPO_ROOT / "nostressia-backend" / "app" / "models_ml" / "personalized"
 DEFAULT_MODEL_OUT = REPO_ROOT / "nostressia-backend" / "app" / "models_ml" / "personalized_forecast.joblib"
 DEFAULT_META_OUT = REPO_ROOT / "nostressia-backend" / "app" / "models_ml" / "personalized_forecast.meta.json"
 STATE_PATH = REPO_ROOT / ".ml_state.json"
@@ -104,7 +103,6 @@ def _write_meta(path: Path, data_hash: str, trained_at: str, user_id: int, miles
 
 
 def train_personalized(
-    update_default: bool,
     force_user_id: Optional[int],
     force_window_size: Optional[int],
 ) -> bool:
@@ -127,15 +125,14 @@ def train_personalized(
     data_hash = _sha256(DATASET_PATH)
     print("DATASET_PATH :", DATASET_PATH)
     print("DATA_HASH    :", data_hash)
-    MODEL_DIR.mkdir(parents=True, exist_ok=True)
     trained_any = False
 
     for candidate in candidates:
         user_id = candidate["user_id"]
         milestone = int(force_window_size or candidate["milestone"])
         start_date = candidate["streak_start_date"]
-        output_path = MODEL_DIR / f"{user_id}.joblib"
-        meta_path = MODEL_DIR / f"{user_id}.meta.json"
+        output_path = DEFAULT_MODEL_OUT
+        meta_path = DEFAULT_META_OUT
 
         _execute_notebook(
             NOTEBOOK_PATH,
@@ -154,12 +151,8 @@ def train_personalized(
             raise FileNotFoundError(f"Personalized model output not created: {output_path}")
 
         trained_at = utc_now_iso()
+        DEFAULT_MODEL_OUT.parent.mkdir(parents=True, exist_ok=True)
         _write_meta(meta_path, data_hash, trained_at, user_id, milestone)
-
-        if update_default:
-            DEFAULT_MODEL_OUT.parent.mkdir(parents=True, exist_ok=True)
-            DEFAULT_MODEL_OUT.write_bytes(output_path.read_bytes())
-            _write_meta(DEFAULT_META_OUT, data_hash, trained_at, user_id, milestone)
 
         state.personalized.setdefault("users", {})[str(user_id)] = {
             "last_trained_at": trained_at,
@@ -170,6 +163,7 @@ def train_personalized(
         }
         trained_any = True
         print(f"Trained personalized model for user_id={user_id} milestone={milestone}.")
+        break
 
     if trained_any:
         state.save(STATE_PATH)
@@ -178,11 +172,6 @@ def train_personalized(
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Train personalized forecast model(s) based on streak milestones.")
-    parser.add_argument(
-        "--update-default",
-        action="store_true",
-        help="Also overwrite personalized_forecast.joblib with the latest trained user model.",
-    )
     parser.add_argument("--force-user-id", type=int, help="Force training for a specific user_id.")
     parser.add_argument(
         "--force-window-size",
@@ -191,7 +180,6 @@ def main() -> None:
     )
     args = parser.parse_args()
     train_personalized(
-        update_default=args.update_default,
         force_user_id=args.force_user_id,
         force_window_size=args.force_window_size,
     )
