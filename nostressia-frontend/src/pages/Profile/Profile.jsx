@@ -1304,7 +1304,7 @@ export default function Profile() {
     >
       <PageMeta
         title="Profile"
-        description="Kelola profil, preferensi, notifikasi, dan keamanan akun Nostressia."
+        description="Manage your Nostressia profile, preferences, notifications, and account security."
       />
       <Navbar user={contextUser} />
       {showGameModal && <FishGameModal onClose={() => setShowGameModal(false)} />}

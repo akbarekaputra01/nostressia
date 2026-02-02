@@ -100,7 +100,7 @@ export default function AdminLogin() {
     <div className="min-h-screen flex items-center justify-center bg-surface px-4 font-sans text-text-primary">
       <PageMeta
         title="Admin Login"
-        description="Akses administratif Nostressia untuk mengelola data pengguna, tips, dan motivasi."
+        description="Access the Nostressia admin portal to manage users, tips, and motivations."
         noindex
       />
       <div className="max-w-md w-full bg-surface-elevated glass-panel dark:bg-surface rounded-2xl shadow-xl overflow-hidden border border-border-subtle dark:border-border glass-panel-strong">

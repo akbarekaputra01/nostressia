@@ -645,7 +645,7 @@ export default function LandingPage() {
     <div className="min-h-screen font-sans bg-surface dark:bg-surface text-text-primary dark:text-text-primary overflow-x-hidden selection:bg-brand-accent selection:text-text-inverse">
       <PageMeta
         title="Landing Page"
-        description="Kenali Nostressia: pantau stres harian, jurnal refleksi, tips kesehatan mental, dan motivasi dalam satu aplikasi."
+        description="Discover Nostressia: track daily stress, reflective journaling, mental wellness tips, and motivation in one app."
       />
       {/* Background Pattern */}
       <div

@@ -10,7 +10,7 @@ export default function NotFound() {
     <div className="min-h-screen flex items-center justify-center bg-surface px-6 text-text-primary">
       <PageMeta
         title="404"
-        description="Halaman yang kamu cari tidak ditemukan di Nostressia."
+        description="The page you are looking for was not found on Nostressia."
         noindex
       />
       <div className="max-w-md text-center bg-surface-elevated glass-panel p-8 rounded-3xl border border-border">

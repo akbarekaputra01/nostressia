@@ -894,7 +894,7 @@ export default function AdminPage({ skipAuth = false }) {
     <div className="min-h-screen bg-surface-muted font-sans text-text-primary">
       <PageMeta
         title="Admin Dashboard"
-        description="Panel admin Nostressia untuk mengelola pengguna, motivasi, tips, dan diary."
+        description="Nostressia admin dashboard for managing users, motivations, tips, and diaries."
         noindex
       />
       {/* NAVBAR CANTIK */}

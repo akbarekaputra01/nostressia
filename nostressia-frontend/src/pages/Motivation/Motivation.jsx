@@ -437,7 +437,7 @@ export default function Motivation() {
     <div style={backgroundStyle} className="min-h-screen flex flex-col">
       <PageMeta
         title="Motivation"
-        description="Dapatkan kutipan motivasi harian dan simpan favoritmu untuk menjaga semangat."
+        description="Get daily motivational quotes and save your favorites to stay inspired."
       />
       <style>{`
         @keyframes gradient-bg { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }

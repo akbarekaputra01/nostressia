@@ -216,7 +216,7 @@ export default function Tips() {
     >
       <PageMeta
         title="Tips"
-        description="Eksplorasi tips kesehatan mental dan kebiasaan sehat yang dipersonalisasi di Nostressia."
+        description="Explore personalized mental wellness tips and healthy habits in Nostressia."
       />
       <style>{`@keyframes gradient-bg { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }`}</style>
 
