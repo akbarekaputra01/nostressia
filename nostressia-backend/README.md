@@ -10,9 +10,9 @@ pinned: false
 # Nostressia Backend (FastAPI)
 
 ## Overview
-Nostressia Backend adalah layanan FastAPI yang menyediakan autentikasi, diary, motivasi, tips kesehatan mental, stress tracking + insight, serta fitur admin moderation. Backend ini juga terhubung dengan model ML untuk prediksi stress dan menyediakan integrasi push notification + Azure Blob Storage untuk upload avatar. Layanan dibuat agar konsisten dengan kontrak frontend dan aman untuk production. 
+Nostressia Backend adalah layanan FastAPI yang menangani autentikasi pengguna/admin, diary, motivasi, tips kesehatan mental, stress tracking + insight, serta integrasi notifikasi push dan Azure Blob Storage untuk upload avatar. Backend ini mengikuti kontrak frontend, memiliki error response konsisten, dan menggunakan pendekatan fail-fast untuk validasi environment.
 
-## Arsitektur Folder
+## Arsitektur & Struktur Folder
 ```
 nostressia-backend/
 ├── app/
@@ -33,19 +33,23 @@ nostressia-backend/
    ```bash
    pip install -r requirements.txt
    ```
-2. Siapkan environment:
+2. Salin file environment:
    ```bash
    cp .env.example .env
    ```
 3. Isi `.env` dengan kredensial yang sesuai.
 
 ### Environment Variables (ringkas)
+**Wajib (aplikasi akan fail-fast jika tidak ada):**
 - `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`, `DB_NAME`
 - `JWT_SECRET`, `JWT_ALGORITHM`, `ACCESS_TOKEN_EXPIRE_MINUTES`
 - `BREVO_API_KEY`
+
+**Opsional (fitur terkait hanya aktif jika ada):**
 - `AZURE_STORAGE_CONNECTION_STRING`, `AZURE_STORAGE_ACCOUNT_NAME`, `AZURE_STORAGE_CONTAINER`, `AZURE_STORAGE_CONTAINER_NAME`
 - `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`
-- `INTERNAL_TOKEN` (opsional, untuk endpoint training data internal)
+- `INTERNAL_TOKEN` (untuk endpoint training data internal)
+- `DATABASE_URL` (override konfigurasi DB terpisah)
 
 ## Menjalankan Server
 ```bash
@@ -56,102 +60,81 @@ uvicorn app.main:app --reload
 > Semua endpoint bisnis memakai prefix `/api`.
 
 ### Root & Health Endpoints
-Endpoint ini **tanpa prefix `/api`** untuk kebutuhan monitoring/healthcheck dan memastikan root tidak 404.
+Endpoint ini **tanpa prefix `/api`** untuk kebutuhan monitoring/healthcheck.
 
 - `GET /`
   ```bash
   curl http://localhost:8000/
   ```
-  **Response 200**
-  ```json
-  { "status": "ok", "message": "Nostressia API is running" }
-  ```
 - `GET /health`
   ```bash
   curl http://localhost:8000/health
   ```
-  **Response 200**
-  ```json
-  { "status": "ok" }
-  ```
 
 ### Auth & User
 - `POST /api/auth/register`
-  ```bash
-  curl -X POST http://localhost:8000/api/auth/register \
-    -H "Content-Type: application/json" \
-    -d '{"name":"User","username":"user1","email":"user@example.com","password":"StrongPass123!","gender":"female","userDob":"2000-01-01"}'
-  ```
+- `POST /api/auth/verify-otp`
 - `POST /api/auth/login`
-  ```bash
-  curl -X POST http://localhost:8000/api/auth/login \
-    -H "Content-Type: application/json" \
-    -d '{"identifier":"user@example.com","password":"StrongPass123!"}'
-  ```
+- `POST /api/auth/token`
 - `GET /api/auth/me`
-  ```bash
-  curl -H "Authorization: Bearer <accessToken>" http://localhost:8000/api/auth/me
-  ```
+- `PUT /api/auth/me`
+- `POST /api/auth/verify-current-password`
+- `PUT /api/auth/change-password`
+- `POST /api/auth/forgot-password`
+- `POST /api/auth/reset-password-verify`
+- `POST /api/auth/reset-password-confirm`
 
-### Diary
+### Admin
+- `POST /api/auth/admin/login`
+- `GET /api/admin/users/`
+- `GET /api/admin/users/{user_id}`
+- `PUT /api/admin/users/{user_id}`
+- `DELETE /api/admin/users/{user_id}`
+- `GET /api/admin/diaries/`
+- `DELETE /api/admin/diaries/{diary_id}`
+
+### Diary & Motivasi
 - `POST /api/diary/`
-  ```bash
-  curl -X POST http://localhost:8000/api/diary/ \
-    -H "Authorization: Bearer <accessToken>" \
-    -H "Content-Type: application/json" \
-    -d '{"title":"Hari Ini","note":"Merasa lebih baik","date":"2024-01-01","emoji":"😊","font":"sans-serif"}'
-  ```
+- `GET /api/diary/`
+- `GET /api/diary/{id}`
+- `PUT /api/diary/{id}`
+- `GET /api/motivations/`
+- `POST /api/motivations/`
+- `DELETE /api/motivations/{id}`
 
-### Stress Insight
+### Stress Insight & Log
 - `POST /api/stress/current`
-  ```bash
-  curl -X POST http://localhost:8000/api/stress/current \
-    -H "Content-Type: application/json" \
-    -d '{"studyHours":4,"extracurricularHours":1,"sleepHours":7,"socialHours":2,"physicalHours":1,"gpa":3.5}'
-  ```
+- `GET /api/stress/global-forecast`
+- `POST /api/stress-levels/`
+- `POST /api/stress-levels/restore`
+- `GET /api/stress-levels/my-logs`
+- `GET /api/stress-levels/eligibility`
+
+### Tips & Bookmark
+- `GET /api/tips/categories`
+- `POST /api/tips/categories`
+- `DELETE /api/tips/categories/{id}`
+- `GET /api/tips/`
+- `GET /api/tips/by-category/{id}`
+- `POST /api/tips/`
+- `PUT /api/tips/{id}`
+- `DELETE /api/tips/{id}`
+- `POST /api/bookmarks/{motivation_id}`
+- `GET /api/bookmarks/me`
+- `DELETE /api/bookmarks/{motivation_id}`
 
 ### Notifications
 - `POST /api/notifications/subscribe`
-  ```bash
-  curl -X POST http://localhost:8000/api/notifications/subscribe \
-    -H "Authorization: Bearer <accessToken>" \
-    -H "Content-Type: application/json" \
-    -d '{"subscription":{"endpoint":"https://example.com","keys":{"p256dh":"key","auth":"auth"}},"reminderTime":"08:00","timezone":"Asia/Jakarta"}'
-  ```
+- `DELETE /api/notifications/unsubscribe`
+- `GET /api/notifications/status`
+- `POST /api/notifications/test-send`
 
 ### Storage (SAS Upload)
 - `POST /api/storage/sas/upload`
-  ```bash
-  curl -X POST http://localhost:8000/api/storage/sas/upload \
-    -H "Authorization: Bearer <accessToken>" \
-    -H "Content-Type: application/json" \
-    -d '{"fileName":"avatar.png","contentType":"image/png","folder":"uploads"}'
-  ```
-  **Response 200**
-  ```json
-  {
-    "success": true,
-    "message": "SAS created",
-    "data": {
-      "uploadUrl": "https://<account>.blob.core.windows.net/<container>/<blobName>?<sas>",
-      "blobUrl": "https://<account>.blob.core.windows.net/<container>/<blobName>",
-      "blobName": "users/123/uploads/20240101120000-acde1234-avatar.png",
-      "expiresInMinutes": 10
-    }
-  }
-  ```
 
-## Testing
-Backend menggunakan pytest + TestClient dengan SQLite in-memory untuk isolasi.
-
-```bash
-pytest
-```
-
-### Strategi Database Test
-- SQLite in-memory (`sqlite+pysqlite:///:memory:`)
-- Fixture `db_session` melakukan rollback setiap test
-- Dependency `get_db` di-override agar endpoint test menggunakan DB test
+### ML Training Data (Internal)
+- `GET /api/ml/training-data/global`
+- `GET /api/ml/training-data/personalized`
 
 ## Standar Error Response
 Backend memakai format error konsisten untuk `HTTPException` dan `RequestValidationError`:
@@ -172,9 +155,22 @@ Backend memakai format error konsisten untuk `HTTPException` dan `RequestValidat
 
 Untuk error non-validasi, `message` berisi pesan singkat dan `data` berisi detail jika bukan string.
 
+## Testing
+Backend menggunakan pytest + TestClient dengan SQLite in-memory untuk isolasi.
+
+```bash
+pytest
+```
+
+### Strategi Database Test
+- SQLite in-memory (`sqlite+pysqlite:///:memory:`)
+- Fixture `db_session` melakukan rollback setiap test
+- Dependency `get_db` di-override agar endpoint test menggunakan DB test
+
 ## Troubleshooting
 - **Startup gagal**: pastikan `JWT_SECRET`, `DB_*`, dan `BREVO_API_KEY` tersedia.
-- **Avatar upload gagal**: pastikan `AZURE_STORAGE_CONNECTION_STRING` tersedia.
+- **Forecast error**: pastikan tabel `stress_levels` terisi dan artifact ML tersedia.
+- **Avatar upload gagal**: pastikan `AZURE_STORAGE_CONNECTION_STRING` tersedia (atau gunakan fallback lokal).
 - **Push notification gagal**: pastikan `VAPID_PRIVATE_KEY` terisi.
 
 ## Technical Specs

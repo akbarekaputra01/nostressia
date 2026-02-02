@@ -40,7 +40,7 @@ def fetch_global_training_rows(
     source = (data_source or _resolve_data_source()).lower()
     if source == DATA_SOURCE_DB:
         if db is None:
-            raise RuntimeError("DB session wajib untuk load data global dari DB.")
+            raise RuntimeError("DB session is required to load global data from the database.")
         query = db.query(StressLevel)
         if days_limit:
             start_date = date.today() - timedelta(days=int(days_limit))
@@ -51,7 +51,7 @@ def fetch_global_training_rows(
     if source == DATA_SOURCE_API:
         base_url = _resolve_backend_base_url()
         if not base_url:
-            raise RuntimeError("BACKEND_BASE_URL belum di-set untuk load data global via API.")
+            raise RuntimeError("BACKEND_BASE_URL is not set for loading global data via the API.")
         url = f"{base_url.rstrip('/')}/api/ml/training-data/global"
         params = {"days_limit": int(days_limit)} if days_limit else {}
         resp = requests.get(url, headers=_api_headers(), params=params, timeout=30)
@@ -70,7 +70,7 @@ def fetch_personalized_training_rows(
     source = (data_source or _resolve_data_source()).lower()
     if source == DATA_SOURCE_DB:
         if db is None:
-            raise RuntimeError("DB session wajib untuk load data personalized dari DB.")
+            raise RuntimeError("DB session is required to load personalized data from the database.")
         rows = (
             db.query(StressLevel)
             .filter(StressLevel.user_id == user_id)
@@ -84,7 +84,7 @@ def fetch_personalized_training_rows(
     if source == DATA_SOURCE_API:
         base_url = _resolve_backend_base_url()
         if not base_url:
-            raise RuntimeError("BACKEND_BASE_URL belum di-set untuk load data personalized via API.")
+            raise RuntimeError("BACKEND_BASE_URL is not set for loading personalized data via the API.")
         url = f"{base_url.rstrip('/')}/api/ml/training-data/personalized"
         params = {"userId": int(user_id), "limit": int(limit)}
         resp = requests.get(url, headers=_api_headers(), params=params, timeout=30)

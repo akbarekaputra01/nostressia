@@ -9,8 +9,8 @@ class ProfilePictureSasRequest(BaseSchema):
     """Payload for requesting a profile upload SAS."""
 
     file_name: str = Field(..., description="Original filename provided by the user")
-    content_type: str = Field(..., description="MIME type file gambar")
-    file_size: int = Field(..., description="Ukuran file dalam bytes")
+    content_type: str = Field(..., description="MIME type of the image file")
+    file_size: int = Field(..., description="File size in bytes")
 
 
 class ProfilePictureSasResponse(BaseSchema):
@@ -25,4 +25,6 @@ class ProfilePictureSasResponse(BaseSchema):
 class ProfilePictureUpdateRequest(BaseSchema):
     """Payload for storing the profile photo URL in the database."""
 
-    profile_image_url: str = Field(..., description="URL foto profil di Azure Blob")
+    profile_image_url: str = Field(
+        ..., description="Profile image URL stored in Azure Blob Storage"
+    )

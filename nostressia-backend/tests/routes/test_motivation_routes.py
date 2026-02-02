@@ -11,3 +11,6 @@ def test_create_and_list_motivations(client, db_session):
     assert list_response.status_code == 200
     items = list_response.json()["data"]
     assert any(item["quote"] == "Keep going." for item in items)
+
+    delete_response = client.delete(f"/api/motivations/{created['motivationId']}")
+    assert delete_response.status_code == 200
