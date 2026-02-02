@@ -314,11 +314,11 @@ export default function Login() {
   };
 
   const handleForgotOtpChange = (index, value) => {
-    if (isNaN(value)) return;
+    const sanitizedValue = value.replace(/\D/g, "").slice(-1);
     const newOtp = [...forgotOtpValues];
-    newOtp[index] = value;
+    newOtp[index] = sanitizedValue;
     setForgotOtpValues(newOtp);
-    if (value && index < 5) {
+    if (sanitizedValue && index < 5) {
       forgotOtpRefs.current[index + 1]?.focus();
     }
   };
@@ -384,6 +384,50 @@ export default function Login() {
       setForgotOtpVerified(false);
     } catch (error) {
       showToast(error?.message || "Failed to reset password.", "error");
+    } finally {
+      setLoadingForgot(false);
+    }
+  };
+
+  const handleResendSignupOtp = async () => {
+    if (!formData.email) {
+      showToast("Please enter your email first.", "warning");
+      return;
+    }
+    setIsLoading(true);
+    try {
+      await register({
+        name: formData.name,
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
+        gender: formData.gender,
+        userDob: formData.dob,
+        avatar: formData.avatar,
+      });
+      setCountdown(60);
+      showToast("Code resent! Please check your email.", "success");
+    } catch (error) {
+      showToast(error?.message || "Failed to resend OTP.", "error");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleForgotResendOtp = async () => {
+    if (!forgotEmail) {
+      showToast("Please enter your email.", "warning");
+      return;
+    }
+    setLoadingForgot(true);
+    try {
+      await forgotPassword({ email: forgotEmail });
+      setCountdown(60);
+      setForgotOtpValues(new Array(6).fill(""));
+      setForgotOtpVerified(false);
+      showToast("Code resent! Please check your email.", "success");
+    } catch (error) {
+      showToast(error?.message || "Failed to resend OTP.", "error");
     } finally {
       setLoadingForgot(false);
     }
@@ -678,10 +722,7 @@ export default function Login() {
                       ) : (
                         <button
                           type="button"
-                          onClick={() => {
-                            setCountdown(60);
-                            showToast("Code resent!", "success");
-                          }}
+                          onClick={handleResendSignupOtp}
                           className="text-sm font-bold text-brand-warning hover:underline cursor-pointer"
                         >
                           Resend Code
@@ -1087,10 +1128,7 @@ export default function Login() {
                         ) : (
                           <button
                             type="button"
-                            onClick={() => {
-                              setCountdown(60);
-                              showToast("Code resent!", "success");
-                            }}
+                            onClick={handleForgotResendOtp}
                             className="text-sm font-bold text-orange-600 hover:underline cursor-pointer"
                           >
                             Resend Code
