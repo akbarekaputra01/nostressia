@@ -62,19 +62,25 @@ def _current_streak(dates: List[datetime.date]) -> Tuple[int, Optional[datetime.
     return streak, start, latest
 
 
-def _collect_candidates(df: pd.DataFrame, state: MLState) -> List[Dict[str, Any]]:
+def _collect_candidates(
+    df: pd.DataFrame, state: MLState, force_user_id: Optional[int]
+) -> List[Dict[str, Any]]:
     candidates: List[Dict[str, Any]] = []
     for user_id, group in df.groupby("user_id"):
+        if force_user_id is not None and int(user_id) != int(force_user_id):
+            continue
         dates = [pd.to_datetime(item).date() for item in group["date"].tolist()]
         streak, start_date, end_date = _current_streak(dates)
-        if streak <= 0 or streak % MILESTONE_INTERVAL != 0:
-            continue
+        if force_user_id is None:
+            if streak <= 0 or streak % MILESTONE_INTERVAL != 0:
+                continue
         milestone = int(streak)
-        user_state = state.personalized.get("users", {}).get(str(user_id), {})
-        last_milestone = int(user_state.get("last_trained_milestone", 0) or 0)
-        last_start = user_state.get("streak_start_date")
-        if last_start == (start_date.isoformat() if start_date else None) and milestone <= last_milestone:
-            continue
+        if force_user_id is None:
+            user_state = state.personalized.get("users", {}).get(str(user_id), {})
+            last_milestone = int(user_state.get("last_trained_milestone", 0) or 0)
+            last_start = user_state.get("streak_start_date")
+            if last_start == (start_date.isoformat() if start_date else None) and milestone <= last_milestone:
+                continue
         candidates.append(
             {
                 "user_id": int(user_id),
@@ -97,7 +103,11 @@ def _write_meta(path: Path, data_hash: str, trained_at: str, user_id: int, miles
     path.write_text(json.dumps(payload, indent=2, sort_keys=True))
 
 
-def train_personalized(update_default: bool) -> bool:
+def train_personalized(
+    update_default: bool,
+    force_user_id: Optional[int],
+    force_window_size: Optional[int],
+) -> bool:
     if not DATASET_PATH.exists():
         raise FileNotFoundError(f"Dataset not found: {DATASET_PATH}")
 
@@ -106,9 +116,12 @@ def train_personalized(update_default: bool) -> bool:
         raise RuntimeError("Dataset is empty; cannot train personalized models.")
 
     state = MLState.load(STATE_PATH)
-    candidates = _collect_candidates(df, state)
+    candidates = _collect_candidates(df, state, force_user_id)
     if not candidates:
-        print("No personalized milestones reached in current dataset.")
+        if force_user_id is not None:
+            print("Force training requested but user_id not found in dataset.")
+        else:
+            print("No personalized milestones reached in current dataset.")
         return False
 
     data_hash = _sha256(DATASET_PATH)
@@ -119,7 +132,7 @@ def train_personalized(update_default: bool) -> bool:
 
     for candidate in candidates:
         user_id = candidate["user_id"]
-        milestone = candidate["milestone"]
+        milestone = int(force_window_size or candidate["milestone"])
         start_date = candidate["streak_start_date"]
         output_path = MODEL_DIR / f"{user_id}.joblib"
         meta_path = MODEL_DIR / f"{user_id}.meta.json"
@@ -170,8 +183,18 @@ def main() -> None:
         action="store_true",
         help="Also overwrite personalized_forecast.joblib with the latest trained user model.",
     )
+    parser.add_argument("--force-user-id", type=int, help="Force training for a specific user_id.")
+    parser.add_argument(
+        "--force-window-size",
+        type=int,
+        help="Override window size when forcing a personalized training run.",
+    )
     args = parser.parse_args()
-    train_personalized(update_default=args.update_default)
+    train_personalized(
+        update_default=args.update_default,
+        force_user_id=args.force_user_id,
+        force_window_size=args.force_window_size,
+    )
 
 
 if __name__ == "__main__":

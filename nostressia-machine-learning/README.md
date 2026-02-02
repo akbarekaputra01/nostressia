@@ -74,6 +74,11 @@ python Stress-Forecast/scripts/train_personalized.py --update-default
 The scripts write `.meta.json` sidecars next to the model artifacts with `trained_at`,
 `data_hash`, and `git_sha`.
 
+Manual force run (ignores the 60x milestone gate for testing):
+```bash
+python Stress-Forecast/scripts/train_personalized.py --update-default --force-user-id 123 --force-window-size 74
+```
+
 ## Testing Guide
 ### Dataset + Artifact Checks
 Run from the `nostressia-machine-learning` folder:

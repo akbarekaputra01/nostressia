@@ -4,6 +4,18 @@ on:
   schedule:
     - cron: "30 2 * * *"
   workflow_dispatch:
+    inputs:
+      force_user_id:
+        description: "Force personalized training for a specific user_id (ignores 60-day milestone gate)."
+        required: false
+        type: string
+      force_window_size:
+        description: "Override training window size when forcing personalized training."
+        required: false
+        type: string
+
+permissions:
+  contents: write
 
 permissions:
   contents: write
@@ -41,7 +53,10 @@ jobs:
 
       - name: Train personalized models (milestone gate)
         run: |
-          python nostressia-machine-learning/Stress-Forecast/scripts/train_personalized.py --update-default
+          python nostressia-machine-learning/Stress-Forecast/scripts/train_personalized.py \
+            --update-default \
+            ${{ inputs.force_user_id && format('--force-user-id {0}', inputs.force_user_id) || '' }} \
+            ${{ inputs.force_window_size && format('--force-window-size {0}', inputs.force_window_size) || '' }}
 
       - name: Commit updated artifacts
         run: |
