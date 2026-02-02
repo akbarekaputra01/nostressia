@@ -5,6 +5,9 @@ on:
     - cron: "30 2 * * *"
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   train-personalized:
     runs-on: ubuntu-latest
