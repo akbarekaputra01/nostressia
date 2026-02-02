@@ -1,16 +1,30 @@
-name: Personalized Model Training Worker
+name: Personalized Forecast Training
 
 on:
   schedule:
-    - cron: "*/30 * * * *"
+    - cron: "30 2 * * *"
   workflow_dispatch:
+    inputs:
+      force_user_id:
+        description: "Force personalized training for a specific user_id (ignores 60-day milestone gate)."
+        required: false
+        type: string
+      force_window_size:
+        description: "Override training window size when forcing personalized training."
+        required: false
+        type: string
+
+permissions:
+  contents: write
 
 jobs:
-  run-worker:
+  train-personalized:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -23,7 +37,7 @@ jobs:
           pip install -r nostressia-backend/requirements.txt
           pip install -r nostressia-machine-learning/requirements.txt
 
-      - name: Process personalized training jobs
+      - name: Refresh dataset
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           DB_USER: ${{ secrets.DB_USER }}
@@ -31,9 +45,27 @@ jobs:
           DB_HOST: ${{ secrets.DB_HOST }}
           DB_PORT: ${{ secrets.DB_PORT }}
           DB_NAME: ${{ secrets.DB_NAME }}
-          BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          AZURE_STORAGE_CONNECTION_STRING: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
-          AZURE_STORAGE_CONTAINER_NAME: ${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}
         run: |
-          python nostressia-backend/scripts/training_worker.py --job-type personalized
+          python nostressia-machine-learning/Stress-Forecast/scripts/refresh_dataset.py
+
+      - name: Train personalized models (milestone gate)
+        run: |
+          python nostressia-machine-learning/Stress-Forecast/scripts/train_personalized.py \
+            --update-default \
+            ${{ inputs.force_user_id && format('--force-user-id {0}', inputs.force_user_id) || '' }} \
+            ${{ inputs.force_window_size && format('--force-window-size {0}', inputs.force_window_size) || '' }}
+
+      - name: Commit updated artifacts
+        run: |
+          if [[ -n "$(git status --porcelain)" ]]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add .ml_state.json nostressia-machine-learning/Stress-Forecast/datasets/stress_forecast.csv \
+              nostressia-backend/app/models_ml/personalized \
+              nostressia-backend/app/models_ml/personalized_forecast.joblib \
+              nostressia-backend/app/models_ml/personalized_forecast.meta.json
+            git commit -m "Update personalized forecast models"
+            git push
+          else
+            echo "No changes to commit."
+          fi
