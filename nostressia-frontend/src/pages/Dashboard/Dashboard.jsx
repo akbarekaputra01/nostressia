@@ -1398,7 +1398,7 @@ export default function Dashboard() {
     >
       <PageMeta
         title="Dashboard"
-        description="Pantau stres harian, prediksi mood, dan ringkasan statistik pribadi di dashboard Nostressia."
+        description="Track daily stress, mood predictions, and personal stats on the Nostressia dashboard."
       />
       <style>{`
         @keyframes gradient-bg { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }

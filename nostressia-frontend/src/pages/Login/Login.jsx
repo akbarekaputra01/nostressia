@@ -449,7 +449,7 @@ export default function Login() {
     <div className="h-screen w-full flex font-sans bg-surface text-text-primary overflow-hidden">
       <PageMeta
         title="Login"
-        description="Masuk ke akun Nostressia untuk mengakses dashboard stres, jurnal harian, dan tips kesehatan mental."
+        description="Sign in to your Nostressia account to access the stress dashboard, daily journal, and mental wellness tips."
       />
       {/* BACKGROUND DECORATION */}
       <div className="hidden lg:flex w-1/2 h-full relative bg-surface-muted dark:bg-surface items-center justify-center p-10 overflow-hidden">

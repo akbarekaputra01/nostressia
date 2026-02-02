@@ -228,7 +228,7 @@ export default function Diary() {
     >
       <PageMeta
         title="Diary"
-        description="Tulis jurnal harian untuk refleksi diri dan lacak perkembangan emosionalmu di Nostressia."
+        description="Write a daily journal to reflect on yourself and track your emotional progress in Nostressia."
       />
       <style>{`
         @keyframes gradient-bg { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }

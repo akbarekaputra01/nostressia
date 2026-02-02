@@ -344,7 +344,7 @@ export default function Analytics() {
     >
       <PageMeta
         title="Analytics"
-        description="Analisis tren stres dan perkembangan kesehatan mental melalui statistik dan grafik Nostressia."
+        description="Analyze stress trends and mental wellness progress with Nostressia statistics and charts."
       />
       <style>{`
         @keyframes gradient-bg { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
