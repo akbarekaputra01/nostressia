@@ -1,6 +1,7 @@
 """FastAPI application entry point."""
 
 import logging
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request
@@ -24,8 +25,63 @@ from app.services.notification_scheduler import (
 logger = logging.getLogger(__name__)
 
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    logger.info("FastAPI startup")
+
+    # 1) Create all tables (including push_subscriptions) if missing.
+    Base.metadata.create_all(bind=engine)
+    logger.info("Database tables ensured (create_all).")
+
+    # 2) Sanity check for the users table.
+    try:
+        inspector = inspect(engine)
+        tables = inspector.get_table_names()
+        logger.info("DB tables: %s", tables)
+
+        if "users" not in tables:
+            message = "Startup check failed: table 'users' not found."
+            logger.error(message)
+            raise RuntimeError(message)
+
+        user_columns = {column["name"] for column in inspector.get_columns("users")}
+        logger.info("Users columns: %s", sorted(list(user_columns)))
+
+        if "username" not in user_columns:
+            message = (
+                "Startup check failed: column 'users.username' not found. "
+                "Ensure database migrations have been applied."
+            )
+            logger.error(message)
+            raise RuntimeError(message)
+
+        if "streak" not in user_columns:
+            message = (
+                "Startup check failed: column 'users.streak' not found. "
+                "Ensure database migrations have been applied."
+            )
+            logger.error(message)
+            raise RuntimeError(message)
+
+    except SQLAlchemyError as exc:
+        logger.exception("Startup check failed due to database error.")
+        raise RuntimeError("Startup check failed due to database error.") from exc
+
+    # 3) Start scheduler
+    logger.info("Starting notification scheduler.")
+    app.state.notification_scheduler = start_notification_scheduler()
+    logger.info("Notification scheduler started.")
+
+    try:
+        yield
+    finally:
+        logger.info("FastAPI shutdown")
+        stop_notification_scheduler(getattr(app.state, "notification_scheduler", None))
+        logger.info("Notification scheduler stopped.")
+
+
 def create_app() -> FastAPI:
-    app = FastAPI(title=settings.app_name)
+    app = FastAPI(title=settings.app_name, lifespan=lifespan)
 
     # Register models so metadata contains all tables.
     register_models()
@@ -67,62 +123,6 @@ def create_app() -> FastAPI:
                 "data": exc.errors(),
             },
         )
-
-    # STARTUP
-    @app.on_event("startup")
-    def on_startup() -> None:
-        logger.info("FastAPI startup")
-
-        # 1) Create all tables (including push_subscriptions) if missing.
-        Base.metadata.create_all(bind=engine)
-        logger.info("Database tables ensured (create_all).")
-
-        # 2) Sanity check for the users table.
-        try:
-            inspector = inspect(engine)
-            tables = inspector.get_table_names()
-            logger.info("DB tables: %s", tables)
-
-            if "users" not in tables:
-                message = "Startup check failed: table 'users' not found."
-                logger.error(message)
-                raise RuntimeError(message)
-
-            user_columns = {column["name"] for column in inspector.get_columns("users")}
-            logger.info("Users columns: %s", sorted(list(user_columns)))
-
-            if "username" not in user_columns:
-                message = (
-                    "Startup check failed: column 'users.username' not found. "
-                    "Ensure database migrations have been applied."
-                )
-                logger.error(message)
-                raise RuntimeError(message)
-
-            if "streak" not in user_columns:
-                message = (
-                    "Startup check failed: column 'users.streak' not found. "
-                    "Ensure database migrations have been applied."
-                )
-                logger.error(message)
-                raise RuntimeError(message)
-
-        except SQLAlchemyError as exc:
-            logger.exception("Startup check failed due to database error.")
-            raise RuntimeError("Startup check failed due to database error.") from exc
-
-        # 3) Start scheduler
-        logger.info("Starting notification scheduler.")
-        app.state.notification_scheduler = start_notification_scheduler()
-        logger.info("Notification scheduler started.")
-
-
-    # SHUTDOWN
-    @app.on_event("shutdown")
-    def on_shutdown() -> None:
-        logger.info("FastAPI shutdown")
-        stop_notification_scheduler(getattr(app.state, "notification_scheduler", None))
-        logger.info("Notification scheduler stopped.")
 
     # Routers
     app.include_router(root_router)

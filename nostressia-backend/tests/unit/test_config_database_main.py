@@ -1,10 +1,17 @@
+from fastapi.testclient import TestClient
+
 from app.core.config import Settings
 from app.core import database as db_module
 from app import main as main_module
 from app.main import create_app
 
 
-def test_settings_db_port_parsing_and_database_url():
+def test_settings_db_port_parsing_and_database_url(monkeypatch):
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+    monkeypatch.setenv("DB_USER", "user")
+    monkeypatch.setenv("DB_PASSWORD", "pass")
+    monkeypatch.setenv("DB_HOST", "localhost")
+    monkeypatch.setenv("DB_NAME", "nostressia")
     settings = Settings(
         db_user="user",
         db_password="pass",
@@ -13,6 +20,7 @@ def test_settings_db_port_parsing_and_database_url():
         brevo_api_key="brevo",
         jwt_secret="secret",
         db_port=None,
+        database_url_override=None,
     )
     assert settings.db_port == 3306
     assert (
@@ -28,6 +36,7 @@ def test_settings_db_port_parsing_and_database_url():
         brevo_api_key="brevo",
         jwt_secret="secret",
         db_port="",
+        database_url_override=None,
     )
     assert settings_blank_port.db_port == 3306
 
@@ -92,10 +101,8 @@ def test_app_startup_and_shutdown(monkeypatch):
     monkeypatch.setattr(main_module.Base.metadata, "create_all", fake_create_all)
 
     app = create_app()
-    for handler in app.router.on_startup:
-        handler()
-    for handler in app.router.on_shutdown:
-        handler()
+    with TestClient(app):
+        pass
 
     assert started["value"] is True
     assert stopped["value"] is True
