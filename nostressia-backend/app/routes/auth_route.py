@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordBearer
 
 from app.core.database import get_db
+from app.core.config import settings
 from app.schemas.auth_schema import LoginRequest, LoginResponse
 from app.schemas.response_schema import APIResponse
 from app.services.auth_service import authenticate_admin
@@ -14,15 +15,34 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 oauth2_admin_scheme = OAuth2PasswordBearer(
     tokenUrl="/api/auth/admin/login",
     scheme_name="AdminOAuth2PasswordBearer",
+    auto_error=False,
 )
 
 def get_current_admin(token: str = Depends(oauth2_admin_scheme), db: Session = Depends(get_db)):
+    if settings.auth_disabled:
+        admin = db.query(Admin).first()
+        if admin:
+            return admin
+        admin = Admin(
+            name="Debug Admin",
+            username="debug-admin",
+            email="debug-admin@example.com",
+            password="debug",
+        )
+        db.add(admin)
+        db.commit()
+        db.refresh(admin)
+        return admin
+
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate admin credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
     
+    if not token:
+        raise credentials_exception
+
     payload = decode_access_token(token)
     if payload is None:
         raise credentials_exception

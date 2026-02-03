@@ -51,19 +51,20 @@ function AppRouter() {
       <ScrollToTop />
       <Routes>
         <Route path="/" element={<LandingPage />} />
+        
+        {/* PublicRoute bisa dibiarkan atau dihapus jika ingin login tetap bisa diakses meski sudah 'login' */}
         <Route element={<PublicRoute />}>
           <Route path="/login" element={<Login />} />
         </Route>
 
-        <Route element={<ProtectedRoute />}>
-          <Route element={<MainLayout />}>
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/tips" element={<Tips />} />
-              <Route path="/motivation" element={<Motivation />} />
-              <Route path="/diary" element={<Diary />} />
-              <Route path="/analytics" element={<Analytics />} />
-              <Route path="/profile" element={<Profile />} /> 
-          </Route>
+        {/* PERUBAHAN: ProtectedRoute dihapus, langsung panggil MainLayout */}
+        <Route element={<MainLayout />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/tips" element={<Tips />} />
+            <Route path="/motivation" element={<Motivation />} />
+            <Route path="/diary" element={<Diary />} />
+            <Route path="/analytics" element={<Analytics />} />
+            <Route path="/profile" element={<Profile />} /> 
         </Route>
 
         <Route path="/adm1n" element={<AdminPage skipAuth={true} />} /> 

@@ -67,6 +67,7 @@ class Settings(BaseSettings):
     )
 
     internal_training_token: str = Field("", validation_alias="INTERNAL_TOKEN")
+    auth_disabled: bool = Field(True, validation_alias="AUTH_DISABLED")
 
     @field_validator("db_port", mode="before")
     @classmethod

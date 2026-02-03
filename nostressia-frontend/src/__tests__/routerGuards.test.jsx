@@ -8,11 +8,18 @@ import {
 import { persistAdminProfile, persistAdminToken, clearAdminSession } from "../utils/auth";
 
 describe("admin route guards", () => {
-  afterEach(() => {
-    clearAdminSession();
+  const originalEnv = process.env.VITE_DISABLE_AUTH;
+
+  beforeEach(() => {
+    process.env.VITE_DISABLE_AUTH = "true";
   });
 
-  it("redirects unauthenticated admins to /admin/login", () => {
+  afterEach(() => {
+    clearAdminSession();
+    process.env.VITE_DISABLE_AUTH = originalEnv;
+  });
+
+  it("allows admins to access protected routes when auth is disabled", () => {
     render(
       <MemoryRouter initialEntries={["/admin"]}>
         <Routes>
@@ -24,7 +31,7 @@ describe("admin route guards", () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByText("Admin Login")).toBeInTheDocument();
+    expect(screen.getByText("Admin Home")).toBeInTheDocument();
   });
 
   it("allows authenticated admins to access protected routes", () => {
@@ -45,10 +52,7 @@ describe("admin route guards", () => {
     expect(screen.getByText("Admin Home")).toBeInTheDocument();
   });
 
-  it("redirects authenticated admins away from public admin routes", () => {
-    persistAdminToken("token");
-    persistAdminProfile({ id: 1, name: "Admin" });
-
+  it("keeps public admin routes available when auth is disabled", () => {
     render(
       <MemoryRouter initialEntries={["/admin/login"]}>
         <Routes>
@@ -60,6 +64,6 @@ describe("admin route guards", () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByText("Admin Home")).toBeInTheDocument();
+    expect(screen.getByText("Admin Login")).toBeInTheDocument();
   });
 });
