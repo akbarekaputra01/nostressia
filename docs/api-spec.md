@@ -7,17 +7,35 @@ Endpoint root & health disediakan tanpa prefix untuk kebutuhan monitoring/health
 
 ### Sukses
 ```json
-{ "success": true, "message": "OK", "data": { } }
+{
+  "success": true,
+  "message": "OK",
+  "data": { },
+  "errors": null,
+  "meta": null
+}
 ```
 
 ### Error
 ```json
-{ "success": false, "message": "Request failed", "data": null }
+{
+  "success": false,
+  "message": "Request failed",
+  "data": null,
+  "errors": [ { "code": "...", "detail": "..." } ],
+  "meta": null
+}
 ```
 
 ### Validation Error (422)
 ```json
-{ "success": false, "message": "Validation error", "data": [ { "loc": [], "msg": "...", "type": "..." } ] }
+{
+  "success": false,
+  "message": "Validation error",
+  "data": null,
+  "errors": [ { "loc": [], "msg": "...", "type": "..." } ],
+  "meta": null
+}
 ```
 
 ## Auth

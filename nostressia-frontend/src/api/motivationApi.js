@@ -1,16 +1,26 @@
-import client, { unwrapResponse } from "./client";
+import client from "./client";
+import { apiResponseSchema, parseApiResponse } from "./contracts/apiResponse";
+import {
+  motivationListSchema,
+  motivationResponseSchema,
+} from "./contracts/motivationSchemas";
+import { z } from "zod";
+
+const motivationListResponseSchema = apiResponseSchema(motivationListSchema);
+const motivationResponseApiSchema = apiResponseSchema(motivationResponseSchema);
+const emptyResponseSchema = apiResponseSchema(z.null());
 
 export async function getAllMotivations() {
   const response = await client.get("/motivations/");
-  return unwrapResponse(response);
+  return parseApiResponse(motivationListResponseSchema, response.data);
 }
 
 export async function createMotivation(data) {
   const response = await client.post("/motivations/", data);
-  return unwrapResponse(response);
+  return parseApiResponse(motivationResponseApiSchema, response.data);
 }
 
 export async function deleteMotivation(motivationId) {
   const response = await client.delete(`/motivations/${motivationId}`);
-  return unwrapResponse(response);
+  return parseApiResponse(emptyResponseSchema, response.data);
 }

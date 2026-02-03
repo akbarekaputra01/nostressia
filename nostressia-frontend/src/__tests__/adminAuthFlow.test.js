@@ -12,11 +12,14 @@ describe("admin auth flow", () => {
 
     userMock.onPost("/auth/admin/login").reply(200, {
       success: true,
+      message: "Admin login successful",
       data: {
         accessToken: "admin-token",
         tokenType: "bearer",
         admin: { id: 1, name: "Admin", username: "admin", email: "admin@example.com" },
       },
+      errors: null,
+      meta: null,
     });
 
     adminMock.onGet("/admin/users/").reply((config) => {
@@ -26,7 +29,10 @@ describe("admin auth flow", () => {
         200,
         {
           success: true,
+          message: "Users fetched",
           data: { total: 0, page: 1, limit: 10, data: [] },
+          errors: null,
+          meta: null,
         },
       ];
     });

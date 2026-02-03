@@ -1,6 +1,8 @@
 from datetime import date
 
 from app.models.user_model import User
+from app.schemas.response_schema import APIResponse
+from app.schemas.stress_schema import EligibilityResponse
 from app.utils.hashing import hash_password
 from app.utils.jwt_handler import create_access_token
 
@@ -56,6 +58,7 @@ def test_stress_log_flow(client, db_session):
         headers={"Authorization": f"Bearer {token}"},
     )
     assert response.status_code == 200
+    APIResponse[EligibilityResponse].model_validate(response.json())
 
     response = client.post(
         "/api/stress-levels/restore",

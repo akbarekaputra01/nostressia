@@ -54,7 +54,7 @@ export default function AdminLogin() {
       const data = await adminLogin(formData);
 
       // Persist the admin session using canonical storage keys.
-      const token = data?.accessToken ?? data?.access_token;
+      const token = data?.accessToken;
       if (!isAuthTokenValid(token)) {
         setError("Login succeeded, but the token is invalid.");
         setIsLoading(false);

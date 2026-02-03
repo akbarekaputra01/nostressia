@@ -254,91 +254,22 @@ function getForecastTheme(status) {
   };
 }
 
-function buildForecastList(baseForecast) {
-  if (!baseForecast) return [];
+function buildForecastList(forecast) {
+  if (!forecast) return [];
 
-  const forecastArray =
-    (Array.isArray(baseForecast) && baseForecast) ||
-    baseForecast?.forecasts ||
-    baseForecast?.forecastList ||
-    baseForecast?.predictions ||
-    baseForecast?.items;
-
-  const getForecastDate = (entry) =>
-    entry?.forecastDate ||
-    entry?.forecast_date ||
-    entry?.date ||
-    entry?.predictionDate ||
-    entry?.prediction_date;
-
-  const resolveChancePercent = (entry, fallbackChance) => {
-    const rawChance = entry?.chancePercent ?? entry?.probability ?? entry?.chance;
-    const chance = Number.isFinite(Number(rawChance)) ? Number(rawChance) : fallbackChance;
-    return Math.round(chance * 10) / 10;
-  };
-
-  const threshold = Number(baseForecast?.threshold ?? 0.5);
-  const baseChance = Number(baseForecast?.chancePercent ?? baseForecast?.probability ?? 0);
-  const baseProbability = Math.max(0, Math.min(baseChance, 100)) / 100;
-
-  if (Array.isArray(forecastArray)) {
-    return forecastArray
-      .slice(0, 3)
-      .map((entry, idx) => {
-        const entryDate = getForecastDate(entry) || getForecastDate(baseForecast);
-        const resolvedDate = entryDate ? new Date(entryDate) : null;
-        if (!resolvedDate || Number.isNaN(resolvedDate.getTime())) {
-          return null;
-        }
-        const chancePercent = resolveChancePercent(entry, baseChance);
-        const status = resolveForecastStatus({
-          predictionLabel: entry?.predictionLabel ?? baseForecast?.predictionLabel,
-          predictionBinary: entry?.predictionBinary ?? baseForecast?.predictionBinary,
-          chancePercent,
-          threshold,
-        });
-        const adviceOptions =
-          status === "High"
-            ? highStressAdvices
-            : status === "Moderate"
-              ? moderateStressAdvices
-              : lowStressAdvices;
-        const adviceText = adviceOptions[Math.floor(Math.random() * adviceOptions.length)];
-        const theme = getForecastTheme(status);
-
-        return {
-          dateStr: resolvedDate.toLocaleDateString("en-US", {
-            weekday: "short",
-            day: "numeric",
-          }),
-          fullDate: resolvedDate.toLocaleDateString("en-US", {
-            weekday: "long",
-            day: "numeric",
-            month: "long",
-          }),
-          status,
-          probability: chancePercent,
-          advice: adviceText,
-          modelType: entry?.modelType ?? baseForecast?.modelType,
-          threshold,
-          ...theme,
-        };
-      })
-      .filter(Boolean);
-  }
-
-  const forecastDate = getForecastDate(baseForecast);
-  if (!forecastDate) return [];
-  const startDate = new Date(forecastDate);
+  const startDate = new Date(forecast.forecastDate);
   if (Number.isNaN(startDate.getTime())) return [];
 
+  const threshold = Number(forecast.threshold);
+  const baseChance = Number(forecast.chancePercent);
+  const baseProbability = Math.max(0, Math.min(baseChance, 100)) / 100;
   let nestedProbability = baseProbability;
   return Array.from({ length: 3 }, (_, idx) => {
     if (idx > 0) nestedProbability *= baseProbability;
     const chancePercent = Math.round(nestedProbability * 1000) / 10;
     const status = resolveForecastStatus({
-      predictionLabel: baseForecast?.predictionLabel,
-      predictionBinary: baseForecast?.predictionBinary,
+      predictionLabel: forecast.predictionLabel,
+      predictionBinary: forecast.predictionBinary,
       chancePercent,
       threshold,
     });
@@ -366,34 +297,11 @@ function buildForecastList(baseForecast) {
       status,
       probability: chancePercent,
       advice: adviceText,
-      modelType: baseForecast?.modelType,
+      modelType: forecast.modelType,
       threshold,
       ...theme,
     };
   });
-}
-
-function normalizeEligibility(payload) {
-  const eligibility = payload?.eligibility ?? payload?.detail ?? payload;
-  if (!eligibility) return null;
-
-  const streak = Number(eligibility?.streak ?? eligibility?.streakCount ?? 0);
-  const requiredStreak = Number(eligibility?.requiredStreak ?? eligibility?.required_streak ?? 7);
-  const restoreUsed = Number(eligibility?.restoreUsed ?? eligibility?.restore_used ?? 0);
-  const restoreLimit = Number(eligibility?.restoreLimit ?? eligibility?.restore_limit ?? 3);
-  const restoreRemaining = Number(
-    eligibility?.restoreRemaining ?? eligibility?.restore_remaining ?? 0,
-  );
-
-  return {
-    streak,
-    requiredStreak,
-    restoreUsed,
-    restoreRemaining,
-    restoreLimit,
-    missing: eligibility?.missing,
-    note: eligibility?.note,
-  };
 }
 
 function isSameEligibility(left, right) {
@@ -542,10 +450,7 @@ export default function Dashboard() {
     selectedDate.getDate(),
   );
   const isSelectedPast = selectedCalendarDate < todayDate;
-  const normalizedEligibility = useMemo(
-    () => normalizeEligibility(eligibilityData),
-    [eligibilityData],
-  );
+  const normalizedEligibility = eligibilityData;
   const restoreUsed = normalizedEligibility?.restoreUsed ?? 0;
   const restoreLimit = normalizedEligibility?.restoreLimit ?? 3;
   const restoreRemaining = normalizedEligibility?.restoreRemaining ?? 0;
@@ -606,8 +511,8 @@ export default function Dashboard() {
 
         const normalized = (Array.isArray(data) ? data : [])
           .map((item) => ({
-            text: item?.quote ?? item?.text ?? "",
-            author: item?.authorName ?? item?.author ?? "Anonymous",
+            text: item?.quote ?? "",
+            author: item?.authorName ?? "Anonymous",
           }))
           .filter((item) => item.text);
 
@@ -642,9 +547,9 @@ export default function Dashboard() {
 
         const entries = await Promise.all(
           normalizedCategories.map(async (category, index) => {
-            const categoryId = category?.tipCategoryId ?? category?.id;
+            const categoryId = category?.tipCategoryId;
             if (!categoryId) return null;
-            const categoryName = category?.categoryName ?? category?.name ?? "Tips";
+            const categoryName = category?.categoryName ?? "Tips";
 
             let tips = [];
             try {
@@ -657,7 +562,7 @@ export default function Dashboard() {
             const primaryTip = (Array.isArray(tips) ? tips : [])[0];
             if (!primaryTip) return null;
 
-            const detail = primaryTip?.detail ?? primaryTip?.tipText ?? primaryTip?.text ?? "";
+            const detail = primaryTip?.detail ?? "";
             const words = detail.split(" ").filter(Boolean);
             const title =
               words.length > 0
@@ -667,7 +572,7 @@ export default function Dashboard() {
             const palette = tipThemePalette[index % tipThemePalette.length];
 
             return {
-              id: primaryTip?.tipId ?? primaryTip?.id ?? `${categoryId}-${index}`,
+              id: primaryTip?.tipId ?? `${categoryId}-${index}`,
               category: categoryName,
               emoji: palette?.emoji ?? "💡",
               title,
@@ -973,8 +878,8 @@ export default function Dashboard() {
             color,
             isToday: dateKey === TODAY_KEY,
             isEmpty: false,
-            isRestored: log?.isRestored ?? log?.is_restored ?? false,
-            logId: log?.stressLevelId ?? log?.id ?? log?._id ?? null,
+            isRestored: log?.isRestored ?? false,
+            logId: log?.stressLevelId ?? null,
           };
         });
 
@@ -1047,14 +952,14 @@ export default function Dashboard() {
         if (!eligibilitySnapshot) {
           const eligibilityRaw = await getStressEligibility();
           setEligibilityData(eligibilityRaw);
-          eligibilitySnapshot = normalizeEligibility(eligibilityRaw);
+          eligibilitySnapshot = eligibilityRaw;
         }
 
         const requiredStreak = eligibilitySnapshot?.requiredStreak ?? 7;
         const restoreLimit = eligibilitySnapshot?.restoreLimit ?? 3;
         const restoreRemainingCalc = eligibilitySnapshot?.restoreRemaining ?? 0;
 
-        if (!eligibilitySnapshot || eligibilitySnapshot.streak < requiredStreak) {
+        if (!eligibilitySnapshot || !eligibilitySnapshot.eligible) {
           setForecastMode(resolveForecastMode(eligibilitySnapshot));
           setForecastList([]);
           setForecastError(
@@ -1072,19 +977,14 @@ export default function Dashboard() {
 
         const data = await getGlobalForecast();
 
-        const eligibilityFromForecast = normalizeEligibility(data?.eligibility);
-        if (eligibilityFromForecast) {
-          if (!isSameEligibility(eligibilityFromForecast, eligibilitySnapshot)) {
-            setEligibilityData(data.eligibility);
-          }
-          setForecastMode(resolveForecastMode(eligibilityFromForecast));
-        } else {
-          setForecastMode(resolveForecastMode(eligibilitySnapshot));
+        const eligibilityFromForecast = data.eligibility;
+        if (!isSameEligibility(eligibilityFromForecast, eligibilitySnapshot)) {
+          setEligibilityData(eligibilityFromForecast);
         }
+        setForecastMode(resolveForecastMode(eligibilityFromForecast));
 
-        const baseForecast = data?.forecast ?? data?.data ?? data?.forecastData ?? data;
-        const resolvedMode = resolveForecastMode(eligibilityFromForecast ?? eligibilitySnapshot);
-        const list = buildForecastList(baseForecast).map((item) => ({
+        const resolvedMode = resolveForecastMode(eligibilityFromForecast);
+        const list = buildForecastList(data.forecast).map((item) => ({
           ...item,
           forecastMode: resolvedMode,
         }));
@@ -1099,20 +999,18 @@ export default function Dashboard() {
           navigate("/login", { replace: true });
           return;
         }
-        const normalizedErrorEligibility = normalizeEligibility(
-          error?.payload?.detail ?? error?.payload,
-        );
-        if (normalizedErrorEligibility) {
-          setForecastMode(resolveForecastMode(normalizedErrorEligibility));
-          const restoreRemainingCalc = normalizedErrorEligibility.restoreRemaining ?? 0;
+        const errorEligibility = error?.payload?.errors?.[0]?.eligibility;
+        if (errorEligibility) {
+          setForecastMode(resolveForecastMode(errorEligibility));
+          const restoreRemainingCalc = errorEligibility.restoreRemaining ?? 0;
           setForecastError(
             buildForecastEligibilityMessage({
-              reason: normalizedErrorEligibility.note,
-              streakCount: normalizedErrorEligibility.streak ?? user?.streak,
-              restoreUsed: normalizedErrorEligibility.restoreUsed,
+              reason: errorEligibility.note,
+              streakCount: errorEligibility.streak ?? user?.streak,
+              restoreUsed: errorEligibility.restoreUsed,
               restoreRemaining: restoreRemainingCalc,
-              requiredStreak: normalizedErrorEligibility.requiredStreak,
-              restoreLimit: normalizedErrorEligibility.restoreLimit,
+              requiredStreak: errorEligibility.requiredStreak,
+              restoreLimit: errorEligibility.restoreLimit,
             }),
           );
           return;
@@ -1121,7 +1019,7 @@ export default function Dashboard() {
           setForecastError("Not enough history to generate a forecast.");
           return;
         }
-        const detail = error?.payload?.detail || error?.payload?.message || error?.message;
+        const detail = error?.payload?.message || error?.message;
         setForecastError(`Failed to load forecast.${detail ? ` ${detail}` : ""}`);
       } finally {
         setForecastLoading(false);
@@ -1247,7 +1145,7 @@ export default function Dashboard() {
     };
     try {
       const logData = await (isRestore ? restoreStressLog : addStressLog)(logPayload);
-      return logData?.stressLevelId ?? logData?.id ?? logData?._id ?? null;
+      return logData?.stressLevelId ?? null;
     } catch (error) {
       if (error?.status === 409) {
         showToast("Data already exists for this date. Updates are not available yet.", "info");

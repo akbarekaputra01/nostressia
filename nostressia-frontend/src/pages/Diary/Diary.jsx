@@ -85,7 +85,7 @@ export default function Diary() {
 
         const data = await getMyDiaries();
         const formattedEntries = (data || []).map((item) => ({
-          id: item.diaryId ?? item.diary_id ?? item.id,
+          id: item.diaryId,
           title: item.title,
           content: item.note,
           mood: item.emoji,
@@ -142,7 +142,7 @@ export default function Diary() {
         : await createDiary(payload);
 
       const updatedEntry = {
-        id: savedData.diaryId ?? savedData.diary_id ?? savedData.id,
+        id: savedData.diaryId,
         title: savedData.title,
         content: savedData.note,
         mood: savedData.emoji,

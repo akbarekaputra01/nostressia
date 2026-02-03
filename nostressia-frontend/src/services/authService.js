@@ -1,11 +1,25 @@
-import client, { unwrapResponse } from "../api/client";
+import client from "../api/client";
+import { apiResponseSchema, parseApiResponse } from "../api/contracts/apiResponse";
+import {
+  adminLoginResponseSchema,
+  emailResponseSchema,
+  userResponseSchema,
+  userTokenResponseSchema,
+} from "../api/contracts/authSchemas";
+import { z } from "zod";
+
+const emptyResponseSchema = apiResponseSchema(z.null());
+const emailApiResponseSchema = apiResponseSchema(emailResponseSchema);
+const userTokenApiResponseSchema = apiResponseSchema(userTokenResponseSchema);
+const userApiResponseSchema = apiResponseSchema(userResponseSchema);
+const adminLoginApiResponseSchema = apiResponseSchema(adminLoginResponseSchema);
 
 export const login = async (payload) => {
   const response = await client.post("/auth/login", payload, {
     authScope: false,
     skipAuthRedirect: true,
   });
-  return unwrapResponse(response);
+  return parseApiResponse(userTokenApiResponseSchema, response.data);
 };
 
 export const register = async (payload) => {
@@ -13,32 +27,15 @@ export const register = async (payload) => {
     authScope: false,
     skipAuthRedirect: true,
   });
-  return unwrapResponse(response);
-};
-
-const normalizeOtpPayload = (payload) => {
-  if (!payload) return payload;
-  const normalized = { ...payload };
-
-  if ("otpCode" in normalized && !("otp_code" in normalized)) {
-    normalized.otp_code = normalized.otpCode;
-    delete normalized.otpCode;
-  }
-
-  if ("newPassword" in normalized && !("new_password" in normalized)) {
-    normalized.new_password = normalized.newPassword;
-    delete normalized.newPassword;
-  }
-
-  return normalized;
+  return parseApiResponse(emailApiResponseSchema, response.data);
 };
 
 export const verifyOtp = async (payload) => {
-  const response = await client.post("/auth/verify-otp", normalizeOtpPayload(payload), {
+  const response = await client.post("/auth/verify-otp", payload, {
     authScope: false,
     skipAuthRedirect: true,
   });
-  return unwrapResponse(response);
+  return parseApiResponse(emptyResponseSchema, response.data);
 };
 
 export const forgotPassword = async (payload) => {
@@ -46,33 +43,33 @@ export const forgotPassword = async (payload) => {
     authScope: false,
     skipAuthRedirect: true,
   });
-  return unwrapResponse(response);
+  return parseApiResponse(emptyResponseSchema, response.data);
 };
 
 export const resetPasswordConfirm = async (payload) => {
-  const response = await client.post("/auth/reset-password-confirm", normalizeOtpPayload(payload), {
+  const response = await client.post("/auth/reset-password-confirm", payload, {
     authScope: false,
     skipAuthRedirect: true,
   });
-  return unwrapResponse(response);
+  return parseApiResponse(emptyResponseSchema, response.data);
 };
 
 export const verifyResetPasswordOtp = async (payload) => {
-  const response = await client.post("/auth/reset-password-verify", normalizeOtpPayload(payload), {
+  const response = await client.post("/auth/reset-password-verify", payload, {
     authScope: false,
     skipAuthRedirect: true,
   });
-  return unwrapResponse(response);
+  return parseApiResponse(emptyResponseSchema, response.data);
 };
 
 export const getProfile = async () => {
   const response = await client.get("/auth/me");
-  return unwrapResponse(response);
+  return parseApiResponse(userApiResponseSchema, response.data);
 };
 
 export const updateProfile = async (payload) => {
   const response = await client.put("/auth/me", payload);
-  return unwrapResponse(response);
+  return parseApiResponse(userApiResponseSchema, response.data);
 };
 
 export const uploadProfileAvatar = async (file) => {
@@ -81,17 +78,17 @@ export const uploadProfileAvatar = async (file) => {
   const response = await client.post("/auth/me/avatar", formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
-  return unwrapResponse(response);
+  return parseApiResponse(userApiResponseSchema, response.data);
 };
 
 export const changePassword = async (payload) => {
   const response = await client.put("/auth/change-password", payload);
-  return unwrapResponse(response);
+  return parseApiResponse(emptyResponseSchema, response.data);
 };
 
 export const verifyCurrentPassword = async (payload) => {
   const response = await client.post("/auth/verify-current-password", payload);
-  return unwrapResponse(response);
+  return parseApiResponse(emptyResponseSchema, response.data);
 };
 
 export const adminLogin = async (payload) => {
@@ -99,5 +96,5 @@ export const adminLogin = async (payload) => {
     authScope: false,
     skipAuthRedirect: true,
   });
-  return unwrapResponse(response);
+  return parseApiResponse(adminLoginApiResponseSchema, response.data);
 };

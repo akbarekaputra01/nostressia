@@ -10,20 +10,6 @@ import { resolveLegacyJson, storage, STORAGE_KEYS } from "../utils/storage";
 
 const logger = createLogger("LAYOUT");
 
-const resolveStreakCount = (payload) => {
-  const candidates = [
-    payload?.streakCount,
-    payload?.streak,
-    payload?.data?.streakCount,
-    payload?.data?.streak,
-    payload?.meta?.streakCount,
-    payload?.meta?.streak,
-  ];
-
-  const value = candidates.find((candidate) => Number.isFinite(Number(candidate)));
-  return Number.isFinite(Number(value)) ? Number(value) : null;
-};
-
 const normalizeGender = (value) => {
   if (typeof value !== "string") return "";
   return value.trim().toLowerCase();
@@ -49,33 +35,26 @@ export default function MainLayout() {
 
       const backendData = await getProfile();
 
-      const normalizedDob =
-        backendData.userDob || backendData.user_dob || backendData.birthday || backendData.dob || "";
+      const normalizedDob = backendData.userDob || "";
 
       const completeUserData = {
         ...backendData,
-        name: backendData.name || backendData.fullName || "User",
+        name: backendData.name || "User",
         username: backendData.username || "user",
         email: backendData.email || "",
-        avatar: backendData.avatar || backendData.profilePicture || null,
+        avatar: backendData.avatar || null,
         birthday: normalizedDob,
         userDob: normalizedDob,
-        gender: normalizeGender(backendData.gender || backendData.sex || ""),
-        diaryCount:
-          backendData.diaryCount ??
-          backendData.diary_count ??
-          backendData.diariesCount ??
-          backendData.diaries_count ??
-          0,
+        gender: normalizeGender(backendData.gender || ""),
+        diaryCount: backendData.diaryCount ?? 0,
       };
 
-      let streakCount = resolveStreakCount(backendData);
+      let streakCount = backendData.streak ?? null;
       try {
         const eligibilityData = await getStressEligibility();
-        streakCount = resolveStreakCount(eligibilityData) ?? streakCount;
+        streakCount = eligibilityData?.streak ?? streakCount;
       } catch (error) {
-        const fallbackPayload = error?.payload?.detail ?? error?.payload;
-        streakCount = resolveStreakCount(fallbackPayload) ?? streakCount;
+        logger.warn("Failed to fetch eligibility data:", error);
       }
 
       const enrichedUserData = {

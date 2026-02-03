@@ -1,6 +1,7 @@
 from datetime import date
 
 from app.models.user_model import User
+from app.schemas.response_schema import APIResponse
 from app.schemas.stress_schema import EligibilityResponse, GlobalForecastPayload, GlobalForecastResult
 from app.utils.hashing import hash_password
 from app.utils.jwt_handler import create_access_token
@@ -83,6 +84,9 @@ def test_forecast_requires_eligibility(client, db_session, monkeypatch):
 
     response = client.get("/api/stress/forecast", headers={"Authorization": f"Bearer {token}"})
     assert response.status_code == 403
+    payload = response.json()
+    assert payload["errors"][0]["code"] == "FORECAST_NOT_ELIGIBLE"
+    assert payload["data"] is None
 
 
 def test_forecast_success(client, db_session, monkeypatch):
@@ -130,4 +134,5 @@ def test_forecast_success(client, db_session, monkeypatch):
     response = client.get("/api/stress/forecast", headers={"Authorization": f"Bearer {token}"})
 
     assert response.status_code == 200
+    APIResponse[GlobalForecastPayload].model_validate(response.json())
     assert response.json()["data"]["forecast"]["predictionLabel"] == "Low"

@@ -1,0 +1,3648 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Nostressia API",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "/api"
+    }
+  ],
+  "paths": {
+    "/auth/register": {
+      "post": {
+        "summary": "Register user",
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserRegister"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Registration successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseEmail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/verify-otp": {
+      "post": {
+        "summary": "Verify registration OTP",
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyOtpRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OTP verified",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseEmpty"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid OTP",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "summary": "Login user",
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserLogin"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseUserToken"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/admin/login": {
+      "post": {
+        "summary": "Admin login",
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminLoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Admin login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseAdminLogin"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "summary": "Get user profile",
+        "tags": [
+          "Auth"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Profile fetched",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseUser"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update user profile",
+        "tags": [
+          "Auth"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Profile updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseUser"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/me/avatar": {
+      "post": {
+        "summary": "Upload avatar",
+        "tags": [
+          "Auth"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Avatar uploaded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseUser"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/verify-current-password": {
+      "post": {
+        "summary": "Verify current password",
+        "tags": [
+          "Auth"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyCurrentPassword"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password verified",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseEmpty"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/change-password": {
+      "put": {
+        "summary": "Change password",
+        "tags": [
+          "Auth"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePassword"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseEmpty"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/forgot-password": {
+      "post": {
+        "summary": "Request password reset",
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForgotPasswordRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OTP sent",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseEmpty"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/reset-password-verify": {
+      "post": {
+        "summary": "Verify reset password OTP",
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordVerify"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OTP valid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseEmpty"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/reset-password-confirm": {
+      "post": {
+        "summary": "Confirm password reset",
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordConfirm"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password reset",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseEmpty"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/diary/": {
+      "get": {
+        "summary": "Get user diaries",
+        "tags": [
+          "Diary"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Diaries fetched",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseDiaryList"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create diary",
+        "tags": [
+          "Diary"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DiaryCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Diary created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseDiary"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/diary/{diaryId}": {
+      "get": {
+        "summary": "Get diary detail",
+        "tags": [
+          "Diary"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "diaryId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Diary fetched",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseDiary"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update diary",
+        "tags": [
+          "Diary"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "diaryId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DiaryUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Diary updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseDiary"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tips/categories": {
+      "get": {
+        "summary": "List tip categories",
+        "tags": [
+          "Tips"
+        ],
+        "responses": {
+          "200": {
+            "description": "Categories fetched",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseTipsCategoryList"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create tip category",
+        "tags": [
+          "Tips"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TipsCategoryCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Category created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseTipsCategory"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tips/categories/{categoryId}": {
+      "delete": {
+        "summary": "Delete tip category",
+        "tags": [
+          "Tips"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "categoryId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Category deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseEmpty"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tips/": {
+      "get": {
+        "summary": "List tips",
+        "tags": [
+          "Tips"
+        ],
+        "responses": {
+          "200": {
+            "description": "Tips fetched",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseTipsList"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create tip",
+        "tags": [
+          "Tips"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TipsCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tip created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseTips"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tips/{tipId}": {
+      "get": {
+        "summary": "Get tip detail",
+        "tags": [
+          "Tips"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tipId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tip fetched",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseTips"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update tip",
+        "tags": [
+          "Tips"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tipId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TipsUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tip updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseTips"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete tip",
+        "tags": [
+          "Tips"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "tipId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tip deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseEmpty"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tips/by-category/{categoryId}": {
+      "get": {
+        "summary": "Get tips by category",
+        "tags": [
+          "Tips"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "categoryId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tips fetched",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseTipsList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/motivations/": {
+      "get": {
+        "summary": "List motivations",
+        "tags": [
+          "Motivation"
+        ],
+        "responses": {
+          "200": {
+            "description": "Motivations fetched",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseMotivationList"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create motivation",
+        "tags": [
+          "Motivation"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MotivationCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Motivation created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseMotivation"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/motivations/{motivationId}": {
+      "delete": {
+        "summary": "Delete motivation",
+        "tags": [
+          "Motivation"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "motivationId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Motivation deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseEmpty"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bookmarks/me": {
+      "get": {
+        "summary": "Get user bookmarks",
+        "tags": [
+          "Bookmarks"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bookmarks fetched",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseBookmarkList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bookmarks/{motivationId}": {
+      "post": {
+        "summary": "Add bookmark",
+        "tags": [
+          "Bookmarks"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "motivationId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Bookmark added",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseEmpty"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Remove bookmark",
+        "tags": [
+          "Bookmarks"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "motivationId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bookmark removed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseEmpty"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/stress/current": {
+      "post": {
+        "summary": "Predict current stress",
+        "tags": [
+          "Stress Insights"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PredictRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Prediction created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponsePredict"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/stress/forecast": {
+      "get": {
+        "summary": "Get global stress forecast",
+        "tags": [
+          "Stress Insights"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Forecast fetched",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseGlobalForecast"
+                },
+                "examples": {
+                  "success": {
+                    "value": {
+                      "success": true,
+                      "message": "Forecast fetched",
+                      "data": {
+                        "forecast": {
+                          "userId": 1,
+                          "forecastDate": "2024-01-01",
+                          "probability": 0.6,
+                          "chancePercent": 60,
+                          "threshold": 0.5,
+                          "predictionBinary": 1,
+                          "predictionLabel": "High",
+                          "modelType": "global_markov"
+                        },
+                        "eligibility": {
+                          "userId": 1,
+                          "eligible": true,
+                          "streak": 7,
+                          "requiredStreak": 7,
+                          "restoreUsed": 0,
+                          "restoreRemaining": 3,
+                          "restoreLimit": 3,
+                          "missing": 0,
+                          "note": "Eligible"
+                        }
+                      },
+                      "errors": null,
+                      "meta": null
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not eligible for forecast",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseError"
+                },
+                "examples": {
+                  "notEligible": {
+                    "value": {
+                      "success": false,
+                      "message": "Request failed",
+                      "data": null,
+                      "errors": [
+                        {
+                          "code": "FORECAST_NOT_ELIGIBLE",
+                          "eligibility": {
+                            "userId": 1,
+                            "eligible": false,
+                            "streak": 1,
+                            "requiredStreak": 7,
+                            "restoreUsed": 0,
+                            "restoreRemaining": 3,
+                            "restoreLimit": 3,
+                            "missing": 6,
+                            "note": "Not enough logs"
+                          }
+                        }
+                      ],
+                      "meta": null
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/stress-levels/": {
+      "post": {
+        "summary": "Create stress log",
+        "tags": [
+          "Stress Levels"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StressLevelCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Stress log created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseStressLevel"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/stress-levels/restore": {
+      "post": {
+        "summary": "Restore stress log",
+        "tags": [
+          "Stress Levels"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StressLevelCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Stress log restored",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseStressLevel"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/stress-levels/my-logs": {
+      "get": {
+        "summary": "Get my stress logs",
+        "tags": [
+          "Stress Levels"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Stress logs fetched",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseStressLevelList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/stress-levels/eligibility": {
+      "get": {
+        "summary": "Get stress log eligibility",
+        "tags": [
+          "Stress Levels"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Eligibility fetched",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseEligibility"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/analytics/summary": {
+      "get": {
+        "summary": "Get analytics summary",
+        "tags": [
+          "Analytics"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Summary fetched",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseAnalyticsSummary"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/notifications/subscribe": {
+      "post": {
+        "summary": "Subscribe notifications",
+        "tags": [
+          "Notifications"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NotificationSubscribeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Subscription saved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseNotificationStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/notifications/unsubscribe": {
+      "delete": {
+        "summary": "Unsubscribe notifications",
+        "tags": [
+          "Notifications"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Subscription deactivated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseNotificationStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/notifications/status": {
+      "get": {
+        "summary": "Notification status",
+        "tags": [
+          "Notifications"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Notification status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseNotificationStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/storage/sas/upload": {
+      "post": {
+        "summary": "Request upload SAS",
+        "tags": [
+          "Storage"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorageUploadSasRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "SAS created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseStorageUploadSas"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/profile/picture": {
+      "put": {
+        "summary": "Update profile picture URL",
+        "tags": [
+          "Profile"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProfilePictureUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Profile picture updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseUser"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/users/": {
+      "get": {
+        "summary": "List users",
+        "tags": [
+          "Admin"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Users fetched",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseAdminUserList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/users/{userId}": {
+      "get": {
+        "summary": "Get user",
+        "tags": [
+          "Admin"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "userId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User fetched",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseUser"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update user",
+        "tags": [
+          "Admin"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "userId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminUserUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseUser"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete user",
+        "tags": [
+          "Admin"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "userId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseEmpty"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/diaries/": {
+      "get": {
+        "summary": "List diaries",
+        "tags": [
+          "Admin"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Diaries fetched",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseAdminDiaryList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/diaries/{diaryId}": {
+      "delete": {
+        "summary": "Delete diary",
+        "tags": [
+          "Admin"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "diaryId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Diary deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseEmpty"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "ApiResponseEmpty": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "success",
+          "message",
+          "data",
+          "errors",
+          "meta"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "nullable": true
+          },
+          "errors": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/ApiError"
+            }
+          },
+          "meta": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true
+          }
+        }
+      },
+      "ApiResponseEmail": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "success",
+          "message",
+          "data",
+          "errors",
+          "meta"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/EmailResponse"
+          },
+          "errors": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/ApiError"
+            }
+          },
+          "meta": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true
+          }
+        }
+      },
+      "ApiResponseUserToken": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "success",
+          "message",
+          "data",
+          "errors",
+          "meta"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/UserTokenResponse"
+          },
+          "errors": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/ApiError"
+            }
+          },
+          "meta": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true
+          }
+        }
+      },
+      "ApiResponseUser": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "success",
+          "message",
+          "data",
+          "errors",
+          "meta"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/UserResponse"
+          },
+          "errors": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/ApiError"
+            }
+          },
+          "meta": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true
+          }
+        }
+      },
+      "ApiResponseAdminLogin": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "success",
+          "message",
+          "data",
+          "errors",
+          "meta"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/AdminLoginResponse"
+          },
+          "errors": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/ApiError"
+            }
+          },
+          "meta": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true
+          }
+        }
+      },
+      "ApiResponseDiary": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "success",
+          "message",
+          "data",
+          "errors",
+          "meta"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/DiaryResponse"
+          },
+          "errors": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/ApiError"
+            }
+          },
+          "meta": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true
+          }
+        }
+      },
+      "ApiResponseDiaryList": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "success",
+          "message",
+          "data",
+          "errors",
+          "meta"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DiaryResponse"
+            }
+          },
+          "errors": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/ApiError"
+            }
+          },
+          "meta": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true
+          }
+        }
+      },
+      "ApiResponseTipsCategory": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "success",
+          "message",
+          "data",
+          "errors",
+          "meta"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/TipsCategory"
+          },
+          "errors": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/ApiError"
+            }
+          },
+          "meta": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true
+          }
+        }
+      },
+      "ApiResponseTipsCategoryList": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "success",
+          "message",
+          "data",
+          "errors",
+          "meta"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TipsCategory"
+            }
+          },
+          "errors": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/ApiError"
+            }
+          },
+          "meta": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true
+          }
+        }
+      },
+      "ApiResponseTips": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "success",
+          "message",
+          "data",
+          "errors",
+          "meta"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/TipsResponse"
+          },
+          "errors": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/ApiError"
+            }
+          },
+          "meta": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true
+          }
+        }
+      },
+      "ApiResponseTipsList": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "success",
+          "message",
+          "data",
+          "errors",
+          "meta"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TipsResponse"
+            }
+          },
+          "errors": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/ApiError"
+            }
+          },
+          "meta": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true
+          }
+        }
+      },
+      "ApiResponseMotivation": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "success",
+          "message",
+          "data",
+          "errors",
+          "meta"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/MotivationResponse"
+          },
+          "errors": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/ApiError"
+            }
+          },
+          "meta": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true
+          }
+        }
+      },
+      "ApiResponseMotivationList": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "success",
+          "message",
+          "data",
+          "errors",
+          "meta"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MotivationResponse"
+            }
+          },
+          "errors": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/ApiError"
+            }
+          },
+          "meta": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true
+          }
+        }
+      },
+      "ApiResponseBookmarkList": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "success",
+          "message",
+          "data",
+          "errors",
+          "meta"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BookmarkResponse"
+            }
+          },
+          "errors": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/ApiError"
+            }
+          },
+          "meta": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true
+          }
+        }
+      },
+      "ApiResponseStressLevel": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "success",
+          "message",
+          "data",
+          "errors",
+          "meta"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/StressLevelResponse"
+          },
+          "errors": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/ApiError"
+            }
+          },
+          "meta": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true
+          }
+        }
+      },
+      "ApiResponseStressLevelList": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "success",
+          "message",
+          "data",
+          "errors",
+          "meta"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StressLevelResponse"
+            }
+          },
+          "errors": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/ApiError"
+            }
+          },
+          "meta": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true
+          }
+        }
+      },
+      "ApiResponseEligibility": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "success",
+          "message",
+          "data",
+          "errors",
+          "meta"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Eligibility"
+          },
+          "errors": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/ApiError"
+            }
+          },
+          "meta": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true
+          }
+        }
+      },
+      "ApiResponseGlobalForecast": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "success",
+          "message",
+          "data",
+          "errors",
+          "meta"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/GlobalForecastPayload"
+          },
+          "errors": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/ApiError"
+            }
+          },
+          "meta": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true
+          }
+        }
+      },
+      "ApiResponsePredict": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "success",
+          "message",
+          "data",
+          "errors",
+          "meta"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/PredictResponse"
+          },
+          "errors": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/ApiError"
+            }
+          },
+          "meta": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true
+          }
+        }
+      },
+      "ApiResponseAnalyticsSummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "success",
+          "message",
+          "data",
+          "errors",
+          "meta"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/AnalyticsSummary"
+          },
+          "errors": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/ApiError"
+            }
+          },
+          "meta": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true
+          }
+        }
+      },
+      "ApiResponseNotificationStatus": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "success",
+          "message",
+          "data",
+          "errors",
+          "meta"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/NotificationStatus"
+          },
+          "errors": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/ApiError"
+            }
+          },
+          "meta": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true
+          }
+        }
+      },
+      "ApiResponseStorageUploadSas": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "success",
+          "message",
+          "data",
+          "errors",
+          "meta"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/StorageUploadSasResponse"
+          },
+          "errors": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/ApiError"
+            }
+          },
+          "meta": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true
+          }
+        }
+      },
+      "ApiResponseAdminUserList": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "success",
+          "message",
+          "data",
+          "errors",
+          "meta"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/AdminUserList"
+          },
+          "errors": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/ApiError"
+            }
+          },
+          "meta": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true
+          }
+        }
+      },
+      "ApiResponseAdminDiaryList": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "success",
+          "message",
+          "data",
+          "errors",
+          "meta"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/AdminDiaryList"
+          },
+          "errors": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/ApiError"
+            }
+          },
+          "meta": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true
+          }
+        }
+      },
+      "ApiResponseError": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "success",
+          "message",
+          "data",
+          "errors",
+          "meta"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "nullable": true
+          },
+          "errors": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/ApiError"
+            }
+          },
+          "meta": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true
+          }
+        }
+      },
+      "ApiError": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "UserRegister": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "username",
+          "email",
+          "password",
+          "gender",
+          "userDob"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "gender": {
+            "type": "string"
+          },
+          "userDob": {
+            "type": "string",
+            "format": "date"
+          },
+          "avatar": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "UserLogin": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "identifier",
+          "password"
+        ],
+        "properties": {
+          "identifier": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        }
+      },
+      "AdminLoginRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "username",
+          "password"
+        ],
+        "properties": {
+          "username": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        }
+      },
+      "VerifyOtpRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "email",
+          "otpCode"
+        ],
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "otpCode": {
+            "type": "string"
+          }
+        }
+      },
+      "VerifyCurrentPassword": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "currentPassword"
+        ],
+        "properties": {
+          "currentPassword": {
+            "type": "string"
+          }
+        }
+      },
+      "ChangePassword": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "currentPassword",
+          "newPassword"
+        ],
+        "properties": {
+          "currentPassword": {
+            "type": "string"
+          },
+          "newPassword": {
+            "type": "string"
+          }
+        }
+      },
+      "ForgotPasswordRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "email"
+        ],
+        "properties": {
+          "email": {
+            "type": "string"
+          }
+        }
+      },
+      "ResetPasswordVerify": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "email",
+          "otpCode"
+        ],
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "otpCode": {
+            "type": "string"
+          }
+        }
+      },
+      "ResetPasswordConfirm": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "email",
+          "otpCode",
+          "newPassword"
+        ],
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "otpCode": {
+            "type": "string"
+          },
+          "newPassword": {
+            "type": "string"
+          }
+        }
+      },
+      "UserUpdate": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "username": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "avatar": {
+            "type": "string",
+            "nullable": true
+          },
+          "gender": {
+            "type": "string",
+            "nullable": true
+          },
+          "userDob": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          }
+        }
+      },
+      "EmailResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "email"
+        ],
+        "properties": {
+          "email": {
+            "type": "string"
+          }
+        }
+      },
+      "UserResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "userId",
+          "name",
+          "username",
+          "email",
+          "streak",
+          "diaryCount",
+          "isVerified"
+        ],
+        "properties": {
+          "userId": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "gender": {
+            "type": "string",
+            "nullable": true
+          },
+          "avatar": {
+            "type": "string",
+            "nullable": true
+          },
+          "userDob": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "streak": {
+            "type": "integer"
+          },
+          "diaryCount": {
+            "type": "integer"
+          },
+          "isVerified": {
+            "type": "boolean"
+          }
+        }
+      },
+      "UserTokenResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "accessToken",
+          "tokenType",
+          "user"
+        ],
+        "properties": {
+          "accessToken": {
+            "type": "string"
+          },
+          "tokenType": {
+            "type": "string"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserResponse"
+          }
+        }
+      },
+      "AdminLoginResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "accessToken",
+          "tokenType",
+          "admin"
+        ],
+        "properties": {
+          "accessToken": {
+            "type": "string"
+          },
+          "tokenType": {
+            "type": "string"
+          },
+          "admin": {
+            "$ref": "#/components/schemas/AdminResponse"
+          }
+        }
+      },
+      "AdminResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "username",
+          "email"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          }
+        }
+      },
+      "DiaryCreate": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "note",
+          "date"
+        ],
+        "properties": {
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "note": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "emoji": {
+            "type": "string",
+            "nullable": true
+          },
+          "font": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "DiaryUpdate": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "note": {
+            "type": "string",
+            "nullable": true
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "emoji": {
+            "type": "string",
+            "nullable": true
+          },
+          "font": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "DiaryResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "diaryId",
+          "userId",
+          "note",
+          "date",
+          "createdAt"
+        ],
+        "properties": {
+          "diaryId": {
+            "type": "integer"
+          },
+          "userId": {
+            "type": "integer"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "note": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "emoji": {
+            "type": "string",
+            "nullable": true
+          },
+          "font": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        }
+      },
+      "TipsCategory": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "tipCategoryId",
+          "categoryName"
+        ],
+        "properties": {
+          "tipCategoryId": {
+            "type": "integer"
+          },
+          "categoryName": {
+            "type": "string"
+          }
+        }
+      },
+      "TipsCategoryCreate": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "categoryName"
+        ],
+        "properties": {
+          "categoryName": {
+            "type": "string"
+          }
+        }
+      },
+      "TipsCreate": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "detail",
+          "tipCategoryId",
+          "uploaderId"
+        ],
+        "properties": {
+          "detail": {
+            "type": "string"
+          },
+          "tipCategoryId": {
+            "type": "integer"
+          },
+          "uploaderId": {
+            "type": "integer"
+          }
+        }
+      },
+      "TipsUpdate": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "detail": {
+            "type": "string",
+            "nullable": true
+          },
+          "tipCategoryId": {
+            "type": "integer",
+            "nullable": true
+          }
+        }
+      },
+      "TipsResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "tipId",
+          "detail",
+          "tipCategoryId",
+          "uploaderId"
+        ],
+        "properties": {
+          "tipId": {
+            "type": "integer"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "tipCategoryId": {
+            "type": "integer"
+          },
+          "uploaderId": {
+            "type": "integer"
+          }
+        }
+      },
+      "MotivationCreate": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "quote"
+        ],
+        "properties": {
+          "quote": {
+            "type": "string"
+          },
+          "uploaderId": {
+            "type": "integer",
+            "nullable": true
+          },
+          "authorName": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "MotivationResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "motivationId",
+          "quote"
+        ],
+        "properties": {
+          "motivationId": {
+            "type": "integer"
+          },
+          "quote": {
+            "type": "string"
+          },
+          "uploaderId": {
+            "type": "integer",
+            "nullable": true
+          },
+          "authorName": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "MotivationInBookmark": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "motivationId",
+          "quote"
+        ],
+        "properties": {
+          "motivationId": {
+            "type": "integer"
+          },
+          "quote": {
+            "type": "string"
+          },
+          "authorName": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "BookmarkResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "bookmarkId",
+          "userId",
+          "motivationId",
+          "motivation"
+        ],
+        "properties": {
+          "bookmarkId": {
+            "type": "integer"
+          },
+          "userId": {
+            "type": "integer"
+          },
+          "motivationId": {
+            "type": "integer"
+          },
+          "createdAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "motivation": {
+            "$ref": "#/components/schemas/MotivationInBookmark"
+          }
+        }
+      },
+      "PredictRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "studyHours",
+          "extracurricularHours",
+          "sleepHours",
+          "socialHours",
+          "physicalHours",
+          "gpa"
+        ],
+        "properties": {
+          "studyHours": {
+            "type": "number"
+          },
+          "extracurricularHours": {
+            "type": "number"
+          },
+          "sleepHours": {
+            "type": "number"
+          },
+          "socialHours": {
+            "type": "number"
+          },
+          "physicalHours": {
+            "type": "number"
+          },
+          "gpa": {
+            "type": "number"
+          }
+        }
+      },
+      "PredictResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "result",
+          "message"
+        ],
+        "properties": {
+          "result": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "StressLevelCreate": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "date",
+          "stressLevel",
+          "emoji"
+        ],
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "stressLevel": {
+            "type": "number"
+          },
+          "gpa": {
+            "type": "number",
+            "nullable": true
+          },
+          "extracurricularHourPerDay": {
+            "type": "number",
+            "nullable": true
+          },
+          "physicalActivityHourPerDay": {
+            "type": "number",
+            "nullable": true
+          },
+          "sleepHourPerDay": {
+            "type": "number",
+            "nullable": true
+          },
+          "studyHourPerDay": {
+            "type": "number",
+            "nullable": true
+          },
+          "socialHourPerDay": {
+            "type": "number",
+            "nullable": true
+          },
+          "emoji": {
+            "type": "number"
+          }
+        }
+      },
+      "StressLevelResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "stressLevelId",
+          "userId",
+          "date",
+          "stressLevel",
+          "emoji",
+          "isRestored"
+        ],
+        "properties": {
+          "stressLevelId": {
+            "type": "integer"
+          },
+          "userId": {
+            "type": "integer"
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "stressLevel": {
+            "type": "number"
+          },
+          "gpa": {
+            "type": "number",
+            "nullable": true
+          },
+          "extracurricularHourPerDay": {
+            "type": "number",
+            "nullable": true
+          },
+          "physicalActivityHourPerDay": {
+            "type": "number",
+            "nullable": true
+          },
+          "sleepHourPerDay": {
+            "type": "number",
+            "nullable": true
+          },
+          "studyHourPerDay": {
+            "type": "number",
+            "nullable": true
+          },
+          "socialHourPerDay": {
+            "type": "number",
+            "nullable": true
+          },
+          "emoji": {
+            "type": "number"
+          },
+          "isRestored": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "Eligibility": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "userId",
+          "eligible",
+          "streak",
+          "requiredStreak",
+          "restoreUsed",
+          "restoreRemaining",
+          "restoreLimit",
+          "missing",
+          "note"
+        ],
+        "properties": {
+          "userId": {
+            "type": "integer"
+          },
+          "eligible": {
+            "type": "boolean"
+          },
+          "streak": {
+            "type": "integer"
+          },
+          "requiredStreak": {
+            "type": "integer"
+          },
+          "restoreUsed": {
+            "type": "integer"
+          },
+          "restoreRemaining": {
+            "type": "integer"
+          },
+          "restoreLimit": {
+            "type": "integer"
+          },
+          "missing": {
+            "type": "integer"
+          },
+          "note": {
+            "type": "string"
+          }
+        }
+      },
+      "GlobalForecastResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "userId",
+          "forecastDate",
+          "probability",
+          "chancePercent",
+          "threshold",
+          "predictionBinary",
+          "predictionLabel",
+          "modelType"
+        ],
+        "properties": {
+          "userId": {
+            "type": "integer"
+          },
+          "forecastDate": {
+            "type": "string"
+          },
+          "probability": {
+            "type": "number"
+          },
+          "chancePercent": {
+            "type": "number"
+          },
+          "threshold": {
+            "type": "number"
+          },
+          "predictionBinary": {
+            "type": "integer"
+          },
+          "predictionLabel": {
+            "type": "string"
+          },
+          "modelType": {
+            "type": "string"
+          }
+        }
+      },
+      "GlobalForecastPayload": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "forecast",
+          "eligibility"
+        ],
+        "properties": {
+          "forecast": {
+            "$ref": "#/components/schemas/GlobalForecastResult"
+          },
+          "eligibility": {
+            "$ref": "#/components/schemas/Eligibility"
+          }
+        }
+      },
+      "AnalyticsSummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "stressLogsCount",
+          "diaryCount",
+          "streak"
+        ],
+        "properties": {
+          "stressLogsCount": {
+            "type": "integer"
+          },
+          "diaryCount": {
+            "type": "integer"
+          },
+          "streak": {
+            "type": "integer"
+          }
+        }
+      },
+      "NotificationSubscribeRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "subscription",
+          "reminderTime",
+          "timezone"
+        ],
+        "properties": {
+          "subscription": {
+            "$ref": "#/components/schemas/PushSubscription"
+          },
+          "reminderTime": {
+            "type": "string"
+          },
+          "timezone": {
+            "type": "string"
+          }
+        }
+      },
+      "PushSubscription": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "endpoint",
+          "keys"
+        ],
+        "properties": {
+          "endpoint": {
+            "type": "string"
+          },
+          "keys": {
+            "$ref": "#/components/schemas/PushSubscriptionKeys"
+          }
+        }
+      },
+      "PushSubscriptionKeys": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "p256dh",
+          "auth"
+        ],
+        "properties": {
+          "p256dh": {
+            "type": "string"
+          },
+          "auth": {
+            "type": "string"
+          }
+        }
+      },
+      "NotificationStatus": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "dailyReminder"
+        ],
+        "properties": {
+          "dailyReminder": {
+            "type": "boolean"
+          },
+          "reminderTime": {
+            "type": "string",
+            "nullable": true
+          },
+          "timezone": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "StorageUploadSasRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "fileName",
+          "contentType"
+        ],
+        "properties": {
+          "fileName": {
+            "type": "string"
+          },
+          "contentType": {
+            "type": "string"
+          },
+          "folder": {
+            "type": "string"
+          }
+        }
+      },
+      "StorageUploadSasResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "uploadUrl",
+          "blobUrl",
+          "blobName",
+          "expiresInMinutes"
+        ],
+        "properties": {
+          "uploadUrl": {
+            "type": "string"
+          },
+          "blobUrl": {
+            "type": "string"
+          },
+          "blobName": {
+            "type": "string"
+          },
+          "expiresInMinutes": {
+            "type": "integer"
+          }
+        }
+      },
+      "ProfilePictureUpdateRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "profileImageUrl"
+        ],
+        "properties": {
+          "profileImageUrl": {
+            "type": "string"
+          }
+        }
+      },
+      "AdminUserUpdate": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "username": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "gender": {
+            "type": "string",
+            "nullable": true
+          },
+          "userDob": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "avatar": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "AdminUserList": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "total",
+          "page",
+          "limit",
+          "data"
+        ],
+        "properties": {
+          "total": {
+            "type": "integer"
+          },
+          "page": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserResponse"
+            }
+          }
+        }
+      },
+      "AdminDiary": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "diaryId",
+          "content",
+          "createdAt",
+          "userId",
+          "username"
+        ],
+        "properties": {
+          "diaryId": {
+            "type": "integer"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "content": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "integer"
+          },
+          "username": {
+            "type": "string"
+          }
+        }
+      },
+      "AdminDiaryList": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "total",
+          "page",
+          "limit",
+          "data"
+        ],
+        "properties": {
+          "total": {
+            "type": "integer"
+          },
+          "page": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminDiary"
+            }
+          }
+        }
+      }
+    }
+  }
+}

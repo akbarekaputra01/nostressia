@@ -103,12 +103,19 @@ def create_app() -> FastAPI:
     # HTTP exception handler
     @app.exception_handler(HTTPException)
     async def http_exception_handler(request: Request, exc: HTTPException):
+        detail = exc.detail
+        is_message = isinstance(detail, str)
+        errors = None
+        if not is_message:
+            errors = detail if isinstance(detail, list) else [detail]
         return JSONResponse(
             status_code=exc.status_code,
             content={
                 "success": False,
-                "message": exc.detail if isinstance(exc.detail, str) else "Request failed",
-                "data": exc.detail if not isinstance(exc.detail, str) else None,
+                "message": detail if is_message else "Request failed",
+                "data": None,
+                "errors": errors,
+                "meta": None,
             },
         )
 
@@ -120,7 +127,9 @@ def create_app() -> FastAPI:
             content={
                 "success": False,
                 "message": "Validation error",
-                "data": exc.errors(),
+                "data": None,
+                "errors": exc.errors(),
+                "meta": None,
             },
         )
 
