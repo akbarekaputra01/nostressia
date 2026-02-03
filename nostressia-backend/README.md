@@ -143,17 +143,19 @@ Backend memakai format error konsisten untuk `HTTPException` dan `RequestValidat
 {
   "success": false,
   "message": "Validation error",
-  "data": [
+  "data": null,
+  "errors": [
     {
       "loc": ["body", "field"],
       "msg": "Field required",
       "type": "missing"
     }
-  ]
+  ],
+  "meta": null
 }
 ```
 
-Untuk error non-validasi, `message` berisi pesan singkat dan `data` berisi detail jika bukan string.
+Untuk error non-validasi, `message` berisi pesan singkat. Jika `detail` bukan string, maka nilainya akan muncul di `errors` dalam format list.
 
 ## Testing
 Backend menggunakan pytest + TestClient dengan SQLite in-memory untuk isolasi.
