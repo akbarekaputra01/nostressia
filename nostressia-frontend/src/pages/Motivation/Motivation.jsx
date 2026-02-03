@@ -248,7 +248,7 @@ export default function Motivation() {
         await deleteBookmark(id);
         showToast("Bookmark removed 🗑️");
       } else {
-        // Tambah Bookmark
+        // Add bookmark
         await addBookmark(id);
         showToast("Saved to profile ❤️");
       }
