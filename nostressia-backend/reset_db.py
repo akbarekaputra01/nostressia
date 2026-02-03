@@ -4,7 +4,7 @@ import logging
 from sqlalchemy import create_engine, text
 
 # 1. SETUP PATH
-# Menambahkan folder saat ini ke path agar bisa import model dari folder 'app'
+# Add the current folder to the path so we can import models from the "app" folder.
 sys.path.append(os.getcwd())
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
@@ -29,70 +29,70 @@ DB_PASSWORD = require_env(DB_PASSWORD, "DB_PASSWORD")
 DB_HOST = require_env(DB_HOST, "DB_HOST")
 DB_NAME = require_env(DB_NAME, "DB_NAME")
 
-# String koneksi manual
+# Manual connection string
 SQLALCHEMY_DATABASE_URL = (
     f"mysql+mysqlconnector://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 )
 
-# 3. BUAT KONEKSI (ENGINE) SENDIRI
-# echo=True supaya kamu bisa liat log SQL yang jalan di terminal
+# 3. CREATE A DEDICATED ENGINE
+# echo=True so you can see the SQL logs in the terminal.
 engine = create_engine(SQLALCHEMY_DATABASE_URL, echo=True)
 
-# 4. IMPORT MODEL UNTUK SCHEMA
-# Kita butuh 'Base' dan 'User' dari kodinganmu untuk tau struktur tabel baru (yg ada avatarnya)
+# 4. IMPORT MODELS FOR SCHEMA
+# We need "Base" and "User" from the app to get the latest table structures (including avatar).
 try:
     from app.core.database import Base
     from app.models.user_model import User
-    # Import model lain jika perlu direfresh juga
+    # Import other models if they also need to be refreshed.
     from app.models.diary_model import Diary
     from app.models.stress_log_model import StressLevel
     from app.models.motivation_model import Motivation
     from app.models.tips_model import Tips
     from app.models.bookmark_model import Bookmark
-    logger.info("✅ Berhasil memuat Model dari aplikasi.")
+    logger.info("✅ Successfully loaded models from the application.")
 except ImportError as e:
-    logger.error("❌ Gagal import model: %s", e)
+    logger.error("❌ Failed to import models: %s", e)
     logger.error(
-        "Pastikan kamu menjalankan script ini dari folder root project (sejajar dengan folder 'app')."
+        "Make sure you run this script from the project root (next to the 'app' folder)."
     )
     sys.exit(1)
 
 def reset_database():
-    logger.info("\n🔌 Menghubungkan ke Database: %s...", DB_HOST)
+    logger.info("\n🔌 Connecting to database: %s...", DB_HOST)
     
     with engine.connect() as connection:
-        logger.info("🛡️  Matikan Foreign Key Checks...")
+        logger.info("🛡️  Disabling foreign key checks...")
         connection.execute(text("SET FOREIGN_KEY_CHECKS = 0;"))
         
-        # --- HAPUS TABEL LAMA ---
-        logger.info("🗑️  DROP TABLE users...")
+        # --- DROP LEGACY TABLES ---
+        logger.info("🗑️  Dropping users table...")
         connection.execute(text("DROP TABLE IF EXISTS users;"))
         
-        # Opsional: Uncomment jika ingin reset tabel lain juga
+        # Optional: Uncomment if you want to reset other tables too.
         # connection.execute(text("DROP TABLE IF EXISTS diaries;"))
         # connection.execute(text("DROP TABLE IF EXISTS stress_levels;"))
 
-        logger.info("🛡️  Hidupkan Foreign Key Checks...")
+        logger.info("🛡️  Enabling foreign key checks...")
         connection.execute(text("SET FOREIGN_KEY_CHECKS = 1;"))
         connection.commit()
-        logger.info("✅ Tabel lama berhasil dihapus.")
+        logger.info("✅ Legacy tables removed.")
 
-    # --- BUAT TABEL BARU ---
-    logger.info("\n✨ Membuat ulang tabel berdasarkan kodingan Python terbaru...")
-    # Ini akan membaca file user_model.py kamu dan bikin tabel sesuai isinya (termasuk avatar)
+    # --- CREATE NEW TABLES ---
+    logger.info("\n✨ Rebuilding tables from the latest Python models...")
+    # This reads user_model.py and builds tables based on the latest definitions (including avatar).
     Base.metadata.create_all(bind=engine)
-    logger.info("🚀 SUKSES! Database sudah di-reset.")
+    logger.info("🚀 Success! The database has been reset.")
 
 if __name__ == "__main__":
-    logger.warning("⚠️  PERINGATAN: Script ini akan menghapus data di tabel USERS!")
-    logger.warning("Target Database: %s di %s", DB_NAME, DB_HOST)
+    logger.warning("⚠️  WARNING: This script will delete data from the USERS table!")
+    logger.warning("Target database: %s on %s", DB_NAME, DB_HOST)
     
-    confirm = input("\nKetik 'gas' untuk lanjut reset: ")
-    if confirm.lower() == 'gas':
+    confirm = input("\nType 'reset' to continue: ")
+    if confirm.lower() == "reset":
         try:
             reset_database()
         except Exception as e:
-            logger.error("\n❌ Terjadi Error Koneksi: %s", e)
-            logger.error("Cek kembali koneksi internet atau kredensial database.")
+            logger.error("\n❌ Connection error: %s", e)
+            logger.error("Please recheck your network connection or database credentials.")
     else:
-        logger.info("Batal.")
+        logger.info("Cancelled.")
