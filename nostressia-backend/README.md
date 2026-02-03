@@ -41,7 +41,7 @@ nostressia-backend/
 
 ### Environment Variables (ringkas)
 **Wajib (aplikasi akan fail-fast jika tidak ada):**
-- `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`, `DB_NAME`
+- `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`, `DB_NAME` (wajib jika `DATABASE_URL` tidak diisi)
 - `JWT_SECRET`, `JWT_ALGORITHM`, `ACCESS_TOKEN_EXPIRE_MINUTES`
 - `BREVO_API_KEY`
 
@@ -49,7 +49,7 @@ nostressia-backend/
 - `AZURE_STORAGE_CONNECTION_STRING`, `AZURE_STORAGE_ACCOUNT_NAME`, `AZURE_STORAGE_CONTAINER`, `AZURE_STORAGE_CONTAINER_NAME`
 - `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`
 - `INTERNAL_TOKEN` (untuk endpoint training data internal)
-- `DATABASE_URL` (override konfigurasi DB terpisah)
+- `DATABASE_URL` (override konfigurasi DB terpisah; jika diisi maka `DB_*` tidak wajib)
 
 ## Menjalankan Server
 ```bash
