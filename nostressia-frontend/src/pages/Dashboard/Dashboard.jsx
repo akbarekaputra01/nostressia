@@ -374,16 +374,14 @@ function buildForecastList(baseForecast) {
 }
 
 function normalizeEligibility(payload) {
-  const eligibility = payload?.eligibility ?? payload?.detail ?? payload;
+  const eligibility = payload?.eligibility ?? payload;
   if (!eligibility) return null;
 
-  const streak = Number(eligibility?.streak ?? eligibility?.streakCount ?? 0);
-  const requiredStreak = Number(eligibility?.requiredStreak ?? eligibility?.required_streak ?? 7);
-  const restoreUsed = Number(eligibility?.restoreUsed ?? eligibility?.restore_used ?? 0);
-  const restoreLimit = Number(eligibility?.restoreLimit ?? eligibility?.restore_limit ?? 3);
-  const restoreRemaining = Number(
-    eligibility?.restoreRemaining ?? eligibility?.restore_remaining ?? 0,
-  );
+  const streak = Number(eligibility?.streak ?? 0);
+  const requiredStreak = Number(eligibility?.requiredStreak ?? 7);
+  const restoreUsed = Number(eligibility?.restoreUsed ?? 0);
+  const restoreLimit = Number(eligibility?.restoreLimit ?? 3);
+  const restoreRemaining = Number(eligibility?.restoreRemaining ?? 0);
 
   return {
     streak,
@@ -657,7 +655,7 @@ export default function Dashboard() {
             const primaryTip = (Array.isArray(tips) ? tips : [])[0];
             if (!primaryTip) return null;
 
-            const detail = primaryTip?.detail ?? primaryTip?.tipText ?? primaryTip?.text ?? "";
+            const detail = primaryTip?.detail ?? "";
             const words = detail.split(" ").filter(Boolean);
             const title =
               words.length > 0
@@ -867,7 +865,7 @@ export default function Dashboard() {
           navigate("/login", { replace: true });
           return;
         }
-        const detail = error?.payload?.detail || error?.message;
+        const detail = error?.payload?.message || error?.message;
         setEligibilityError(`Failed to load eligibility.${detail ? ` ${detail}` : ""}`);
       } finally {
         setEligibilityLoading(false);
@@ -1082,7 +1080,7 @@ export default function Dashboard() {
           setForecastMode(resolveForecastMode(eligibilitySnapshot));
         }
 
-        const baseForecast = data?.forecast ?? data?.data ?? data?.forecastData ?? data;
+        const baseForecast = data?.forecast;
         const resolvedMode = resolveForecastMode(eligibilityFromForecast ?? eligibilitySnapshot);
         const list = buildForecastList(baseForecast).map((item) => ({
           ...item,
@@ -1099,9 +1097,7 @@ export default function Dashboard() {
           navigate("/login", { replace: true });
           return;
         }
-        const normalizedErrorEligibility = normalizeEligibility(
-          error?.payload?.detail ?? error?.payload,
-        );
+        const normalizedErrorEligibility = normalizeEligibility(error?.payload?.data);
         if (normalizedErrorEligibility) {
           setForecastMode(resolveForecastMode(normalizedErrorEligibility));
           const restoreRemainingCalc = normalizedErrorEligibility.restoreRemaining ?? 0;
@@ -1121,7 +1117,7 @@ export default function Dashboard() {
           setForecastError("Not enough history to generate a forecast.");
           return;
         }
-        const detail = error?.payload?.detail || error?.payload?.message || error?.message;
+        const detail = error?.payload?.message || error?.message;
         setForecastError(`Failed to load forecast.${detail ? ` ${detail}` : ""}`);
       } finally {
         setForecastLoading(false);

@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { getProfile } from "../services/authService";
 import { getStressEligibility } from "../services/stressService";
-import { clearAuthToken, readAuthToken } from "../utils/auth";
+import { readAuthToken } from "../utils/auth";
 import { restoreDailyReminderSubscription } from "../utils/notificationService";
 import { createLogger } from "../utils/logger";
 import { resolveLegacyJson, storage, STORAGE_KEYS } from "../utils/storage";
@@ -11,16 +11,7 @@ import { resolveLegacyJson, storage, STORAGE_KEYS } from "../utils/storage";
 const logger = createLogger("LAYOUT");
 
 const resolveStreakCount = (payload) => {
-  const candidates = [
-    payload?.streakCount,
-    payload?.streak,
-    payload?.data?.streakCount,
-    payload?.data?.streak,
-    payload?.meta?.streakCount,
-    payload?.meta?.streak,
-  ];
-
-  const value = candidates.find((candidate) => Number.isFinite(Number(candidate)));
+  const value = payload?.streak;
   return Number.isFinite(Number(value)) ? Number(value) : null;
 };
 
@@ -55,33 +46,24 @@ export default function MainLayout() {
 
       const backendData = await getProfile();
 
-      const normalizedDob =
-        backendData.userDob || backendData.user_dob || backendData.birthday || backendData.dob || "";
-
       const completeUserData = {
         ...backendData,
-        name: backendData.name || backendData.fullName || "User",
+        name: backendData.name || "User",
         username: backendData.username || "user",
         email: backendData.email || "",
-        avatar: backendData.avatar || backendData.profilePicture || null,
-        birthday: normalizedDob,
-        userDob: normalizedDob,
-        gender: normalizeGender(backendData.gender || backendData.sex || ""),
-        diaryCount:
-          backendData.diaryCount ??
-          backendData.diary_count ??
-          backendData.diariesCount ??
-          backendData.diaries_count ??
-          0,
+        avatar: backendData.avatar || null,
+        birthday: backendData.userDob || "",
+        userDob: backendData.userDob || "",
+        gender: normalizeGender(backendData.gender || ""),
+        diaryCount: backendData.diaryCount ?? 0,
       };
 
       let streakCount = resolveStreakCount(backendData);
       try {
         const eligibilityData = await getStressEligibility();
         streakCount = resolveStreakCount(eligibilityData) ?? streakCount;
-      } catch (error) {
-        const fallbackPayload = error?.payload?.detail ?? error?.payload;
-        streakCount = resolveStreakCount(fallbackPayload) ?? streakCount;
+      } catch {
+        streakCount = streakCount ?? completeUserData.streak ?? 0;
       }
 
       const enrichedUserData = {

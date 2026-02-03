@@ -3,21 +3,36 @@
 Semua endpoint bisnis menggunakan prefix `/api` dan response dibungkus dalam format `APIResponse`.
 Endpoint root & health disediakan tanpa prefix untuk kebutuhan monitoring/healthcheck.
 
+## Single Source of Truth (SSOT)
+- Kontrak resmi tersedia di `docs/openapi.json` (hasil generate OpenAPI dari backend).
+
 ## Format Response Umum
 
 ### Sukses
 ```json
-{ "success": true, "message": "OK", "data": { } }
+{ "success": true, "message": "OK", "data": { }, "errors": null, "meta": null }
 ```
 
 ### Error
 ```json
-{ "success": false, "message": "Request failed", "data": null }
+{
+  "success": false,
+  "message": "Request failed",
+  "data": null,
+  "errors": [{ "code": "error_code", "message": "Error detail", "field": "fieldName" }],
+  "meta": null
+}
 ```
 
 ### Validation Error (422)
 ```json
-{ "success": false, "message": "Validation error", "data": [ { "loc": [], "msg": "...", "type": "..." } ] }
+{
+  "success": false,
+  "message": "Validation error",
+  "data": null,
+  "errors": [{ "code": "type_error", "message": "Invalid value", "field": "fieldName" }],
+  "meta": null
+}
 ```
 
 ## Auth

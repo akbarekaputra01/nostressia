@@ -3,7 +3,7 @@ import re
 from app.utils.hashing import hash_password, verify_password
 from app.utils.jwt_handler import create_access_token, decode_access_token
 from app.utils.otp_generator import generate_otp
-from app.utils.response import success_response
+from app.utils.response import error_response, success_response
 
 
 def test_password_hashing_roundtrip():
@@ -30,3 +30,14 @@ def test_success_response_wrapper():
     assert payload.success is True
     assert payload.message == "Done"
     assert payload.data == {"ok": True}
+    assert payload.errors is None
+    assert payload.meta is None
+
+
+def test_error_response_wrapper():
+    payload = error_response(message="Bad request")
+    assert payload.success is False
+    assert payload.message == "Bad request"
+    assert payload.data is None
+    assert payload.errors is None
+    assert payload.meta is None

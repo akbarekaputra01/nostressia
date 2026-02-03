@@ -296,9 +296,9 @@ export default function AdminPage({ skipAuth = false }) {
       try {
         const data = await getTipsByCategory(catId);
         const mappedTips = (data || []).map((item) => ({
-          id: item.tipId ?? item.id,
-          tip_text: item.detail || item.tipText,
-          uploader_id: item.uploaderId,
+          id: item.tipId,
+          detail: item.detail,
+          uploaderId: item.uploaderId,
         }));
         setTipsByCategory((prev) => ({ ...prev, [catId]: mappedTips }));
       } catch {
@@ -316,8 +316,8 @@ export default function AdminPage({ skipAuth = false }) {
       const rawNewTip = await createTip(payload);
       const newTip = {
         id: rawNewTip.tipId,
-        tip_text: rawNewTip.detail || currentTipInput,
-        uploader_id: currentUser.id,
+        detail: rawNewTip.detail,
+        uploaderId: currentUser.id,
       };
       setTipsByCategory((prev) => ({ ...prev, [catId]: [...(prev[catId] || []), newTip] }));
       setTipCountByCategory((prev) => ({ ...prev, [catId]: (prev[catId] || 0) + 1 }));
@@ -354,7 +354,7 @@ export default function AdminPage({ skipAuth = false }) {
   const handleStartEditTip = (tip) => {
     if (!tip) return;
     setEditingTipId(tip.id);
-    setEditingTipText(tip.tip_text || tip.tipText || "");
+    setEditingTipText(tip.detail || "");
   };
 
   const handleCancelEditTip = () => {
@@ -366,14 +366,14 @@ export default function AdminPage({ skipAuth = false }) {
     if (!editingTipText.trim()) return;
     setIsUpdatingTip(true);
     try {
-      const updated = await updateTip(tipId, { detail: editingTipText });
+              const updated = await updateTip(tipId, { detail: editingTipText });
       setTipsByCategory((prev) => ({
         ...prev,
         [catId]: (prev[catId] || []).map((tip) =>
           tip.id === tipId
             ? {
                 ...tip,
-                tip_text: updated.detail ?? editingTipText,
+                detail: updated.detail,
               }
             : tip,
         ),
@@ -1220,12 +1220,12 @@ export default function AdminPage({ skipAuth = false }) {
                                 ) : (
                                   <>
                                     <p className="text-base text-text-primary font-medium">
-                                      {tip.tip_text || tip.tipText}
+                                      {tip.detail}
                                     </p>
                                     <p className="text-xs text-text-muted mt-1 flex items-center gap-1">
                                       <User size={10} /> Added by (
-                                      {tip.uploader_id
-                                        ? `ADM${String(tip.uploader_id).padStart(3, "0")}`
+                                      {tip.uploaderId
+                                        ? `ADM${String(tip.uploaderId).padStart(3, "0")}`
                                         : "Admin"}
                                       )
                                     </p>

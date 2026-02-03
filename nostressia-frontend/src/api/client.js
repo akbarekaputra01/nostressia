@@ -8,6 +8,7 @@ import {
   readTokenForScope,
 } from "../utils/auth";
 import { createLogger } from "../utils/logger";
+import { ApiResponseSchema } from "./responseSchema";
 
 const logger = createLogger("API");
 
@@ -72,7 +73,7 @@ const createApiClient = ({ authMode = AUTH_SCOPE.USER } = {}) => {
   };
 
   const isInvalidTokenResponse = (payload, message) => {
-    const combined = [message, payload?.message, payload?.detail]
+    const combined = [message, payload?.message]
       .filter(Boolean)
       .join(" ")
       .toLowerCase();
@@ -89,33 +90,55 @@ const createApiClient = ({ authMode = AUTH_SCOPE.USER } = {}) => {
 
   instance.interceptors.response.use(
     (response) => {
-      if (response?.data?.success === false) {
-        const error = new Error(response?.data?.message || "Request failed");
+      const parsed = ApiResponseSchema.safeParse(response?.data);
+      if (!parsed.success) {
+        const error = new Error("Invalid API response format");
+        error.name = "ApiResponseValidationError";
         error.status = response?.status;
         error.payload = response?.data;
+        error.issues = parsed.error.issues;
         return Promise.reject(error);
       }
 
+      if (parsed.data.success === false) {
+        const error = new Error(parsed.data.message || "Request failed");
+        error.status = response?.status;
+        error.payload = parsed.data;
+        return Promise.reject(error);
+      }
+
+      response.data = parsed.data;
       return response;
     },
     (error) => {
       const status = error?.response?.status;
       const payload = error?.response?.data;
+      let parsedPayload = null;
+      if (payload !== undefined) {
+        const parsed = ApiResponseSchema.safeParse(payload);
+        if (!parsed.success) {
+          const schemaError = new Error("Invalid API response format");
+          schemaError.name = "ApiResponseValidationError";
+          schemaError.status = status;
+          schemaError.payload = payload;
+          schemaError.issues = parsed.error.issues;
+          return Promise.reject(schemaError);
+        }
+        parsedPayload = parsed.data;
+      }
+
       const message =
-        payload?.message ||
-        payload?.detail ||
-        (Array.isArray(payload?.data) ? "Validation error" : null) ||
-        error.message ||
-        "Request failed";
+        parsedPayload?.message || error.message || "Request failed";
 
       const normalizedError = new Error(message);
       normalizedError.status = status;
-      normalizedError.payload = payload;
+      normalizedError.payload = parsedPayload ?? payload;
 
       const resolvedAuth = error?.config?.authScope ?? error?.config?.auth ?? authMode;
       const token = resolvedAuth === false ? null : readTokenForScope(resolvedAuth);
       const authDisabled = isAuthDisabled();
-      const isTokenInvalid = status === 401 && isInvalidTokenResponse(payload, message);
+      const isTokenInvalid =
+        status === 401 && isInvalidTokenResponse(parsedPayload, message);
       const shouldClearSession =
         !authDisabled &&
         status === 401 &&
@@ -132,7 +155,7 @@ const createApiClient = ({ authMode = AUTH_SCOPE.USER } = {}) => {
         logger.warn("[AUTH][ADMIN] 401 response", {
           url: error?.config?.url,
           message,
-          payload,
+          payload: parsedPayload ?? payload,
           tokenPresent: Boolean(token),
           tokenInvalid: isTokenInvalid,
         });
@@ -172,7 +195,16 @@ const shouldRedirectToLogin = (isAdmin, currentPath) => {
   return currentPath !== targetPath;
 };
 
-export const unwrapResponse = (response) => response?.data?.data ?? response?.data;
+export const unwrapResponse = (response) => {
+  const parsed = ApiResponseSchema.safeParse(response?.data);
+  if (!parsed.success) {
+    const error = new Error("Invalid API response format");
+    error.name = "ApiResponseValidationError";
+    error.issues = parsed.error.issues;
+    throw error;
+  }
+  return parsed.data.data;
+};
 
 const client = createApiClient({ authMode: AUTH_SCOPE.USER });
 export const adminClient = createApiClient({ authMode: AUTH_SCOPE.ADMIN });

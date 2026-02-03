@@ -21,6 +21,7 @@ from app.services.notification_scheduler import (
     start_notification_scheduler,
     stop_notification_scheduler,
 )
+from app.utils.response import error_response
 
 logger = logging.getLogger(__name__)
 
@@ -103,25 +104,30 @@ def create_app() -> FastAPI:
     # HTTP exception handler
     @app.exception_handler(HTTPException)
     async def http_exception_handler(request: Request, exc: HTTPException):
+        message = exc.detail if isinstance(exc.detail, str) else "Request failed"
+        data = exc.detail if not isinstance(exc.detail, str) else None
+        payload = error_response(message=message, data=data)
         return JSONResponse(
             status_code=exc.status_code,
-            content={
-                "success": False,
-                "message": exc.detail if isinstance(exc.detail, str) else "Request failed",
-                "data": exc.detail if not isinstance(exc.detail, str) else None,
-            },
+            content=payload.model_dump(by_alias=True),
         )
 
     # Validation exception handler
     @app.exception_handler(RequestValidationError)
     async def validation_exception_handler(request: Request, exc: RequestValidationError):
+        errors = [
+            {
+                "code": err.get("type", "validation_error"),
+                "message": err.get("msg", "Validation error"),
+                "field": ".".join(str(part) for part in err.get("loc", []) if part != "body")
+                or None,
+            }
+            for err in exc.errors()
+        ]
+        payload = error_response(message="Validation error", errors=errors, data=None)
         return JSONResponse(
             status_code=422,
-            content={
-                "success": False,
-                "message": "Validation error",
-                "data": exc.errors(),
-            },
+            content=payload.model_dump(by_alias=True),
         )
 
     # Routers

@@ -1,3 +1,5 @@
+import { ApiResponseSchema } from "./responseSchema";
+
 export const parseJsonResponse = async (res) => {
   let payload = null;
   try {
@@ -6,15 +8,23 @@ export const parseJsonResponse = async (res) => {
     payload = null;
   }
 
-  if (!res.ok) {
-    const detail = payload?.detail || payload?.message;
-    const error = new Error(
-      detail ? String(detail) : `Request failed (HTTP ${res.status}).`
-    );
+  const parsed = ApiResponseSchema.safeParse(payload);
+  if (!parsed.success) {
+    const error = new Error("Invalid API response format");
+    error.name = "ApiResponseValidationError";
     error.status = res.status;
     error.payload = payload;
+    error.issues = parsed.error.issues;
     throw error;
   }
 
-  return payload;
+  if (!res.ok || parsed.data.success === false) {
+    const message = parsed.data.message || `Request failed (HTTP ${res.status}).`;
+    const error = new Error(String(message));
+    error.status = res.status;
+    error.payload = parsed.data;
+    throw error;
+  }
+
+  return parsed.data;
 };

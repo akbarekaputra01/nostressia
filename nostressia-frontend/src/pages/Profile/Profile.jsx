@@ -630,11 +630,11 @@ export default function Profile() {
     if (contextUser) {
       setFormData({
         username: contextUser.username || getDisplayUsername(contextUser),
-        fullName: contextUser.name || contextUser.fullName || "",
+        fullName: contextUser.name || "",
         email: contextUser.email || "",
         avatar: contextUser.avatar || AVATAR_OPTIONS[0],
-        birthday: contextUser.userDob || contextUser.birthday || "",
-        gender: normalizeGender(contextUser.gender || contextUser.sex || ""),
+        birthday: contextUser.userDob || "",
+        gender: normalizeGender(contextUser.gender || ""),
       });
       setLocalAvatarPreview(null);
       setShouldClearProfilePicture(false);
@@ -678,7 +678,7 @@ export default function Profile() {
       const data = await getMyBookmarks();
       const normalizedBookmarks = (data || []).map((item) => ({
         ...item,
-        bookmarkId: item.bookmarkId ?? item.id,
+        bookmarkId: item.bookmarkId,
         motivationId: item.motivationId,
       }));
       setBookmarks(normalizedBookmarks);
@@ -961,14 +961,7 @@ export default function Profile() {
       const updatedProfile = await updateProfile(payload);
       const cachedUser = storage.getJson(STORAGE_KEYS.CACHE_USER_DATA, contextUser || {});
       const normalizedDob =
-        updatedProfile?.userDob ||
-        updatedProfile?.user_dob ||
-        updatedProfile?.birthday ||
-        updatedProfile?.dob ||
-        payload.userDob ||
-        cachedUser?.userDob ||
-        cachedUser?.birthday ||
-        "";
+        updatedProfile?.userDob || payload.userDob || cachedUser?.userDob || "";
       const normalizedGender = normalizeGender(
         updatedProfile?.gender ?? payload.gender ?? cachedUser?.gender ?? "",
       );
@@ -976,11 +969,7 @@ export default function Profile() {
       const nextUser = {
         ...cachedUser,
         ...updatedProfile,
-        name:
-          updatedProfile?.name ||
-          updatedProfile?.fullName ||
-          cachedUser?.name ||
-          formData.fullName,
+        name: updatedProfile?.name || cachedUser?.name || formData.fullName,
         username: updatedProfile?.username || cachedUser?.username || formData.username,
         email: updatedProfile?.email || cachedUser?.email || formData.email,
         avatar: updatedProfile?.avatar || cachedUser?.avatar || formData.avatar,

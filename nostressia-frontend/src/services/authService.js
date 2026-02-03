@@ -16,25 +16,8 @@ export const register = async (payload) => {
   return unwrapResponse(response);
 };
 
-const normalizeOtpPayload = (payload) => {
-  if (!payload) return payload;
-  const normalized = { ...payload };
-
-  if ("otpCode" in normalized && !("otp_code" in normalized)) {
-    normalized.otp_code = normalized.otpCode;
-    delete normalized.otpCode;
-  }
-
-  if ("newPassword" in normalized && !("new_password" in normalized)) {
-    normalized.new_password = normalized.newPassword;
-    delete normalized.newPassword;
-  }
-
-  return normalized;
-};
-
 export const verifyOtp = async (payload) => {
-  const response = await client.post("/auth/verify-otp", normalizeOtpPayload(payload), {
+  const response = await client.post("/auth/verify-otp", payload, {
     authScope: false,
     skipAuthRedirect: true,
   });
@@ -50,7 +33,7 @@ export const forgotPassword = async (payload) => {
 };
 
 export const resetPasswordConfirm = async (payload) => {
-  const response = await client.post("/auth/reset-password-confirm", normalizeOtpPayload(payload), {
+  const response = await client.post("/auth/reset-password-confirm", payload, {
     authScope: false,
     skipAuthRedirect: true,
   });
@@ -58,7 +41,7 @@ export const resetPasswordConfirm = async (payload) => {
 };
 
 export const verifyResetPasswordOtp = async (payload) => {
-  const response = await client.post("/auth/reset-password-verify", normalizeOtpPayload(payload), {
+  const response = await client.post("/auth/reset-password-verify", payload, {
     authScope: false,
     skipAuthRedirect: true,
   });
