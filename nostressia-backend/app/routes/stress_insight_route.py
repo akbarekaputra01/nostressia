@@ -40,8 +40,8 @@ def predict_current_stress(
     return success_response(data=payload, message="Prediction created")
 
 
-@router.get("/global-forecast", response_model=APIResponse[GlobalForecastPayload])
-def get_global_forecast(
+@router.get("/forecast", response_model=APIResponse[GlobalForecastPayload])
+def get_forecast(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):

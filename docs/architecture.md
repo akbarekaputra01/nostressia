@@ -38,7 +38,7 @@ Dokumen ini menjelaskan arsitektur end-to-end Nostressia (Frontend, Backend, dan
 3. Backend memanggil ML service untuk memproses input dan mengembalikan hasil prediksi.
 
 ### 4) Forecast Global
-1. Frontend memanggil `GET /api/stress/global-forecast`.
+1. Frontend memanggil `GET /api/stress/forecast`.
 2. Backend memuat artefak forecast dan mengembalikan dataset ringkas untuk chart.
 
 ### 5) Retraining Forecast (Global & Personalized)

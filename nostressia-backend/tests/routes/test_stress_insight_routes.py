@@ -60,7 +60,7 @@ def test_predict_current_stress_error(client, monkeypatch):
     assert response.status_code == 500
 
 
-def test_global_forecast_requires_eligibility(client, db_session, monkeypatch):
+def test_forecast_requires_eligibility(client, db_session, monkeypatch):
     user = _create_user(db_session)
     token = create_access_token(
         {"sub": user.email, "id": user.user_id, "username": user.username}
@@ -81,14 +81,11 @@ def test_global_forecast_requires_eligibility(client, db_session, monkeypatch):
         ),
     )
 
-    response = client.get(
-        "/api/stress/global-forecast",
-        headers={"Authorization": f"Bearer {token}"},
-    )
+    response = client.get("/api/stress/forecast", headers={"Authorization": f"Bearer {token}"})
     assert response.status_code == 403
 
 
-def test_global_forecast_success(client, db_session, monkeypatch):
+def test_forecast_success(client, db_session, monkeypatch):
     user = _create_user(db_session)
     token = create_access_token(
         {"sub": user.email, "id": user.user_id, "username": user.username}
@@ -130,10 +127,7 @@ def test_global_forecast_success(client, db_session, monkeypatch):
         lambda *_: forecast_payload,
     )
 
-    response = client.get(
-        "/api/stress/global-forecast",
-        headers={"Authorization": f"Bearer {token}"},
-    )
+    response = client.get("/api/stress/forecast", headers={"Authorization": f"Bearer {token}"})
 
     assert response.status_code == 200
     assert response.json()["data"]["forecast"]["predictionLabel"] == "Low"

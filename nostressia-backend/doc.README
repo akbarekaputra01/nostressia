@@ -355,7 +355,7 @@ Response:
 ```
 
 ### 7.2 Global Forecast (Token Required)
-**GET** `/api/stress/global-forecast`
+**GET** `/api/stress/forecast`
 
 Response (when eligible):
 ```json
