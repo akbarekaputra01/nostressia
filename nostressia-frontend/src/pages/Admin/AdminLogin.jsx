@@ -67,30 +67,17 @@ export default function AdminLogin() {
     } catch (err) {
       logger.error("Admin login API error:", err);
 
-      // Only use offline credentials if the API is unreachable.
+      // Provide a clearer message when the API is unreachable.
       if (
         err.message.includes("Failed to fetch") ||
         err.message.includes("NetworkError") ||
         err.message.includes("timeout")
       ) {
-        if (formData.username === "admin" && formData.password === "admin123") {
-          const offlineAdmin = {
-            id: 0,
-            name: "Offline Admin",
-            username: "admin",
-            email: "admin@offline.local",
-          };
-
-          persistAdminToken("offline-token");
-          persistAdminProfile(offlineAdmin);
-
-          logger.warn("API unavailable. Using offline admin mode.");
-          navigate("/admin");
-          return;
-        }
+        setError("Unable to reach the admin service. Please check your connection and try again.");
+        setIsLoading(false);
+        return;
       }
 
-      // When offline fallback is not used, surface the API error message.
       setError(err.message || "Login failed. Please try again.");
       setIsLoading(false);
     }
