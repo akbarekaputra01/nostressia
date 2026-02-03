@@ -22,7 +22,25 @@ logger = logging.getLogger(__name__)
 oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl="/api/auth/token",
     scheme_name="UserOAuth2PasswordBearer",
+    auto_error=False,
 )
+
+def _get_or_create_debug_user(db: Session) -> User:
+    user = db.query(User).first()
+    if user:
+        return user
+
+    user = User(
+        username="debug-user",
+        name="Debug User",
+        email="debug@example.com",
+        password="debug",
+        is_verified=True,
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return user
 
 def create_access_token(data: dict, expires_delta: Union[timedelta, None] = None) -> str:
     to_encode = data.copy()
@@ -39,12 +57,18 @@ def decode_access_token(token: str):
 
 # --- Authenticated user resolver ---
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    if settings.auth_disabled:
+        return _get_or_create_debug_user(db)
+
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
-    
+
+    if not token:
+        raise credentials_exception
+
     try:
         # 1. Decode token.
         payload = decode_access_token(token)

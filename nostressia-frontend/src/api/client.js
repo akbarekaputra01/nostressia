@@ -4,6 +4,7 @@ import {
   AUTH_SCOPE,
   clearAdminSession,
   clearAuthToken,
+  isAuthDisabled,
   readTokenForScope,
 } from "../utils/auth";
 import { createLogger } from "../utils/logger";
@@ -113,13 +114,16 @@ const createApiClient = ({ authMode = AUTH_SCOPE.USER } = {}) => {
 
       const resolvedAuth = error?.config?.authScope ?? error?.config?.auth ?? authMode;
       const token = resolvedAuth === false ? null : readTokenForScope(resolvedAuth);
+      const authDisabled = isAuthDisabled();
       const isTokenInvalid = status === 401 && isInvalidTokenResponse(payload, message);
       const shouldClearSession =
+        !authDisabled &&
         status === 401 &&
         Boolean(token) &&
         resolvedAuth !== false &&
         (isTokenInvalid || resolvedAuth === AUTH_SCOPE.ADMIN);
       const shouldRedirect =
+        !authDisabled &&
         shouldClearSession &&
         !error?.config?.skipAuthRedirect &&
         (isTokenInvalid || resolvedAuth === AUTH_SCOPE.ADMIN);

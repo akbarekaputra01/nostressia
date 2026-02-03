@@ -8,7 +8,7 @@ const unauthorized = () => {
 };
 
 export default function middleware(request: Request) {
-  const enabledRaw = process.env.BASIC_AUTH_ENABLED ?? "true";
+  const enabledRaw = process.env.BASIC_AUTH_ENABLED ?? "false";
   const enabled = enabledRaw.toLowerCase() !== "false";
 
   if (!enabled) {

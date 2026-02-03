@@ -10,8 +10,10 @@ import {
 
 describe("api client auth handling", () => {
   const originalLocation = window.location;
+  const originalEnv = process.env.VITE_DISABLE_AUTH;
 
   beforeEach(() => {
+    process.env.VITE_DISABLE_AUTH = "false";
     Object.defineProperty(window, "location", {
       configurable: true,
       value: { pathname: "/admin", assign: vi.fn() },
@@ -25,6 +27,7 @@ describe("api client auth handling", () => {
       value: originalLocation,
       writable: true,
     });
+    process.env.VITE_DISABLE_AUTH = originalEnv;
   });
 
   it("clears the admin session after a 401 response", async () => {
