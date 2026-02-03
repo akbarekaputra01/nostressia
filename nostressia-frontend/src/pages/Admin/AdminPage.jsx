@@ -44,7 +44,7 @@ import { createLogger } from "../../utils/logger";
 
 const logger = createLogger("ADMIN_PAGE");
 
-export default function AdminPage({ skipAuth = false }) {
+export default function AdminPage() {
   const navigate = useNavigate();
 
   // --- EXISTING STATE ---
@@ -114,10 +114,6 @@ export default function AdminPage({ skipAuth = false }) {
 
   // Auth gate: load the admin profile or redirect to the login screen.
   useEffect(() => {
-    if (skipAuth) {
-      setCurrentUser({ id: 999, name: "Developer Mode", role: "admin" });
-      return;
-    }
     const storedUser = readAdminProfile();
     if (storedUser && typeof storedUser === "object") {
       setCurrentUser(storedUser);
@@ -134,7 +130,7 @@ export default function AdminPage({ skipAuth = false }) {
     clearAdminSession();
     logger.warn("Redirect to /admin/login because admin token/profile are missing or invalid.");
     navigate("/admin/login");
-  }, [navigate, skipAuth]);
+  }, [navigate]);
 
   const handleLogout = () => {
     clearAdminSession();
@@ -576,11 +572,6 @@ export default function AdminPage({ skipAuth = false }) {
       <div className="mb-8 animate-fade-in">
         <h2 className="text-2xl font-bold text-text-primary">Dashboard Overview</h2>
         <p className="text-text-muted">Manage content and users.</p>
-        {skipAuth && (
-          <p className="mt-2 text-xs font-bold text-orange-600 bg-orange-100 inline-block px-2 py-1 rounded">
-            * Developer Mode
-          </p>
-        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 animate-fade-in">
