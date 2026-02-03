@@ -38,7 +38,7 @@ Checklist of routes, services, utilities, and schemas with test coverage.
 - [x] `PUT /api/tips/{id}` — `tests/routes/test_tips_routes.py`
 - [x] `DELETE /api/tips/{id}` — `tests/routes/test_tips_routes.py`
 - [x] `POST /api/stress/current` — `tests/routes/test_stress_insight_routes.py`
-- [x] `GET /api/stress/global-forecast` — `tests/routes/test_stress_insight_routes.py`
+- [x] `GET /api/stress/forecast` — `tests/routes/test_stress_insight_routes.py`
 - [x] `POST /api/stress-levels/` — `tests/unit/test_stress_service.py`
 - [x] `POST /api/stress-levels/restore` — `tests/unit/test_stress_service.py`
 - [x] `GET /api/stress-levels/my-logs` — `tests/unit/test_stress_service.py`

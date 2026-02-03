@@ -93,8 +93,8 @@ Endpoint root & health disediakan tanpa prefix untuk kebutuhan monitoring/health
 { "stressLevel": "moderate", "score": 0.62 }
 ```
 
-### Global Forecast
-`GET /api/stress/global-forecast`
+### Forecast
+`GET /api/stress/forecast`
 
 **Response (data)**
 ```json

@@ -21,7 +21,7 @@ export const getStressEligibility = async () => {
 };
 
 export const getGlobalForecast = async () => {
-  const response = await client.get("/stress/global-forecast");
+  const response = await client.get("/stress/forecast");
   return unwrapResponse(response);
 };
 

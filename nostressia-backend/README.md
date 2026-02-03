@@ -104,7 +104,7 @@ Endpoint ini **tanpa prefix `/api`** untuk kebutuhan monitoring/healthcheck.
 
 ### Stress Insight & Log
 - `POST /api/stress/current`
-- `GET /api/stress/global-forecast`
+- `GET /api/stress/forecast`
 - `POST /api/stress-levels/`
 - `POST /api/stress-levels/restore`
 - `GET /api/stress-levels/my-logs`
