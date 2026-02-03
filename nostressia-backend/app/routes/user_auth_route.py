@@ -41,6 +41,7 @@ logger = logging.getLogger(__name__)
 # --- CONFIGURATION ---
 OTP_EXPIRE_MINUTES = 5  # OTP expiration in minutes.
 
+
 def _normalize_otp_created_at(value):
     if value is None:
         return None
@@ -114,7 +115,7 @@ def register(user_in: UserRegister, db: Session = Depends(get_db)):
     # 2. Validate username conflicts.
     if existing_user_username:
         if not existing_user_email or (existing_user_email.user_id != existing_user_username.user_id):
-             raise HTTPException(status_code=400, detail="Username already taken")
+            raise HTTPException(status_code=400, detail="Username already taken")
 
     # Prepare OTP and user data.
     otp_code = generate_otp(6)
@@ -209,10 +210,10 @@ def verify_otp_endpoint(payload: VerifyOTP, db: Session = Depends(get_db)):
         # Compute the time difference.
         time_diff = _utcnow() - otp_created_at
         if time_diff > timedelta(minutes=OTP_EXPIRE_MINUTES):
-             raise HTTPException(
-                 status_code=400,
-                 detail="The OTP code has expired. Please register again or request a new OTP.",
-             )
+            raise HTTPException(
+                status_code=400,
+                detail="The OTP code has expired. Please register again or request a new OTP.",
+            )
 
     # If all checks pass, activate the account.
     user.is_verified = True
@@ -356,10 +357,10 @@ def reset_password_verify(payload: ResetPasswordVerify, db: Session = Depends(ge
     if otp_created_at:
         time_diff = _utcnow() - otp_created_at
         if time_diff > timedelta(minutes=OTP_EXPIRE_MINUTES):
-             raise HTTPException(
-                 status_code=400,
-                 detail="The OTP code has expired. Please request a new one.",
-             )
+            raise HTTPException(
+                status_code=400,
+                detail="The OTP code has expired. Please request a new one.",
+            )
 
     return success_response(message="OTP code is valid. Please continue.")
 
@@ -379,10 +380,10 @@ def reset_password_confirm(payload: ResetPasswordConfirm, db: Session = Depends(
     if otp_created_at:
         time_diff = _utcnow() - otp_created_at
         if time_diff > timedelta(minutes=OTP_EXPIRE_MINUTES):
-             raise HTTPException(
-                 status_code=400,
-                 detail="The OTP code has expired. Please request a new one.",
-             )
+            raise HTTPException(
+                status_code=400,
+                detail="The OTP code has expired. Please request a new one.",
+            )
 
     # 3. Update password
     user.password = hash_password(payload.new_password)
