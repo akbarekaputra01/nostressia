@@ -29,11 +29,9 @@ import CTABackground from "../../assets/images/preview2.png";
 
 // 1. Mockup Mood Tracker
 const MoodCard = () => (
-  <div className="bg-surface-elevated glass-panel p-5 md:p-6 rounded-3xl shadow-xl border border-border w-full max-w-[320px] md:max-w-sm rotate-[-3deg] hover:rotate-0 transition-transform duration-500 relative z-10 mx-auto">
+  <div className="bg-surface-elevated glass-panel p-5 md:p-6 rounded-3xl shadow-xl border border-border w-full max-w-[320px] md:max-w-sm -rotate-3 hover:rotate-0 transition-transform duration-500 relative z-10 mx-auto">
     <div className="flex justify-between items-center mb-4 md:mb-6">
-      <span className="font-bold text-text-secondary text-sm md:text-base">
-        How's your mood?
-      </span>
+      <span className="font-bold text-text-secondary text-sm md:text-base">How's your mood?</span>
       <span className="text-[10px] md:text-xs text-text-muted">Today</span>
     </div>
     <div className="flex justify-between gap-2 px-2">
@@ -51,9 +49,7 @@ const MoodCard = () => (
       <div className="h-2 w-full bg-surface-muted rounded-full overflow-hidden">
         <div className="h-full w-[70%] bg-brand-primary"></div>
       </div>
-      <p className="text-[10px] md:text-xs text-center text-text-muted mt-2">
-        Stress: High
-      </p>
+      <p className="text-[10px] md:text-xs text-center text-text-muted mt-2">Stress: High</p>
     </div>
   </div>
 );
@@ -63,9 +59,7 @@ const AnalyticsCard = () => (
   <div className="bg-surface-elevated glass-panel p-5 md:p-6 rounded-3xl shadow-xl border border-border w-full max-w-[320px] md:max-w-sm rotate-2 hover:rotate-0 transition-transform duration-500 relative group z-10 mx-auto">
     <div className="flex justify-between items-center mb-4 md:mb-6">
       <div>
-        <span className="font-bold text-text-secondary block text-sm md:text-base">
-          History
-        </span>
+        <span className="font-bold text-text-secondary block text-sm md:text-base">History</span>
         <span className="text-[10px] md:text-xs text-text-muted">Month</span>
       </div>
       <div className="bg-brand-primary/10 p-2 rounded-lg text-brand-primary">
@@ -102,19 +96,17 @@ const AnalyticsCard = () => (
 
 // 3. Mockup Motivation
 const MotivationCard = () => (
-  <div className="bg-surface-elevated glass-panel p-5 md:p-6 rounded-3xl shadow-xl border border-border w-full max-w-[320px] md:max-w-sm rotate-[-1deg] hover:rotate-0 transition-transform duration-500 relative z-10 mx-auto">
+  <div className="bg-surface-elevated glass-panel p-5 md:p-6 rounded-3xl shadow-xl border border-border w-full max-w-[320px] md:max-w-sm -rotate-1 hover:rotate-0 transition-transform duration-500 relative z-10 mx-auto">
     <div className="flex justify-between items-center mb-4 md:mb-6">
       <div>
-        <span className="font-bold text-text-secondary block text-sm md:text-base">
-          Motivation
-        </span>
+        <span className="font-bold text-text-secondary block text-sm md:text-base">Motivation</span>
         <span className="text-[10px] md:text-xs text-text-muted">Boost</span>
       </div>
       <div className="bg-brand-accent/10 p-2 rounded-lg text-brand-accent">
         <Zap size={18} className="md:w-5 md:h-5" fill="currentColor" />
       </div>
     </div>
-    <div className="bg-gradient-to-br from-brand-accent to-brand-warning rounded-2xl p-5 md:p-6 text-text-inverse relative overflow-hidden group-hover:shadow-lg transition-shadow">
+    <div className="bg-linear-to-br from-brand-accent to-brand-warning rounded-2xl p-5 md:p-6 text-text-inverse relative overflow-hidden group-hover:shadow-lg transition-shadow">
       <Quote className="absolute top-3 left-3 text-white/20 w-5 h-5 md:w-6 md:h-6 rotate-180" />
       <p className="font-sans text-base md:text-lg leading-relaxed relative z-10 italic pt-2 text-white">
         "Believe you can."
@@ -128,8 +120,8 @@ const MotivationCard = () => (
 
 // 4. Mockup Tips Page
 const TipsPagePreview = () => (
-  <div className="w-full max-w-[320px] md:max-w-sm bg-surface-elevated glass-panel rounded-[24px] md:rounded-[32px] shadow-2xl border border-border overflow-hidden relative group rotate-1 hover:rotate-0 transition-transform duration-500 mx-auto">
-    <div className="bg-gradient-to-br from-bg-sun via-bg-orange to-bg-sky p-5 md:p-6 pb-3 md:pb-4">
+  <div className="w-full max-w-[320px] md:max-w-sm bg-surface-elevated glass-panel rounded-3xl md:rounded-4xl shadow-2xl border border-border overflow-hidden relative group rotate-1 hover:rotate-0 transition-transform duration-500 mx-auto">
+    <div className="bg-linear-to-br from-bg-sun via-bg-orange to-bg-sky p-5 md:p-6 pb-3 md:pb-4">
       <div className="mb-4 md:mb-6">
         <h3 className="text-xl md:text-2xl font-extrabold text-brand-primary tracking-wide">
           TIPS
@@ -156,7 +148,7 @@ const TipsPagePreview = () => (
 
 // 5. Mockup Diary
 const DiaryBookPreview = () => (
-  <div className="relative w-full max-w-[320px] md:max-w-sm aspect-[4/3] bg-bg-sun dark:bg-surface-muted rounded-l-2xl rounded-r-2xl shadow-2xl border-l-4 border-r-4 border-border flex overflow-hidden rotate-[-1deg] hover:rotate-0 transition-transform duration-500 group z-10 mx-auto">
+  <div className="relative w-full max-w-[320px] md:max-w-sm aspect-4/3 bg-bg-sun dark:bg-surface-muted rounded-l-2xl rounded-r-2xl shadow-2xl border-l-4 border-r-4 border-border flex overflow-hidden -rotate-1 hover:rotate-0 transition-transform duration-500 group z-10 mx-auto">
     <div className="flex-1 border-r border-border p-4 relative flex flex-col">
       <h4 className="text-xs md:text-sm font-sans font-bold text-text-secondary mb-3 md:mb-4 opacity-70">
         Journal
@@ -180,8 +172,8 @@ const DiaryBookPreview = () => (
         <div className="text-lg md:text-xl">😌</div>
       </div>
       <div className="space-y-2 md:space-y-3 pt-1">
-        <div className="w-full h-[1px] bg-brand-primary/20"></div>
-        <div className="w-full h-[1px] bg-brand-primary/20"></div>
+        <div className="w-full h-px bg-brand-primary/20"></div>
+        <div className="w-full h-px bg-brand-primary/20"></div>
       </div>
     </div>
   </div>
@@ -218,10 +210,7 @@ const HeroAppPreview = () => {
         className="bg-surface/80 backdrop-blur-xl border border-border/60 p-5 rounded-[2.5rem] shadow-2xl relative overflow-hidden"
       >
         {/* Fake Status Bar */}
-        <Motion.div
-          variants={itemVariants}
-          className="flex justify-between items-center mb-6 px-1"
-        >
+        <Motion.div variants={itemVariants} className="flex justify-between items-center mb-6 px-1">
           <div className="flex items-center gap-3">
             <Motion.img
               initial={{ scale: 0 }}
@@ -252,12 +241,10 @@ const HeroAppPreview = () => {
         {/* Hero Widget: Daily Check-in */}
         <Motion.div
           variants={itemVariants}
-          className="bg-brand-primary rounded-[1.5rem] p-5 text-text-inverse mb-4 relative overflow-hidden group"
+          className="bg-brand-primary rounded-3xl p-5 text-text-inverse mb-4 relative overflow-hidden group"
         >
           <div className="absolute top-0 right-0 w-24 h-24 bg-text-inverse opacity-10 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-110 transition-transform duration-700"></div>
-          <p className="text-xs font-medium text-text-inverse/80 mb-1">
-            Daily Check-in
-          </p>
+          <p className="text-xs font-medium text-text-inverse/80 mb-1">Daily Check-in</p>
           <h3 className="text-lg font-bold mb-4">How are you feeling?</h3>
           <div className="flex justify-between items-center bg-text-inverse/20 backdrop-blur-sm rounded-xl p-2 px-4">
             {["😔", "😐", "😌", "🤩"].map((emoji, i) => (
@@ -277,15 +264,13 @@ const HeroAppPreview = () => {
         <div className="grid grid-cols-2 gap-3">
           <Motion.div
             variants={itemVariants}
-            className="bg-brand-accent/10 p-4 rounded-[1.5rem] border border-brand-accent/20 hover:shadow-md transition-shadow cursor-pointer"
+            className="bg-brand-accent/10 p-4 rounded-3xl border border-brand-accent/20 hover:shadow-md transition-shadow cursor-pointer"
           >
             <div className="flex justify-between items-start mb-2">
               <div className="p-1.5 bg-surface-elevated glass-panel rounded-lg text-brand-accent shadow-sm">
                 <Zap size={14} fill="currentColor" />
               </div>
-              <span className="text-[10px] font-bold text-brand-accent/70">
-                Today
-              </span>
+              <span className="text-[10px] font-bold text-brand-accent/70">Today</span>
             </div>
             <p className="text-xs font-medium text-text-secondary italic">
               "Keep pushing forward."
@@ -294,7 +279,7 @@ const HeroAppPreview = () => {
 
           <Motion.div
             variants={itemVariants}
-            className="bg-surface-elevated glass-panel p-4 rounded-[1.5rem] border border-border shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+            className="bg-surface-elevated glass-panel p-4 rounded-3xl border border-border shadow-sm hover:shadow-md transition-shadow cursor-pointer"
           >
             <div className="flex justify-between items-start mb-3">
               <span className="text-xs font-bold text-text-muted">Stress</span>
@@ -357,9 +342,7 @@ const HeroAppPreview = () => {
           <div className="bg-brand-info/20 p-2 rounded-full text-brand-info">
             <CheckCircle size={18} />
           </div>
-          <span className="text-xs font-bold text-text-secondary">
-            All Clear!
-          </span>
+          <span className="text-xs font-bold text-text-secondary">All Clear!</span>
         </div>
       </Motion.div>
     </Motion.div>
@@ -404,7 +387,7 @@ const HeroSimple = () => {
             NO STRESS
             <br />
             {/* Gradient Text */}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-primary via-brand-accent to-brand-primary animate-gradient-x bg-[length:200%_auto] pr-2 pb-2">
+            <span className="text-transparent bg-clip-text bg-linear-to-r from-brand-primary via-brand-accent to-brand-primary animate-gradient-x bg-[length:200%_auto] pr-2 pb-2">
               MORE SUCCESS
             </span>
           </h1>
@@ -415,8 +398,8 @@ const HeroSimple = () => {
             transition={{ delay: 0.4 }}
             className="text-lg md:text-xl text-text-muted max-w-xl font-medium leading-relaxed mb-8"
           >
-            Your personal academic companion. Track mood, manage stress, and
-            survive college without losing your mind.
+            Your personal academic companion. Track mood, manage stress, and survive college without
+            losing your mind.
           </Motion.p>
 
           <Motion.div
@@ -431,17 +414,12 @@ const HeroSimple = () => {
               className="px-8 py-4 bg-surface-muted text-text-primary rounded-full font-bold text-base shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 group hover:bg-brand-accent hover:border-brand-accent cursor-pointer dark:bg-surface dark:text-text-primary dark:hover:bg-surface-muted"
             >
               Get Started Free{" "}
-              <ArrowRight
-                className="group-hover:translate-x-1 transition-transform"
-                size={20}
-              />
+              <ArrowRight className="group-hover:translate-x-1 transition-transform" size={20} />
             </Link>
             {/* BUTTON EXPLORE */}
             <button
               onClick={() =>
-                document
-                  .getElementById("prediction")
-                  .scrollIntoView({ behavior: "smooth" })
+                document.getElementById("prediction").scrollIntoView({ behavior: "smooth" })
               }
               className="px-8 py-4 bg-surface-elevated glass-panel text-text-primary dark:text-text-primary border border-border dark:border-border rounded-full font-bold text-base shadow-sm hover:bg-surface-muted dark:bg-surface dark:hover:bg-surface-muted transition-all flex items-center justify-center cursor-pointer"
             >
@@ -451,7 +429,7 @@ const HeroSimple = () => {
         </Motion.div>
 
         {/* KOLOM KANAN (Desktop) */}
-        <div className="relative h-auto md:h-[500px] flex items-center justify-center hidden lg:flex">
+        <div className="relative h-auto md:h-[500px] flex items-center justify-center lg:flex">
           <HeroAppPreview />
         </div>
 
@@ -523,17 +501,15 @@ const SplitNav = ({ scrollToSection, setIsMobileMenuOpen }) => {
       >
         {/* Navigation Pill */}
         <div className="flex items-center gap-1 bg-surface/70 backdrop-blur-xl border border-border/60 shadow-sm px-2 py-1.5 rounded-full">
-          {["Prediction", "Analytics", "Motivation", "Tips", "Diary"].map(
-            (item) => (
-              <button
-                key={item}
-                onClick={() => scrollToSection(item.toLowerCase())}
-                className="px-4 py-2 text-sm font-semibold text-text-muted dark:text-text-secondary hover:text-text-primary dark:hover:text-text-primary hover:bg-surface-elevated glass-panel dark:hover:bg-surface-muted rounded-full transition-all relative group cursor-pointer"
-              >
-                {item}
-              </button>
-            ),
-          )}
+          {["Prediction", "Analytics", "Motivation", "Tips", "Diary"].map((item) => (
+            <button
+              key={item}
+              onClick={() => scrollToSection(item.toLowerCase())}
+              className="px-4 py-2 text-sm font-semibold text-text-muted dark:text-text-secondary hover:text-text-primary dark:hover:text-text-primary hover:bg-surface-elevated glass-panel dark:hover:bg-surface-muted rounded-full transition-all relative group cursor-pointer"
+            >
+              {item}
+            </button>
+          ))}
         </div>
 
         {/* Login Button Independent */}
@@ -571,7 +547,7 @@ const MobileMenuOverlay = ({ isOpen, setIsOpen, scrollToSection }) => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setIsOpen(false)}
-            className="fixed inset-0 z-[55] bg-brand-neutral/10 backdrop-blur-[2px] md:hidden"
+            className="fixed inset-0 z-55 bg-brand-neutral/10 backdrop-blur-[2px] md:hidden"
           />
 
           {/* FLOATING BOX MENU */}
@@ -580,7 +556,7 @@ const MobileMenuOverlay = ({ isOpen, setIsOpen, scrollToSection }) => {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: -20 }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="fixed top-20 right-4 z-[60] w-64 bg-surface/95 dark:bg-surface/95 backdrop-blur-2xl border border-border/60 dark:border-border rounded-3xl shadow-2xl p-2 flex flex-col gap-1 md:hidden"
+            className="fixed top-20 right-4 z-60 w-64 bg-surface/95 dark:bg-surface/95 backdrop-blur-2xl border border-border/60 dark:border-border rounded-3xl shadow-2xl p-2 flex flex-col gap-1 md:hidden"
           >
             {/* Close Button Header */}
             <div className="flex justify-between items-center px-4 pt-2 pb-2">
@@ -596,22 +572,20 @@ const MobileMenuOverlay = ({ isOpen, setIsOpen, scrollToSection }) => {
             </div>
 
             {/* Menu Items */}
-            {["Prediction", "Analytics", "Motivation", "Tips", "Diary"].map(
-              (item) => (
-                <button
-                  key={item}
-                  onClick={() => {
-                    setIsOpen(false);
-                    setTimeout(() => scrollToSection(item.toLowerCase()), 300);
-                  }}
-                  className="w-full text-left px-4 py-3 text-sm font-bold text-text-secondary dark:text-text-secondary hover:text-brand-primary dark:hover:text-brand-info hover:bg-surface-elevated glass-panel dark:hover:bg-surface-muted rounded-2xl transition-all active:scale-95"
-                >
-                  {item}
-                </button>
-              ),
-            )}
+            {["Prediction", "Analytics", "Motivation", "Tips", "Diary"].map((item) => (
+              <button
+                key={item}
+                onClick={() => {
+                  setIsOpen(false);
+                  setTimeout(() => scrollToSection(item.toLowerCase()), 300);
+                }}
+                className="w-full text-left px-4 py-3 text-sm font-bold text-text-secondary dark:text-text-secondary hover:text-brand-primary dark:hover:text-brand-info hover:bg-surface-elevated glass-panel dark:hover:bg-surface-muted rounded-2xl transition-all active:scale-95"
+              >
+                {item}
+              </button>
+            ))}
 
-            <div className="h-[1px] bg-border-subtle dark:bg-border my-1 mx-2"></div>
+            <div className="h-px bg-border-subtle dark:bg-border my-1 mx-2"></div>
 
             {/* Login Button */}
             <Link
@@ -651,17 +625,13 @@ export default function LandingPage() {
       <div
         className="fixed inset-0 z-0 opacity-[0.4] pointer-events-none dark:hidden"
         style={{
-          backgroundImage:
-            "radial-gradient(rgb(var(--neutral-200)) 1px, transparent 1px)",
+          backgroundImage: "radial-gradient(rgb(var(--neutral-200)) 1px, transparent 1px)",
           backgroundSize: "32px 32px",
         }}
       ></div>
 
       {/* --- NEW SPLIT NAVIGATION (Fixed Logo) --- */}
-      <SplitNav
-        scrollToSection={scrollToSection}
-        setIsMobileMenuOpen={setIsMobileMenuOpen}
-      />
+      <SplitNav scrollToSection={scrollToSection} setIsMobileMenuOpen={setIsMobileMenuOpen} />
       <MobileMenuOverlay
         isOpen={isMobileMenuOpen}
         setIsOpen={setIsMobileMenuOpen}
@@ -676,7 +646,7 @@ export default function LandingPage() {
         <div className="whitespace-nowrap flex animate-marquee">
           {[...Array(10)].map((_, i) => (
             <div key={i} className="flex items-center mx-4 md:mx-8">
-              <span className="text-2xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-text-inverse to-text-muted italic">
+              <span className="text-2xl md:text-4xl font-black text-transparent bg-clip-text bg-linear-to-r from-text-inverse to-text-muted italic">
                 NO STRESS • MORE SUCCESS
               </span>
               <Star className="text-brand-accent ml-4 md:ml-8 w-6 h-6 md:w-8 md:h-8 fill-current animate-spin-slow" />
@@ -707,8 +677,8 @@ export default function LandingPage() {
                 Track it.
               </h2>
               <p className="text-base text-text-muted leading-relaxed px-2">
-                Understand your emotional patterns. Our intuitive mood tracker
-                helps you identify what makes you tick.
+                Understand your emotional patterns. Our intuitive mood tracker helps you identify
+                what makes you tick.
               </p>
             </div>
             <div className="flex flex-col items-center gap-6">
@@ -717,20 +687,15 @@ export default function LandingPage() {
               </div>
               <div className="w-full px-4 text-center">
                 <ul className="grid grid-cols-2 gap-3 mb-4 w-full px-2">
-                  {["Daily Check-in", "Visual Charts", "Trigger Analysis"].map(
-                    (item, i) => (
-                      <li
-                        key={i}
-                        className={`flex items-center gap-2 text-sm text-text-secondary font-medium bg-surface-elevated glass-panel px-3 py-2 rounded-lg shadow-sm border border-border justify-center ${i === 0 ? "col-span-2" : ""}`}
-                      >
-                        <CheckCircle
-                          size={16}
-                          className="text-brand-primary shrink-0"
-                        />
-                        <span>{item}</span>
-                      </li>
-                    ),
-                  )}
+                  {["Daily Check-in", "Visual Charts", "Trigger Analysis"].map((item, i) => (
+                    <li
+                      key={i}
+                      className={`flex items-center gap-2 text-sm text-text-secondary font-medium bg-surface-elevated glass-panel px-3 py-2 rounded-lg shadow-sm border border-border justify-center ${i === 0 ? "col-span-2" : ""}`}
+                    >
+                      <CheckCircle size={16} className="text-brand-primary shrink-0" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
                 </ul>
               </div>
             </div>
@@ -756,21 +721,15 @@ export default function LandingPage() {
                 Track it.
               </h2>
               <p className="text-lg text-text-muted leading-relaxed">
-                Understand your emotional patterns. Our intuitive mood tracker
-                helps you identify what makes you tick (or ticked off).
+                Understand your emotional patterns. Our intuitive mood tracker helps you identify
+                what makes you tick (or ticked off).
               </p>
               <ul className="space-y-3 mt-4 inline-block text-left">
-                {["Daily Check-in", "Visual Charts", "Trigger Analysis"].map(
-                  (item, i) => (
-                    <li
-                      key={i}
-                      className="flex items-center gap-3 text-text-secondary font-medium"
-                    >
-                      <CheckCircle size={18} className="text-brand-primary" />{" "}
-                      {item}
-                    </li>
-                  ),
-                )}
+                {["Daily Check-in", "Visual Charts", "Trigger Analysis"].map((item, i) => (
+                  <li key={i} className="flex items-center gap-3 text-text-secondary font-medium">
+                    <CheckCircle size={18} className="text-brand-primary" /> {item}
+                  </li>
+                ))}
               </ul>
             </div>
           </div>
@@ -788,8 +747,8 @@ export default function LandingPage() {
                 See the big picture.
               </h2>
               <p className="text-base text-text-muted leading-relaxed px-2">
-                Analyze your monthly progress. Spot patterns in your stress
-                levels and check past records.
+                Analyze your monthly progress. Spot patterns in your stress levels and check past
+                records.
               </p>
             </div>
             <div className="flex flex-col items-center gap-6">
@@ -798,19 +757,12 @@ export default function LandingPage() {
               </div>
               <div className="w-full px-4 text-center">
                 <ul className="grid grid-cols-2 gap-3 mb-4 w-full px-2">
-                  {[
-                    "Monthly History",
-                    "Pattern Recognition",
-                    "Data Insights",
-                  ].map((item, i) => (
+                  {["Monthly History", "Pattern Recognition", "Data Insights"].map((item, i) => (
                     <li
                       key={i}
                       className={`flex items-center gap-2 text-sm text-text-secondary font-medium bg-surface-elevated glass-panel px-3 py-2 rounded-lg shadow-sm border border-border justify-center ${i === 0 ? "col-span-2" : ""}`}
                     >
-                      <CheckCircle
-                        size={16}
-                        className="text-brand-primary shrink-0"
-                      />
+                      <CheckCircle size={16} className="text-brand-primary shrink-0" />
                       <span>{item}</span>
                     </li>
                   ))}
@@ -838,23 +790,17 @@ export default function LandingPage() {
                 See the big picture.
               </h2>
               <p className="text-lg text-text-muted leading-relaxed">
-                Don't just survive the day. Analyze your monthly progress. Spot
-                patterns in your stress levels and check past records.
+                Don't just survive the day. Analyze your monthly progress. Spot patterns in your
+                stress levels and check past records.
               </p>
               <ul className="space-y-3 mt-4 inline-block text-left">
-                {[
-                  "Monthly Stress History",
-                  "Pattern Recognition",
-                  "Data-Driven Insights",
-                ].map((item, i) => (
-                  <li
-                    key={i}
-                    className="flex items-center gap-3 text-text-secondary font-medium"
-                  >
-                    <CheckCircle size={18} className="text-brand-primary" />{" "}
-                    {item}
-                  </li>
-                ))}
+                {["Monthly Stress History", "Pattern Recognition", "Data-Driven Insights"].map(
+                  (item, i) => (
+                    <li key={i} className="flex items-center gap-3 text-text-secondary font-medium">
+                      <CheckCircle size={18} className="text-brand-primary" /> {item}
+                    </li>
+                  ),
+                )}
               </ul>
             </div>
           </div>
@@ -872,8 +818,7 @@ export default function LandingPage() {
                 Find your spark.
               </h2>
               <p className="text-base text-text-muted leading-relaxed px-2">
-                Get personalized motivational quotes to lift your spirits and
-                keep you going.
+                Get personalized motivational quotes to lift your spirits and keep you going.
               </p>
             </div>
             <div className="flex flex-col items-center gap-6">
@@ -882,19 +827,12 @@ export default function LandingPage() {
               </div>
               <div className="w-full px-4 text-center">
                 <ul className="grid grid-cols-2 gap-3 mb-4 w-full px-2">
-                  {[
-                    "Daily Quotes",
-                    "Positive Affirmations",
-                    "Mood Boosters",
-                  ].map((item, i) => (
+                  {["Daily Quotes", "Positive Affirmations", "Mood Boosters"].map((item, i) => (
                     <li
                       key={i}
                       className={`flex items-center gap-2 text-sm text-text-secondary font-medium bg-surface-elevated glass-panel px-3 py-2 rounded-lg shadow-sm border border-border justify-center ${i === 0 ? "col-span-2" : ""}`}
                     >
-                      <CheckCircle
-                        size={16}
-                        className="text-brand-primary shrink-0"
-                      />
+                      <CheckCircle size={16} className="text-brand-primary shrink-0" />
                       <span>{item}</span>
                     </li>
                   ))}
@@ -922,21 +860,15 @@ export default function LandingPage() {
                 Find your spark.
               </h2>
               <p className="text-lg text-text-muted leading-relaxed">
-                Feeling overwhelmed? Get personalized motivational quotes to
-                lift your spirits and keep you going when things get tough.
+                Feeling overwhelmed? Get personalized motivational quotes to lift your spirits and
+                keep you going when things get tough.
               </p>
               <ul className="space-y-3 mt-4 inline-block text-left">
-                {["Daily Quotes", "Positive Affirmations", "Mood Boosters"].map(
-                  (item, i) => (
-                    <li
-                      key={i}
-                      className="flex items-center gap-3 text-text-secondary font-medium"
-                    >
-                      <CheckCircle size={18} className="text-brand-primary" />{" "}
-                      {item}
-                    </li>
-                  ),
-                )}
+                {["Daily Quotes", "Positive Affirmations", "Mood Boosters"].map((item, i) => (
+                  <li key={i} className="flex items-center gap-3 text-text-secondary font-medium">
+                    <CheckCircle size={18} className="text-brand-primary" /> {item}
+                  </li>
+                ))}
               </ul>
             </div>
           </div>
@@ -954,8 +886,7 @@ export default function LandingPage() {
                 Rest & Reset.
               </h2>
               <p className="text-base text-text-muted leading-relaxed px-2">
-                Recharge your mind with daily curated tips. Simple actions for a
-                calmer you.
+                Recharge your mind with daily curated tips. Simple actions for a calmer you.
               </p>
             </div>
             <div className="flex flex-col items-center gap-6">
@@ -964,19 +895,12 @@ export default function LandingPage() {
               </div>
               <div className="w-full px-4 text-center">
                 <ul className="grid grid-cols-2 gap-3 mb-4 w-full px-2">
-                  {[
-                    "Daily Curated Tips",
-                    "Breathing Exercises",
-                    "Sleep Hygiene",
-                  ].map((item, i) => (
+                  {["Daily Curated Tips", "Breathing Exercises", "Sleep Hygiene"].map((item, i) => (
                     <li
                       key={i}
                       className={`flex items-center gap-2 text-sm text-text-secondary font-medium bg-surface-elevated glass-panel px-3 py-2 rounded-lg shadow-sm border border-border justify-center ${i === 0 ? "col-span-2" : ""}`}
                     >
-                      <CheckCircle
-                        size={16}
-                        className="text-brand-primary shrink-0"
-                      />
+                      <CheckCircle size={16} className="text-brand-primary shrink-0" />
                       <span>{item}</span>
                     </li>
                   ))}
@@ -1004,22 +928,14 @@ export default function LandingPage() {
                 Rest & Reset.
               </h2>
               <p className="text-lg text-text-muted leading-relaxed">
-                Recharge your mind with daily curated tips. Simple actions for a
-                calmer you, from breathing techniques to sleep hygiene.
+                Recharge your mind with daily curated tips. Simple actions for a calmer you, from
+                breathing techniques to sleep hygiene.
               </p>
 
               <ul className="space-y-3 mt-4 inline-block text-left mb-4">
-                {[
-                  "Daily Curated Tips",
-                  "Breathing Exercises",
-                  "Sleep Hygiene",
-                ].map((item, i) => (
-                  <li
-                    key={i}
-                    className="flex items-center gap-3 text-text-secondary font-medium"
-                  >
-                    <CheckCircle size={18} className="text-brand-primary" />{" "}
-                    {item}
+                {["Daily Curated Tips", "Breathing Exercises", "Sleep Hygiene"].map((item, i) => (
+                  <li key={i} className="flex items-center gap-3 text-text-secondary font-medium">
+                    <CheckCircle size={18} className="text-brand-primary" /> {item}
                   </li>
                 ))}
               </ul>
@@ -1039,8 +955,7 @@ export default function LandingPage() {
                 Dear Diary.
               </h2>
               <p className="text-base text-text-muted leading-relaxed px-2">
-                Clear your mind by writing it down. A safe, private space to
-                reflect.
+                Clear your mind by writing it down. A safe, private space to reflect.
               </p>
             </div>
             <div className="flex flex-col items-center gap-6">
@@ -1049,22 +964,17 @@ export default function LandingPage() {
               </div>
               <div className="w-full px-4 text-center">
                 <ul className="grid grid-cols-2 gap-3 mb-4 w-full px-2">
-                  {[
-                    "Private & Secure",
-                    "Reflect on your day",
-                    "Gratitude Journaling",
-                  ].map((item, i) => (
-                    <li
-                      key={i}
-                      className={`flex items-center gap-2 text-sm text-text-secondary font-medium bg-surface-elevated glass-panel px-3 py-2 rounded-lg shadow-sm border border-border justify-center ${i === 0 ? "col-span-2" : ""}`}
-                    >
-                      <CheckCircle
-                        size={16}
-                        className="text-brand-primary shrink-0"
-                      />
-                      <span>{item}</span>
-                    </li>
-                  ))}
+                  {["Private & Secure", "Reflect on your day", "Gratitude Journaling"].map(
+                    (item, i) => (
+                      <li
+                        key={i}
+                        className={`flex items-center gap-2 text-sm text-text-secondary font-medium bg-surface-elevated glass-panel px-3 py-2 rounded-lg shadow-sm border border-border justify-center ${i === 0 ? "col-span-2" : ""}`}
+                      >
+                        <CheckCircle size={16} className="text-brand-primary shrink-0" />
+                        <span>{item}</span>
+                      </li>
+                    ),
+                  )}
                 </ul>
               </div>
             </div>
@@ -1089,24 +999,18 @@ export default function LandingPage() {
                 Dear Diary.
               </h2>
               <p className="text-lg text-text-muted leading-relaxed">
-                Clear your mind by writing it down. A safe, private space to
-                reflect on your day, gratitude, or anything that's on your mind.
+                Clear your mind by writing it down. A safe, private space to reflect on your day,
+                gratitude, or anything that's on your mind.
               </p>
 
               <ul className="space-y-3 mt-4 inline-block text-left mb-4">
-                {[
-                  "Private & Secure",
-                  "Reflect on your day",
-                  "Gratitude Journaling",
-                ].map((item, i) => (
-                  <li
-                    key={i}
-                    className="flex items-center gap-3 text-text-secondary font-medium"
-                  >
-                    <CheckCircle size={18} className="text-brand-primary" />{" "}
-                    {item}
-                  </li>
-                ))}
+                {["Private & Secure", "Reflect on your day", "Gratitude Journaling"].map(
+                  (item, i) => (
+                    <li key={i} className="flex items-center gap-3 text-text-secondary font-medium">
+                      <CheckCircle size={18} className="text-brand-primary" /> {item}
+                    </li>
+                  ),
+                )}
               </ul>
             </div>
           </div>
@@ -1116,7 +1020,7 @@ export default function LandingPage() {
       {/* CTA Bottom (UPDATED WITH BACKGROUND IMAGE) */}
       <section className="py-12 md:py-20 px-6">
         <div
-          className="max-w-5xl mx-auto rounded-[2rem] md:rounded-[3rem] p-8 md:p-20 text-center relative overflow-hidden shadow-2xl bg-cover bg-center group"
+          className="max-w-5xl mx-auto rounded-4xl md:rounded-[3rem] p-8 md:p-20 text-center relative overflow-hidden shadow-2xl bg-cover bg-center group"
           style={{ backgroundImage: `url(${CTABackground})` }}
         >
           {/* Overlay Gelap (Agar teks terbaca jelas) */}
