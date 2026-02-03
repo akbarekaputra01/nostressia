@@ -446,7 +446,7 @@ export default function Login() {
   };
 
   return (
-    <div className="h-screen w-full flex font-sans bg-surface text-text-primary overflow-hidden">
+    <div className="h-screen w-full flex font-sans bg-surface dark:bg-transparent text-text-primary overflow-hidden">
       <PageMeta
         title="Login"
         description="Sign in to your Nostressia account to access the stress dashboard, daily journal, and mental wellness tips."

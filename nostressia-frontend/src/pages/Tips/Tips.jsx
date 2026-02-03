@@ -7,6 +7,7 @@ import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import { createLogger } from "../../utils/logger";
 import PageMeta from "../../components/PageMeta";
+import { useTheme } from "../../theme/ThemeProvider";
 // --- API URL ---
 import { getTipCategories, getTipsByCategory } from "../../services/tipsService";
 
@@ -118,6 +119,8 @@ export default function Tips() {
   const [isMobile, setIsMobile] = useState(false);
 
   const { user } = useOutletContext() || { user: {} };
+  const { resolvedTheme } = useTheme();
+  const isDarkMode = resolvedTheme === "dark";
 
   // Detect screen size to keep tip ordering consistent.
   useEffect(() => {
@@ -209,10 +212,14 @@ export default function Tips() {
     return categorySource.filter((c) => c.name.toLowerCase().includes(searchQuery.toLowerCase()));
   }, [categorySource, searchQuery]);
 
+  const resolvedBackgroundStyle = isDarkMode
+    ? { minHeight: "100vh", backgroundColor: "transparent" }
+    : bgStyle;
+
   return (
     <div
       className="min-h-screen text-text-primary dark:text-text-primary flex flex-col"
-      style={bgStyle}
+      style={resolvedBackgroundStyle}
     >
       <PageMeta
         title="Tips"

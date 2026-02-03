@@ -23,6 +23,7 @@ import Logo from "../../assets/images/Logo-Nostressia.png";
 import { getMotivations } from "../../services/motivationService";
 import { readAuthToken } from "../../utils/auth";
 import { createLogger } from "../../utils/logger";
+import { useTheme } from "../../theme/ThemeProvider";
 
 const logger = createLogger("MOTIVATION");
 
@@ -69,6 +70,8 @@ const EXPORT_SIZES = [{ id: "original", name: "Original", w: 464, h: 264 }];
 export default function Motivation() {
   const [likedIndex, setLikedIndex] = useState([]);
   const [toastMessage, setToastMessage] = useState("");
+  const { resolvedTheme } = useTheme();
+  const isDarkMode = resolvedTheme === "dark";
 
   // Fetch the user context from MainLayout.
   const { user } = useOutletContext() || { user: {} };
@@ -432,9 +435,13 @@ export default function Motivation() {
     setVisibleCount((prev) => prev + ITEMS_PER_PAGE);
   };
 
+  const resolvedBackgroundStyle = isDarkMode
+    ? { minHeight: "100vh", backgroundColor: "transparent" }
+    : backgroundStyle;
+
   return (
     // Tambahkan flex-col agar footer turun ke bawah
-    <div style={backgroundStyle} className="min-h-screen flex flex-col">
+    <div style={resolvedBackgroundStyle} className="min-h-screen flex flex-col">
       <PageMeta
         title="Motivation"
         description="Get daily motivational quotes and save your favorites to stay inspired."

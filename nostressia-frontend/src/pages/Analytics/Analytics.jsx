@@ -3,6 +3,7 @@ import { useOutletContext } from "react-router-dom";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import PageMeta from "../../components/PageMeta";
+import { useTheme } from "../../theme/ThemeProvider";
 import {
   Activity,
   BarChart3,
@@ -261,6 +262,8 @@ const renderStressTooltip =
 export default function Analytics() {
   const [mode, setMode] = useState("week");
   const headerRef = useRef(null);
+  const { resolvedTheme } = useTheme();
+  const isDarkMode = resolvedTheme === "dark";
 
   // Get user from layout
   const { user } = useOutletContext() || {
@@ -332,16 +335,17 @@ export default function Analytics() {
   const streakValue = resolveDisplayedStreak(user?.streak ?? summary?.streak ?? 0);
   const modeLabel = mode === "week" ? "Weekly" : "Monthly";
 
-  return (
-    <div
-      className="min-h-screen relative flex flex-col"
-      style={{
+  const backgroundStyle = isDarkMode
+    ? { backgroundColor: "transparent" }
+    : {
         backgroundColor: bgSun,
         backgroundImage: `radial-gradient(at 10% 10%, ${bgSun} 0%, transparent 50%), radial-gradient(at 90% 20%, ${bgOrange} 0%, transparent 50%), radial-gradient(at 50% 80%, ${bgSky} 0%, transparent 50%)`,
         backgroundSize: "200% 200%",
         animation: "gradient-bg 20s ease infinite",
-      }}
-    >
+      };
+
+  return (
+    <div className="min-h-screen relative flex flex-col" style={backgroundStyle}>
       <PageMeta
         title="Analytics"
         description="Analyze stress trends and mental wellness progress with Nostressia statistics and charts."

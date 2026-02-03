@@ -7,7 +7,7 @@ export default function NotFound() {
   const isAuthenticated = Boolean(readAuthToken());
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-surface px-6 text-text-primary">
+    <div className="min-h-screen flex items-center justify-center bg-surface dark:bg-transparent px-6 text-text-primary">
       <PageMeta
         title="404"
         description="The page you are looking for was not found on Nostressia."

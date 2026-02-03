@@ -18,6 +18,7 @@ import PageMeta from "../../components/PageMeta";
 import { clearAuthToken, readAuthToken } from "../../utils/auth";
 import { createLogger } from "../../utils/logger";
 import { resolveLegacyValue, storage, STORAGE_KEYS } from "../../utils/storage";
+import { useTheme } from "../../theme/ThemeProvider";
 
 const logger = createLogger("DASHBOARD");
 
@@ -351,6 +352,8 @@ export default function Dashboard() {
   const { user } = useOutletContext() || { user: {} };
   const username = user?.name || "Friend";
   const navigate = useNavigate();
+  const { resolvedTheme } = useTheme();
+  const isDarkMode = resolvedTheme === "dark";
 
   const today = new Date();
   const TODAY_KEY = formatDate(today);
@@ -1283,17 +1286,18 @@ export default function Dashboard() {
     }
   }
 
-  return (
-    <div
-      style={{
+  const backgroundStyle = isDarkMode
+    ? { minHeight: "100vh", backgroundColor: "transparent" }
+    : {
         minHeight: "100vh",
         backgroundColor: bgSun,
         backgroundImage: `radial-gradient(at 10% 10%, ${bgSun} 0%, transparent 50%), radial-gradient(at 90% 20%, ${bgOrange} 0%, transparent 50%), radial-gradient(at 50% 80%, ${bgSky} 0%, transparent 50%)`,
         backgroundSize: "200% 200%",
         animation: "gradient-bg 20s ease infinite",
-      }}
-      className="relative"
-    >
+      };
+
+  return (
+    <div style={backgroundStyle} className="relative">
       <PageMeta
         title="Dashboard"
         description="Track daily stress, mood predictions, and personal stats on the Nostressia dashboard."

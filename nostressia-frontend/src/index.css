@@ -103,6 +103,7 @@
     --surface: 28 25 25;
     --surface-elevated: 34 30 30;
     --surface-muted: 36 32 32;
+    --dot-color: 78 74 74;
     --text-primary: 249 246 246;
     --text-secondary: 209 202 202;
     --text-muted: 176 166 166;
@@ -127,6 +128,14 @@
     --journal-paper-muted: 28 25 25;
     --journal-line: 60 54 54;
     --journal-ink: 235 230 230;
+  }
+
+  body.dark {
+    background-image: radial-gradient(
+      circle at top,
+      rgb(var(--brand-accent) / 0.12),
+      transparent 48%
+    );
   }
 }
 
@@ -181,5 +190,16 @@
     border: 1px solid rgb(var(--glass-border) / 0.7);
     box-shadow: inset 0 1px 0 rgb(var(--glass-highlight) / 0.15);
     backdrop-filter: blur(12px);
+  }
+
+  .dark .dark-page-grid {
+    background-image: radial-gradient(
+        rgb(var(--dot-color) / 0.7) 1px,
+        transparent 1px
+      ),
+      radial-gradient(circle at 70% 15%, rgb(var(--brand-accent) / 0.2), transparent 46%),
+      radial-gradient(circle at 18% 85%, rgb(var(--brand-info) / 0.16), transparent 48%);
+    background-size: 36px 36px, 100% 100%, 100% 100%;
+    background-position: top left, top left, top left;
   }
 }

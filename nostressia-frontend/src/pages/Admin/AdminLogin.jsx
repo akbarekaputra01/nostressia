@@ -84,7 +84,7 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-surface px-4 font-sans text-text-primary">
+    <div className="min-h-screen flex items-center justify-center bg-surface dark:bg-transparent px-4 font-sans text-text-primary">
       <PageMeta
         title="Admin Login"
         description="Access the Nostressia admin portal to manage users, tips, and motivations."

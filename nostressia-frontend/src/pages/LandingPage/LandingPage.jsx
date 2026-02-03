@@ -642,14 +642,14 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen font-sans bg-surface dark:bg-surface text-text-primary dark:text-text-primary overflow-x-hidden selection:bg-brand-accent selection:text-text-inverse">
+    <div className="min-h-screen font-sans bg-surface dark:bg-transparent text-text-primary dark:text-text-primary overflow-x-hidden selection:bg-brand-accent selection:text-text-inverse">
       <PageMeta
         title="Landing Page"
         description="Discover Nostressia: track daily stress, reflective journaling, mental wellness tips, and motivation in one app."
       />
       {/* Background Pattern */}
       <div
-        className="fixed inset-0 z-0 opacity-[0.4] pointer-events-none"
+        className="fixed inset-0 z-0 opacity-[0.4] pointer-events-none dark:hidden"
         style={{
           backgroundImage:
             "radial-gradient(rgb(var(--neutral-200)) 1px, transparent 1px)",
