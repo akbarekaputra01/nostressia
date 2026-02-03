@@ -1,5 +1,4 @@
 User-agent: *
 Allow: /
 Disallow: /admin
-Disallow: /adm1n
 Sitemap: https://nostressia.app/sitemap.xml
