@@ -114,10 +114,6 @@ const createApiClient = ({ authMode = AUTH_SCOPE.USER } = {}) => {
         Boolean(token) &&
         resolvedAuth !== false &&
         (isTokenInvalid || resolvedAuth === AUTH_SCOPE.ADMIN);
-      const shouldRedirect =
-        shouldClearSession &&
-        !error?.config?.skipAuthRedirect &&
-        (isTokenInvalid || resolvedAuth === AUTH_SCOPE.ADMIN);
 
       if (shouldLogAdminUnauthorized(error?.config, status)) {
         logger.warn("[AUTH][ADMIN] 401 response", {
@@ -132,34 +128,11 @@ const createApiClient = ({ authMode = AUTH_SCOPE.USER } = {}) => {
         handleUnauthorized(resolvedAuth);
       }
 
-      if (shouldRedirect && typeof window !== "undefined") {
-        const isAdmin = resolvedAuth === AUTH_SCOPE.ADMIN;
-        const currentPath = window.location?.pathname;
-        if (shouldRedirectToLogin(isAdmin, currentPath)) {
-          window.location.assign(isAdmin ? "/admin/login" : "/login");
-        }
-      }
-
       return Promise.reject(normalizedError);
     }
   );
 
   return instance;
-};
-
-/**
- * Avoid redundant redirects when the user is already on the relevant login page.
- */
-const shouldRedirectToLogin = (isAdmin, currentPath) => {
-  const adminLoginPath = "/admin/login";
-  const userLoginPath = "/login";
-  const targetPath = isAdmin ? adminLoginPath : userLoginPath;
-
-  if (!currentPath) {
-    return true;
-  }
-
-  return currentPath !== targetPath;
 };
 
 export const unwrapResponse = (response) => {

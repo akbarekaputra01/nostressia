@@ -427,7 +427,7 @@ const HeroSimple = () => {
           >
             {/* LINK GET STARTED */}
             <Link
-              to="/login"
+              to="/dashboard"
               className="px-8 py-4 bg-surface-muted text-text-primary rounded-full font-bold text-base shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 group hover:bg-brand-accent hover:border-brand-accent cursor-pointer dark:bg-surface dark:text-text-primary dark:hover:bg-surface-muted"
             >
               Get Started Free{" "}
@@ -538,7 +538,7 @@ const SplitNav = ({ scrollToSection, setIsMobileMenuOpen }) => {
 
         {/* Login Button Independent */}
         <Link
-          to="/login"
+          to="/dashboard"
           className="px-6 py-3 bg-surface-muted text-text-primary rounded-full font-bold text-sm shadow-xl hover:shadow-2xl hover:bg-brand-primary hover:-translate-y-0.5 transition-all cursor-pointer flex items-center gap-2 dark:bg-surface dark:text-text-primary dark:hover:bg-surface-muted"
         >
           Login <ArrowRight size={14} />
@@ -615,7 +615,7 @@ const MobileMenuOverlay = ({ isOpen, setIsOpen, scrollToSection }) => {
 
             {/* Login Button */}
             <Link
-              to="/login"
+              to="/dashboard"
               onClick={() => setIsOpen(false)}
               className="w-full flex items-center justify-between px-4 py-3 text-sm font-bold text-text-primary bg-surface-muted hover:bg-brand-primary rounded-2xl transition-colors shadow-lg active:scale-95 mb-1 dark:bg-surface dark:text-text-primary dark:hover:bg-surface-muted"
             >
@@ -1130,7 +1130,7 @@ export default function LandingPage() {
             </h2>
             <div className="flex flex-col sm:flex-row justify-center gap-4 pt-4">
               <Link
-                to="/login"
+                to="/dashboard"
                 className="px-8 py-3 md:px-10 md:py-4 bg-surface-elevated text-text-primary dark:text-text-primary dark:bg-surface dark:hover:bg-brand-accent rounded-full font-bold text-base md:text-lg hover:bg-brand-primary hover:text-text-inverse transition-all shadow-lg transform hover:-translate-y-1 cursor-pointer"
               >
                 Join Now - It's Free

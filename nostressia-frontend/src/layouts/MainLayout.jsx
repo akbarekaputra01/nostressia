@@ -1,6 +1,6 @@
 // src/layouts/MainLayout.jsx
 import React, { useState, useEffect, useCallback } from "react";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import { getProfile } from "../services/authService";
 import { getStressEligibility } from "../services/stressService";
 import { clearAuthToken, readAuthToken } from "../utils/auth";
@@ -16,7 +16,6 @@ const normalizeGender = (value) => {
 };
 
 export default function MainLayout() {
-  const navigate = useNavigate();
   // 1. Load initial data from cache.
   // If a complete JSON payload exists, use it; otherwise fall back to defaults.
   const [user, setUser] = useState(() => {
@@ -69,10 +68,9 @@ export default function MainLayout() {
       if ([401, 403].includes(error?.status)) {
         clearAuthToken();
         storage.removeItem(STORAGE_KEYS.CACHE_USER_DATA);
-        navigate("/login", { replace: true });
       }
     }
-  }, [navigate]);
+  }, []);
 
   useEffect(() => {
     fetchUserData();

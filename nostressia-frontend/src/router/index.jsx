@@ -1,7 +1,7 @@
 // src/router/index.jsx
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
-import { readAdminToken, readAuthToken } from "../utils/auth";
+import { readAdminToken } from "../utils/auth";
 
 import MainLayout from "../layouts/MainLayout";
 import ScrollToTop from "../components/ScrollToTop";
@@ -29,14 +29,12 @@ export const AdminProtectedRoute = () => {
 
 // Require a user session for nested routes.
 export const ProtectedRoute = () => {
-  const token = readAuthToken();
-  return token ? <Outlet /> : <Navigate to="/login" replace />;
+  return <Outlet />;
 };
 
 // Redirect authenticated users away from public routes.
 export const PublicRoute = ({ redirectTo = "/dashboard" }) => {
-  const token = readAuthToken();
-  return token ? <Navigate to={redirectTo} replace /> : <Outlet />;
+  return <Outlet />;
 };
 
 // Redirect authenticated admins away from public routes.

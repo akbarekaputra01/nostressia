@@ -38,10 +38,10 @@ export default function NotFound() {
                 Go to Landing Page
               </Link>
               <Link
-                to="/login"
+                to="/dashboard"
                 className="w-full sm:w-auto rounded-xl bg-surface-muted px-4 py-2 text-sm font-semibold text-text-primary hover:bg-surface-elevated glass-panel dark:bg-surface dark:text-text-primary dark:hover:bg-surface"
               >
-                Go to Login
+                Go to Dashboard
               </Link>
             </>
           )}

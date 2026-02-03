@@ -1,6 +1,6 @@
 // src/pages/Dashboard/Dashboard.jsx
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate, useOutletContext } from "react-router-dom";
+import { useOutletContext } from "react-router-dom";
 import {
   addStressLog,
   getGlobalForecast,
@@ -350,7 +350,6 @@ function buildForecastEligibilityMessage({
 export default function Dashboard() {
   const { user } = useOutletContext() || { user: {} };
   const username = user?.name || "Friend";
-  const navigate = useNavigate();
 
   const today = new Date();
   const TODAY_KEY = formatDate(today);
@@ -769,7 +768,6 @@ export default function Dashboard() {
         if (error?.name === "AbortError") return;
         if (error?.status === 401) {
           clearAuthToken();
-          navigate("/login", { replace: true });
           return;
         }
         const detail = error?.payload?.detail || error?.message;
@@ -778,7 +776,7 @@ export default function Dashboard() {
         setEligibilityLoading(false);
       }
     },
-    [navigate],
+    [],
   );
 
   useEffect(() => {
@@ -996,7 +994,6 @@ export default function Dashboard() {
         if (error?.name === "AbortError") return;
         if (error?.status === 401) {
           clearAuthToken();
-          navigate("/login", { replace: true });
           return;
         }
         const errorEligibility = error?.payload?.errors?.[0]?.eligibility;
@@ -1028,7 +1025,7 @@ export default function Dashboard() {
 
     fetchForecast();
     return () => controller.abort();
-  }, [navigate, normalizedEligibility]);
+  }, [normalizedEligibility]);
 
   function handleOpenForm({ mode = "today", dateKey = TODAY_KEY, restoreMode = "manual" } = {}) {
     if (mode === "restore") {
