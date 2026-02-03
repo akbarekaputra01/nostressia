@@ -5,18 +5,40 @@ from app.services.global_forecast_service import global_forecast_service
 from app.services.personalized_forecast_service import personalized_forecast_service
 
 
+def _first_non_none(*values):
+    for value in values:
+        if value is not None:
+            return value
+    return None
+
+
 def _normalize_forecast_payload(raw_forecast: dict) -> dict:
-    chance_percent = raw_forecast.get("chance_percent", raw_forecast.get("chancePercent"))
+    chance_percent = _first_non_none(
+        raw_forecast.get("chance_percent"),
+        raw_forecast.get("chancePercent"),
+    )
     if chance_percent is None and "probability" in raw_forecast:
         chance_percent = round(float(raw_forecast["probability"]) * 100, 2)
 
     return {
         **raw_forecast,
-        "forecastDate": raw_forecast.get("forecast_date") or raw_forecast.get("forecastDate"),
+        "forecastDate": _first_non_none(
+            raw_forecast.get("forecast_date"),
+            raw_forecast.get("forecastDate"),
+        ),
         "chancePercent": chance_percent,
-        "predictionLabel": raw_forecast.get("prediction_label") or raw_forecast.get("predictionLabel"),
-        "predictionBinary": raw_forecast.get("prediction_binary") or raw_forecast.get("predictionBinary"),
-        "modelType": raw_forecast.get("model_type") or raw_forecast.get("modelType"),
+        "predictionLabel": _first_non_none(
+            raw_forecast.get("prediction_label"),
+            raw_forecast.get("predictionLabel"),
+        ),
+        "predictionBinary": _first_non_none(
+            raw_forecast.get("prediction_binary"),
+            raw_forecast.get("predictionBinary"),
+        ),
+        "modelType": _first_non_none(
+            raw_forecast.get("model_type"),
+            raw_forecast.get("modelType"),
+        ),
     }
 
 
