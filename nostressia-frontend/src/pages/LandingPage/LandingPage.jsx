@@ -387,7 +387,7 @@ const HeroSimple = () => {
             NO STRESS
             <br />
             {/* Gradient Text */}
-            <span className="text-transparent bg-clip-text bg-linear-to-r from-brand-primary via-brand-accent to-brand-primary animate-gradient-x bg-[length:200%_auto] pr-2 pb-2">
+            <span className="text-transparent bg-clip-text bg-linear-to-r from-brand-primary via-brand-accent to-brand-primary animate-gradient-x bg-size-[200%_auto] pr-2 pb-2">
               MORE SUCCESS
             </span>
           </h1>
