@@ -123,7 +123,6 @@ const createApiClient = ({ authMode = AUTH_SCOPE.USER } = {}) => {
         logger.warn("[AUTH][ADMIN] 401 response", {
           url: error?.config?.url,
           message,
-          payload,
           tokenPresent: Boolean(token),
           tokenInvalid: isTokenInvalid,
         });
