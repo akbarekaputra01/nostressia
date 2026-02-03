@@ -3,6 +3,16 @@ import { describe, expect, it, vi } from "vitest";
 import { createLogger } from "../utils/logger";
 
 describe("logger", () => {
+  it("disables logging by default in test mode", () => {
+    const infoSpy = vi.spyOn(console, "info").mockImplementation(() => {});
+    const logger = createLogger("TEST");
+
+    logger.info("Hello");
+
+    expect(infoSpy).not.toHaveBeenCalled();
+    infoSpy.mockRestore();
+  });
+
   it("writes formatted messages with scope prefixes", () => {
     const infoSpy = vi.spyOn(console, "info").mockImplementation(() => {});
     const logger = createLogger("TEST", { level: "debug", enabled: true });
