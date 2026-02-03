@@ -40,3 +40,4 @@ pytest
 - Semua test wajib hijau sebelum deployment.
 - Tambahkan test untuk bugfix baru sebelum merge.
 - Hindari flaky tests dengan mock I/O dan seed random jika perlu.
+- Pastikan inventory fungsi (FE/BE/ML) selalu dipetakan ke test yang mengeksekusi flow kritikalnya.
