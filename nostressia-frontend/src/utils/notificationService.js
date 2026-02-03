@@ -1,8 +1,11 @@
 import client from "../api/client";
+import { apiResponseSchema, parseApiResponse } from "../api/contracts/apiResponse";
+import { notificationStatusSchema } from "../api/contracts/notificationSchemas";
 import { createLogger } from "./logger";
 import { storage } from "./storage";
 
 const logger = createLogger("NOTIFICATIONS");
+const notificationStatusResponseSchema = apiResponseSchema(notificationStatusSchema);
 
 const STORAGE_KEY = "nostressia_notification_settings";
 const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY || "";
@@ -138,11 +141,12 @@ export const subscribeDailyReminder = async (
 
   try {
     const subscription = await ensurePushSubscription(registration);
-    await client.post("/notifications/subscribe", {
+    const response = await client.post("/notifications/subscribe", {
       subscription,
       reminderTime: timeValue,
       timezone: getTimezone(),
     });
+    parseApiResponse(notificationStatusResponseSchema, response.data);
 
     return {
       ok: true,
@@ -175,7 +179,8 @@ export const unsubscribeDailyReminder = async () => {
   }
 
   try {
-    await client.delete("/notifications/unsubscribe");
+    const response = await client.delete("/notifications/unsubscribe");
+    parseApiResponse(notificationStatusResponseSchema, response.data);
   } catch (error) {
     logger.warn("Failed to remove the subscription on the backend:", error);
     return { ok: false, reason: "backend-failed" };

@@ -49,7 +49,10 @@ def get_forecast(
     if not eligibility.eligible:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail=eligibility.model_dump(by_alias=True),
+            detail={
+                "code": "FORECAST_NOT_ELIGIBLE",
+                "eligibility": eligibility.model_dump(by_alias=True),
+            },
         )
 
     forecast = forecast_service.get_global_forecast_for_user(

@@ -1,32 +1,41 @@
-import { adminClient, unwrapResponse } from "../api/client";
+import { adminClient } from "../api/client";
+import { apiResponseSchema, parseApiResponse } from "../api/contracts/apiResponse";
+import { adminDiaryListSchema, adminUserListSchema } from "../api/contracts/adminSchemas";
+import { userResponseSchema } from "../api/contracts/authSchemas";
+import { z } from "zod";
+
+const adminUserListResponseSchema = apiResponseSchema(adminUserListSchema);
+const adminUserResponseSchema = apiResponseSchema(userResponseSchema);
+const adminDiaryListResponseSchema = apiResponseSchema(adminDiaryListSchema);
+const emptyResponseSchema = apiResponseSchema(z.null());
 
 export const getAdminUsers = async (params) => {
   const response = await adminClient.get("/admin/users/", {
     params,
     authScope: "admin",
   });
-  return unwrapResponse(response);
+  return parseApiResponse(adminUserListResponseSchema, response.data);
 };
 
 export const getAdminUser = async (userId) => {
   const response = await adminClient.get(`/admin/users/${userId}`, {
     authScope: "admin",
   });
-  return unwrapResponse(response);
+  return parseApiResponse(adminUserResponseSchema, response.data);
 };
 
 export const updateAdminUser = async (userId, payload) => {
   const response = await adminClient.put(`/admin/users/${userId}`, payload, {
     authScope: "admin",
   });
-  return unwrapResponse(response);
+  return parseApiResponse(adminUserResponseSchema, response.data);
 };
 
 export const deleteAdminUser = async (userId) => {
   const response = await adminClient.delete(`/admin/users/${userId}`, {
     authScope: "admin",
   });
-  return unwrapResponse(response);
+  return parseApiResponse(emptyResponseSchema, response.data);
 };
 
 export const getAdminDiaries = async (params) => {
@@ -34,12 +43,12 @@ export const getAdminDiaries = async (params) => {
     params,
     authScope: "admin",
   });
-  return unwrapResponse(response);
+  return parseApiResponse(adminDiaryListResponseSchema, response.data);
 };
 
 export const deleteAdminDiary = async (diaryId) => {
   const response = await adminClient.delete(`/admin/diaries/${diaryId}`, {
     authScope: "admin",
   });
-  return unwrapResponse(response);
+  return parseApiResponse(emptyResponseSchema, response.data);
 };

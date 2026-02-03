@@ -1,7 +1,12 @@
-import client, { unwrapResponse } from "./client";
+import client from "./client";
+import { apiResponseSchema, parseApiResponse } from "./contracts/apiResponse";
+import { userResponseSchema } from "./contracts/authSchemas";
+import { storageUploadSasSchema } from "./contracts/storageSchemas";
 
 const MAX_PROFILE_PICTURE_SIZE = 2 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const storageSasResponseSchema = apiResponseSchema(storageUploadSasSchema);
+const userResponseApiSchema = apiResponseSchema(userResponseSchema);
 
 export const requestUploadSas = async (file, folder = "uploads") => {
   const response = await client.post("/storage/sas/upload", {
@@ -9,7 +14,7 @@ export const requestUploadSas = async (file, folder = "uploads") => {
     contentType: file.type,
     folder,
   });
-  return unwrapResponse(response);
+  return parseApiResponse(storageSasResponseSchema, response.data);
 };
 
 export const uploadToAzure = async (file, folder = "uploads") => {
@@ -48,7 +53,7 @@ export const saveProfilePictureUrl = async (profileImageUrl) => {
   const response = await client.put("/profile/picture", {
     profileImageUrl,
   });
-  return unwrapResponse(response);
+  return parseApiResponse(userResponseApiSchema, response.data);
 };
 
 export const validateProfilePictureFile = (file) => {
