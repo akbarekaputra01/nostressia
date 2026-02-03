@@ -5,7 +5,7 @@ Checklist of exported functions, components, and flows with test coverage.
 ## API Modules (`src/api/**`)
 - [x] `src/api/client.js` (client instance, `apiOrigin`, `unwrapResponse`) — `src/__tests__/apiClientAuth.test.js`, `src/__tests__/exportSmoke.test.js`
 - [x] `src/api/config.js` (`BASE_URL`) — `src/__tests__/exportSmoke.test.js`
-- [x] `src/api/request.js` (`parseJsonResponse`) — `src/__tests__/exportSmoke.test.js`
+- [x] `src/api/request.js` (`parseJsonResponse`) — `src/__tests__/request.test.js`
 - [x] `src/api/forecastApi.js` (`fetchGlobalForecast`, `fetchForecastGlobal`) — `src/__tests__/exportSmoke.test.js`
 - [x] `src/api/diaryApi.js` (`createDiary`, `getMyDiaries`, `getDiaryById`, `updateDiary`) — `src/__tests__/exportSmoke.test.js`
 - [x] `src/api/motivationApi.js` (`getAllMotivations`, `createMotivation`, `deleteMotivation`) — `src/__tests__/exportSmoke.test.js`
@@ -15,9 +15,10 @@ Checklist of exported functions, components, and flows with test coverage.
 
 ## Utils (`src/utils/**`)
 - [x] `src/utils/auth.js` (token storage + migration helpers) — `src/__tests__/authStorage.test.js`, `src/__tests__/exportSmoke.test.js`
-- [x] `src/utils/avatar.js` (`DEFAULT_AVATAR`, `resolveAvatarUrl`) — `src/__tests__/exportSmoke.test.js`
-- [x] `src/utils/notificationService.js` (notification helpers) — `src/__tests__/exportSmoke.test.js`
+- [x] `src/utils/avatar.js` (`DEFAULT_AVATAR`, `resolveAvatarUrl`) — `src/__tests__/avatar.test.js`
+- [x] `src/utils/notificationService.js` (notification helpers) — `src/__tests__/notificationService.test.js`
 - [x] `src/utils/storage.js` (storage wrapper + legacy migration) — `src/__tests__/storage.test.js`
+- [x] `src/utils/streak.js` (`getTodayKey`, `hasLoggedToday`, `resolveDisplayedStreak`) — `src/__tests__/streak.test.js`
 
 ## Router (`src/router/**`)
 - [x] `src/router/index.jsx` (`ProtectedRoute`, `PublicRoute`, `AdminProtectedRoute`, `AdminPublicRoute`, `AppRouter`) — `src/__tests__/routerGuards.test.jsx`, `src/__tests__/exportSmoke.test.js`
@@ -25,6 +26,7 @@ Checklist of exported functions, components, and flows with test coverage.
 ## Components (`src/components/**`)
 - [x] `src/components/Navbar.jsx` — `src/__tests__/exportSmoke.test.js`
 - [x] `src/components/Footer.jsx` — `src/__tests__/exportSmoke.test.js`
+- [x] `src/components/PageMeta.jsx` — `src/__tests__/pageMeta.test.jsx`
 
 ## Pages (`src/pages/**`)
 - [x] `src/pages/Login/Login.jsx` (login + signup flip, OTP, forgot password) — `src/__tests__/loginSignup.test.jsx`
