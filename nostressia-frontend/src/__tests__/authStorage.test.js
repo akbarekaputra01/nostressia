@@ -11,6 +11,16 @@ import {
 } from "../utils/auth";
 
 describe("auth storage helpers", () => {
+  const originalEnv = process.env.VITE_DISABLE_AUTH;
+
+  beforeEach(() => {
+    process.env.VITE_DISABLE_AUTH = "false";
+  });
+
+  afterEach(() => {
+    process.env.VITE_DISABLE_AUTH = originalEnv;
+  });
+
   it("persists and reads the user access token", () => {
     persistAuthToken("access-token");
     expect(readAuthToken()).toBe("access-token");

@@ -18,6 +18,24 @@ export const AUTH_SCOPE = {
   ADMIN: "admin",
 };
 
+const resolveAuthDisabled = () => {
+  const viteFlag =
+    typeof import.meta !== "undefined" &&
+    import.meta.env &&
+    typeof import.meta.env.VITE_DISABLE_AUTH !== "undefined"
+      ? import.meta.env.VITE_DISABLE_AUTH
+      : undefined;
+  const nodeFlag =
+    typeof process !== "undefined" ? process.env.VITE_DISABLE_AUTH : undefined;
+  const resolved = viteFlag ?? nodeFlag;
+  if (resolved === undefined || resolved === null || resolved === "") {
+    return true;
+  }
+  return String(resolved).toLowerCase() !== "false";
+};
+
+export const isAuthDisabled = () => resolveAuthDisabled();
+
 /**
  * Validate token values to avoid storing empty or sentinel values.
  */
@@ -54,6 +72,10 @@ export const isAuthTokenValid = (token) => isValidTokenValue(token);
  * Read the user access token, migrating from legacy keys when needed.
  */
 export const readAuthToken = () => {
+  if (isAuthDisabled()) {
+    return "debug-token";
+  }
+
   const currentToken = resolveStoredToken(storage.getItem(ACCESS_TOKEN_KEY));
   if (currentToken) {
     cleanupLegacyTokens(LEGACY_USER_TOKEN_KEYS);
@@ -92,6 +114,10 @@ export const clearAuthToken = () => {
  * Read the admin access token, migrating from legacy keys when needed.
  */
 export const readAdminToken = () => {
+  if (isAuthDisabled()) {
+    return "debug-admin-token";
+  }
+
   const currentToken = resolveStoredToken(storage.getItem(ADMIN_TOKEN_KEY));
   if (currentToken) {
     cleanupLegacyTokens(LEGACY_ADMIN_TOKEN_KEYS);

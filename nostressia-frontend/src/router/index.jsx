@@ -1,7 +1,7 @@
 // src/router/index.jsx
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
-import { readAdminToken, readAuthToken } from "../utils/auth";
+import { isAuthDisabled, readAdminToken, readAuthToken } from "../utils/auth";
 
 import MainLayout from "../layouts/MainLayout";
 import ScrollToTop from "../components/ScrollToTop";
@@ -23,24 +23,36 @@ import AdminLogin from "../pages/Admin/AdminLogin";
 
 // Require an admin session for nested routes.
 export const AdminProtectedRoute = () => {
+  if (isAuthDisabled()) {
+    return <Outlet />;
+  }
   const token = readAdminToken();
   return token ? <Outlet /> : <Navigate to="/admin/login" replace />;
 };
 
 // Require a user session for nested routes.
 export const ProtectedRoute = () => {
+  if (isAuthDisabled()) {
+    return <Outlet />;
+  }
   const token = readAuthToken();
   return token ? <Outlet /> : <Navigate to="/login" replace />;
 };
 
 // Redirect authenticated users away from public routes.
 export const PublicRoute = ({ redirectTo = "/dashboard" }) => {
+  if (isAuthDisabled()) {
+    return <Outlet />;
+  }
   const token = readAuthToken();
   return token ? <Navigate to={redirectTo} replace /> : <Outlet />;
 };
 
 // Redirect authenticated admins away from public routes.
 export const AdminPublicRoute = ({ redirectTo = "/admin" }) => {
+  if (isAuthDisabled()) {
+    return <Outlet />;
+  }
   const token = readAdminToken();
   return token ? <Navigate to={redirectTo} replace /> : <Outlet />;
 };
