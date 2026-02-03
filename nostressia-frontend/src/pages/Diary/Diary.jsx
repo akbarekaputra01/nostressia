@@ -6,6 +6,7 @@ import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import Toast from "../../components/Toast";
 import PageMeta from "../../components/PageMeta";
+import { useTheme } from "../../theme/ThemeProvider";
 
 import { createDiary, getMyDiaries, updateDiary } from "../../services/diaryService";
 import { clearAuthToken, readAuthToken } from "../../utils/auth";
@@ -29,6 +30,8 @@ const colors = {
 export default function Diary() {
   const baseFont =
     "var(--font-base), 'Manrope', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif";
+  const { resolvedTheme } = useTheme();
+  const isDarkMode = resolvedTheme === "dark";
   const [entries, setEntries] = useState([]);
   const [title, setTitle] = useState("");
   const [text, setText] = useState("");
@@ -215,16 +218,20 @@ export default function Diary() {
 
   const isEditing = Boolean(editingEntryId);
 
-  return (
-    <div
-      className="min-h-screen relative overflow-x-hidden flex flex-col font-sans transition-colors duration-500 custom-scrollbar"
-      style={{
+  const backgroundStyle = isDarkMode
+    ? { backgroundColor: "transparent", fontFamily: baseFont }
+    : {
         backgroundColor: bgSun,
         backgroundImage: `radial-gradient(at 10% 10%, ${bgSun} 0%, transparent 50%), radial-gradient(at 90% 20%, ${bgOrange} 0%, transparent 50%), radial-gradient(at 50% 80%, ${bgSky} 0%, transparent 50%)`,
         backgroundSize: "200% 200%",
         animation: "gradient-bg 20s ease infinite",
         fontFamily: baseFont,
-      }}
+      };
+
+  return (
+    <div
+      className="min-h-screen relative overflow-x-hidden flex flex-col font-sans transition-colors duration-500 custom-scrollbar"
+      style={backgroundStyle}
     >
       <PageMeta
         title="Diary"

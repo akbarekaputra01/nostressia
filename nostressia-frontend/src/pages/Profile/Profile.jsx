@@ -697,6 +697,7 @@ export default function Profile() {
   }, [activeTab, fetchBookmarks]);
 
   const { preference: themePreference, resolvedTheme, setPreference } = useTheme();
+  const isDarkMode = resolvedTheme === "dark";
   const getSystemTheme = () => {
     if (typeof window === "undefined") return "light";
     return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
@@ -1293,15 +1294,16 @@ export default function Profile() {
     }
   };
 
-  return (
-    <div
-      className="min-h-screen pb-24 md:pb-10"
-      style={{
+  const backgroundStyle = isDarkMode
+    ? { backgroundColor: "transparent" }
+    : {
         background:
           "linear-gradient(135deg, rgb(var(--bg-gradient-sun)) 0%, rgb(var(--bg-gradient-orange)) 50%, rgb(var(--bg-gradient-sky)) 100%)",
         backgroundAttachment: "fixed",
-      }}
-    >
+      };
+
+  return (
+    <div className="min-h-screen pb-24 md:pb-10" style={backgroundStyle}>
       <PageMeta
         title="Profile"
         description="Manage your Nostressia profile, preferences, notifications, and account security."

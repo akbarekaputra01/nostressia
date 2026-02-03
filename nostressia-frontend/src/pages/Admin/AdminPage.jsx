@@ -891,7 +891,7 @@ export default function AdminPage({ skipAuth = false }) {
   // MAIN RENDER
   // ==============================
   return (
-    <div className="min-h-screen bg-surface-muted font-sans text-text-primary">
+    <div className="min-h-screen bg-surface-muted dark:bg-transparent font-sans text-text-primary">
       <PageMeta
         title="Admin Dashboard"
         description="Nostressia admin dashboard for managing users, motivations, tips, and diaries."
