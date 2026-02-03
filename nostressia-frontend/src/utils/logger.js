@@ -5,6 +5,9 @@ const LOG_LEVEL_ORDER = {
   error: 40,
 };
 
+const isTestEnv = () =>
+  import.meta.env?.MODE === "test" || Boolean(import.meta.env?.VITEST);
+
 const resolveDefaultLevel = () => {
   const envLevel = import.meta.env?.VITE_LOG_LEVEL;
   if (envLevel && LOG_LEVEL_ORDER[envLevel]) {
@@ -25,7 +28,8 @@ export const createLogger = (scope, options = {}) => {
   const loggingEnabled =
     typeof options.enabled === "boolean"
       ? options.enabled
-      : Boolean(import.meta.env?.DEV || import.meta.env?.VITE_LOG_LEVEL);
+      : !isTestEnv() &&
+        Boolean(import.meta.env?.DEV || import.meta.env?.VITE_LOG_LEVEL);
   const prefix = scope ? `[${scope}]` : "[NOSTRESSIA]";
 
   const write = (level, message, ...meta) => {
