@@ -31,21 +31,27 @@ const normalizeGender = (value) => {
 
 export default function MainLayout() {
   const navigate = useNavigate();
-  // 1. Load initial data from cache.
-  // If a complete JSON payload exists, use it; otherwise fall back to defaults.
+  
+  // 1. Load initial data from cache or use Default/Guest data
   const [user, setUser] = useState(() => {
     const savedData = resolveLegacyJson({
       key: STORAGE_KEYS.CACHE_USER_DATA,
       legacyKeys: ["cache_userData"],
       fallback: null,
     });
-    return savedData || { name: "User", avatar: null };
+    // Default fallback ke Guest User agar UI tidak error
+    return savedData || { name: "Guest User", avatar: null, streak: 0 };
   });
 
   const fetchUserData = useCallback(async () => {
     try {
       const token = readAuthToken();
-      if (!token) return;
+      
+      // PERUBAHAN: Jika tidak ada token, jangan return saja, tapi set sebagai Guest
+      if (!token) {
+        setUser({ name: "Guest User", email: "guest@nostressia.com", avatar: null, streak: 0 });
+        return;
+      }
 
       const backendData = await getProfile();
 
@@ -87,11 +93,19 @@ export default function MainLayout() {
       storage.setJson(STORAGE_KEYS.CACHE_USER_DATA, enrichedUserData);
     } catch (error) {
       logger.error("Failed to refresh user data in layout:", error);
+      
+      // PERUBAHAN: Logika redirect dimatikan. 
+      // Jika token expired atau error 401, kita biarkan user tetap di halaman sebagai Guest.
+      /*
       if ([401, 403].includes(error?.status)) {
         clearAuthToken();
         storage.removeItem(STORAGE_KEYS.CACHE_USER_DATA);
         navigate("/login", { replace: true });
       }
+      */
+      
+      // Fallback ke guest jika terjadi error fetch
+      setUser((prev) => prev || { name: "Guest User", avatar: null, streak: 0 });
     }
   }, [navigate]);
 
