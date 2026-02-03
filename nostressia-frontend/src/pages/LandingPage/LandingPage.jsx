@@ -224,9 +224,7 @@ const HeroAppPreview = () => {
               <p className="text-[10px] text-text-muted font-bold uppercase tracking-wide">
                 Good Morning,
               </p>
-              <p className="text-sm font-bold text-text-primary dark:text-text-primary">
-                PPTI Student
-              </p>
+              <p className="text-sm font-bold text-text-primary dark:text-text-primary">Student</p>
             </div>
           </div>
           <Motion.div
@@ -380,7 +378,7 @@ const HeroSimple = () => {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-accent opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-accent"></span>
             </span>
-            Available for PPTI Students
+            Available for Students
           </Motion.div>
 
           <h1 className="text-6xl md:text-7xl lg:text-8xl font-black tracking-tighter text-text-primary dark:text-text-primary leading-[0.95] mb-6">
