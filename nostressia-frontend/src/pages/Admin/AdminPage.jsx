@@ -296,8 +296,8 @@ export default function AdminPage({ skipAuth = false }) {
       try {
         const data = await getTipsByCategory(catId);
         const mappedTips = (data || []).map((item) => ({
-          id: item.tipId ?? item.id,
-          tip_text: item.detail || item.tipText,
+          id: item.tipId,
+          tip_text: item.detail,
           uploader_id: item.uploaderId,
         }));
         setTipsByCategory((prev) => ({ ...prev, [catId]: mappedTips }));
@@ -316,7 +316,7 @@ export default function AdminPage({ skipAuth = false }) {
       const rawNewTip = await createTip(payload);
       const newTip = {
         id: rawNewTip.tipId,
-        tip_text: rawNewTip.detail || currentTipInput,
+        tip_text: rawNewTip.detail,
         uploader_id: currentUser.id,
       };
       setTipsByCategory((prev) => ({ ...prev, [catId]: [...(prev[catId] || []), newTip] }));
@@ -354,7 +354,7 @@ export default function AdminPage({ skipAuth = false }) {
   const handleStartEditTip = (tip) => {
     if (!tip) return;
     setEditingTipId(tip.id);
-    setEditingTipText(tip.tip_text || tip.tipText || "");
+    setEditingTipText(tip.tip_text || "");
   };
 
   const handleCancelEditTip = () => {
@@ -391,7 +391,7 @@ export default function AdminPage({ skipAuth = false }) {
     try {
       const payload = { categoryName: newCategoryName.trim() };
       const created = await createTipCategory(payload);
-      const newCategoryId = created.tipCategoryId ?? created.id;
+      const newCategoryId = created.tipCategoryId;
       const newCategory = {
         id: newCategoryId,
         name: created.categoryName || newCategoryName.trim(),
@@ -451,7 +451,7 @@ export default function AdminPage({ skipAuth = false }) {
 
       const normalizedUsers = (data.data || []).map((user) => ({
         ...user,
-        userId: user.userId ?? user.id,
+        userId: user.userId,
         username: user.username,
         userDob: user.userDob,
         isVerified: user.isVerified,
@@ -530,7 +530,7 @@ export default function AdminPage({ skipAuth = false }) {
       const data = await getAdminDiaries({ page: Number(page), limit: 10, search });
       const normalizedDiaries = (data.data || []).map((diary) => ({
         ...diary,
-        diaryId: diary.diaryId ?? diary.id,
+        diaryId: diary.diaryId,
         createdAt: diary.createdAt,
         username: diary.username,
       }));
@@ -1220,7 +1220,7 @@ export default function AdminPage({ skipAuth = false }) {
                                 ) : (
                                   <>
                                     <p className="text-base text-text-primary font-medium">
-                                      {tip.tip_text || tip.tipText}
+                                      {tip.tip_text}
                                     </p>
                                     <p className="text-xs text-text-muted mt-1 flex items-center gap-1">
                                       <User size={10} /> Added by (

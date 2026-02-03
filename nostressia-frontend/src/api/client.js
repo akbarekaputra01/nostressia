@@ -100,12 +100,7 @@ const createApiClient = ({ authMode = AUTH_SCOPE.USER } = {}) => {
     (error) => {
       const status = error?.response?.status;
       const payload = error?.response?.data;
-      const message =
-        payload?.message ||
-        payload?.detail ||
-        (Array.isArray(payload?.data) ? "Validation error" : null) ||
-        error.message ||
-        "Request failed";
+      const message = payload?.message || error.message || "Request failed";
 
       const normalizedError = new Error(message);
       normalizedError.status = status;
@@ -168,7 +163,13 @@ const shouldRedirectToLogin = (isAdmin, currentPath) => {
   return currentPath !== targetPath;
 };
 
-export const unwrapResponse = (response) => response?.data?.data ?? response?.data;
+export const unwrapResponse = (response) => {
+  const payload = response?.data;
+  if (!payload || typeof payload !== "object" || !("data" in payload)) {
+    throw new Error("Invalid API response: missing data wrapper");
+  }
+  return payload.data;
+};
 
 const client = createApiClient({ authMode: AUTH_SCOPE.USER });
 export const adminClient = createApiClient({ authMode: AUTH_SCOPE.ADMIN });

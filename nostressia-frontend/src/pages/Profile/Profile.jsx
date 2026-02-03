@@ -678,7 +678,7 @@ export default function Profile() {
       const data = await getMyBookmarks();
       const normalizedBookmarks = (data || []).map((item) => ({
         ...item,
-        bookmarkId: item.bookmarkId ?? item.id,
+        bookmarkId: item.bookmarkId,
         motivationId: item.motivationId,
       }));
       setBookmarks(normalizedBookmarks);
@@ -842,7 +842,7 @@ export default function Profile() {
 
         const counts = entries.reduce(
           (acc, log) => {
-            const label = resolveStressLabel(log?.stressLevel ?? log?.stress_level);
+            const label = resolveStressLabel(log?.stressLevel);
             acc[label] += 1;
             return acc;
           },

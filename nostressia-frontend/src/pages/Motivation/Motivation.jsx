@@ -164,8 +164,8 @@ export default function Motivation() {
         if (!mounted) return;
 
         const normalized = data.map((d) => ({
-          motivationId: d.motivationId ?? d.id ?? null,
-          quote: d.quote ?? d.quotes ?? d.text ?? "",
+          motivationId: d.motivationId ?? null,
+          quote: d.quote ?? "",
           authorName: d.authorName ?? "Anonymous",
         }));
 
