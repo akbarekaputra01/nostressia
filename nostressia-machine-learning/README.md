@@ -30,7 +30,6 @@ Expected columns include:
 
 ## Model Artifacts
 - `Current-Stress/models/current_stress.joblib`
-- `Current-Stress/models/current_stress_model.joblib`
 - `nostressia-backend/app/models_ml/global_forecast.joblib`
 - `nostressia-backend/app/models_ml/personalized_forecast.joblib`
 
