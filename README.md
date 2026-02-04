@@ -38,6 +38,7 @@ Nostressia adalah platform pemantauan stres harian yang menggabungkan aplikasi w
 **Lokasi:** `nostressia-backend/`
 
 **Teknologi:** FastAPI, SQLAlchemy, MySQL, APScheduler, JWT.
+**Python:** 3.10.
 
 **Fitur utama:**
 - Autentikasi & profile user.
@@ -58,6 +59,7 @@ Nostressia adalah platform pemantauan stres harian yang menggabungkan aplikasi w
 **Lokasi:** `nostressia-machine-learning/`
 
 **Teknologi:** pandas, scikit-learn, joblib.
+**Python:** 3.10.
 
 **Fokus:**
 - Imputasi data, validasi schema, dan forecasting stres.
@@ -77,7 +79,7 @@ npm run dev
 
 ```bash
 cd nostressia-backend
-python -m venv .venv
+python3.10 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 uvicorn app.main:app --reload
@@ -87,7 +89,7 @@ uvicorn app.main:app --reload
 
 ```bash
 cd nostressia-machine-learning
-python -m venv .venv
+python3.10 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 ```
