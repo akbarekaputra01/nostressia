@@ -1,7 +1,7 @@
 import logging
 import os
 from datetime import date, timedelta
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import requests
 from sqlalchemy import desc
@@ -19,11 +19,11 @@ def _resolve_data_source() -> str:
     return os.getenv("DATA_SOURCE", DATA_SOURCE_DB).lower()
 
 
-def _resolve_backend_base_url() -> Optional[str]:
+def _resolve_backend_base_url() -> str | None:
     return os.getenv("BACKEND_BASE_URL")
 
 
-def _resolve_internal_token() -> Optional[str]:
+def _resolve_internal_token() -> str | None:
     return os.getenv("INTERNAL_TOKEN")
 
 
@@ -33,9 +33,9 @@ def _api_headers() -> Dict[str, str]:
 
 
 def fetch_global_training_rows(
-    db: Optional[Session],
-    days_limit: Optional[int] = None,
-    data_source: Optional[str] = None,
+    db: Session | None,
+    days_limit: int | None = None,
+    data_source: str | None = None,
 ) -> List[Dict[str, Any]]:
     source = (data_source or _resolve_data_source()).lower()
     if source == DATA_SOURCE_DB:
@@ -62,10 +62,10 @@ def fetch_global_training_rows(
 
 
 def fetch_personalized_training_rows(
-    db: Optional[Session],
+    db: Session | None,
     user_id: int,
     limit: int = 60,
-    data_source: Optional[str] = None,
+    data_source: str | None = None,
 ) -> List[Dict[str, Any]]:
     source = (data_source or _resolve_data_source()).lower()
     if source == DATA_SOURCE_DB:

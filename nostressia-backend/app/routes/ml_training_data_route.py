@@ -1,4 +1,3 @@
-from typing import Optional
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 from sqlalchemy.orm import Session
@@ -13,7 +12,7 @@ from app.services.training_data_service import (
 router = APIRouter(prefix="/ml/training-data", tags=["ML Training Data"])
 
 
-def _validate_internal_token(token: Optional[str]) -> None:
+def _validate_internal_token(token: str | None) -> None:
     internal_token = settings.internal_training_token
     if internal_token and token != internal_token:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
@@ -21,8 +20,8 @@ def _validate_internal_token(token: Optional[str]) -> None:
 
 @router.get("/global")
 def get_global_training_data(
-    days_limit: Optional[int] = Query(default=None, alias="days_limit"),
-    token: Optional[str] = Header(default=None, alias="X-Internal-Token"),
+    days_limit: int | None = Query(default=None, alias="days_limit"),
+    token: str | None = Header(default=None, alias="X-Internal-Token"),
     db: Session = Depends(get_db),
 ):
     _validate_internal_token(token)
@@ -34,7 +33,7 @@ def get_global_training_data(
 def get_personalized_training_data(
     user_id: int = Query(alias="userId"),
     limit: int = Query(default=60),
-    token: Optional[str] = Header(default=None, alias="X-Internal-Token"),
+    token: str | None = Header(default=None, alias="X-Internal-Token"),
     db: Session = Depends(get_db),
 ):
     _validate_internal_token(token)

@@ -1,15 +1,14 @@
 from datetime import date, datetime
-from typing import Optional
 
 from app.schemas.base_schema import BaseSchema
 
 # Base schema (shared fields)
 class DiaryBase(BaseSchema):
-    title: Optional[str] = None
+    title: str | None = None
     note: str
     date: date
-    emoji: Optional[str] = "😐"   # Stored as a string.
-    font: Optional[str] = "sans-serif" # Default font
+    emoji: str | None = "😐"   # Stored as a string.
+    font: str | None = "sans-serif" # Default font
 
 # Schema for input (create)
 class DiaryCreate(DiaryBase):
@@ -17,11 +16,11 @@ class DiaryCreate(DiaryBase):
 
 # Schema for edits (update)
 class DiaryUpdate(BaseSchema):
-    title: Optional[str] = None
-    note: Optional[str] = None
-    date: Optional[date] = None
-    emoji: Optional[str] = None
-    font: Optional[str] = None
+    title: str | None = None
+    note: str | None = None
+    date: date | None = None
+    emoji: str | None = None
+    font: str | None = None
 
 # Schema for responses (sent to the frontend)
 class DiaryResponse(DiaryBase):

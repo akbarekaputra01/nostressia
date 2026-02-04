@@ -1,5 +1,4 @@
 from datetime import date, datetime
-from typing import Optional
 
 from pydantic import Field
 
@@ -13,12 +12,12 @@ RESTORE_LIMIT = 3
 class StressLevelCreate(BaseSchema):
     date: date
     stress_level: int  # Expected values: 1, 2, or 3
-    gpa: Optional[float] = None
-    extracurricular_hour_per_day: Optional[float] = None
-    physical_activity_hour_per_day: Optional[float] = None
-    sleep_hour_per_day: Optional[float] = None
-    study_hour_per_day: Optional[float] = None
-    social_hour_per_day: Optional[float] = None
+    gpa: float | None = None
+    extracurricular_hour_per_day: float | None = None
+    physical_activity_hour_per_day: float | None = None
+    sleep_hour_per_day: float | None = None
+    study_hour_per_day: float | None = None
+    social_hour_per_day: float | None = None
     emoji: int = 0
 
 
@@ -27,7 +26,7 @@ class StressLevelResponse(StressLevelCreate):
     stress_level_id: int
     user_id: int
     is_restored: bool = False
-    created_at: Optional[datetime] = None
+    created_at: datetime | None = None
 
 
 class EligibilityResponse(BaseSchema):

@@ -1,5 +1,5 @@
 from functools import lru_cache
-from typing import List, Optional
+from typing import List
 
 from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -28,12 +28,12 @@ class Settings(BaseSettings):
     )
 
     # --- DATABASE CONFIG ---
-    db_user: Optional[str] = Field(default=None, validation_alias="DB_USER")
-    db_password: Optional[str] = Field(default=None, validation_alias="DB_PASSWORD")
-    db_host: Optional[str] = Field(default=None, validation_alias="DB_HOST")
+    db_user: str | None = Field(default=None, validation_alias="DB_USER")
+    db_password: str | None = Field(default=None, validation_alias="DB_PASSWORD")
+    db_host: str | None = Field(default=None, validation_alias="DB_HOST")
     db_port: int = Field(3306, validation_alias="DB_PORT")
-    db_name: Optional[str] = Field(default=None, validation_alias="DB_NAME")
-    database_url_override: Optional[str] = Field(
+    db_name: str | None = Field(default=None, validation_alias="DB_NAME")
+    database_url_override: str | None = Field(
         default=None, validation_alias="DATABASE_URL"
     )
 

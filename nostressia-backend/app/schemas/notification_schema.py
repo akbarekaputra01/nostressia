@@ -1,4 +1,3 @@
-from typing import Optional
 
 from pydantic import Field
 
@@ -23,5 +22,5 @@ class NotificationSubscribeRequest(BaseSchema):
 
 class NotificationStatusResponse(BaseSchema):
     dailyReminder: bool
-    reminderTime: Optional[str] = None
-    timezone: Optional[str] = None
+    reminderTime: str | None = None
+    timezone: str | None = None

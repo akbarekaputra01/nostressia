@@ -7,7 +7,7 @@ import pprint
 import os
 from datetime import timedelta
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Tuple
 
 import nbformat
 import pandas as pd
@@ -47,7 +47,7 @@ def _execute_notebook(notebook_path: Path, parameters: Dict[str, Any], timeout_s
     executor.preprocess(notebook, {"metadata": {"path": str(notebook_path.parent)}})
 
 
-def _current_streak(dates: List[datetime.date]) -> Tuple[int, Optional[datetime.date], Optional[datetime.date]]:
+def _current_streak(dates: List[datetime.date]) -> Tuple[int, datetime.date | None, datetime.date | None]:
     if not dates:
         return 0, None, None
     unique_dates = sorted(set(dates))
@@ -62,7 +62,7 @@ def _current_streak(dates: List[datetime.date]) -> Tuple[int, Optional[datetime.
 
 
 def _collect_candidates(
-    df: pd.DataFrame, state: MLState, force_user_id: Optional[int]
+    df: pd.DataFrame, state: MLState, force_user_id: int | None
 ) -> List[Dict[str, Any]]:
     candidates: List[Dict[str, Any]] = []
     for user_id, group in df.groupby("user_id"):
@@ -103,8 +103,8 @@ def _write_meta(path: Path, data_hash: str, trained_at: str, user_id: int, miles
 
 
 def train_personalized(
-    force_user_id: Optional[int],
-    force_window_size: Optional[int],
+    force_user_id: int | None,
+    force_window_size: int | None,
 ) -> bool:
     if not DATASET_PATH.exists():
         raise FileNotFoundError(f"Dataset not found: {DATASET_PATH}")

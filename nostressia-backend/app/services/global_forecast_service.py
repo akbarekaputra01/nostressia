@@ -2,7 +2,7 @@ import logging
 import os
 import re
 from datetime import timedelta
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import joblib
 import pandas as pd
@@ -48,8 +48,7 @@ class GlobalForecastService:
 
         return self._artifact
 
-    # Python 3.9 compatible (avoid `int | None`).
-    def get_required_history_days(self) -> Optional[int]:
+    def get_required_history_days(self) -> int | None:
         artifact_path = self._artifact_path()
         if not os.path.exists(artifact_path):
             return None
@@ -61,7 +60,7 @@ class GlobalForecastService:
 
         return self.get_required_history_days_from_artifact(artifact)
 
-    def get_required_history_days_from_artifact(self, artifact: Any) -> Optional[int]:
+    def get_required_history_days_from_artifact(self, artifact: Any) -> int | None:
         meta = artifact.get("meta", {}) if isinstance(artifact, dict) else {}
         try:
             window = int(meta.get("window", 0))

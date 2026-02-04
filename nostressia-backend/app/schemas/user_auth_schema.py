@@ -1,5 +1,4 @@
 from datetime import date
-from typing import Optional
 
 from pydantic import AliasChoices, EmailStr, Field
 
@@ -14,7 +13,7 @@ class UserRegister(BaseSchema):
     password: str
     gender: str
     user_dob: date = Field(validation_alias=AliasChoices("userDob", "dob"))
-    avatar: Optional[str] = None
+    avatar: str | None = None
 
 class UserLogin(BaseSchema):
     identifier: str  # Can be an email address or username.
@@ -36,9 +35,9 @@ class UserResponse(BaseSchema):
     name: str
     username: str
     email: EmailStr
-    gender: Optional[str] = None
-    avatar: Optional[str] = None
-    user_dob: Optional[date] = None
+    gender: str | None = None
+    avatar: str | None = None
+    user_dob: date | None = None
     streak: int
     diary_count: int = 0
     is_verified: bool  # Expose verification status to the frontend.
@@ -52,12 +51,12 @@ class EmailResponse(BaseSchema):
     email: EmailStr
 
 class UserUpdate(BaseSchema):
-    name: Optional[str] = None
-    username: Optional[str] = Field(default=None, validation_alias=AliasChoices("username", "user_name", "userName"))
-    email: Optional[EmailStr] = None
-    avatar: Optional[str] = None
-    gender: Optional[str] = None
-    user_dob: Optional[date] = None
+    name: str | None = None
+    username: str | None = Field(default=None, validation_alias=AliasChoices("username", "user_name", "userName"))
+    email: EmailStr | None = None
+    avatar: str | None = None
+    gender: str | None = None
+    user_dob: date | None = None
 
 class ChangePasswordSchema(BaseSchema):
     current_password: str
@@ -68,12 +67,12 @@ class VerifyCurrentPassword(BaseSchema):
     current_password: str
 
 class AdminUserUpdate(BaseSchema):
-    name: Optional[str] = None
-    username: Optional[str] = Field(default=None, validation_alias=AliasChoices("username", "user_name", "userName"))
-    email: Optional[EmailStr] = None
-    gender: Optional[str] = None
-    user_dob: Optional[date] = None
-    avatar: Optional[str] = None
+    name: str | None = None
+    username: str | None = Field(default=None, validation_alias=AliasChoices("username", "user_name", "userName"))
+    email: EmailStr | None = None
+    gender: str | None = None
+    user_dob: date | None = None
+    avatar: str | None = None
 
 class UserListResponse(BaseSchema):
     total: int

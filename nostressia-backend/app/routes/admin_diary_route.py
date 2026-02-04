@@ -1,4 +1,3 @@
-from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, desc
@@ -19,7 +18,7 @@ router = APIRouter(prefix="/admin/diaries", tags=["Admin - Diary Moderation"])
 def get_all_diaries(
     page: int = 1,
     limit: int = 10,
-    search: Optional[str] = None,
+    search: str | None = None,
     db: Session = Depends(get_db),
     current_admin: Admin = Depends(get_current_admin)
 ):

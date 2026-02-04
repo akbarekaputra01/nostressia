@@ -3,7 +3,6 @@ import os
 import pprint
 from datetime import date
 from pathlib import Path
-from typing import Optional
 
 import nbformat
 import pandas as pd
@@ -31,8 +30,8 @@ def _build_database_url() -> str:
 
 def _fetch_training_data(
     mode: str,
-    user_id: Optional[int],
-    milestone: Optional[int],
+    user_id: int | None,
+    milestone: int | None,
     output_dir: Path,
 ) -> Path:
     engine = create_engine(_build_database_url())
@@ -93,7 +92,7 @@ def _resolve_default_artifact(mode: str) -> Path:
     return ROOT / "nostressia-machine-learning" / "Stress-Forecast" / "models" / "global_forecast.joblib"
 
 
-def run_training(mode: str, user_id: Optional[int], milestone: Optional[int], output_path: Path) -> None:
+def run_training(mode: str, user_id: int | None, milestone: int | None, output_path: Path) -> None:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     data_dir = output_path.parent / "data"
     data_dir.mkdir(parents=True, exist_ok=True)

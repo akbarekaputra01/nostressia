@@ -1,4 +1,3 @@
-from typing import Optional
 
 from app.schemas.base_schema import BaseSchema
 
@@ -26,8 +25,8 @@ class TipsCreate(TipsBase):
 
 
 class TipsUpdate(BaseSchema):
-    detail: Optional[str] = None
-    tip_category_id: Optional[int] = None
+    detail: str | None = None
+    tip_category_id: int | None = None
 
 
 class TipsResponse(TipsBase):

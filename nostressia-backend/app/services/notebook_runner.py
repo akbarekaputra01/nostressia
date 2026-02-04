@@ -2,7 +2,7 @@ import json
 import logging
 import os
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 import papermill as pm
 
@@ -13,7 +13,7 @@ def run_notebook(
     notebook_path: str,
     parameters: Dict[str, Any],
     executed_output_path: str,
-    env: Optional[Dict[str, str]] = None,
+    env: Dict[str, str] | None = None,
 ) -> None:
     """Run notebook headless via papermill, saving executed notebook to disk."""
     notebook = Path(notebook_path).resolve()
@@ -48,7 +48,7 @@ def validate_joblib_output(joblib_path: str) -> None:
         raise ValueError(f"Model artifact is empty: {artifact}")
 
 
-def read_metrics_json(metrics_path: Optional[str]) -> Optional[Dict[str, Any]]:
+def read_metrics_json(metrics_path: str | None) -> Dict[str, Any] | None:
     if not metrics_path:
         return None
     metrics_file = Path(metrics_path)

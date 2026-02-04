@@ -1,12 +1,11 @@
-from typing import Optional
 
 from app.schemas.base_schema import BaseSchema
 
 
 class MotivationBase(BaseSchema):
     quote: str
-    uploader_id: Optional[int] = None
-    author_name: Optional[str] = None
+    uploader_id: int | None = None
+    author_name: str | None = None
 
 
 class MotivationCreate(MotivationBase):

@@ -1,6 +1,6 @@
 """Email delivery utilities for OTP and weekly reports."""
 import logging
-from typing import Optional, Tuple
+from typing import Tuple
 
 import sib_api_v3_sdk
 from sib_api_v3_sdk.rest import ApiException
@@ -15,7 +15,7 @@ BREVO_API_KEY = settings.brevo_api_key
 # Sender email used for Brevo.
 SENDER_EMAIL = "nostressia.official@gmail.com"
 
-def _get_brevo_client() -> Tuple[Optional[sib_api_v3_sdk.TransactionalEmailsApi], Optional[str]]:
+def _get_brevo_client() -> Tuple[sib_api_v3_sdk.TransactionalEmailsApi | None, str | None]:
     if not BREVO_API_KEY:
         return None, "BREVO_API_KEY is not set in the environment."
 
@@ -27,7 +27,7 @@ def _get_brevo_client() -> Tuple[Optional[sib_api_v3_sdk.TransactionalEmailsApi]
     return api_instance, None
 
 
-def send_otp_email(to_email: str, otp_code: str) -> Tuple[bool, Optional[str]]:
+def send_otp_email(to_email: str, otp_code: str) -> Tuple[bool, str | None]:
     """Send the registration OTP email."""
     api_instance, error_message = _get_brevo_client()
     if error_message:
@@ -79,7 +79,7 @@ def send_otp_email(to_email: str, otp_code: str) -> Tuple[bool, Optional[str]]:
         return False, error_detail
 
 
-def send_reset_password_email(to_email: str, otp_code: str) -> Tuple[bool, Optional[str]]:
+def send_reset_password_email(to_email: str, otp_code: str) -> Tuple[bool, str | None]:
     """Send the password reset OTP email."""
     api_instance, error_message = _get_brevo_client()
     if error_message:
@@ -135,7 +135,7 @@ def send_weekly_report_email(
     to_email: str,
     report: dict,
     user_name: str = "there",
-) -> Tuple[bool, Optional[str]]:
+) -> Tuple[bool, str | None]:
     api_instance, error_message = _get_brevo_client()
     if error_message:
         logger.error("Email client error: %s", error_message)

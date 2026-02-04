@@ -1,4 +1,3 @@
-from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
@@ -21,7 +20,7 @@ router = APIRouter(prefix="/admin/users", tags=["Admin - User Management"])
 def get_all_users(
     page: int = 1,
     limit: int = 10,
-    search: Optional[str] = None,
+    search: str | None = None,
     db: Session = Depends(get_db),
     current_admin: Admin = Depends(get_current_admin)
 ):

@@ -1,7 +1,6 @@
 """Notification scheduler helpers for daily reminders."""
 import logging
 from datetime import datetime
-from typing import Optional
 
 import pytz
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -17,7 +16,7 @@ logger = logging.getLogger(__name__)
 DEFAULT_TZ = "Asia/Jakarta"
 
 # Global scheduler instance for route handlers.
-_scheduler: Optional[BackgroundScheduler] = None
+_scheduler: BackgroundScheduler | None = None
 
 
 def _build_payload() -> dict:
@@ -242,7 +241,7 @@ def start_notification_scheduler() -> BackgroundScheduler:
     return scheduler
 
 
-def stop_notification_scheduler(scheduler: Optional[BackgroundScheduler]) -> None:
+def stop_notification_scheduler(scheduler: BackgroundScheduler | None) -> None:
     global _scheduler
     if scheduler:
         try:
