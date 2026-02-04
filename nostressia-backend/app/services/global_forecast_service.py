@@ -48,7 +48,7 @@ class GlobalForecastService:
 
         return self._artifact
 
-    # Python 3.9 compatible (avoid `int | None`).
+    # Python 3.10 compatible (avoid `int | None`).
     def get_required_history_days(self) -> Optional[int]:
         artifact_path = self._artifact_path()
         if not os.path.exists(artifact_path):

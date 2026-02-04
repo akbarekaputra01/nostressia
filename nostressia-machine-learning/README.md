@@ -43,15 +43,16 @@ in `imputation.py` mirrors the production rule and is used in tests to keep the
 notebooks aligned with the backend/FE behavior.
 
 ## Running Notebooks
-1. Install dependencies:
+1. Pastikan memakai Python 3.10 (disarankan via virtualenv).
+2. Install dependencies:
    ```bash
    pip install -r requirements.txt
    ```
-2. Launch Jupyter:
+3. Launch Jupyter:
    ```bash
    jupyter lab
    ```
-3. Open the notebooks from the `Current-Stress/notebooks/` or `Stress-Forecast/notebooks/` folders.
+4. Open the notebooks from the `Current-Stress/notebooks/` or `Stress-Forecast/notebooks/` folders.
 
 ## Refreshing the Stress Forecast Dataset
 To regenerate `Stress-Forecast/datasets/stress_forecast.csv` from the realtime database:

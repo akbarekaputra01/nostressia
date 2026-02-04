@@ -39,6 +39,8 @@ nostressia-backend/
    ```
 3. Isi `.env` dengan kredensial yang sesuai.
 
+**Python requirement:** gunakan Python 3.10 agar kompatibel dengan dependency backend dan pipeline ML.
+
 ### Environment Variables (ringkas)
 **Wajib (aplikasi akan fail-fast jika tidak ada):**
 - `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`, `DB_NAME` (wajib jika `DATABASE_URL` tidak diisi)
