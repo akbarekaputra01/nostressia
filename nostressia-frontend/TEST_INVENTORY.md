@@ -35,12 +35,12 @@ Checklist of exported functions, components, and flows with test coverage.
 - [x] `src/pages/Login/Login.jsx` (login + signup flip, OTP, forgot password) — `src/__tests__/loginSignup.test.jsx`
 - [x] `src/pages/Admin/AdminLogin.jsx` — `src/__tests__/adminAuthFlow.test.js`
 - [x] `src/pages/Admin/AdminPage.jsx` — `src/__tests__/exportSmoke.test.js`
-- [x] `src/pages/Dashboard/Dashboard.jsx` — `src/__tests__/dashboardScroll.test.jsx`
+- [x] `src/pages/Dashboard/Dashboard.jsx` — `src/__tests__/dashboardScroll.test.jsx`, `src/__tests__/coreFeaturePages.test.jsx`
 - [x] `src/pages/Profile/Profile.jsx` — `src/__tests__/profilePasswordFlow.test.jsx`, `src/__tests__/profileUpdate.test.jsx`
-- [x] `src/pages/Diary/Diary.jsx` — `src/__tests__/exportSmoke.test.js`
-- [x] `src/pages/Motivation/Motivation.jsx` — `src/__tests__/exportSmoke.test.js`
-- [x] `src/pages/Tips/Tips.jsx` — `src/__tests__/exportSmoke.test.js`
-- [x] `src/pages/Analytics/Analytics.jsx` — `src/__tests__/exportSmoke.test.js`
+- [x] `src/pages/Diary/Diary.jsx` — `src/__tests__/exportSmoke.test.js`, `src/__tests__/coreFeaturePages.test.jsx`
+- [x] `src/pages/Motivation/Motivation.jsx` — `src/__tests__/exportSmoke.test.js`, `src/__tests__/coreFeaturePages.test.jsx`
+- [x] `src/pages/Tips/Tips.jsx` — `src/__tests__/exportSmoke.test.js`, `src/__tests__/coreFeaturePages.test.jsx`
+- [x] `src/pages/Analytics/Analytics.jsx` — `src/__tests__/exportSmoke.test.js`, `src/__tests__/coreFeaturePages.test.jsx`
 - [x] `src/pages/LandingPage/LandingPage.jsx` — `src/__tests__/exportSmoke.test.js`
 - [x] `src/pages/NotFound/NotFound.jsx` — `src/__tests__/exportSmoke.test.js`
 
