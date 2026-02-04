@@ -20,6 +20,9 @@ Checklist of exported functions, components, and flows with test coverage.
 - [x] `src/utils/storage.js` (storage wrapper + legacy migration) — `src/__tests__/storage.test.js`
 - [x] `src/utils/streak.js` (`getTodayKey`, `hasLoggedToday`, `resolveDisplayedStreak`) — `src/__tests__/streak.test.js`
 
+## Theme (`src/theme/**`)
+- [x] `src/theme/ThemeProvider.jsx` (`ThemeProvider`, `useTheme`) — `src/__tests__/themeProvider.test.jsx`
+
 ## Router (`src/router/**`)
 - [x] `src/router/index.jsx` (`ProtectedRoute`, `PublicRoute`, `AdminProtectedRoute`, `AdminPublicRoute`, `AppRouter`) — `src/__tests__/routerGuards.test.jsx`, `src/__tests__/exportSmoke.test.js`
 

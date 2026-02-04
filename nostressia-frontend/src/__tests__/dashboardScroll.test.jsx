@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 
 import Dashboard from "../pages/Dashboard/Dashboard";
+import { ThemeProvider } from "../theme/ThemeProvider";
 
 vi.mock("../services/stressService", () => ({
   addStressLog: vi.fn().mockResolvedValue({ stressLevelId: 1 }),
@@ -47,7 +48,9 @@ describe("Dashboard scroll behavior", () => {
   it("keeps the stress form scrollable", async () => {
     render(
       <MemoryRouter>
-        <Dashboard />
+        <ThemeProvider>
+          <Dashboard />
+        </ThemeProvider>
       </MemoryRouter>,
     );
 
