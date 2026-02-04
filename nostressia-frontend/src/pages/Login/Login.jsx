@@ -61,10 +61,10 @@ const INITIAL_FORM_DATA = {
 
 export default function Login() {
   const navigate = useNavigate();
-  
+
   // [PERBAIKAN] Mengambil resolvedTheme dari ThemeProvider
   // resolvedTheme nilainya otomatis 'light' atau 'dark' (sudah menghandle 'system')
-  const { resolvedTheme } = useTheme(); 
+  const { resolvedTheme } = useTheme();
 
   // --- Core state ---
   const [formData, setFormData] = useState(INITIAL_FORM_DATA);
@@ -458,7 +458,6 @@ export default function Login() {
         <div className="relative z-10 w-full max-w-[480px] group">
           <div className="absolute inset-0 bg-brand-info/10 blur-[60px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           <div className="relative w-full flex items-center justify-center">
-            
             {/* LOGO BASE (KEDIP/WINK) */}
             <img
               src={isDarkMode ? logoKedipDark : logoKedip}
@@ -1057,7 +1056,7 @@ export default function Login() {
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                           <Mail
                             size={16}
-                            className="text-text-muted group-focus-within:text-blue-600"
+                            className="z-2 text-text-muted group-focus-within:text-blue-600"
                           />
                         </div>
                         <input
@@ -1171,7 +1170,7 @@ export default function Login() {
                           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <Lock
                               size={16}
-                              className="text-text-muted group-focus-within:text-blue-600"
+                              className="z-2 text-text-muted group-focus-within:text-blue-600"
                             />
                           </div>
                           <input
@@ -1194,7 +1193,7 @@ export default function Login() {
                           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <CheckCircle
                               size={16}
-                              className="text-text-muted group-focus-within:text-blue-600"
+                              className="z-2 text-text-muted group-focus-within:text-blue-600"
                             />
                           </div>
                           <input
@@ -1253,11 +1252,7 @@ export default function Login() {
         onConfirm={handleConfirm}
         onCancel={handleCancelConfirm}
       />
-      <Toast
-        message={toast?.message}
-        type={toast?.type}
-        onClose={() => setToast(null)}
-      />
+      <Toast message={toast?.message} type={toast?.type} onClose={() => setToast(null)} />
 
       <style>{`
         @keyframes pulse-slow { 0%, 100% { opacity: 0.4; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.1); } }
