@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 # Resolve absolute paths for model artifacts.
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MODEL_PATH = os.path.join(BASE_DIR, "models_ml", "current_stress_pipeline.joblib")
+MODEL_PATH = os.path.join(BASE_DIR, "models_ml", "current_stress.joblib")
 
 class StressModelService:
     def __init__(self):

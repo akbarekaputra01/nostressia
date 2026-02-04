@@ -4,7 +4,7 @@ Checklist of notebook workflows, preprocessing expectations, and tests.
 
 ## Notebook Inventory
 - [x] `Current-Stress/notebooks/current_stress.ipynb` — validated via schema tests in `tests/test_data_schema.py`
-- [x] `Current-Stress/notebooks/current_stress_pipeline.ipynb` — validated via artifact checks in `tests/test_model_artifacts.py`
+- [x] `Current-Stress/notebooks/current_stress.ipynb` — validated via artifact checks in `tests/test_model_artifacts.py`
 - [x] `Current-Stress/notebooks/predict.ipynb` — validated via artifact checks in `tests/test_model_artifacts.py`
 - [x] `Current-Stress/notebooks/predict_pipeline.ipynb` — validated via artifact checks in `tests/test_model_artifacts.py`
 - [x] `Stress-Forecast/notebooks/global_forecast.ipynb` — validated via schema tests in `tests/test_data_schema.py`

@@ -3,8 +3,7 @@ from pathlib import Path
 
 def test_current_stress_artifacts_present():
     artifact_paths = [
-        Path("Current-Stress/models/current_stress_pipeline.joblib"),
-        Path("Current-Stress/models/current_stress_model.joblib"),
+        Path("Current-Stress/models/current_stress.joblib")
     ]
     for path in artifact_paths:
         assert path.exists(), f"Missing artifact: {path}"
