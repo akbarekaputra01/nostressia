@@ -17,6 +17,7 @@ class Settings(BaseSettings):
 
     app_name: str = Field("Nostressia API", description="Application name exposed in OpenAPI")
     api_prefix: str = Field("/api", description="Root API prefix")
+    log_level: str = Field("INFO", validation_alias="LOG_LEVEL")
     allowed_origins: List[str] = Field(
         default_factory=lambda: [
             "http://localhost:5173",

@@ -15,6 +15,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from app.api.api_router import api_router
 from app.core.config import settings
 from app.core.database import Base, engine
+from app.core.logging import configure_logging
 from app.models import register_models
 from app.routes.root_route import router as root_router
 from app.services.notification_scheduler import (
@@ -81,6 +82,7 @@ async def lifespan(app: FastAPI):
 
 
 def create_app() -> FastAPI:
+    configure_logging(settings.log_level)
     app = FastAPI(title=settings.app_name, lifespan=lifespan)
 
     # Register models so metadata contains all tables.
