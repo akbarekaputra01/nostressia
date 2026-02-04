@@ -46,6 +46,7 @@ nostressia-backend/
 - `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`, `DB_NAME` (wajib jika `DATABASE_URL` tidak diisi)
 - `JWT_SECRET`, `JWT_ALGORITHM`, `ACCESS_TOKEN_EXPIRE_MINUTES`
 - `BREVO_API_KEY`
+- `LOG_LEVEL` (opsional, default `INFO`)
 
 **Opsional (fitur terkait hanya aktif jika ada):**
 - `AZURE_STORAGE_CONNECTION_STRING`, `AZURE_STORAGE_ACCOUNT_NAME`, `AZURE_STORAGE_CONTAINER`, `AZURE_STORAGE_CONTAINER_NAME`
@@ -57,6 +58,9 @@ nostressia-backend/
 ```bash
 uvicorn app.main:app --reload
 ```
+
+### Logging
+Gunakan `LOG_LEVEL` untuk mengatur tingkat log (`DEBUG`, `INFO`, `WARNING`, `ERROR`). Log akan diformat konsisten agar mudah ditelusuri tanpa terlalu noisy.
 
 ## Endpoint Utama (contoh)
 > Semua endpoint bisnis memakai prefix `/api`.
