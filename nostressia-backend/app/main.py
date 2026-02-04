@@ -11,6 +11,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import inspect
 from sqlalchemy.exc import SQLAlchemyError
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.api.api_router import api_router
 from app.core.config import settings
@@ -105,6 +106,28 @@ def create_app() -> FastAPI:
     # HTTP exception handler
     @app.exception_handler(HTTPException)
     async def http_exception_handler(request: Request, exc: HTTPException):
+        detail = exc.detail
+        is_message = isinstance(detail, str)
+        errors = None
+        if not is_message:
+            errors = detail if isinstance(detail, list) else [detail]
+        return JSONResponse(
+            status_code=exc.status_code,
+            content={
+                "success": False,
+                "message": detail if is_message else "Request failed",
+                "data": None,
+                "errors": errors,
+                "meta": None,
+            },
+        )
+
+    # Starlette HTTP exception handler (e.g., 404 from missing routes)
+    @app.exception_handler(StarletteHTTPException)
+    async def starlette_exception_handler(
+        request: Request,
+        exc: StarletteHTTPException,
+    ):
         detail = exc.detail
         is_message = isinstance(detail, str)
         errors = None
