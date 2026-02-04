@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import Optional
 
 import pytz
+from apscheduler.jobstores.base import JobLookupError
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 
@@ -197,9 +198,10 @@ def remove_daily_reminder_job(subscription_id: int) -> None:
     try:
         scheduler.remove_job(job_id)
         logger.info("Removed scheduler job. job_id=%s", job_id)
+    except JobLookupError:
+        logger.info("Scheduler job not found. job_id=%s", job_id)
     except Exception:
-        # If the job does not exist, nothing to do.
-        pass
+        logger.exception("Failed to remove scheduler job. job_id=%s", job_id)
 
 
 def load_jobs_from_db() -> None:
