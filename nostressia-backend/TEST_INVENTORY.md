@@ -99,3 +99,6 @@ Checklist of routes, services, utilities, and schemas with test coverage.
 - [x] Invalid login credentials — `tests/routes/test_auth_routes.py`
 - [x] Duplicate signup email/username — `tests/routes/test_signup_routes.py`
 - [x] Invalid current password — `tests/security/test_password_routes.py`
+
+## Feature Smoke Coverage (core experiences)
+- [x] Dashboard stress prediction, diary, motivations, tips, analytics summary — `tests/routes/test_core_feature_routes.py`
