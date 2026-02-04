@@ -29,8 +29,14 @@ describe("PageMeta", () => {
     expect(getMeta('meta[property="og:image"]')?.getAttribute("content")).toBe(
       "/custom.png",
     );
+    expect(getMeta('meta[property="og:url"]')?.getAttribute("content")).toBe(
+      "https://nostressia.test/dashboard",
+    );
     expect(getMeta('meta[name="twitter:card"]')?.getAttribute("content")).toBe(
       "summary_large_image",
+    );
+    expect(getMeta('meta[name="twitter:url"]')?.getAttribute("content")).toBe(
+      "https://nostressia.test/dashboard",
     );
     expect(getMeta('link[rel="canonical"]')?.getAttribute("href")).toBe(
       "https://nostressia.test/dashboard",
