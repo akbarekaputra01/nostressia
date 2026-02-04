@@ -54,6 +54,7 @@ Checklist of routes, services, utilities, and schemas with test coverage.
 - [x] `DELETE /api/notifications/unsubscribe` — `tests/routes/test_notification_routes.py`
 - [x] `GET /api/notifications/status` — `tests/routes/test_notification_routes.py`
 - [x] `POST /api/notifications/test-send` — `tests/routes/test_notification_routes.py`
+- [x] OpenAPI contract coverage (all paths/methods registered) — `tests/routes/test_openapi_contract.py`
 
 ## Services / Utilities
 - [x] `app/services/*` (auth, user auth, forecast, stress, diary, profile, notifications, ML, storage) — `tests/unit/test_service_exports.py`
