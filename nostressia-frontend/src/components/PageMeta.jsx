@@ -65,6 +65,8 @@ export default function PageMeta({
     const resolvedCanonical = resolveCanonical(canonical);
     if (resolvedCanonical) {
       setLinkTag({ rel: "canonical", href: resolvedCanonical });
+      setMetaTag({ property: "og:url", content: resolvedCanonical });
+      setMetaTag({ name: "twitter:url", content: resolvedCanonical });
     }
 
     if (noindex) {
