@@ -2,7 +2,7 @@
 
 ### Tujuan 🎯
 
-Dataset ini bertujuan untuk menganalisis bagaimana pola aktivitas harian mahasiswa memengaruhi tingkat stres dan performa akademik mereka. Data mencakup kebiasaan belajar, waktu tidur, aktivitas fisik, interaksi sosial, keterlibatan dalam kegiatan ekstrakurikuler, serta nilai IPK (GPA), yang secara keseluruhan berkontribusi terhadap kondisi stres mahasiswa.
+Dataset ini bertujuan untuk menganalisis bagaimana pola aktivitas harian mahasiswa memengaruhi tingkat stres dan performa akademik mereka. Data mencakup kebiasaan belajar, waktu tidur, aktivitas fisik, interaksi sosial, keterlibatan dalam kegiatan ekstrakurikuler, serta nilai gpa, yang secara keseluruhan berkontribusi terhadap kondisi stres mahasiswa.
 
 ---
 
@@ -18,34 +18,49 @@ Dataset ini bertujuan untuk menganalisis bagaimana pola aktivitas harian mahasis
 
 ### Atribut Dataset 📋
 
+#### Daftar Kolom (8)
+
+- **student_id**
+- **study_hour_per_day**
+- **extracurricular_hour_per_day**
+- **sleep_hour_per_day**
+- **social_hour_per_day**
+- **physical_activity_hour_per_day**
+- **gpa**
+- **stress_level**
+
+#### Identitas
+
+- 🆔 **student_id:** ID unik mahasiswa
+
 #### Kebiasaan Gaya Hidup
 
-- ⏱ **Jam Belajar Harian:** Total waktu yang digunakan mahasiswa untuk belajar setiap hari
-- 🛌 **Jam Tidur Harian:** Lama waktu tidur per hari
-- 🤸 **Aktivitas Fisik Harian:** Durasi olahraga atau aktivitas fisik
-- 🗨️ **Jam Sosial Harian:** Waktu yang dihabiskan untuk berinteraksi dengan teman
-- 🎨 **Jam Ekstrakurikuler:** Waktu yang dialokasikan untuk organisasi, klub, atau kegiatan non-akademik
+- ⏱ **study_hour_per_day:** Total waktu yang digunakan mahasiswa untuk belajar setiap hari
+- 🛌 **sleep_hour_per_day:** Lama waktu tidur per hari
+- 🤸 **physical_activity_hour_per_day:** Durasi olahraga atau aktivitas fisik
+- 🗨️ **social_hour_per_day:** Waktu yang dihabiskan untuk berinteraksi dengan teman
+- 🎨 **extracurricular_hour_per_day:** Waktu yang dialokasikan untuk organisasi, klub, atau kegiatan non-akademik
 
 #### Performa Akademik
 
-- 🎓 **GPA (IPK):** Indikator pencapaian akademik mahasiswa secara keseluruhan
+- 🎓 **gpa:** Indikator pencapaian akademik mahasiswa secara keseluruhan
 
 #### Tingkat Stres
 
-- ⚡ **Stress Level:** Diklasifikasikan menjadi **Rendah**, **Sedang**, dan **Tinggi** untuk menggambarkan intensitas stres
+- ⚡ **stress_level:** Diklasifikasikan menjadi **Rendah**, **Sedang**, dan **Tinggi** untuk menggambarkan intensitas stres
 
 ---
 
 ### Fitur Kategorikal 🏷️
 
-- ⚡ **Stress_Level** dikonversi menjadi **Stress_Level_Encoded** agar dapat digunakan dalam proses pemodelan
-- 🎓 **Performa Akademik** dikelompokkan menjadi **Excellent**, **Good**, **Fair**, dan **Poor** berdasarkan GPA, lalu dilakukan encoding
+- ⚡ **stress_level** dikonversi menjadi **stress_level_encoded** agar dapat digunakan dalam proses pemodelan
+- 🎓 **Performa Akademik** dikelompokkan menjadi **Excellent**, **Good**, **Fair**, dan **Poor** berdasarkan gpa, lalu dilakukan encoding ke **academic_performance_encoded**
 
 ---
 
 ### Variabel Target 🎯
 
-- Target utama dari dataset ini adalah **memprediksi tingkat stres mahasiswa**
+- Target utama dari dataset ini adalah **memprediksi stress_level mahasiswa**
 
 ---
 
@@ -53,13 +68,13 @@ Dataset ini bertujuan untuk menganalisis bagaimana pola aktivitas harian mahasis
 
 #### Hubungan Stres dan Gaya Hidup 🧠
 
-- 🔥 Mahasiswa dengan **stres tinggi** cenderung memiliki jam belajar yang lebih lama namun waktu tidur yang lebih sedikit
+- 🔥 Mahasiswa dengan **stres tinggi** cenderung memiliki **study_hour_per_day** yang lebih lama namun **sleep_hour_per_day** yang lebih sedikit
 - ⚖️ **Stres sedang** mencerminkan keseimbangan antara aktivitas akademik dan kehidupan pribadi
 - 🌿 Mahasiswa dengan **stres rendah** umumnya aktif secara fisik dan memiliki interaksi sosial yang baik
 
 #### Fitur Paling Berpengaruh 🔍
 
-- ⏱ **Jam Belajar Harian** dan 🛌 **Jam Tidur Harian** merupakan faktor paling dominan dalam menentukan tingkat stres
+- ⏱ **study_hour_per_day** dan 🛌 **sleep_hour_per_day** merupakan faktor paling dominan dalam menentukan tingkat stres
 
 #### Distribusi Kelas
 
