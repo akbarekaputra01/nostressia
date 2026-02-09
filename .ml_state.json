@@ -32,6 +32,13 @@
         "last_trained_milestone": 60,
         "streak_end_date": "2026-02-05",
         "streak_start_date": "2025-11-21"
+      },
+      "5": {
+        "data_hash": "c12915df60aa8bfdfec29a7eb91b090780f2f8d888dfca26f991227962c31482",
+        "last_trained_at": "2026-02-09T02:26:18.837765+00:00",
+        "last_trained_milestone": 60,
+        "streak_end_date": "2026-01-19",
+        "streak_start_date": "2025-11-21"
       }
     }
   }
