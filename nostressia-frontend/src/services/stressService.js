@@ -31,6 +31,11 @@ export const restoreStressLog = async (payload) => {
   return parseApiResponse(stressLevelResponseApiSchema, response.data);
 };
 
+export const updateStressLog = async (stressLevelId, payload) => {
+  const response = await client.put(`/stress-levels/${stressLevelId}`, payload);
+  return parseApiResponse(stressLevelResponseApiSchema, response.data);
+};
+
 export const getMyStressLogs = async () => {
   const response = await client.get("/stress-levels/my-logs");
   return parseApiResponse(stressLevelListResponseSchema, response.data);

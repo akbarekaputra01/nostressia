@@ -8,6 +8,7 @@ import {
   getStressEligibility,
   predictCurrentStress,
   restoreStressLog,
+  updateStressLog,
 } from "../../services/stressService";
 import { getMotivations } from "../../services/motivationService";
 import { getTipCategories, getTipsByCategory } from "../../services/tipsService";
@@ -15,9 +16,10 @@ import Footer from "../../components/Footer";
 import Navbar from "../../components/Navbar";
 import Toast from "../../components/Toast";
 import PageMeta from "../../components/PageMeta";
+import { updateProfile } from "../../services/authService";
 import { clearAuthToken, readAuthToken } from "../../utils/auth";
 import { createLogger } from "../../utils/logger";
-import { resolveLegacyValue, storage, STORAGE_KEYS } from "../../utils/storage";
+import { storage, STORAGE_KEYS } from "../../utils/storage";
 import { useTheme } from "../../theme/ThemeProvider";
 
 const logger = createLogger("DASHBOARD");
@@ -406,14 +408,22 @@ export default function Dashboard() {
 
   // --- FORM STATE ---
   const [gpa, setGpa] = useState(() => {
-    const saved = resolveLegacyValue({
-      key: STORAGE_KEYS.USER_GPA,
-      legacyKeys: ["user_gpa"],
-    });
-    return saved ? Number(saved) : "";
+    const initialUserGpa = Number(user?.userGpa);
+    return Number.isFinite(initialUserGpa) ? initialUserGpa : "";
   });
-  const [latestKnownGpa, setLatestKnownGpa] = useState(null);
   const [isEditingGpa, setIsEditingGpa] = useState(false);
+
+  useEffect(() => {
+    const userGpaValue = Number(user?.userGpa);
+    if (!Number.isFinite(userGpaValue)) return;
+
+    setGpa((prev) => {
+      if (!Number.isFinite(Number(prev)) || Number(prev) !== userGpaValue) {
+        return userGpaValue;
+      }
+      return prev;
+    });
+  }, [user?.userGpa]);
 
   const [studyHours, setStudyHours] = useState("");
   const [extraHours, setExtraHours] = useState("");
@@ -453,6 +463,7 @@ export default function Dashboard() {
     selectedDate.getDate(),
   );
   const isSelectedPast = selectedCalendarDate < todayDate;
+  const isSelectedToday = selectedDateKey === TODAY_KEY;
   const normalizedEligibility = eligibilityData;
   const restoreUsed = normalizedEligibility?.restoreUsed ?? 0;
   const restoreLimit = normalizedEligibility?.restoreLimit ?? 3;
@@ -816,41 +827,6 @@ export default function Dashboard() {
         const logs = await getMyStressLogs();
         const logList = Array.isArray(logs) ? logs : [];
 
-        const latestGpaEntry = logList
-          .map((log) => {
-            const dt = log?.date ? new Date(log.date) : null;
-            const createdAt = log?.createdAt ? new Date(log.createdAt) : null;
-            const gpaValue = Number(log?.gpa);
-            if (!Number.isFinite(gpaValue) || !dt || Number.isNaN(dt.getTime())) {
-              return null;
-            }
-            return {
-              gpa: gpaValue,
-              date: dt.getTime(),
-              createdAt: createdAt ? createdAt.getTime() : 0,
-            };
-          })
-          .filter(Boolean)
-          .sort((a, b) => {
-            if (a.date === b.date) {
-              return b.createdAt - a.createdAt;
-            }
-            return b.date - a.date;
-          })[0];
-
-        const latestGpa = latestGpaEntry?.gpa ?? null;
-        setLatestKnownGpa(latestGpa);
-        if (latestGpa !== null) {
-          setGpa((prev) => {
-            if (prev === "" || prev === null || Number.isNaN(Number(prev))) {
-              storage.setItem(STORAGE_KEYS.USER_GPA, String(latestGpa));
-              storage.removeItem("user_gpa");
-              return latestGpa;
-            }
-            return prev;
-          });
-        }
-
         const byDate = new Map();
         let latestLogDate = null;
         logList.forEach((log) => {
@@ -1105,26 +1081,27 @@ export default function Dashboard() {
     }
   };
 
-  // GPA persistence logic (local only)
-  function handleGpaSave(val) {
+  async function handleGpaSave(val) {
     if (val === "") return showToast("GPA cannot be empty.", "warning");
     const num = parseFloat(val);
     if (Number.isNaN(num) || num < 0 || num > 4) {
       return showToast("GPA must be between 0 and 4.", "warning");
     }
 
-    setGpa(num);
-    storage.setItem(STORAGE_KEYS.USER_GPA, num); // Persist to browser storage.
-    storage.removeItem("user_gpa");
-    setIsEditingGpa(false);
+    try {
+      await updateProfile({ userGpa: num });
+      setGpa(num);
+      setIsEditingGpa(false);
+      window.dispatchEvent(new Event("nostressia:user-update"));
+    } catch (error) {
+      logger.error("Failed to update GPA:", error);
+      showToast("Failed to update GPA.", "error");
+    }
   }
 
   const resolveGpaForSubmit = () => {
     if (gpa !== "" && gpa !== null && Number.isFinite(Number(gpa))) {
       return Number(gpa);
-    }
-    if (Number.isFinite(Number(latestKnownGpa))) {
-      return Number(latestKnownGpa);
     }
     return null;
   };
@@ -1147,11 +1124,18 @@ export default function Dashboard() {
       emoji: moodIndex,
     };
     try {
-      const logData = await (isRestore ? restoreStressLog : addStressLog)(logPayload);
+      const shouldUpdateToday = !isRestore && dateKey === TODAY_KEY && Boolean(todayLogId);
+      const logData = shouldUpdateToday
+        ? await updateStressLog(todayLogId, logPayload)
+        : await (isRestore ? restoreStressLog : addStressLog)(logPayload);
       return logData?.stressLevelId ?? null;
     } catch (error) {
       if (error?.status === 409) {
-        showToast("Data already exists for this date. Updates are not available yet.", "info");
+        showToast("Data already exists for this date.", "info");
+        return null;
+      }
+      if (error?.status === 403 && !isRestore) {
+        showToast("Data can only be updated for today.", "warning");
         return null;
       }
       if (error?.status === 403 && isRestore) {
@@ -1176,8 +1160,6 @@ export default function Dashboard() {
     }
     if (gpa === "" || gpa === null) {
       setGpa(resolvedGpa);
-      storage.setItem(STORAGE_KEYS.USER_GPA, resolvedGpa);
-      storage.removeItem("user_gpa");
     }
 
     if (sleepHours === "" || sleepHours < 0 || sleepHours > 24) {

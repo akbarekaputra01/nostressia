@@ -13,6 +13,7 @@ export const userResponseSchema = z
     username: z.string(),
     email: z.string().email(),
     gender: z.string().nullable().optional(),
+    userGpa: z.number().nullable().optional(),
     avatar: z.string().nullable().optional(),
     userDob: z.string().nullable().optional(),
     streak: z.number(),

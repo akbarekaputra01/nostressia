@@ -257,12 +257,17 @@ def update_user_profile(user_update: UserUpdate, db: Session = Depends(get_db), 
     if user_update.user_dob and user_update.user_dob > date.today():
         raise HTTPException(status_code=400, detail="Birthday cannot be in the future.")
 
+    if user_update.user_gpa is not None and not 0 <= user_update.user_gpa <= 4:
+        raise HTTPException(status_code=400, detail="GPA must be between 0 and 4.")
+
     if user_update.name is not None:
         current_user.name = user_update.name
     if user_update.avatar is not None:
         current_user.avatar = user_update.avatar
     if user_update.gender is not None:
         current_user.gender = user_update.gender
+    if user_update.user_gpa is not None:
+        current_user.user_gpa = user_update.user_gpa
     if user_update.user_dob is not None:
         current_user.user_dob = user_update.user_dob
 
