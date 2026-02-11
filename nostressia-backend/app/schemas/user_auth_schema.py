@@ -58,7 +58,7 @@ class UserUpdate(BaseSchema):
     email: Optional[EmailStr] = None
     avatar: Optional[str] = None
     gender: Optional[str] = None
-    user_gpa: Optional[float] = None
+    user_gpa: Optional[float] = Field(default=None, validation_alias=AliasChoices("userGpa", "gpa"))
     user_dob: Optional[date] = None
 
 class ChangePasswordSchema(BaseSchema):

@@ -56,3 +56,20 @@ def test_update_profile_rejects_future_birthday(client, db_session):
     )
 
     assert response.status_code == 400
+
+
+def test_update_profile_supports_legacy_gpa_key(client, db_session):
+    user = _create_user(db_session)
+    token = create_access_token(
+        {"sub": user.email, "id": user.user_id, "username": user.username}
+    )
+
+    response = client.put(
+        "/api/auth/me",
+        json={"gpa": 3.5},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == 200
+    data = response.json()["data"]
+    assert data["userGpa"] == 3.5
