@@ -37,6 +37,7 @@ class UserResponse(BaseSchema):
     username: str
     email: EmailStr
     gender: Optional[str] = None
+    user_gpa: Optional[float] = None
     avatar: Optional[str] = None
     user_dob: Optional[date] = None
     streak: int
@@ -57,6 +58,7 @@ class UserUpdate(BaseSchema):
     email: Optional[EmailStr] = None
     avatar: Optional[str] = None
     gender: Optional[str] = None
+    user_gpa: Optional[float] = None
     user_dob: Optional[date] = None
 
 class ChangePasswordSchema(BaseSchema):

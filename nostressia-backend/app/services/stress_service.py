@@ -176,5 +176,46 @@ def create_restore_log(db: Session, stress_data: StressLevelCreate, user_id: int
     return new_log
 
 
+
+def update_stress_log(
+    db: Session,
+    stress_level_id: int,
+    stress_data: StressLevelCreate,
+    user_id: int,
+) -> StressLevel:
+    existing_log = (
+        db.query(StressLevel)
+        .filter(
+            StressLevel.stress_level_id == stress_level_id,
+            StressLevel.user_id == user_id,
+        )
+        .first()
+    )
+    if not existing_log:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Stress log not found.",
+        )
+
+    today = datetime.now(tz=timezone.utc).date()
+    if existing_log.date != today or stress_data.date != today:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only today's stress log can be updated.",
+        )
+
+    existing_log.stress_level = stress_data.stress_level
+    existing_log.gpa = stress_data.gpa
+    existing_log.extracurricular_hour_per_day = stress_data.extracurricular_hour_per_day
+    existing_log.physical_activity_hour_per_day = stress_data.physical_activity_hour_per_day
+    existing_log.sleep_hour_per_day = stress_data.sleep_hour_per_day
+    existing_log.study_hour_per_day = stress_data.study_hour_per_day
+    existing_log.social_hour_per_day = stress_data.social_hour_per_day
+    existing_log.emoji = stress_data.emoji
+
+    db.commit()
+    db.refresh(existing_log)
+    return existing_log
+
 def get_user_stress_logs(db: Session, user_id: int):
     return db.query(StressLevel).filter(StressLevel.user_id == user_id).all()

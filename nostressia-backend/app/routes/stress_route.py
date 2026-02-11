@@ -77,3 +77,20 @@ def get_global_eligibility(
         data=stress_service.check_global_eligibility(db, current_user.user_id),
         message="Eligibility fetched",
     )
+
+@router.put("/{stress_level_id}", response_model=APIResponse[StressLevelResponse])
+def update_stress_log(
+    stress_level_id: int,
+    log_data: StressLevelCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return success_response(
+        data=stress_service.update_stress_log(
+            db=db,
+            stress_level_id=stress_level_id,
+            stress_data=log_data,
+            user_id=current_user.user_id,
+        ),
+        message="Stress log updated",
+    )
