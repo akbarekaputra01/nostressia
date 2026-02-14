@@ -322,19 +322,23 @@ function isSameEligibility(left, right) {
 
 function resolveForecastMode(eligibility, modelType = "") {
   const normalizedModelType = String(modelType || "").toLowerCase();
+  const isEligibleForPersonalized =
+    Number(eligibility?.streak ?? 0) >= PERSONALIZED_STREAK_THRESHOLD;
 
   if (normalizedModelType) {
     if (normalizedModelType.includes("markov_user") || normalizedModelType.includes("personalized")) {
       return "personalized";
     }
-
-    if (normalizedModelType.includes("global")) {
-      return "global";
-    }
   }
 
   if (!eligibility) return "global";
-  return eligibility.streak >= PERSONALIZED_STREAK_THRESHOLD ? "personalized" : "global";
+  if (isEligibleForPersonalized) return "personalized";
+
+  if (normalizedModelType.includes("global")) {
+    return "global";
+  }
+
+  return "global";
 }
 
 function buildForecastEligibilityMessage({
