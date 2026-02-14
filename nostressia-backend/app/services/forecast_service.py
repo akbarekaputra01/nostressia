@@ -1,3 +1,5 @@
+import logging
+
 from app.schemas.stress_schema import EligibilityResponse
 from fastapi import HTTPException
 
@@ -5,6 +7,7 @@ from app.services.global_forecast_service import global_forecast_service
 from app.services.personalized_forecast_service import personalized_forecast_service
 
 PERSONALIZED_STREAK_THRESHOLD = 60
+logger = logging.getLogger(__name__)
 
 
 def _first_not_none(*values: object) -> object:
@@ -64,13 +67,33 @@ def build_global_forecast_payload(eligibility: EligibilityResponse, forecast: di
 
 def get_global_forecast_for_user(user_id: int, eligibility: EligibilityResponse, db) -> dict:
     should_use_personalized = eligibility.streak >= PERSONALIZED_STREAK_THRESHOLD
+    logger.info(
+        "Forecast routing | user_id=%s | streak=%s | should_use_personalized=%s",
+        user_id,
+        eligibility.streak,
+        should_use_personalized,
+    )
 
     if should_use_personalized and personalized_forecast_service.artifact_exists_for_user(user_id):
         try:
+            logger.info("Forecast routing | user_id=%s | selected=personalized", user_id)
             forecast = personalized_forecast_service.predict_next_day_for_user(db, user_id)
             return build_global_forecast_payload(eligibility, forecast)
-        except HTTPException:
-            pass
+        except HTTPException as exc:
+            logger.warning(
+                "Forecast routing | user_id=%s | personalized_failed status=%s detail=%s | fallback=global",
+                user_id,
+                exc.status_code,
+                exc.detail,
+            )
+
+    if should_use_personalized:
+        logger.info(
+            "Forecast routing | user_id=%s | selected=global_after_personalized_check",
+            user_id,
+        )
+    else:
+        logger.info("Forecast routing | user_id=%s | selected=global", user_id)
 
     forecast = global_forecast_service.predict_next_day_for_user(db, user_id)
     return build_global_forecast_payload(eligibility, forecast)
