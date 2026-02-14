@@ -157,6 +157,32 @@ def test_personalized_artifact_exists_for_user_false_when_user_missing(monkeypat
     assert service.artifact_exists_for_user(1) is False
 
 
+def test_personalized_load_artifact_for_user_reloads_when_file_changes(monkeypatch):
+    service = PersonalizedForecastService()
+    mtimes = iter([100.0, 101.0])
+    loads = iter([
+        {"artifact": {"type": "markov_user", "probs_by_user": {5: object()}}},
+        {"artifact": {"type": "markov_user", "probs_by_user": {1: object()}}},
+    ])
+
+    monkeypatch.setattr(service, "_artifact_path", lambda: "/tmp/personalized_forecast.joblib")
+    monkeypatch.setattr(
+        "app.services.personalized_forecast_service.os.path.getmtime",
+        lambda *_: next(mtimes),
+    )
+    monkeypatch.setattr(
+        "app.services.global_forecast_service.joblib.load",
+        lambda *_: next(loads),
+    )
+    monkeypatch.setattr(
+        "app.services.global_forecast_service.os.path.exists",
+        lambda *_: True,
+    )
+
+    assert service.artifact_exists_for_user(1) is False
+    assert service.artifact_exists_for_user(1) is True
+
+
 def test_get_global_forecast_for_user_prefers_personalized_when_streak_60(monkeypatch):
     eligibility = EligibilityResponse(
         user_id=1,
