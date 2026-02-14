@@ -322,8 +322,15 @@ function isSameEligibility(left, right) {
 
 function resolveForecastMode(eligibility, modelType = "") {
   const normalizedModelType = String(modelType || "").toLowerCase();
-  if (normalizedModelType.includes("markov_user") || normalizedModelType.includes("personalized")) {
-    return "personalized";
+
+  if (normalizedModelType) {
+    if (normalizedModelType.includes("markov_user") || normalizedModelType.includes("personalized")) {
+      return "personalized";
+    }
+
+    if (normalizedModelType.includes("global")) {
+      return "global";
+    }
   }
 
   if (!eligibility) return "global";
