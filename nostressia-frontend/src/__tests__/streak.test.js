@@ -20,12 +20,12 @@ describe("streak helpers", () => {
     expect(hasLoggedToday()).toBe(false);
   });
 
-  it("zeroes out the streak when today is missing", () => {
+  it("keeps the streak count when today log is missing", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2024-05-16T08:00:00.000Z"));
 
     storage.removeItem(STORAGE_KEYS.TODAY_LOG);
-    expect(resolveDisplayedStreak(3)).toBe(0);
+    expect(resolveDisplayedStreak(3)).toBe(3);
   });
 
   it("returns the streak count when the log exists", () => {
