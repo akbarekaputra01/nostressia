@@ -4,6 +4,8 @@ from fastapi import HTTPException
 from app.services.global_forecast_service import global_forecast_service
 from app.services.personalized_forecast_service import personalized_forecast_service
 
+PERSONALIZED_STREAK_THRESHOLD = 60
+
 
 def _first_not_none(*values: object) -> object:
     for value in values:
@@ -61,7 +63,9 @@ def build_global_forecast_payload(eligibility: EligibilityResponse, forecast: di
 
 
 def get_global_forecast_for_user(user_id: int, eligibility: EligibilityResponse, db) -> dict:
-    if personalized_forecast_service.artifact_exists_for_user(user_id):
+    should_use_personalized = eligibility.streak >= PERSONALIZED_STREAK_THRESHOLD
+
+    if should_use_personalized and personalized_forecast_service.artifact_exists_for_user(user_id):
         try:
             forecast = personalized_forecast_service.predict_next_day_for_user(db, user_id)
             return build_global_forecast_payload(eligibility, forecast)

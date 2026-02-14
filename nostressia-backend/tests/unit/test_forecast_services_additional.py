@@ -64,7 +64,7 @@ def test_forecast_payload_helpers():
     eligibility = EligibilityResponse(
         user_id=1,
         eligible=True,
-        streak=7,
+        streak=60,
         required_streak=7,
         restore_used=0,
         restore_remaining=3,
@@ -141,11 +141,11 @@ def test_forecast_artifact_helpers(monkeypatch):
     assert personalized_service.artifact_exists_for_user(1) is True
 
 
-def test_get_global_forecast_for_user_prefers_personalized(monkeypatch):
+def test_get_global_forecast_for_user_prefers_personalized_when_streak_60(monkeypatch):
     eligibility = EligibilityResponse(
         user_id=1,
         eligible=True,
-        streak=7,
+        streak=60,
         required_streak=7,
         restore_used=0,
         restore_remaining=3,
@@ -176,3 +176,40 @@ def test_get_global_forecast_for_user_prefers_personalized(monkeypatch):
 
     payload = get_global_forecast_for_user(user_id=1, eligibility=eligibility, db=None)
     assert payload["forecast"]["modelType"] == "markov_user"
+
+
+def test_get_global_forecast_for_user_uses_global_for_sub60_streak(monkeypatch):
+    eligibility = EligibilityResponse(
+        user_id=1,
+        eligible=True,
+        streak=59,
+        required_streak=7,
+        restore_used=0,
+        restore_remaining=3,
+        restore_limit=3,
+        missing=0,
+        note="Eligible",
+    )
+
+    monkeypatch.setattr(
+        "app.services.forecast_service.personalized_forecast_service.artifact_exists_for_user",
+        lambda *_: True,
+    )
+    monkeypatch.setattr(
+        "app.services.forecast_service.global_forecast_service.predict_next_day_for_user",
+        lambda *_: {
+            "user_id": 1,
+            "forecast_date": "2024-01-01",
+            "probability": 0.4,
+            "chance_percent": 40.0,
+            "threshold": 0.5,
+            "prediction_binary": 0,
+            "prediction_label": "LowRisk",
+            "model_type": "global_markov",
+        },
+    )
+
+    from app.services.forecast_service import get_global_forecast_for_user
+
+    payload = get_global_forecast_for_user(user_id=1, eligibility=eligibility, db=None)
+    assert payload["forecast"]["modelType"] == "global_markov"

@@ -320,7 +320,12 @@ function isSameEligibility(left, right) {
   );
 }
 
-function resolveForecastMode(eligibility) {
+function resolveForecastMode(eligibility, modelType = "") {
+  const normalizedModelType = String(modelType || "").toLowerCase();
+  if (normalizedModelType.includes("markov_user") || normalizedModelType.includes("personalized")) {
+    return "personalized";
+  }
+
   if (!eligibility) return "global";
   return eligibility.streak >= PERSONALIZED_STREAK_THRESHOLD ? "personalized" : "global";
 }
@@ -959,9 +964,9 @@ export default function Dashboard() {
         if (!isSameEligibility(eligibilityFromForecast, eligibilitySnapshot)) {
           setEligibilityData(eligibilityFromForecast);
         }
-        setForecastMode(resolveForecastMode(eligibilityFromForecast));
+        const resolvedMode = resolveForecastMode(eligibilityFromForecast, data?.forecast?.modelType);
+        setForecastMode(resolvedMode);
 
-        const resolvedMode = resolveForecastMode(eligibilityFromForecast);
         const list = buildForecastList(data.forecast).map((item) => ({
           ...item,
           forecastMode: resolvedMode,
