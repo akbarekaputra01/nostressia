@@ -1,4 +1,5 @@
 from datetime import date, datetime, timedelta, timezone
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from fastapi import HTTPException, status
 from sqlalchemy import func
@@ -6,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.models.stress_log_model import StressLevel
 from app.models.user_model import User
+from app.core.config import settings
 from app.schemas.stress_schema import (
     EligibilityResponse,
     RESTORE_LIMIT,
@@ -14,6 +16,14 @@ from app.schemas.stress_schema import (
 )
 from app.services.global_forecast_service import global_forecast_service
 from typing import Optional
+
+
+def _current_app_date() -> date:
+    try:
+        tz = ZoneInfo(settings.app_timezone)
+    except ZoneInfoNotFoundError:
+        tz = timezone.utc
+    return datetime.now(tz=tz).date()
 
 def _month_bounds(ref_date: date) -> tuple[date, date]:
     first_day = ref_date.replace(day=1)
@@ -68,7 +78,7 @@ def _resolve_required_streak(db: Session) -> int:
 def check_global_eligibility(db: Session, user_id: int) -> EligibilityResponse:
     required_streak = _resolve_required_streak(db)
     log_streak = get_user_current_streak(db, user_id)
-    today = datetime.now(tz=timezone.utc).date()
+    today = _current_app_date()
     has_logged_today = (
         db.query(StressLevel.stress_level_id)
         .filter(StressLevel.user_id == user_id, StressLevel.date == today)
@@ -204,7 +214,7 @@ def update_stress_log(
             detail="Stress log not found.",
         )
 
-    today = datetime.now(tz=timezone.utc).date()
+    today = _current_app_date()
     if existing_log.date != today or stress_data.date != today:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
