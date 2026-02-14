@@ -137,8 +137,24 @@ def test_forecast_artifact_helpers(monkeypatch):
     assert personalized_path.endswith("personalized_forecast.joblib")
 
     monkeypatch.setattr("app.services.global_forecast_service.os.path.exists", lambda *_: True)
+    monkeypatch.setattr(
+        personalized_service,
+        "_load_artifact_for_user",
+        lambda *_: {"artifact": {"type": "markov_user", "probs_by_user": {1: object()}}},
+    )
     assert global_service.artifact_exists() is True
     assert personalized_service.artifact_exists_for_user(1) is True
+
+
+def test_personalized_artifact_exists_for_user_false_when_user_missing(monkeypatch):
+    service = PersonalizedForecastService()
+    monkeypatch.setattr("app.services.personalized_forecast_service.os.path.exists", lambda *_: True)
+    monkeypatch.setattr(
+        service,
+        "_load_artifact_for_user",
+        lambda *_: {"artifact": {"type": "markov_user", "probs_by_user": {5: object()}}},
+    )
+    assert service.artifact_exists_for_user(1) is False
 
 
 def test_get_global_forecast_for_user_prefers_personalized_when_streak_60(monkeypatch):

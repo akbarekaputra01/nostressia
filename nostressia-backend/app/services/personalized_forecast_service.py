@@ -20,7 +20,29 @@ class PersonalizedForecastService(GlobalForecastService):
         return os.path.join(base_dir, "models_ml", "personalized_forecast.joblib")
 
     def artifact_exists_for_user(self, user_id: int) -> bool:
-        return os.path.exists(self._artifact_path())
+        if not os.path.exists(self._artifact_path()):
+            return False
+
+        try:
+            bundle = self._load_artifact_for_user(user_id)
+        except Exception:
+            return False
+
+        artifact = bundle.get("artifact", bundle) if isinstance(bundle, dict) else bundle
+        if not isinstance(artifact, dict):
+            return False
+
+        art_type = artifact.get("type", "")
+        user_map = None
+        if art_type == "markov_user":
+            user_map = artifact.get("probs_by_user")
+        elif art_type == "personalized_sklearn":
+            user_map = artifact.get("models_by_user")
+
+        if not isinstance(user_map, dict):
+            return False
+
+        return user_id in user_map or str(user_id) in user_map
 
     def _load_artifact_for_user(self, user_id: int) -> Any:
         """Load the personalized forecast artifact bundle for a user."""

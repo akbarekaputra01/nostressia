@@ -31,6 +31,65 @@ STATE_PATH = REPO_ROOT / ".ml_state.json"
 MILESTONE_INTERVAL = 60
 
 
+def _load_artifact_payload(path: Path) -> Optional[Dict[str, Any]]:
+    if not path.exists():
+        return None
+    import joblib
+
+    payload = joblib.load(path)
+    return payload if isinstance(payload, dict) else None
+
+
+def _merge_personalized_artifact(
+    base_payload: Optional[Dict[str, Any]],
+    incoming_payload: Dict[str, Any],
+) -> Dict[str, Any]:
+    if not base_payload:
+        return incoming_payload
+
+    merged = dict(base_payload)
+    merged_artifact = dict(base_payload.get("artifact") or {})
+    incoming_artifact = incoming_payload.get("artifact") or {}
+
+    incoming_type = incoming_artifact.get("type")
+    if incoming_type and merged_artifact.get("type") and merged_artifact.get("type") != incoming_type:
+        return incoming_payload
+
+    if incoming_type:
+        merged_artifact["type"] = incoming_type
+
+    if incoming_type == "markov_user":
+        merged_probs = dict(merged_artifact.get("probs_by_user") or {})
+        merged_probs.update(incoming_artifact.get("probs_by_user") or {})
+        merged_artifact["probs_by_user"] = merged_probs
+
+        merged_thr = dict(merged_artifact.get("thr") or {}) if isinstance(merged_artifact.get("thr"), dict) else {}
+        if isinstance(incoming_artifact.get("thr"), dict):
+            merged_thr.update(incoming_artifact.get("thr") or {})
+            merged_artifact["thr"] = merged_thr
+        elif incoming_artifact.get("thr") is not None:
+            merged_artifact["thr"] = incoming_artifact.get("thr")
+
+    elif incoming_type == "personalized_sklearn":
+        merged_models = dict(merged_artifact.get("models_by_user") or {})
+        merged_models.update(incoming_artifact.get("models_by_user") or {})
+        merged_artifact["models_by_user"] = merged_models
+
+        merged_thr = dict(merged_artifact.get("thr") or {}) if isinstance(merged_artifact.get("thr"), dict) else {}
+        if isinstance(incoming_artifact.get("thr"), dict):
+            merged_thr.update(incoming_artifact.get("thr") or {})
+            merged_artifact["thr"] = merged_thr
+        elif incoming_artifact.get("thr") is not None:
+            merged_artifact["thr"] = incoming_artifact.get("thr")
+    else:
+        return incoming_payload
+
+    merged["artifact"] = merged_artifact
+    merged["best_name"] = incoming_payload.get("best_name", merged.get("best_name"))
+    merged["meta"] = incoming_payload.get("meta", merged.get("meta", {}))
+    return merged
+
+
 def _sha256(path: Path) -> str:
     sha = hashlib.sha256()
     with path.open("rb") as handle:
@@ -244,6 +303,24 @@ def _write_meta(path: Path, data_hash: str, trained_at: str, user_id: int, miles
     path.write_text(json.dumps(payload, indent=2, sort_keys=True))
 
 
+def _write_meta_multi(
+    path: Path,
+    data_hash: str,
+    trained_at: str,
+    trained_users: List[Tuple[int, int]],
+) -> None:
+    payload = {
+        "trained_at": trained_at,
+        "data_hash": data_hash,
+        "git_sha": os.getenv("GITHUB_SHA") or os.getenv("GIT_SHA") or "",
+        "users": [
+            {"user_id": user_id, "milestone": milestone}
+            for user_id, milestone in trained_users
+        ],
+    }
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True))
+
+
 def train_personalized(
     force_user_id: Optional[int],
     force_window_size: Optional[int],
@@ -268,6 +345,8 @@ def train_personalized(
     print("DATASET_PATH :", DATASET_PATH)
     print("DATA_HASH    :", data_hash)
     trained_any = False
+    trained_users: List[Tuple[int, int]] = []
+    merged_payload = _load_artifact_payload(DEFAULT_MODEL_OUT)
 
     for candidate in candidates:
         user_id = candidate["user_id"]
@@ -292,6 +371,11 @@ def train_personalized(
         )
         if not output_path.exists():
             raise FileNotFoundError(f"Personalized model output not created: {output_path}")
+
+        incoming_payload = _load_artifact_payload(output_path)
+        if incoming_payload is None:
+            raise RuntimeError("Personalized training output is not a valid dictionary artifact payload.")
+        merged_payload = _merge_personalized_artifact(merged_payload, incoming_payload)
 
         # MLflow logging
         mlflow.set_tracking_uri("file:" + str(REPO_ROOT / "mlruns"))
@@ -352,10 +436,15 @@ def train_personalized(
             "data_hash": data_hash,
         }
         trained_any = True
+        trained_users.append((user_id, milestone))
         print(f"Trained personalized model for user_id={user_id} milestone={milestone}.")
-        break
 
     if trained_any:
+        import joblib
+
+        DEFAULT_MODEL_OUT.parent.mkdir(parents=True, exist_ok=True)
+        joblib.dump(merged_payload, DEFAULT_MODEL_OUT)
+        _write_meta_multi(DEFAULT_META_OUT, data_hash, utc_now_iso(), trained_users)
         state.save(STATE_PATH)
     return trained_any
 
