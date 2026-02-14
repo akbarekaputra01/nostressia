@@ -6,16 +6,16 @@ import { DEFAULT_AVATAR, resolveAvatarUrl } from "../utils/avatar";
 import { Flame } from "lucide-react";
 import { hasLoggedToday as resolveHasLoggedToday, resolveDisplayedStreak } from "../utils/streak";
 
-// --- Navigation menu data ---
+
 const navLinks = [
   { name: "Dashboard", href: "/dashboard" },
   { name: "Analytics", href: "/analytics" },
-  { name: "Motivation", href: "/motivation" },
+  { name: "Motivations", href: "/motivations" },
   { name: "Tips", href: "/tips" },
   { name: "Diary", href: "/diary" },
 ];
 
-// --- Receive the 'user' prop here ---
+
 const Navbar = ({ user }) => {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -38,7 +38,7 @@ const Navbar = ({ user }) => {
   const fallbackAvatar = DEFAULT_AVATAR;
   const avatarSrc = resolveAvatarUrl(user?.avatar) || fallbackAvatar;
 
-  // --- Flame color logic based on the current streak ---
+  
   const getFlameColor = (streakCount, hasLoggedToday) => {
     const count = streakCount || 0;
 
@@ -119,11 +119,10 @@ const Navbar = ({ user }) => {
                       className={`
                                         absolute left-0 -bottom-1 h-[3px] rounded-full
                                         transition-all duration-300 
-                                        ${
-                                          isActive(link.href)
-                                            ? "w-full bg-brand-primary"
-                                            : "w-0 bg-transparent group-hover:w-full group-hover:bg-text-muted"
-                                        }
+                                        ${isActive(link.href)
+                          ? "w-full bg-brand-primary"
+                          : "w-0 bg-transparent group-hover:w-full group-hover:bg-text-muted"
+                        }
                                     `}
                     ></span>
                   </Link>
@@ -217,11 +216,10 @@ const Navbar = ({ user }) => {
         className={`
                     w-full lg:hidden flex flex-col items-center gap-4 
                     overflow-hidden transition-all duration-300 ease-in-out
-                    ${
-                      isMobileMenuOpen
-                        ? "max-h-[400px] mt-4 pt-4 border-t border-border opacity-100 dark:border-border"
-                        : "max-h-0 opacity-0"
-                    }
+                    ${isMobileMenuOpen
+            ? "max-h-[400px] mt-4 pt-4 border-t border-border opacity-100 dark:border-border"
+            : "max-h-0 opacity-0"
+          }
                 `}
       >
         {navLinks.map((link) => (
@@ -231,11 +229,10 @@ const Navbar = ({ user }) => {
             onClick={() => setIsMobileMenuOpen(false)}
             className={`
                         text-base font-semibold py-2 px-4 rounded-lg w-full text-center transition-colors
-                        ${
-                          isActive(link.href)
-                            ? "bg-brand-primary/10 text-brand-primary dark:bg-brand-primary/20 dark:text-brand-info"
-                            : "text-text-secondary hover:bg-surface-muted hover:text-text-primary dark:text-text-secondary dark:hover:bg-surface-muted dark:hover:text-text-primary"
-                        }
+                        ${isActive(link.href)
+                ? "bg-brand-primary/10 text-brand-primary dark:bg-brand-primary/20 dark:text-brand-info"
+                : "text-text-secondary hover:bg-surface-muted hover:text-text-primary dark:text-text-secondary dark:hover:bg-surface-muted dark:hover:text-text-primary"
+              }
                     `}
           >
             {link.name}

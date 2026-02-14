@@ -5,7 +5,7 @@ from pydantic import AliasChoices, EmailStr, Field
 
 from app.schemas.base_schema import BaseSchema
 
-# --- INPUT SCHEMAS ---
+# Input schemas
 
 class UserRegister(BaseSchema):
     name: str
@@ -25,7 +25,7 @@ class VerifyOTP(BaseSchema):
     email: EmailStr
     otp_code: str
 
-# --- OUTPUT SCHEMAS ---
+# Output schemas
 
 class Token(BaseSchema):
     access_token: str

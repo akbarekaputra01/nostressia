@@ -5,8 +5,8 @@ from fastapi.security import OAuth2PasswordBearer
 from app.core.database import get_db
 from app.schemas.auth_schema import LoginRequest, LoginResponse
 from app.schemas.response_schema import APIResponse
-from app.services.auth_service import authenticate_admin
-from app.utils.jwt_handler import create_access_token, decode_access_token
+from app.services import auth_service
+from app.utils.jwt_handler import decode_access_token
 from app.models.admin_model import Admin 
 from app.utils.response import success_response
 
@@ -41,20 +41,5 @@ def get_current_admin(token: str = Depends(oauth2_admin_scheme), db: Session = D
 
 @router.post("/admin/login", response_model=APIResponse[LoginResponse])
 def admin_login(request: LoginRequest, db: Session = Depends(get_db)):
-    admin = authenticate_admin(db, request.username, request.password)
-    if not admin:
-        raise HTTPException(status_code=401, detail="Invalid username or password")
-
-    access_token = create_access_token({"sub": admin.username, "role": "admin"})
-
-    payload = {
-        "accessToken": access_token,
-        "tokenType": "bearer",
-        "admin": {
-            "id": admin.admin_id,
-            "name": admin.name,
-            "username": admin.username,
-            "email": admin.email,
-        },
-    }
+    payload = auth_service.login_admin(db, request)
     return success_response(data=payload, message="Admin login successful")

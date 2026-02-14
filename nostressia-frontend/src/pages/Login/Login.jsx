@@ -34,7 +34,7 @@ import Toast from "../../components/Toast";
 import ConfirmModal from "../../components/ConfirmModal";
 import PageMeta from "../../components/PageMeta";
 
-// --- IMPORT LOGO (Light & Dark) ---
+
 import logoBuka from "../../assets/images/Logo-Buka.png";
 import logoBukaDark from "../../assets/images/Logo-Buka-Dark.png";
 import logoKedip from "../../assets/images/Logo-Kedip.png";
@@ -66,23 +66,23 @@ export default function Login() {
   // resolvedTheme nilainya otomatis 'light' atau 'dark' (sudah menghandle 'system')
   const { resolvedTheme } = useTheme();
 
-  // --- Core state ---
+  
   const [formData, setFormData] = useState(INITIAL_FORM_DATA);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  // --- UI state ---
+  
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [showSignUpPassword, setShowSignUpPassword] = useState(false);
   const [isFlipped, setIsFlipped] = useState(false);
   const [isWinking, setIsWinking] = useState(false);
   const [showOTPForm, setShowOTPForm] = useState(false);
 
-  // --- OTP register state & ref (6 digits) ---
+  
   const [otp, setOtp] = useState("");
   const otpInputRef = useRef(null);
 
-  // --- Forgot password state ---
+  
   const [showForgotModal, setShowForgotModal] = useState(false);
   const [forgotStep, setForgotStep] = useState(1);
   const [forgotEmail, setForgotEmail] = useState("");
@@ -96,7 +96,7 @@ export default function Login() {
   const [loadingForgot, setLoadingForgot] = useState(false);
   const [forgotOtpVerified, setForgotOtpVerified] = useState(false);
 
-  // --- Countdown state ---
+  
   const [countdown, setCountdown] = useState(0);
   const [toast, setToast] = useState(null);
   const [confirmState, setConfirmState] = useState({
@@ -110,7 +110,7 @@ export default function Login() {
   // [PERBAIKAN] Gunakan resolvedTheme langsung
   const isDarkMode = resolvedTheme === "dark";
 
-  // --- Blink effect ---
+  
   useEffect(() => {
     const triggerBlink = () => {
       setIsWinking(true);
@@ -120,7 +120,7 @@ export default function Login() {
     return () => clearInterval(blinkInterval);
   }, []);
 
-  // --- Countdown timer effect ---
+  
   useEffect(() => {
     let timer;
     if (countdown > 0) {
@@ -129,14 +129,14 @@ export default function Login() {
     return () => clearInterval(timer);
   }, [countdown]);
 
-  // --- Auto-focus OTP register input ---
+  
   useEffect(() => {
     if (showOTPForm && !isSuccess && otpInputRef.current) {
       setTimeout(() => otpInputRef.current?.focus(), 100);
     }
   }, [showOTPForm, isSuccess]);
 
-  // --- Auto-focus forgot OTP input (step 2) ---
+  
   useEffect(() => {
     if (showForgotModal && forgotStep === 2) {
       setTimeout(() => forgotOtpRefs.current[0]?.focus(), 100);
@@ -193,7 +193,7 @@ export default function Login() {
     }
   };
 
-  // --- 1. LOGIN FLOW ---
+  
   const handleLogin = async (e) => {
     e.preventDefault();
     if (!formData.email || !formData.password) return;
@@ -241,7 +241,7 @@ export default function Login() {
     }
   };
 
-  // --- 2. REGISTRATION FLOW ---
+  
   const handleSignUp = async (e) => {
     e.preventDefault();
     if (
@@ -269,7 +269,7 @@ export default function Login() {
     });
   };
 
-  // --- 3. OTP verification for registration ---
+  
   const handleVerifyOTP = async (e) => {
     e.preventDefault();
     if (otp.length !== 6) return showToast("Please enter the 6-digit OTP code.", "warning");
@@ -295,7 +295,7 @@ export default function Login() {
     }
   };
 
-  // --- Forgot password flow ---
+  
   const handleForgotRequest = async (e) => {
     e.preventDefault();
     if (!forgotEmail) return showToast("Please enter your email.", "warning");

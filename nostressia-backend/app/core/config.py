@@ -19,16 +19,23 @@ class Settings(BaseSettings):
     api_prefix: str = Field("/api", description="Root API prefix")
     log_level: str = Field("INFO", validation_alias="LOG_LEVEL")
     allowed_origins: List[str] = Field(
-        default_factory=lambda: [
+        default=[
             "http://localhost:5173",
             "http://127.0.0.1:5173",
             "https://nostressia.vercel.app",
-            "https://nostressia.vercel.app/",
         ],
-        description="CORS allow list",
+        validation_alias="ALLOWED_ORIGINS",
+        description="CORS allow list (comma-separated if from env)",
     )
 
-    # --- DATABASE CONFIG ---
+    @field_validator("allowed_origins", mode="before")
+    @classmethod
+    def parse_allowed_origins(cls, value: object) -> object:
+        if isinstance(value, str):
+            return [origin.strip() for origin in value.split(",") if origin.strip()]
+        return value
+
+    # Database configuration
     db_user: Optional[str] = Field(default=None, validation_alias="DB_USER")
     db_password: Optional[str] = Field(default=None, validation_alias="DB_PASSWORD")
     db_host: Optional[str] = Field(default=None, validation_alias="DB_HOST")
@@ -41,7 +48,7 @@ class Settings(BaseSettings):
     # Extra settings needed for email delivery.
     brevo_api_key: str = Field(..., validation_alias="BREVO_API_KEY")
 
-    # --- JWT CONFIG ---
+    # JWT configuration
     jwt_secret: str = Field(..., validation_alias="JWT_SECRET")
     jwt_algorithm: str = Field("HS256", validation_alias="JWT_ALGORITHM")
     access_token_expire_minutes: int = Field(

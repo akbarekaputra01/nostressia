@@ -47,12 +47,12 @@ const logger = createLogger("ADMIN_PAGE");
 export default function AdminPage() {
   const navigate = useNavigate();
 
-  // --- EXISTING STATE ---
+  
   const [activeModal, setActiveModal] = useState(null);
   const [selectedTipCategory, setSelectedTipCategory] = useState(null);
   const [currentUser, setCurrentUser] = useState({ id: 0, name: "", role: "" });
 
-  // --- STATE: VIEWS & DATA ---
+  
   const [activeView, setActiveView] = useState("dashboard");
 
   // User Data

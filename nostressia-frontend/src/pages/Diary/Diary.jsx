@@ -14,7 +14,7 @@ import { createLogger } from "../../utils/logger";
 
 const logger = createLogger("DIARY");
 
-// --- COLOR CONFIGURATION ---
+
 const bgSun = "rgb(var(--bg-gradient-sun))";
 const bgOrange = "rgb(var(--bg-gradient-orange))";
 const bgSky = "rgb(var(--bg-gradient-sky))";
@@ -43,7 +43,7 @@ export default function Diary() {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const scrollRef = useRef(null);
 
-  // --- State for animations and feedback ---
+  
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -75,7 +75,7 @@ export default function Diary() {
     setTimeout(() => setToast(null), 3000);
   };
 
-  // --- 2. Fetch data logic (GET) ---
+  
   useEffect(() => {
     const fetchDiaries = async () => {
       try {
@@ -118,7 +118,7 @@ export default function Diary() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // --- 3. Save data logic (POST) ---
+  
   const handleSubmit = async () => {
     if (!text.trim() || !title.trim()) return;
 

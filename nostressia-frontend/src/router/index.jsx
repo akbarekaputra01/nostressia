@@ -12,8 +12,8 @@ import Tips from "../pages/Tips/Tips";
 import Motivation from "../pages/Motivation/Motivation";
 import Diary from "../pages/Diary/Diary";
 import Analytics from "../pages/Analytics/Analytics";
-import Profile from "../pages/Profile/Profile"; 
-import Login from "../pages/Login/Login"; 
+import Profile from "../pages/Profile/Profile";
+import Login from "../pages/Login/Login";
 import LandingPage from "../pages/LandingPage/LandingPage";
 import NotFound from "../pages/NotFound/NotFound";
 
@@ -57,25 +57,25 @@ function AppRouter() {
 
         <Route element={<ProtectedRoute />}>
           <Route element={<MainLayout />}>
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/tips" element={<Tips />} />
-              <Route path="/motivation" element={<Motivation />} />
-              <Route path="/diary" element={<Diary />} />
-              <Route path="/analytics" element={<Analytics />} />
-              <Route path="/profile" element={<Profile />} /> 
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/tips" element={<Tips />} />
+            <Route path="/motivations" element={<Motivation />} />
+            <Route path="/diary" element={<Diary />} />
+            <Route path="/analytics" element={<Analytics />} />
+            <Route path="/profile" element={<Profile />} />
           </Route>
         </Route>
 
         <Route element={<AdminPublicRoute />}>
-          <Route path="/admin/login" element={<AdminLogin />} /> 
+          <Route path="/admin/login" element={<AdminLogin />} />
         </Route>
 
         <Route element={<AdminProtectedRoute />}>
-            <Route path="/admin" element={<AdminPage />} />
+          <Route path="/admin" element={<AdminPage />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />
-      
+
       </Routes>
     </BrowserRouter>
   );

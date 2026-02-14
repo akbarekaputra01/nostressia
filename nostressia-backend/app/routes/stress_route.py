@@ -18,7 +18,7 @@ router = APIRouter(
     tags=["Stress Levels"]
 )
 
-# 1. Create stress log (POST)
+# Create stress log (POST)
 @router.post("/", response_model=APIResponse[StressLevelResponse])
 def add_stress_log(
     log_data: StressLevelCreate,
@@ -54,6 +54,8 @@ def restore_stress_log(
 # 3. Fetch my stress logs (GET)
 @router.get("/my-logs", response_model=APIResponse[list[StressLevelResponse]])
 def read_my_stress_logs(
+    page: int = 1,
+    limit: int = 10,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -62,6 +64,8 @@ def read_my_stress_logs(
         data=stress_service.get_user_stress_logs(
             db=db,
             user_id=current_user.user_id,
+            page=page,
+            limit=limit,
         ),
         message="Stress logs fetched",
     )

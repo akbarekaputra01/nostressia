@@ -1,9 +1,45 @@
 {
   "global": {
-    "data_hash": "581b75a330436aba44aaf6b0a514e3b3cc8d2408aff83a1ac0e03de9170977c1",
-    "last_trained_at": "2026-02-10T02:03:45.813426+00:00"
+    "data_hash": "ffe59c5b23e8e2ecadbc190dd61dce0e983b3147998503b3d6e2b569e36467b3",
+    "last_trained_at": "2026-02-14T16:52:53.778355+00:00"
   },
   "personalized": {
-    "users": {}
+    "users": {
+      "1": {
+        "data_hash": "ffe59c5b23e8e2ecadbc190dd61dce0e983b3147998503b3d6e2b569e36467b3",
+        "last_trained_at": "2026-02-14T16:55:41.151951+00:00",
+        "last_trained_milestone": 60,
+        "streak_end_date": "2026-01-19",
+        "streak_start_date": "2025-11-21"
+      },
+      "2": {
+        "data_hash": "ffe59c5b23e8e2ecadbc190dd61dce0e983b3147998503b3d6e2b569e36467b3",
+        "last_trained_at": "2026-02-14T16:58:44.031146+00:00",
+        "last_trained_milestone": 60,
+        "streak_end_date": "2026-01-19",
+        "streak_start_date": "2025-11-21"
+      },
+      "3": {
+        "data_hash": "ffe59c5b23e8e2ecadbc190dd61dce0e983b3147998503b3d6e2b569e36467b3",
+        "last_trained_at": "2026-02-14T17:00:38.029901+00:00",
+        "last_trained_milestone": 60,
+        "streak_end_date": "2026-01-19",
+        "streak_start_date": "2025-11-21"
+      },
+      "4": {
+        "data_hash": "ffe59c5b23e8e2ecadbc190dd61dce0e983b3147998503b3d6e2b569e36467b3",
+        "last_trained_at": "2026-02-14T17:03:40.575710+00:00",
+        "last_trained_milestone": 60,
+        "streak_end_date": "2026-01-19",
+        "streak_start_date": "2025-11-21"
+      },
+      "5": {
+        "data_hash": "ffe59c5b23e8e2ecadbc190dd61dce0e983b3147998503b3d6e2b569e36467b3",
+        "last_trained_at": "2026-02-14T17:05:16.994409+00:00",
+        "last_trained_milestone": 60,
+        "streak_end_date": "2026-01-19",
+        "streak_start_date": "2025-11-21"
+      }
+    }
   }
 }

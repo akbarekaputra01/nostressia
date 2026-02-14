@@ -8,12 +8,12 @@ import Footer from "../../components/Footer";
 import { createLogger } from "../../utils/logger";
 import PageMeta from "../../components/PageMeta";
 import { useTheme } from "../../theme/ThemeProvider";
-// --- API URL ---
+
 import { getTipCategories, getTipsByCategory } from "../../services/tipsService";
 
 const logger = createLogger("TIPS");
 
-// --- COLOR CONFIGURATION ---
+
 const bgSun = "rgb(var(--bg-gradient-sun))";
 const bgOrange = "rgb(var(--bg-gradient-orange))";
 const bgSky = "rgb(var(--bg-gradient-sky))";

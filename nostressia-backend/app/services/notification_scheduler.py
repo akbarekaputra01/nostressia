@@ -1,7 +1,7 @@
 """Notification scheduler helpers for daily reminders."""
 import logging
 from datetime import datetime
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 import pytz
 from apscheduler.jobstores.base import JobLookupError
@@ -11,7 +11,8 @@ from apscheduler.triggers.cron import CronTrigger
 from app.core.database import SessionLocal
 from app.models.push_delivery_log_model import PushDeliveryLog
 from app.models.push_subscription_model import PushSubscription
-from app.services.push_notification_service import WebPushException, send_push
+
+# Avoid circular import at module level - import inside functions when needed
 
 logger = logging.getLogger(__name__)
 
@@ -99,6 +100,9 @@ def _send_daily_reminder(subscription_id: int) -> None:
             tz_name,
         )
 
+        # Import here to avoid circular import
+        from app.services.push_notification_service import send_push
+        
         send_push(sub, _build_payload())
 
         delivery_log = PushDeliveryLog(

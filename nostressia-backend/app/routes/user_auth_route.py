@@ -1,20 +1,21 @@
 """User authentication routes and profile endpoints."""
 
 import logging
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, timezone
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm
 
 from app.core.database import get_db
 from app.models.user_model import User
-from app.utils.jwt_handler import create_access_token, get_current_user
+from app.utils.jwt_handler import get_current_user
+from app.services import user_auth_service
 from app.services import stress_service
 
 # Utilities
 from app.utils.hashing import verify_password, hash_password
 from app.utils.otp_generator import generate_otp
-from app.services.email_service import send_otp_email, send_reset_password_email
+from app.services.email_service import send_reset_password_email
 
 # Schemas
 from app.schemas.user_auth_schema import (
@@ -38,9 +39,11 @@ from app.schemas.response_schema import APIResponse
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
-# --- CONFIGURATION ---
-OTP_EXPIRE_MINUTES = 5  # OTP expiration in minutes.
+# Configuration
+OTP_EXPIRE_MINUTES = 5 
 
+def _utcnow() -> datetime:
+    return datetime.now(timezone.utc)
 
 def _normalize_otp_created_at(value):
     if value is None:
@@ -49,198 +52,48 @@ def _normalize_otp_created_at(value):
         if value.tzinfo is None:
             return value.replace(tzinfo=timezone.utc)
         return value.astimezone(timezone.utc)
+    # Basic ISO parsing if string
     if isinstance(value, str):
         try:
             parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+            if parsed.tzinfo is None:
+                return parsed.replace(tzinfo=timezone.utc)
+            return parsed.astimezone(timezone.utc)
         except ValueError:
             return None
-        if parsed.tzinfo is None:
-            return parsed.replace(tzinfo=timezone.utc)
-        return parsed.astimezone(timezone.utc)
     return None
 
+# Endpoints
 
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
-def _serialize_user(user: User) -> UserResponse:
-    return UserResponse.model_validate(user)
-
-
-def _issue_token_for_user(user: User, db: Session) -> UserTokenResponse:
-    today = date.today()
-    user.streak = stress_service.get_user_current_streak(db, user.user_id)
-    user.last_login = today
-    db.commit()
-
-    access_token = create_access_token(
-        data={"sub": user.email, "id": user.user_id, "username": user.username}
-    )
-    return UserTokenResponse(
-        access_token=access_token,
-        token_type="bearer",
-        user=_serialize_user(user),
-    )
-
-def _authenticate_user(identifier: str, password: str, db: Session) -> User:
-    user = None
-    if "@" in identifier:
-        user = db.query(User).filter(User.email == identifier).first()
-    else:
-        user = db.query(User).filter(User.username == identifier).first()
-
-    if not user or not verify_password(password, user.password):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Username/email or password is incorrect.",
-        )
-
-    if not user.is_verified:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Account is not verified yet.",
-        )
-
-    return user
-
-# --- ENDPOINTS ---
-
-# 1. REGISTER (OTP expiration + retry logic)
+# REGISTER (OTP expiration + retry logic)
 @router.post("/register", status_code=status.HTTP_201_CREATED, response_model=APIResponse[EmailResponse])
 def register(user_in: UserRegister, db: Session = Depends(get_db)):
-    # 1. Check existing user records by email and username.
-    existing_user_email = db.query(User).filter(User.email == user_in.email).first()
-    existing_user_username = db.query(User).filter(User.username == user_in.username).first()
-
-    # 2. Validate username conflicts.
-    if existing_user_username:
-        if not existing_user_email or (existing_user_email.user_id != existing_user_username.user_id):
-            raise HTTPException(status_code=400, detail="Username already taken")
-
-    # Prepare OTP and user data.
-    otp_code = generate_otp(6)
-    hashed_pw = hash_password(user_in.password)
-    now = _utcnow()
-
-    # 3. Main email workflow
-    if existing_user_email:
-        # Case A: email exists and is already verified -> reject.
-        if existing_user_email.is_verified:
-            raise HTTPException(status_code=400, detail="Email already registered")
-        
-        # Case B: email exists but is not verified -> update existing record.
-        else:
-            existing_user_email.name = user_in.name
-            existing_user_email.username = user_in.username
-            existing_user_email.password = hashed_pw
-            
-            # Refresh OTP and timestamp.
-            existing_user_email.otp_code = otp_code
-            existing_user_email.otp_created_at = now
-            
-            existing_user_email.user_dob = user_in.user_dob
-            existing_user_email.gender = user_in.gender
-            existing_user_email.avatar = user_in.avatar
-            
-            db.commit()
-            send_otp_email(existing_user_email.email, otp_code)
-            
-            return success_response(
-                data=EmailResponse(email=existing_user_email.email),
-                message="Registration successful (Retry). Please check your email for new OTP.",
-            )
-
-    # Case C: brand-new user -> create a record.
-    new_user = User(
-        name=user_in.name,
-        username=user_in.username,
-        email=user_in.email,
-        password=hashed_pw,
-        gender=user_in.gender,
-        user_dob=user_in.user_dob, 
-        avatar=user_in.avatar,
-        
-        # OTP fields
-        otp_code=otp_code,
-        otp_created_at=now,
-        
-        is_verified=False,
-        streak=0
-    )
-
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
-
-    # D. Send email
-    email_sent, email_error = send_otp_email(new_user.email, otp_code)
-    
-    if not email_sent:
-        logger.warning(
-            "Failed to send OTP email to %s: %s",
-            new_user.email,
-            email_error,
-        )
-
-    return success_response(
-        data=EmailResponse(email=new_user.email),
-        message="Registration successful! Please check your email for OTP verification.",
-    )
+    user, updated = user_auth_service.register_user(db, user_in)
+    msg = "Registration successful (Retry). Please check your email for new OTP." if updated else "Registration successful! Please check your email for OTP verification."
+    return success_response(data=EmailResponse(email=user.email), message=msg)
 
 # 2. VERIFY OTP (checks expiration)
 @router.post("/verify-otp", status_code=status.HTTP_200_OK, response_model=APIResponse[None])
 def verify_otp_endpoint(payload: VerifyOTP, db: Session = Depends(get_db)):
-    # Find the user by email.
-    user = db.query(User).filter(User.email == payload.email).first()
-    
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    # Check whether the account is already verified.
-    if user.is_verified:
-        return success_response(message="Account already verified. Please login.")
-
-    # 1. Validate the OTP code.
-    if user.otp_code != payload.otp_code:
-        raise HTTPException(status_code=400, detail="Invalid OTP code")
-
-    # 2. Check expiration window.
-    otp_created_at = _normalize_otp_created_at(user.otp_created_at)
-    if otp_created_at:
-        # Compute the time difference.
-        time_diff = _utcnow() - otp_created_at
-        if time_diff > timedelta(minutes=OTP_EXPIRE_MINUTES):
-            raise HTTPException(
-                status_code=400,
-                detail="The OTP code has expired. Please register again or request a new OTP.",
-            )
-
-    # If all checks pass, activate the account.
-    user.is_verified = True
-    user.otp_code = None 
-    user.otp_created_at = None
-    db.commit()
-
+    user_auth_service.verify_user_otp(db, payload.email, payload.otp_code)
     return success_response(message="Account verified successfully! You can now login.")
 
 # 3. LOGIN
 @router.post("/login", response_model=APIResponse[UserTokenResponse])
 def login(payload: UserLogin, db: Session = Depends(get_db)):
-    identifier = payload.identifier.strip() if isinstance(payload.identifier, str) else payload.identifier
-    password = payload.password.strip() if isinstance(payload.password, str) else payload.password
-    user = _authenticate_user(identifier, password, db)
-    token_payload = _issue_token_for_user(user, db)
+    identifier = payload.identifier.strip()
+    password = payload.password.strip()
+    token_payload = user_auth_service.login_user(db, identifier, password)
     return success_response(data=token_payload, message="Login successful")
 
 @router.post("/token", response_model=APIResponse[UserTokenResponse])
 def login_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    user = _authenticate_user(form_data.username, form_data.password, db)
-    token_payload = _issue_token_for_user(user, db)
+    token_payload = user_auth_service.login_user(db, form_data.username, form_data.password)
     return success_response(data=token_payload, message="Login successful")
 
 @router.get("/me", response_model=APIResponse[UserResponse])
 def read_users_me(current_user: User = Depends(get_current_user)):
-    return success_response(data=_serialize_user(current_user), message="User profile fetched")
+    return success_response(data=UserResponse.model_validate(current_user), message="User profile fetched")
 
 @router.put("/me", response_model=APIResponse[UserResponse])
 def update_user_profile(user_update: UserUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
@@ -273,7 +126,7 @@ def update_user_profile(user_update: UserUpdate, db: Session = Depends(get_db), 
 
     db.commit()
     db.refresh(current_user)
-    return success_response(data=_serialize_user(current_user), message="Profile updated")
+    return success_response(data=UserResponse.model_validate(current_user), message="Profile updated")
 
 
 @router.post("/me/avatar", response_model=APIResponse[UserResponse])
@@ -298,7 +151,7 @@ def upload_user_avatar(
     current_user.avatar = avatar_url
     db.commit()
     db.refresh(current_user)
-    return success_response(data=_serialize_user(current_user), message="Avatar uploaded")
+    return success_response(data=UserResponse.model_validate(current_user), message="Avatar uploaded")
 
 
 @router.post("/verify-current-password", response_model=APIResponse[None])
@@ -376,7 +229,7 @@ def reset_password_confirm(payload: ResetPasswordConfirm, db: Session = Depends(
     if not user:
         raise HTTPException(status_code=404, detail="User not found.")
 
-    # 1. Validate the OTP code.
+    # Validate the OTP code.
     if user.otp_code != payload.otp_code:
         raise HTTPException(status_code=400, detail="Incorrect OTP code.")
 

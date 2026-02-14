@@ -1,6 +1,23 @@
 import os
 import sys
 from pathlib import Path
+from unittest.mock import MagicMock
+
+
+# This allows testing the app even if data science libs are missing (e.g. Python 3.14 environment)
+mock_modules = [
+    "joblib", "numpy", "pandas", "scipy", "sklearn", "sklearn.linear_model", 
+    "sklearn.preprocessing", "sklearn.pipeline", "sklearn.metrics", 
+    "sklearn.model_selection", "sklearn.ensemble", "sklearn.tree", "papermill",
+    "sib_api_v3_sdk", "sib_api_v3_sdk.rest", "app.services.ml_service",
+    "azure", "azure.core", "azure.core.exceptions", "azure.storage", "azure.storage.blob",
+    "pywebpush", "pytz", "apscheduler", "apscheduler.schedulers", 
+    "apscheduler.schedulers.background", "apscheduler.triggers", 
+    "apscheduler.triggers.cron", "apscheduler.jobstores", "apscheduler.jobstores.base"
+]
+for mod_name in mock_modules:
+    sys.modules[mod_name] = MagicMock()
+---------------------------------------
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.append(str(ROOT))
@@ -21,12 +38,14 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from app.core.database import Base, get_db
+# Import app AFTER mocks are in place
 from app.main import create_app
 from app.models import register_models
 
 
 @pytest.fixture(scope="session")
 def engine():
+    # Ensure all models are registered
     register_models()
     engine = create_engine(
         "sqlite+pysqlite:///:memory:", connect_args={"check_same_thread": False}

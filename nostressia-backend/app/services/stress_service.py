@@ -217,5 +217,6 @@ def update_stress_log(
     db.refresh(existing_log)
     return existing_log
 
-def get_user_stress_logs(db: Session, user_id: int):
-    return db.query(StressLevel).filter(StressLevel.user_id == user_id).all()
+def get_user_stress_logs(db: Session, user_id: int, page: int = 1, limit: int = 10):
+    skip = (page - 1) * limit
+    return db.query(StressLevel).filter(StressLevel.user_id == user_id).order_by(StressLevel.date.desc()).offset(skip).limit(limit).all()

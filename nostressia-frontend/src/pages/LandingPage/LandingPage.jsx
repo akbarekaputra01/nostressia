@@ -19,13 +19,13 @@ import {
 import Footer from "../../components/Footer";
 import PageMeta from "../../components/PageMeta";
 
-// --- Assets ---
+
 import LogoNostressia from "../../assets/images/Logo-Nostressia.png";
 import Avatar1 from "../../assets/images/avatar1.png";
 // Replace "preview1.png" with the background image you want (e.g., a campus or student activity photo).
 import CTABackground from "../../assets/images/preview2.png";
 
-// --- COMPONENTS: UI MOCKUPS (TETAP SAMA) ---
+
 
 // 1. Mockup Mood Tracker
 const MoodCard = () => (
@@ -179,7 +179,7 @@ const DiaryBookPreview = () => (
   </div>
 );
 
-// --- COMPONENT: HERO APP PREVIEW ---
+
 const HeroAppPreview = () => {
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -347,7 +347,7 @@ const HeroAppPreview = () => {
   );
 };
 
-// --- COMPONENT: HERO SIMPLE ---
+
 const HeroSimple = () => {
   return (
     <header className="relative z-10 pt-20 pb-10 md:pt-28 md:pb-16 px-6 overflow-hidden flex flex-col md:justify-center md:min-h-[90vh]">
@@ -452,7 +452,7 @@ const HeroSimple = () => {
   );
 };
 
-// --- COMPONENT: SPLIT FLOATING NAV ---
+
 
 const SplitNav = ({ scrollToSection, setIsMobileMenuOpen }) => {
   const navVariants = {
@@ -532,7 +532,7 @@ const SplitNav = ({ scrollToSection, setIsMobileMenuOpen }) => {
   );
 };
 
-// --- COMPONENT: MOBILE MENU FLOATING DROPDOWN (UPDATED) ---
+
 
 const MobileMenuOverlay = ({ isOpen, setIsOpen, scrollToSection }) => {
   return (
@@ -600,7 +600,7 @@ const MobileMenuOverlay = ({ isOpen, setIsOpen, scrollToSection }) => {
   );
 };
 
-// --- MAIN PAGE COMPONENT ---
+
 
 export default function LandingPage() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);

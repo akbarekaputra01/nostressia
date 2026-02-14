@@ -57,7 +57,7 @@ import { useTheme } from "../../theme/ThemeProvider";
 import { getMyStressLogs } from "../../services/stressService";
 import ConfirmModal from "../../components/ConfirmModal";
 
-// --- AVATAR ASSETS ---
+
 import avatar1 from "../../assets/images/avatar1.png";
 import avatar2 from "../../assets/images/avatar2.png";
 import avatar3 from "../../assets/images/avatar3.png";
@@ -68,7 +68,7 @@ const logger = createLogger("PROFILE");
 
 const AVATAR_OPTIONS = [avatar1, avatar4, avatar3, avatar5, avatar2];
 
-// --- COMPONENT: AVATAR SELECTION MODAL ---
+
 const AvatarSelectionModal = ({ onClose, onSelect, onUpload, currentAvatar, uploading }) => {
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-neutral-950/60 backdrop-blur-sm animate-fade-in">
@@ -123,7 +123,7 @@ const AvatarSelectionModal = ({ onClose, onSelect, onUpload, currentAvatar, uplo
   );
 };
 
-// --- GAME COMPONENT (FULL ORIGINAL) ---
+
 const FishGameModal = ({ onClose }) => {
   const canvasRef = useRef(null);
   useEffect(() => {
@@ -554,7 +554,7 @@ const FishGameModal = ({ onClose }) => {
   );
 };
 
-// --- MAIN PROFILE COMPONENT ---
+
 export default function Profile() {
   const [activeTab, setActiveTab] = useState("personal");
   const [notification, setNotification] = useState(null);
@@ -625,7 +625,7 @@ export default function Profile() {
   const [localAvatarPreview, setLocalAvatarPreview] = useState(null);
   const displayAvatar = resolveAvatarUrl(localAvatarPreview || formData.avatar) || fallbackAvatar;
 
-  // --- Sync user info into the form ---
+  
   useEffect(() => {
     if (contextUser) {
       setFormData({

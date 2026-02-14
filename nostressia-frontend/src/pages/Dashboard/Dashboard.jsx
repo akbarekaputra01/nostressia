@@ -24,7 +24,7 @@ import { useTheme } from "../../theme/ThemeProvider";
 
 const logger = createLogger("DASHBOARD");
 
-// --- COLOR CONFIGURATION ---
+
 const brandBlue = "#0162F1";
 const brandOrange = "#FFBF00";
 const brandGreen = "#00A4FF";
@@ -116,7 +116,7 @@ const tipThemePalette = [
   },
 ];
 
-// --- HELPER FUNCTIONS ---
+
 function formatDate(date) {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, "0");
@@ -189,7 +189,7 @@ function parseDateKey(dateKey) {
   return parsed;
 }
 
-// --- VARIATION ADVICES LIST ---
+
 const highStressAdvices = [
   "High stress likely. Try the 4-7-8 breathing technique: Inhale for 4s, hold for 7s, exhale for 8s.",
   "Your energy might be drained. Prioritize sleep tonight and limit screen time before bed.",
@@ -406,7 +406,7 @@ export default function Dashboard() {
     setTimeout(() => setToast(null), 3000);
   }, []);
 
-  // --- FORM STATE ---
+  
   const [gpa, setGpa] = useState(() => {
     const initialUserGpa = Number(user?.userGpa);
     return Number.isFinite(initialUserGpa) ? initialUserGpa : "";
@@ -614,7 +614,7 @@ export default function Dashboard() {
     };
   }, []);
 
-  // --- Background gradient logic ---
+  
   let gradientBg = "radial-gradient(circle at 50% 30%, rgba(156, 163, 175, 0.15), transparent 70%)";
   if (hasSubmittedToday) {
     if (stressScore > 60)
@@ -624,7 +624,7 @@ export default function Dashboard() {
     else gradientBg = `radial-gradient(circle at 50% 30%, ${brandGreen}30, transparent 70%)`;
   }
 
-  // --- Compute trend dots ---
+  
   const trendDots = [];
   const daysShort = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   for (let i = 6; i >= 0; i--) {
@@ -756,7 +756,7 @@ export default function Dashboard() {
     setRestoreImputeInfo("");
   }
 
-  // --- Close the forecast panel with an animation ---
+  
   function handleCloseForecast() {
     setIsClosingPanel(true); // Start the slide-down animation.
     setTimeout(() => {
@@ -1247,7 +1247,7 @@ export default function Dashboard() {
     }
   }
 
-  // --- UPDATED CALENDAR LOGIC ---
+  
   function changeMonth(offset) {
     setCalendarDate((prev) => {
       const newDate = new Date(prev);

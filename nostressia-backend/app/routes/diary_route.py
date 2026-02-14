@@ -29,11 +29,13 @@ def create_diary(
 # GET: Ambil List Diary Saya
 @router.get("/", response_model=APIResponse[list[DiaryResponse]])
 def get_my_diaries(
+    page: int = 1,
+    limit: int = 10,
     db: Session = Depends(get_db), 
     current_user: User = Depends(get_current_user)
 ):
     return success_response(
-        data=diary_service.get_user_diaries(db, current_user.user_id),
+        data=diary_service.get_user_diaries(db, current_user.user_id, page, limit),
         message="Diaries fetched",
     )
 

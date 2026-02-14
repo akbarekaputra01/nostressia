@@ -19,9 +19,10 @@ def create_diary(db: Session, diary_data: DiaryCreate, user_id: int):
     return new_diary
 
 # 2. Ambil Semua Diary (Milik User Login)
-def get_user_diaries(db: Session, user_id: int):
+def get_user_diaries(db: Session, user_id: int, page: int = 1, limit: int = 10):
+    skip = (page - 1) * limit
     # Sort newest first.
-    return db.query(Diary).filter(Diary.user_id == user_id).order_by(Diary.date.desc()).all()
+    return db.query(Diary).filter(Diary.user_id == user_id).order_by(Diary.date.desc()).offset(skip).limit(limit).all()
 
 # 3. Helper: Ambil Satu Diary & Cek Kepemilikan
 def get_diary_by_id(db: Session, diary_id: int, user_id: int):

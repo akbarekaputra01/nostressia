@@ -1,5 +1,9 @@
 import { DEFAULT_AVATAR, resolveAvatarUrl } from "../utils/avatar";
 
+vi.mock("../api/client", () => ({
+  apiOrigin: "http://localhost:3000",
+}));
+
 describe("avatar helpers", () => {
   it("returns null for empty input", () => {
     expect(resolveAvatarUrl("")).toBeNull();

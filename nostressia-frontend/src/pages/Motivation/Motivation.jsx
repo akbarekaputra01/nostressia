@@ -27,7 +27,7 @@ import { useTheme } from "../../theme/ThemeProvider";
 
 const logger = createLogger("MOTIVATION");
 
-// --- COLOR CONFIGURATION (MATCHING DASHBOARD) ---
+// COLOR CONFIGURATION (MATCHING DASHBOARD)
 const BG_SUN = "rgb(var(--bg-gradient-sun))";
 const BG_ORANGE = "rgb(var(--bg-gradient-orange))";
 const BG_SKY = "rgb(var(--bg-gradient-sky))";
@@ -105,7 +105,7 @@ export default function Motivation() {
   const prevBodyOverflow = useRef(null);
   const initialScrollResetDone = useRef(false);
 
-  // --- Fetch bookmarks from the API on load ---
+  // Fetch bookmarks from the API on load
   useEffect(() => {
     const fetchBookmarks = async () => {
       const token = readAuthToken();
@@ -120,7 +120,6 @@ export default function Motivation() {
     };
     fetchBookmarks();
   }, []);
-  // -------------------------------------------------------
 
   useEffect(() => {
     if ("scrollRestoration" in window.history) {
@@ -224,7 +223,7 @@ export default function Motivation() {
     },
   ];
 
-  // --- Toggle like hook wired to the API ---
+  // Toggle like hook wired to the API
   const toggleLike = async (id) => {
     const token = readAuthToken();
     if (!token) {
@@ -264,7 +263,6 @@ export default function Motivation() {
       );
     }
   };
-  // ----------------------------------------------------
 
   const getRandomHeroQuote = () => {
     if (motivations && motivations.length > 0) {

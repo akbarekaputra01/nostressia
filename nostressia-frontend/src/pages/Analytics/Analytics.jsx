@@ -25,7 +25,7 @@ import { getAnalyticsSummary } from "../../services/analyticsService";
 import { getMyStressLogs } from "../../services/stressService";
 import { resolveDisplayedStreak } from "../../utils/streak";
 
-// --- BACKGROUND CONFIGURATION (SAME AS DASHBOARD) ---
+
 const bgSun = "rgb(var(--bg-gradient-sun))";
 const bgOrange = "rgb(var(--bg-gradient-orange))";
 const bgSky = "rgb(var(--bg-gradient-sky))";
