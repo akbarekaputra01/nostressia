@@ -1,6 +1,6 @@
 import os
 from datetime import timedelta
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import joblib
 import pandas as pd
@@ -14,6 +14,7 @@ from app.services.global_forecast_service import GlobalForecastService
 class PersonalizedForecastService(GlobalForecastService):
     def __init__(self) -> None:
         super().__init__()
+        self._artifact_mtime: Optional[float] = None
 
     def _artifact_path(self) -> str:
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -45,8 +46,20 @@ class PersonalizedForecastService(GlobalForecastService):
         return user_id in user_map or str(user_id) in user_map
 
     def _load_artifact_for_user(self, user_id: int) -> Any:
-        """Load the personalized forecast artifact bundle for a user."""
-        return self._load_artifact()
+        """Load the personalized forecast artifact bundle for a user.
+
+        Personalized models can be retrained while the API process is still running.
+        We refresh the in-memory cache when the artifact file's mtime changes so
+        routing can immediately use newly-trained per-user models.
+        """
+        artifact_path = self._artifact_path()
+        mtime = os.path.getmtime(artifact_path)
+        if self._artifact_loaded and self._artifact_mtime != mtime:
+            self._artifact_loaded = False
+
+        bundle = self._load_artifact()
+        self._artifact_mtime = mtime
+        return bundle
 
     def _markov_proba_user(self, probs: Any, row: pd.Series) -> float:
         prev_high = int(row["lag_sp_1"] >= 1)
