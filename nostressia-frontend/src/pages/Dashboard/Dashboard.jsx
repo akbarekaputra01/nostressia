@@ -406,7 +406,7 @@ export default function Dashboard() {
     setTimeout(() => setToast(null), 3000);
   }, []);
 
-  
+
   const [gpa, setGpa] = useState(() => {
     const initialUserGpa = Number(user?.userGpa);
     return Number.isFinite(initialUserGpa) ? initialUserGpa : "";
@@ -614,7 +614,7 @@ export default function Dashboard() {
     };
   }, []);
 
-  
+
   let gradientBg = "radial-gradient(circle at 50% 30%, rgba(156, 163, 175, 0.15), transparent 70%)";
   if (hasSubmittedToday) {
     if (stressScore > 60)
@@ -624,7 +624,7 @@ export default function Dashboard() {
     else gradientBg = `radial-gradient(circle at 50% 30%, ${brandGreen}30, transparent 70%)`;
   }
 
-  
+
   const trendDots = [];
   const daysShort = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   for (let i = 6; i >= 0; i--) {
@@ -756,7 +756,7 @@ export default function Dashboard() {
     setRestoreImputeInfo("");
   }
 
-  
+
   function handleCloseForecast() {
     setIsClosingPanel(true); // Start the slide-down animation.
     setTimeout(() => {
@@ -939,7 +939,6 @@ export default function Dashboard() {
         const restoreRemainingCalc = eligibilitySnapshot?.restoreRemaining ?? 0;
 
         if (!eligibilitySnapshot || !eligibilitySnapshot.eligible) {
-          setForecastMode(resolveForecastMode(eligibilitySnapshot));
           setForecastList([]);
           setForecastError(
             buildForecastEligibilityMessage({
@@ -1247,7 +1246,7 @@ export default function Dashboard() {
     }
   }
 
-  
+
   function changeMonth(offset) {
     setCalendarDate((prev) => {
       const newDate = new Date(prev);
@@ -1271,12 +1270,12 @@ export default function Dashboard() {
   const backgroundStyle = isDarkMode
     ? { minHeight: "100vh", backgroundColor: "transparent" }
     : {
-        minHeight: "100vh",
-        backgroundColor: bgSun,
-        backgroundImage: `radial-gradient(at 10% 10%, ${bgSun} 0%, transparent 50%), radial-gradient(at 90% 20%, ${bgOrange} 0%, transparent 50%), radial-gradient(at 50% 80%, ${bgSky} 0%, transparent 50%)`,
-        backgroundSize: "200% 200%",
-        animation: "gradient-bg 20s ease infinite",
-      };
+      minHeight: "100vh",
+      backgroundColor: bgSun,
+      backgroundImage: `radial-gradient(at 10% 10%, ${bgSun} 0%, transparent 50%), radial-gradient(at 90% 20%, ${bgOrange} 0%, transparent 50%), radial-gradient(at 50% 80%, ${bgSky} 0%, transparent 50%)`,
+      backgroundSize: "200% 200%",
+      animation: "gradient-bg 20s ease infinite",
+    };
 
   return (
     <div style={backgroundStyle} className="relative">
@@ -1572,22 +1571,20 @@ export default function Dashboard() {
                             <button
                               type="button"
                               onClick={() => applyRestoreInputMode("manual", activeLogDate)}
-                              className={`rounded-lg px-3 py-2 text-xs font-bold transition-all ${
-                                restoreInputMode === "manual"
+                              className={`rounded-lg px-3 py-2 text-xs font-bold transition-all ${restoreInputMode === "manual"
                                   ? "bg-blue-600 text-white shadow-md"
                                   : "bg-surface-elevated/70 glass-panel text-text-secondary hover:bg-surface-elevated"
-                              }`}
+                                }`}
                             >
                               Manual entry
                             </button>
                             <button
                               type="button"
                               onClick={() => applyRestoreInputMode("auto", activeLogDate)}
-                              className={`rounded-lg px-3 py-2 text-xs font-bold transition-all ${
-                                restoreInputMode === "auto"
+                              className={`rounded-lg px-3 py-2 text-xs font-bold transition-all ${restoreInputMode === "auto"
                                   ? "bg-emerald-600 text-white shadow-md"
                                   : "bg-surface-elevated/70 glass-panel text-text-secondary hover:bg-surface-elevated"
-                              }`}
+                                }`}
                             >
                               Auto fill (imputed)
                             </button>
@@ -1813,9 +1810,8 @@ export default function Dashboard() {
                     <button
                       type="submit"
                       disabled={isSaving}
-                      className={`w-full py-3 rounded-xl font-bold text-white transition-all hover:brightness-110 mt-2 cursor-pointer ${
-                        isSaving ? "opacity-70 cursor-not-allowed" : ""
-                      }`}
+                      className={`w-full py-3 rounded-xl font-bold text-white transition-all hover:brightness-110 mt-2 cursor-pointer ${isSaving ? "opacity-70 cursor-not-allowed" : ""
+                        }`}
                       style={{
                         backgroundColor: isRestoreMode
                           ? brandOrange
@@ -2098,11 +2094,10 @@ export default function Dashboard() {
                       })
                     }
                     disabled={eligibilityLoading || restoreRemaining <= 0 || !canRestoreSelectedDay}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm ${
-                      eligibilityLoading || restoreRemaining <= 0 || !canRestoreSelectedDay
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm ${eligibilityLoading || restoreRemaining <= 0 || !canRestoreSelectedDay
                         ? "bg-surface-muted text-text-muted cursor-not-allowed dark:bg-surface dark:text-text-muted"
                         : "bg-orange-500 text-white hover:bg-orange-600"
-                    }`}
+                      }`}
                   >
                     Restore {selectedDateKey}
                   </button>
@@ -2407,32 +2402,32 @@ export default function Dashboard() {
                       {(forecastDetail.forecastMode ||
                         forecastDetail.modelType ||
                         typeof forecastDetail.threshold === "number") && (
-                        <div className="mt-1 text-[11px] font-semibold text-text-muted dark:text-text-muted">
-                          {forecastDetail.forecastMode && (
-                            <span>
-                              Forecast:{" "}
-                              {forecastDetail.forecastMode === "personalized"
-                                ? "Personalized"
-                                : "Global"}
-                            </span>
-                          )}
-                          {forecastDetail.forecastMode &&
-                            (forecastDetail.modelType ||
-                              typeof forecastDetail.threshold === "number") && (
-                              <span className="mx-1">·</span>
+                          <div className="mt-1 text-[11px] font-semibold text-text-muted dark:text-text-muted">
+                            {forecastDetail.forecastMode && (
+                              <span>
+                                Forecast:{" "}
+                                {forecastDetail.forecastMode === "personalized"
+                                  ? "Personalized"
+                                  : "Global"}
+                              </span>
                             )}
-                          {forecastDetail.modelType && (
-                            <span>Model: {forecastDetail.modelType}</span>
-                          )}
-                          {forecastDetail.modelType &&
-                            typeof forecastDetail.threshold === "number" && (
-                              <span className="mx-1">·</span>
+                            {forecastDetail.forecastMode &&
+                              (forecastDetail.modelType ||
+                                typeof forecastDetail.threshold === "number") && (
+                                <span className="mx-1">·</span>
+                              )}
+                            {forecastDetail.modelType && (
+                              <span>Model: {forecastDetail.modelType}</span>
                             )}
-                          {typeof forecastDetail.threshold === "number" && (
-                            <span>Threshold: {forecastDetail.threshold}</span>
-                          )}
-                        </div>
-                      )}
+                            {forecastDetail.modelType &&
+                              typeof forecastDetail.threshold === "number" && (
+                                <span className="mx-1">·</span>
+                              )}
+                            {typeof forecastDetail.threshold === "number" && (
+                              <span>Threshold: {forecastDetail.threshold}</span>
+                            )}
+                          </div>
+                        )}
                     </div>
                   </div>
 
