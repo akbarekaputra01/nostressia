@@ -76,7 +76,7 @@ def test_impute_latest_gpa_missing_remains_null(db_session):
     assert created.gpa is None
 
 
-def test_check_global_eligibility_resets_streak_without_today_log(db_session, monkeypatch):
+def test_check_global_eligibility_keeps_streak_without_today_log(db_session, monkeypatch):
     user = _create_user(db_session)
 
     for day in range(10, 17):
@@ -107,9 +107,9 @@ def test_check_global_eligibility_resets_streak_without_today_log(db_session, mo
 
     eligibility = stress_service.check_global_eligibility(db_session, user.user_id)
 
-    assert eligibility.streak == 0
-    assert eligibility.eligible is False
-    assert "Log today's stress entry" in eligibility.note
+    assert eligibility.streak == 7
+    assert eligibility.eligible is True
+    assert "Eligible for global forecast" in eligibility.note
 
 
 def test_check_global_eligibility_uses_app_timezone_for_today(db_session, monkeypatch):
@@ -143,6 +143,6 @@ def test_check_global_eligibility_uses_app_timezone_for_today(db_session, monkey
 
     eligibility = stress_service.check_global_eligibility(db_session, user.user_id)
 
-    assert eligibility.streak == 0
+    assert eligibility.streak == 1
     assert eligibility.eligible is False
-    assert "Log today's stress entry" in eligibility.note
+    assert "Need 6 more entries" in eligibility.note

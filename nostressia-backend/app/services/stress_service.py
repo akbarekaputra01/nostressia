@@ -79,21 +79,13 @@ def check_global_eligibility(db: Session, user_id: int) -> EligibilityResponse:
     required_streak = _resolve_required_streak(db)
     log_streak = get_user_current_streak(db, user_id)
     today = _current_app_date()
-    has_logged_today = (
-        db.query(StressLevel.stress_level_id)
-        .filter(StressLevel.user_id == user_id, StressLevel.date == today)
-        .first()
-        is not None
-    )
-    streak = log_streak if has_logged_today else 0
+    streak = log_streak
     eligible = streak >= required_streak
     restore_used = get_restore_used_in_month(db, user_id, today)
     restore_remaining = max(RESTORE_LIMIT - restore_used, 0)
     missing = max(0, required_streak - streak)
     if eligible:
         note = "Eligible for global forecast."
-    elif not has_logged_today:
-        note = "Log today's stress entry to unlock forecast again."
     else:
         note = f"Need {missing} more entries to unlock global forecast."
 
