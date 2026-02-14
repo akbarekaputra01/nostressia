@@ -106,7 +106,7 @@ def test_global_forecast_helpers():
     resolved = service._ensure_column_alias(df, "expected", ["fallback"])
     assert "expected" in resolved.columns
 
-    assert service.get_required_history_days_from_artifact({"meta": {"window": 3}}) == 4
+    assert service.get_required_history_days_from_artifact({"meta": {"window": 3}}) == 3
     assert service.get_required_history_days_from_artifact({"meta": {"window": "bad"}}) is None
 
 

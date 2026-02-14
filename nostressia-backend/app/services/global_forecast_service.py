@@ -71,7 +71,7 @@ class GlobalForecastService:
         if window <= 0:
             return None
 
-        return window + 1
+        return window
 
     def _build_feature_frame(
         self,
