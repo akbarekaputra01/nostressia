@@ -1,7 +1,11 @@
 {
-  "data_hash": "ffe59c5b23e8e2ecadbc190dd61dce0e983b3147998503b3d6e2b569e36467b3",
-  "git_sha": "",
-  "milestone": 60,
-  "trained_at": "2026-02-14T17:05:16.994409+00:00",
-  "user_id": 5
+  "data_hash": "d01d6d97c2d86768f4767d1674adae0c6d2845ad956abd314754777660ea7f37",
+  "git_sha": "cc957dde03058fb0557d8ccaa6f77727c7399c2f",
+  "trained_at": "2026-02-14T20:05:54.211073+00:00",
+  "users": [
+    {
+      "milestone": 60,
+      "user_id": 1
+    }
+  ]
 }
