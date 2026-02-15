@@ -1,6 +1,7 @@
 import client from "../api/client";
 import { apiResponseSchema, parseApiResponse } from "../api/contracts/apiResponse";
 import { notificationStatusSchema } from "../api/contracts/notificationSchemas";
+import { readAuthToken } from "./auth";
 import { createLogger } from "./logger";
 import { storage } from "./storage";
 
@@ -57,6 +58,20 @@ const normalizeReminderTime = (timeValue) => {
   if (typeof timeValue !== "string") return "08:00";
   const [hours = "08", minutes = "00"] = timeValue.slice(0, 5).split(":");
   return `${hours.padStart(2, "0")}:${minutes.padStart(2, "0")}`;
+};
+
+const getAuthorizedRequestConfig = () => {
+  const token = readAuthToken();
+  if (!token) {
+    return { skipAuthRedirect: true };
+  }
+
+  return {
+    skipAuthRedirect: true,
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
 };
 
 const ensurePushSubscription = async (registration) => {
@@ -147,11 +162,15 @@ export const subscribeDailyReminder = async (
 
   try {
     const subscription = await ensurePushSubscription(registration);
-    const response = await client.post("/notifications/subscribe", {
-      subscription,
-      reminderTime: normalizeReminderTime(timeValue),
-      timezone: getTimezone(),
-    });
+    const response = await client.post(
+      "/notifications/subscribe",
+      {
+        subscription,
+        reminderTime: normalizeReminderTime(timeValue),
+        timezone: getTimezone(),
+      },
+      getAuthorizedRequestConfig(),
+    );
     parseApiResponse(notificationStatusResponseSchema, response.data);
 
     return {
@@ -185,7 +204,10 @@ export const unsubscribeDailyReminder = async () => {
   }
 
   try {
-    const response = await client.delete("/notifications/unsubscribe");
+    const response = await client.delete(
+      "/notifications/unsubscribe",
+      getAuthorizedRequestConfig(),
+    );
     parseApiResponse(notificationStatusResponseSchema, response.data);
   } catch (error) {
     logger.warn("Failed to remove the subscription on the backend:", error);
