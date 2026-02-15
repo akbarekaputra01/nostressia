@@ -1,12 +1,15 @@
 
 import os
+import base64
 import sys
 import subprocess
 import nbformat
 import mlflow
+import pandas as pd
 import pprint
 import json
 import time # Added for latency measurement injection references
+import tempfile
 from pathlib import Path
 from typing import Dict, Any
 from nbconvert.preprocessors import ExecutePreprocessor
@@ -152,6 +155,78 @@ except Exception as e:
     print(f"Executed notebook saved to: {executed_path}")
     return executed_path
 
+def _log_dataset_details(dataset_path: Path, artifact_subdir: str = "dataset") -> None:
+    df = pd.read_csv(dataset_path)
+    mlflow.log_param("dataset_rows", int(df.shape[0]))
+    mlflow.log_param("dataset_columns", int(df.shape[1]))
+
+    overview = {
+        "shape": {"rows": int(df.shape[0]), "columns": int(df.shape[1])},
+        "columns": df.columns.tolist(),
+        "dtypes": {k: str(v) for k, v in df.dtypes.items()},
+        "missing_values": {k: int(v) for k, v in df.isna().sum().items()},
+        "describe": df.describe(include="all", datetime_is_numeric=True).transpose().fillna("").to_dict(),
+    }
+    mlflow.log_dict(overview, f"{artifact_subdir}/overview.json")
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmp = Path(tmpdir)
+        df.head(30).to_csv(tmp / "head.csv", index=False)
+        df.describe(include="all", datetime_is_numeric=True).transpose().to_csv(tmp / "describe.csv")
+        info_path = tmp / "info.txt"
+        with info_path.open("w", encoding="utf-8") as info_file:
+            df.info(buf=info_file)
+        mlflow.log_artifacts(str(tmp), artifact_path=artifact_subdir)
+
+
+def _log_notebook_details(executed_nb_path: Path, artifact_subdir: str = "notebook") -> None:
+    notebook = nbformat.read(str(executed_nb_path), as_version=4)
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmp = Path(tmpdir)
+        report_lines = [f"# Notebook output report: {executed_nb_path.name}", ""]
+
+        for idx, cell in enumerate(notebook.cells, start=1):
+            report_lines.append(f"## Cell {idx} ({cell.cell_type})")
+            report_lines.append("```python" if cell.cell_type == "code" else "```markdown")
+            report_lines.append(cell.get("source", ""))
+            report_lines.append("```")
+
+            for out_idx, output in enumerate(cell.get("outputs", []), start=1):
+                output_type = output.get("output_type", "unknown")
+                report_lines.append(f"### Output {out_idx}: {output_type}")
+
+                if output_type == "stream":
+                    report_lines.append("```")
+                    report_lines.append(output.get("text", ""))
+                    report_lines.append("```")
+                elif output_type in {"display_data", "execute_result"}:
+                    data = output.get("data", {})
+                    text_plain = data.get("text/plain")
+                    if text_plain:
+                        report_lines.append("```")
+                        report_lines.append("\n".join(text_plain) if isinstance(text_plain, list) else str(text_plain))
+                        report_lines.append("```")
+                    image_b64 = data.get("image/png")
+                    if image_b64:
+                        image_path = tmp / f"cell_{idx:03d}_out_{out_idx:02d}.png"
+                        image_path.write_bytes(base64.b64decode(image_b64))
+                    html_output = data.get("text/html")
+                    if html_output:
+                        html_path = tmp / f"cell_{idx:03d}_out_{out_idx:02d}.html"
+                        html_body = "\n".join(html_output) if isinstance(html_output, list) else str(html_output)
+                        html_path.write_text(html_body, encoding="utf-8")
+                elif output_type == "error":
+                    report_lines.append("```")
+                    report_lines.extend(output.get("traceback", []))
+                    report_lines.append("```")
+
+            report_lines.append("")
+
+        report_path = tmp / "notebook_report.md"
+        report_path.write_text("\n".join(report_lines), encoding="utf-8")
+        mlflow.log_artifacts(str(tmp), artifact_path=artifact_subdir)
+
+
 def train_current_stress():
     print("Starting Current Stress Training via Notebook Execution...")
     
@@ -197,9 +272,11 @@ def train_current_stress():
     
     with mlflow.start_run() as run:
         print(f"MLflow run started: {run.info.run_id}")
-        
-        # Log executed notebook (EDA + Training Logs)
-        mlflow.log_artifact(str(executed_nb_path))
+        _log_dataset_details(DATASET_PATH, artifact_subdir="dataset")
+
+        # Log executed notebook (EDA + Training Logs + detail outputs)
+        mlflow.log_artifact(str(executed_nb_path), artifact_path="notebook")
+        _log_notebook_details(executed_nb_path, artifact_subdir="notebook/details")
         print(f"Logged executed notebook: {executed_nb_path.name}")
         
         # Check for metrics generated by notebook injection
