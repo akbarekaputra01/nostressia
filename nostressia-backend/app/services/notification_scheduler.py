@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 
 import pytz
+from pywebpush import WebPushException
 from apscheduler.jobstores.base import JobLookupError
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -48,6 +49,12 @@ def _parse_hhmm(reminder_time: str) -> tuple[int, int]:
 
 def _job_id_for_subscription(subscription_id: int) -> str:
     return f"daily-reminder-sub-{subscription_id}"
+
+
+def send_push(subscription, payload: dict) -> None:
+    from app.services.push_notification_service import send_push as _send_push
+
+    _send_push(subscription, payload)
 
 
 def _send_daily_reminder(subscription_id: int) -> None:
@@ -100,9 +107,6 @@ def _send_daily_reminder(subscription_id: int) -> None:
             tz_name,
         )
 
-        # Import here to avoid circular import
-        from app.services.push_notification_service import send_push
-        
         send_push(sub, _build_payload())
 
         delivery_log = PushDeliveryLog(

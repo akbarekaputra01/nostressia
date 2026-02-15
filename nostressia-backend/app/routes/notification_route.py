@@ -16,9 +16,17 @@ from app.utils.response import success_response
 
 # Service
 from app.services import push_notification_service
+from app.services.notification_scheduler import (
+    remove_daily_reminder_job,
+    upsert_daily_reminder_job,
+)
 from app.services.push_notification_service import WebPushException
 
 router = APIRouter(prefix="/notifications", tags=["Notifications"])
+
+
+def send_push(subscription, payload: dict) -> None:
+    push_notification_service.send_push(subscription, payload)
 
 
 @router.post(
@@ -116,7 +124,7 @@ def test_send_notification(
     }
 
     try:
-        push_notification_service.send_push(subscription, payload)
+        send_push(subscription, payload)
     except RuntimeError as exc: # Missing config
         raise HTTPException(status_code=500, detail=str(exc))
     except WebPushException as exc:

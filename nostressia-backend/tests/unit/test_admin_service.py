@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import MagicMock, Session
+from unittest.mock import MagicMock
 from app.services import admin_service
 from app.models.user_model import User
 from app.models.diary_model import Diary

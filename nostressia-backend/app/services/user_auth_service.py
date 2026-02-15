@@ -166,3 +166,34 @@ def login_user(db: Session, identifier: str, password: str) -> UserTokenResponse
         token_type="bearer",
         user=UserResponse.model_validate(user),
     )
+
+
+
+def create_user(db: Session, user_in: UserRegister) -> User:
+    """Backward-compatible strict create helper used by legacy tests."""
+    if get_user_by_email(db, user_in.email) or get_user_by_username(db, user_in.username):
+        raise HTTPException(status_code=400, detail="User already exists")
+
+    new_user = User(
+        name=user_in.name,
+        username=user_in.username,
+        email=user_in.email,
+        password=hash_password(user_in.password),
+        gender=user_in.gender,
+        user_dob=user_in.user_dob,
+        avatar=user_in.avatar,
+        is_verified=True,
+        streak=0,
+    )
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return new_user
+
+
+def authenticate_user(db: Session, identifier: str, password: str):
+    """Backward-compatible auth helper returning user object or False."""
+    user = get_user_by_email(db, identifier) if "@" in identifier else get_user_by_username(db, identifier)
+    if not user or not verify_password(password, user.password) or not user.is_verified:
+        return False
+    return user

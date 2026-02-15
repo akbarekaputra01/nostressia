@@ -6,19 +6,17 @@ from unittest.mock import MagicMock
 
 # This allows testing the app even if data science libs are missing (e.g. Python 3.14 environment)
 mock_modules = [
-    "joblib", "numpy", "pandas", "scipy", "sklearn", "sklearn.linear_model", 
-    "sklearn.preprocessing", "sklearn.pipeline", "sklearn.metrics", 
-    "sklearn.model_selection", "sklearn.ensemble", "sklearn.tree", "papermill",
-    "sib_api_v3_sdk", "sib_api_v3_sdk.rest", "app.services.ml_service",
-    "azure", "azure.core", "azure.core.exceptions", "azure.storage", "azure.storage.blob",
-    "pywebpush", "pytz", "apscheduler", "apscheduler.schedulers", 
-    "apscheduler.schedulers.background", "apscheduler.triggers", 
-    "apscheduler.triggers.cron", "apscheduler.jobstores", "apscheduler.jobstores.base"
+    "sib_api_v3_sdk",
+    "sib_api_v3_sdk.rest",
+    "azure",
+    "azure.core",
+    "azure.core.exceptions",
+    "azure.storage",
+    "azure.storage.blob",
+    "pywebpush",
 ]
 for mod_name in mock_modules:
     sys.modules[mod_name] = MagicMock()
----------------------------------------
-
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.append(str(ROOT))
 
@@ -80,3 +78,8 @@ def client(db_session):
 
     app.dependency_overrides[get_db] = override_get_db
     return TestClient(app)
+
+
+@pytest.fixture()
+def mock_db_session():
+    return MagicMock()

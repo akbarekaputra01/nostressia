@@ -165,13 +165,17 @@ def create_stress_log(db: Session, stress_data: StressLevelCreate, user_id: int)
 
 
 def create_restore_log(db: Session, stress_data: StressLevelCreate, user_id: int) -> StressLevel:
-    _ensure_no_duplicate(db, user_id, stress_data.date)
+    # Backfill mode keeps historical data immutable; only today can coexist with an original log.
+    if stress_data.date != _current_app_date():
+        _ensure_no_duplicate(db, user_id, stress_data.date)
+
     restore_used = get_restore_used_in_month(db, user_id, stress_data.date)
     if restore_used >= RESTORE_LIMIT:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Restore limit reached for this month.",
         )
+
     stress_payload = _ensure_gpa_imputed(db, stress_data, user_id)
     new_log = _build_stress_level(stress_payload, user_id, is_restored=True)
     db.add(new_log)
@@ -183,7 +187,6 @@ def create_restore_log(db: Session, stress_data: StressLevelCreate, user_id: int
     db.commit()
     db.refresh(new_log)
     return new_log
-
 
 
 def update_stress_log(

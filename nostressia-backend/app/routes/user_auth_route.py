@@ -16,7 +16,7 @@ from app.services import stress_service
 # Utilities
 from app.utils.hashing import verify_password, hash_password
 from app.utils.otp_generator import generate_otp
-from app.services.email_service import send_reset_password_email
+from app.services.email_service import send_otp_email, send_reset_password_email
 
 # Schemas
 from app.schemas.user_auth_schema import (
@@ -63,6 +63,44 @@ def _normalize_otp_created_at(value):
         except ValueError:
             return None
     return None
+
+def _serialize_user(user: User) -> UserResponse:
+    return UserResponse.model_validate(user)
+
+
+def _issue_token_for_user(user: User, db: Session) -> UserTokenResponse:
+    curr_streak = stress_service.get_user_current_streak(db, user.user_id)
+    user.streak = curr_streak
+    user.last_login = date.today()
+    db.commit()
+    access_token = user_auth_service.create_access_token(
+        data={"sub": user.email, "id": user.user_id, "username": user.username}
+    )
+    return UserTokenResponse(
+        access_token=access_token,
+        token_type="bearer",
+        user=_serialize_user(user),
+    )
+
+
+def _authenticate_user(identifier: str, password: str, db: Session) -> User:
+    user = (
+        user_auth_service.get_user_by_email(db, identifier)
+        if "@" in identifier
+        else user_auth_service.get_user_by_username(db, identifier)
+    )
+    if not user or not verify_password(password, user.password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Username/email or password is incorrect.",
+        )
+    if not user.is_verified:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Account is not verified yet.",
+        )
+    return user
+
 
 # Endpoints
 
