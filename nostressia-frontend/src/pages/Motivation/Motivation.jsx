@@ -19,6 +19,7 @@ import {
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import PageMeta from "../../components/PageMeta";
+import Toast from "../../components/Toast";
 import Logo from "../../assets/images/Logo-Nostressia.png";
 import { getMotivations } from "../../services/motivationService";
 import { readAuthToken } from "../../utils/auth";
@@ -69,7 +70,7 @@ const EXPORT_SIZES = [{ id: "original", name: "Original", w: 464, h: 264 }];
 
 export default function Motivation() {
   const [likedIndex, setLikedIndex] = useState([]);
-  const [toastMessage, setToastMessage] = useState("");
+  const [toast, setToast] = useState(null);
   const [bookmarkLoadingIds, setBookmarkLoadingIds] = useState([]);
   const { resolvedTheme } = useTheme();
   const isDarkMode = resolvedTheme === "dark";
@@ -77,9 +78,9 @@ export default function Motivation() {
   // Fetch the user context from MainLayout.
   const { user } = useOutletContext() || { user: {} };
 
-  const showToast = (msg) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(""), 2000);
+  const showToast = (message, type = "success") => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 2000);
   };
 
   const [motivations, setMotivations] = useState([]);
@@ -448,11 +449,7 @@ export default function Motivation() {
         @keyframes gradient-bg { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
       `}</style>
 
-      {toastMessage && (
-        <div className="fixed top-6 right-6 z-[9999] bg-brand-accent text-text-inverse px-4 py-2 rounded-xl shadow-lg border border-brand-accent/80">
-          {toastMessage}
-        </div>
-      )}
+      <Toast message={toast?.message} type={toast?.type} />
 
       {/* 4. PASS USER KE NAVBAR */}
       <Navbar activeLink="Motivation" user={user} />
