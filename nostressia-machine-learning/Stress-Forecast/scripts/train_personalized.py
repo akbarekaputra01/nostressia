@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import argparse
+import base64
 import hashlib
 import json
 import pprint
 import os
+import tempfile
 from datetime import timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -248,6 +250,138 @@ except Exception as e:
         return debug_path
 
 
+def _log_dataset_details(dataset_path: Path, artifact_subdir: str = "dataset") -> None:
+    df = pd.read_csv(dataset_path)
+    mlflow.log_param("dataset_rows", int(df.shape[0]))
+    mlflow.log_param("dataset_columns", int(df.shape[1]))
+
+    overview = {
+        "shape": {"rows": int(df.shape[0]), "columns": int(df.shape[1])},
+        "columns": df.columns.tolist(),
+        "dtypes": {k: str(v) for k, v in df.dtypes.items()},
+        "missing_values": {k: int(v) for k, v in df.isna().sum().items()},
+        "describe": df.describe(include="all", datetime_is_numeric=True).transpose().fillna("").to_dict(),
+    }
+    mlflow.log_dict(overview, f"{artifact_subdir}/overview.json")
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmp = Path(tmpdir)
+        df.head(30).to_csv(tmp / "head.csv", index=False)
+        df.describe(include="all", datetime_is_numeric=True).transpose().to_csv(tmp / "describe.csv")
+        info_path = tmp / "info.txt"
+        with info_path.open("w", encoding="utf-8") as info_file:
+            df.info(buf=info_file)
+        mlflow.log_artifacts(str(tmp), artifact_path=artifact_subdir)
+
+
+def _log_notebook_details(executed_nb_path: Path, artifact_subdir: str = "notebook") -> None:
+    notebook = nbformat.read(str(executed_nb_path), as_version=4)
+
+    mime_extension = {
+        "text/plain": "txt",
+        "text/html": "html",
+        "text/markdown": "md",
+        "text/latex": "tex",
+        "application/javascript": "js",
+        "application/json": "json",
+        "application/vnd.plotly.v1+json": "plotly.json",
+        "application/vnd.dataresource+json": "dataresource.json",
+        "image/png": "png",
+        "image/jpeg": "jpg",
+        "image/svg+xml": "svg",
+    }
+
+    def _write_text(value: Any, output_path: Path) -> None:
+        if isinstance(value, list):
+            output_path.write_text("\n".join(str(item) for item in value), encoding="utf-8")
+        else:
+            output_path.write_text(str(value), encoding="utf-8")
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmp = Path(tmpdir)
+        report_lines = [f"# Notebook output report: {executed_nb_path.name}", ""]
+        output_index_payload = []
+
+        for idx, cell in enumerate(notebook.cells, start=1):
+            cell_dir = tmp / f"cell_{idx:03d}"
+            cell_dir.mkdir(parents=True, exist_ok=True)
+
+            source_ext = "py" if cell.cell_type == "code" else "md"
+            (cell_dir / f"source.{source_ext}").write_text(cell.get("source", ""), encoding="utf-8")
+
+            report_lines.append(f"## Cell {idx} ({cell.cell_type})")
+            report_lines.append("```python" if cell.cell_type == "code" else "```markdown")
+            report_lines.append(cell.get("source", ""))
+            report_lines.append("```")
+
+            outputs = cell.get("outputs", [])
+            output_index_payload.append({
+                "cell_index": idx,
+                "cell_type": cell.cell_type,
+                "output_count": len(outputs),
+            })
+
+            for out_idx, output in enumerate(outputs, start=1):
+                output_type = output.get("output_type", "unknown")
+                output_dir = cell_dir / f"output_{out_idx:02d}_{output_type}"
+                output_dir.mkdir(parents=True, exist_ok=True)
+
+                (output_dir / "raw.json").write_text(json.dumps(output, indent=2, ensure_ascii=False), encoding="utf-8")
+                report_lines.append(f"### Output {out_idx}: {output_type}")
+
+                if output_type == "stream":
+                    text_value = output.get("text", "")
+                    _write_text(text_value, output_dir / "stream.txt")
+                    report_lines.append("```")
+                    report_lines.append("\n".join(text_value) if isinstance(text_value, list) else str(text_value))
+                    report_lines.append("```")
+                    continue
+
+                if output_type == "error":
+                    traceback_value = output.get("traceback", [])
+                    _write_text(traceback_value, output_dir / "traceback.txt")
+                    (output_dir / "ename.txt").write_text(str(output.get("ename", "")), encoding="utf-8")
+                    (output_dir / "evalue.txt").write_text(str(output.get("evalue", "")), encoding="utf-8")
+                    report_lines.append("```")
+                    report_lines.extend(traceback_value)
+                    report_lines.append("```")
+                    continue
+
+                data_bundle = output.get("data", {})
+                metadata_bundle = output.get("metadata", {})
+
+                if metadata_bundle:
+                    (output_dir / "metadata.json").write_text(
+                        json.dumps(metadata_bundle, indent=2, ensure_ascii=False),
+                        encoding="utf-8",
+                    )
+
+                for mime_type, value in data_bundle.items():
+                    safe_mime = "".join(ch if ch.isalnum() or ch in {".", "_", "-"} else "_" for ch in mime_type)
+                    extension = mime_extension.get(mime_type, "txt")
+                    out_file = output_dir / f"data_{safe_mime}.{extension}"
+
+                    if mime_type in {"image/png", "image/jpeg"}:
+                        binary_value = "".join(value) if isinstance(value, list) else str(value)
+                        out_file.write_bytes(base64.b64decode(binary_value))
+                    elif isinstance(value, (dict, list)):
+                        out_file.write_text(json.dumps(value, indent=2, ensure_ascii=False), encoding="utf-8")
+                    else:
+                        _write_text(value, out_file)
+
+                    if mime_type == "text/plain":
+                        report_lines.append("```")
+                        report_lines.append("\n".join(value) if isinstance(value, list) else str(value))
+                        report_lines.append("```")
+
+            report_lines.append("")
+
+        (tmp / "output_index.json").write_text(
+            json.dumps(output_index_payload, indent=2, ensure_ascii=False),
+            encoding="utf-8",
+        )
+        (tmp / "notebook_report.md").write_text("\n".join(report_lines), encoding="utf-8")
+        mlflow.log_artifacts(str(tmp), artifact_path=artifact_subdir)
 def _current_streak(dates: List[datetime.date]) -> Tuple[int, Optional[datetime.date], Optional[datetime.date]]:
     if not dates:
         return 0, None, None
@@ -386,7 +520,8 @@ def train_personalized(
             mlflow.log_param("milestone", milestone)
             mlflow.log_param("window_size", milestone)
             mlflow.log_param("data_hash", data_hash)
-            
+            _log_dataset_details(DATASET_PATH, artifact_subdir="dataset")
+
             mlflow.log_artifact(str(output_path))
 
             # Check for metrics.json (generated in notebook directory)
@@ -416,9 +551,10 @@ def train_personalized(
                 except Exception as e:
                     print(f"Failed to log metrics: {e}")
 
-            # Log the executed notebook with EDA
+            # Log the executed notebook with EDA + detailed per-cell outputs
             try:
-               mlflow.log_artifact(str(executed_nb_path))
+               mlflow.log_artifact(str(executed_nb_path), artifact_path="notebook")
+               _log_notebook_details(executed_nb_path, artifact_subdir="notebook/details")
                print(f"MLFLOW: Logged executed notebook: {executed_nb_path}")
                executed_nb_path.unlink() # Cleanup after logging
             except Exception as e:
