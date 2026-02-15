@@ -22,6 +22,21 @@ const FONT_PRESETS = {
 
 const resolveFontFamily = (fontValue) => FONT_PRESETS[fontValue] || FONT_PRESETS.manrope;
 
+const toApiDate = (value) => {
+  if (!value) return new Date().toISOString().split("T")[0];
+  if (typeof value === "string") {
+    const isoDateMatch = value.match(/^\d{4}-\d{2}-\d{2}/);
+    if (isoDateMatch) return isoDateMatch[0];
+  }
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return new Date().toISOString().split("T")[0];
+  }
+
+  return parsed.toISOString().split("T")[0];
+};
+
 const bgSun = "rgb(var(--bg-gradient-sun))";
 const bgOrange = "rgb(var(--bg-gradient-orange))";
 const bgSky = "rgb(var(--bg-gradient-sky))";
@@ -134,11 +149,11 @@ export default function Diary() {
 
       const entryToEdit = entries.find((entry) => entry.id === editingEntryId);
       const payload = {
-        title: title,
-        note: text,
+        title: title.trim(),
+        note: text.trim(),
         emoji: selectedMood,
         font: selectedFont,
-        date: entryToEdit?.rawDate || new Date().toISOString().split("T")[0],
+        date: toApiDate(entryToEdit?.rawDate),
       };
 
       const savedData = editingEntryId
