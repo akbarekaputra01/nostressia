@@ -449,7 +449,7 @@ export default function Motivation() {
       `}</style>
 
       {toastMessage && (
-        <div className="fixed top-6 right-6 z-[9999] bg-rose-600 text-white px-4 py-2 rounded-xl shadow-lg border border-rose-700">
+        <div className="fixed top-6 right-6 z-[9999] bg-brand-accent text-text-inverse px-4 py-2 rounded-xl shadow-lg border border-brand-accent/80">
           {toastMessage}
         </div>
       )}
