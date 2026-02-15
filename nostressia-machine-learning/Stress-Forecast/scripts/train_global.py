@@ -164,14 +164,14 @@ def _log_dataset_details(dataset_path: Path, artifact_subdir: str = "dataset") -
         "columns": df.columns.tolist(),
         "dtypes": {k: str(v) for k, v in df.dtypes.items()},
         "missing_values": {k: int(v) for k, v in df.isna().sum().items()},
-        "describe": df.describe(include="all", datetime_is_numeric=True).transpose().fillna("").to_dict(),
+        "describe": df.describe(include="all").transpose().fillna("").to_dict(),
     }
     mlflow.log_dict(overview, f"{artifact_subdir}/overview.json")
 
     with tempfile.TemporaryDirectory() as tmpdir:
         tmp = Path(tmpdir)
         df.head(30).to_csv(tmp / "head.csv", index=False)
-        df.describe(include="all", datetime_is_numeric=True).transpose().to_csv(tmp / "describe.csv")
+        df.describe(include="all").transpose().to_csv(tmp / "describe.csv")
         info_path = tmp / "info.txt"
         with info_path.open("w", encoding="utf-8") as info_file:
             df.info(buf=info_file)
