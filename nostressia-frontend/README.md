@@ -76,6 +76,8 @@ curl http://localhost:8000/health
   ```bash
   npm run test:coverage
   ```
+  > Jika muncul error dependency coverage, install dulu plugin bawaan Vitest:
+  > `npm i -D @vitest/coverage-v8`
 
 ## Build & Deploy
 1. Build bundle:
