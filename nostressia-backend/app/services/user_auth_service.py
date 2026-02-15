@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
 from app.models.user_model import User
+from app.models.admin_model import Admin
 from app.schemas.user_auth_schema import UserRegister, UserResponse, UserTokenResponse
 from app.utils.hashing import hash_password, verify_password
 from app.utils.jwt_handler import create_access_token
@@ -31,6 +32,8 @@ def register_user(db: Session, user_in: UserRegister) -> Tuple[User, bool]:
     """
     # 1. Check existing user records
     existing_user_email = get_user_by_email(db, user_in.email)
+    if db.query(Admin).filter(Admin.email == user_in.email).first():
+        raise HTTPException(status_code=400, detail="Email is reserved for admin account")
     existing_user_username = get_user_by_username(db, user_in.username)
 
     # 2. Validate username conflicts

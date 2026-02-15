@@ -8,6 +8,7 @@ export default function ConfirmModal({
   cancelLabel = "Cancel",
   onConfirm,
   onCancel,
+  isLoading = false,
 }) {
   if (!isOpen) return null;
 
@@ -20,16 +21,18 @@ export default function ConfirmModal({
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2 rounded-lg text-sm font-semibold text-text-secondary bg-surface-muted hover:bg-surface-muted/70 transition-all cursor-pointer"
+            disabled={isLoading}
+            className="px-4 py-2 rounded-lg text-sm font-semibold text-text-secondary bg-surface-muted hover:bg-surface-muted/70 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {cancelLabel}
           </button>
           <button
             type="button"
             onClick={onConfirm}
-            className="px-4 py-2 rounded-lg text-sm font-semibold text-text-inverse bg-brand-accent hover:bg-brand-accent/90 transition-all cursor-pointer"
+            disabled={isLoading}
+            className="px-4 py-2 rounded-lg text-sm font-semibold text-text-inverse bg-brand-accent hover:bg-brand-accent/90 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {confirmLabel}
+            {isLoading ? "Processing..." : confirmLabel}
           </button>
         </div>
       </div>

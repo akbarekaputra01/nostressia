@@ -56,6 +56,7 @@ class UserUpdate(BaseSchema):
     name: Optional[str] = None
     username: Optional[str] = Field(default=None, validation_alias=AliasChoices("username", "user_name", "userName"))
     email: Optional[EmailStr] = None
+    email_otp: Optional[str] = Field(default=None, validation_alias=AliasChoices("emailOtp", "emailOtpCode", "email_otp"))
     avatar: Optional[str] = None
     gender: Optional[str] = None
     user_gpa: Optional[float] = Field(default=None, validation_alias=AliasChoices("userGpa", "gpa"))
@@ -73,6 +74,7 @@ class AdminUserUpdate(BaseSchema):
     name: Optional[str] = None
     username: Optional[str] = Field(default=None, validation_alias=AliasChoices("username", "user_name", "userName"))
     email: Optional[EmailStr] = None
+    email_otp: Optional[str] = Field(default=None, validation_alias=AliasChoices("emailOtp", "emailOtpCode", "email_otp"))
     gender: Optional[str] = None
     user_dob: Optional[date] = None
     avatar: Optional[str] = None

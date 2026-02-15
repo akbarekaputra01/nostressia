@@ -14,6 +14,13 @@ import { createLogger } from "../../utils/logger";
 
 const logger = createLogger("DIARY");
 
+const FONT_PRESETS = {
+  manrope: "var(--font-base), 'Manrope', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif",
+  serif: "Georgia, 'Times New Roman', serif",
+  mono: "'Courier New', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace",
+};
+
+const resolveFontFamily = (fontValue) => FONT_PRESETS[fontValue] || FONT_PRESETS.manrope;
 
 const bgSun = "rgb(var(--bg-gradient-sun))";
 const bgOrange = "rgb(var(--bg-gradient-orange))";
@@ -28,15 +35,14 @@ const colors = {
 };
 
 export default function Diary() {
-  const baseFont =
-    "var(--font-base), 'Manrope', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif";
+  const baseFont = resolveFontFamily("manrope");
   const { resolvedTheme } = useTheme();
   const isDarkMode = resolvedTheme === "dark";
   const [entries, setEntries] = useState([]);
   const [title, setTitle] = useState("");
   const [text, setText] = useState("");
   const [selectedMood, setSelectedMood] = useState("😐");
-  const [selectedFont, setSelectedFont] = useState(baseFont);
+  const [selectedFont, setSelectedFont] = useState("manrope");
   const [selectedEntry, setSelectedEntry] = useState(null);
   const [editingEntryId, setEditingEntryId] = useState(null);
   const [isBookOpen, setIsBookOpen] = useState(false);
@@ -52,14 +58,9 @@ export default function Diary() {
   const { user } = useOutletContext() || { user: {} };
 
   const fontOptions = [
-    { name: "Manrope", value: baseFont, label: "Aa" },
-    { name: "Serif", value: "Georgia, 'Times New Roman', serif", label: "Bb" },
-    {
-      name: "Mono",
-      value:
-        "'Courier New', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace",
-      label: "Cc",
-    },
+    { name: "Manrope", value: "manrope", label: "Aa" },
+    { name: "Serif", value: "serif", label: "Bb" },
+    { name: "Mono", value: "mono", label: "Cc" },
   ];
 
   const moods = [
@@ -92,7 +93,7 @@ export default function Diary() {
           title: item.title,
           content: item.note,
           mood: item.emoji,
-          font: item.font,
+          font: item.font || "manrope",
           rawDate: item.date,
           date: new Date(item.date).toLocaleDateString("en-US", {
             day: "numeric",
@@ -149,7 +150,7 @@ export default function Diary() {
         title: savedData.title,
         content: savedData.note,
         mood: savedData.emoji,
-        font: savedData.font,
+        font: savedData.font || "manrope",
         rawDate: savedData.date,
         date: new Date(savedData.date).toLocaleDateString("en-US", {
           day: "numeric",
@@ -201,7 +202,7 @@ export default function Diary() {
     setTitle(entry.title);
     setText(entry.content);
     setSelectedMood(entry.mood);
-    setSelectedFont(entry.font || baseFont);
+    setSelectedFont(entry.font || "manrope");
     setEditingEntryId(entry.id);
     setIsBookOpen(true);
     setSelectedEntry(null);
@@ -213,7 +214,7 @@ export default function Diary() {
     setTitle("");
     setText("");
     setSelectedMood("😐");
-    setSelectedFont(baseFont);
+    setSelectedFont("manrope");
   };
 
   const isEditing = Boolean(editingEntryId);
@@ -367,7 +368,7 @@ export default function Diary() {
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="Title..."
                     className="bg-transparent text-lg md:text-2xl font-bold focus:outline-none w-full h-[40px] leading-[40px] relative z-10"
-                    style={{ fontFamily: selectedFont || baseFont, color: colors.brandBlue }}
+                    style={{ fontFamily: resolveFontFamily(selectedFont), color: colors.brandBlue }}
                   />
                   <textarea
                     value={text}
@@ -375,7 +376,7 @@ export default function Diary() {
                     placeholder="Dear diary..."
                     className="flex-grow bg-transparent resize-none focus:outline-none text-sm md:text-lg leading-[40px] custom-scrollbar w-full relative z-10"
                     style={{
-                      fontFamily: selectedFont || baseFont,
+                      fontFamily: resolveFontFamily(selectedFont),
                       color: "rgb(var(--journal-ink))",
                     }}
                   />
@@ -548,7 +549,7 @@ export default function Diary() {
                         </div>
                         <h4
                           className="font-bold text-base md:text-lg mb-1 truncate leading-snug dark:text-text-primary"
-                          style={{ fontFamily: entry.font || baseFont }}
+                          style={{ fontFamily: resolveFontFamily(entry.font) }}
                         >
                           {entry.title}
                         </h4>
@@ -557,7 +558,7 @@ export default function Diary() {
                         </p>
                         <p
                           className="text-text-muted text-xs md:text-sm line-clamp-3 dark:text-text-muted"
-                          style={{ fontFamily: entry.font || baseFont }}
+                          style={{ fontFamily: resolveFontFamily(entry.font) }}
                         >
                           {entry.content}
                         </p>
@@ -630,7 +631,7 @@ export default function Diary() {
                         </div>
                         <h2
                           className="text-lg md:text-3xl font-extrabold text-text-primary dark:text-text-primary leading-tight truncate pb-1"
-                          style={{ fontFamily: selectedEntry.font || baseFont }}
+                          style={{ fontFamily: resolveFontFamily(selectedEntry.font) }}
                         >
                           {selectedEntry.title}
                         </h2>
@@ -639,7 +640,7 @@ export default function Diary() {
                     <div
                       className="text-sm md:text-xl whitespace-pre-wrap mt-0"
                       style={{
-                        fontFamily: selectedEntry.font || baseFont,
+                        fontFamily: resolveFontFamily(selectedEntry.font),
                         lineHeight: "32px",
                         color: "rgb(var(--journal-ink))",
                       }}

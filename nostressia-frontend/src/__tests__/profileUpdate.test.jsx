@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 
@@ -75,15 +75,6 @@ describe("Profile updates", () => {
 
     const birthdayInput = screen.getByLabelText(/birthday/i);
     const genderSelect = screen.getByLabelText(/gender/i);
-
-    const birthdayContainer = birthdayInput.closest("div")?.parentElement;
-    const genderContainer = genderSelect.closest("div")?.parentElement;
-    if (!birthdayContainer || !genderContainer) {
-      throw new Error("Profile fields are missing expected containers.");
-    }
-
-    await user.click(within(birthdayContainer).getByRole("button", { name: /change/i }));
-    await user.click(within(genderContainer).getByRole("button", { name: /change/i }));
 
     await user.clear(birthdayInput);
     await user.type(birthdayInput, "1999-12-31");

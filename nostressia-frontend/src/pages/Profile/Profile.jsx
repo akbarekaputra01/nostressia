@@ -574,6 +574,7 @@ export default function Profile() {
   });
 
   const [isLoadingPassword, setIsLoadingPassword] = useState(false);
+  const [isConfirming, setIsConfirming] = useState(false);
   const [isVerifyingCurrentPassword, setIsVerifyingCurrentPassword] = useState(false);
   const [isCurrentPasswordVerified, setIsCurrentPasswordVerified] = useState(false);
 
@@ -592,11 +593,11 @@ export default function Profile() {
 
   // Lock/unlock fields for inline edits
   const [editableFields, setEditableFields] = useState({
-    username: false,
-    fullName: false,
-    email: false,
-    birthday: false,
-    gender: false,
+    username: true,
+    fullName: true,
+    email: true,
+    birthday: true,
+    gender: true,
   });
 
   const { user: contextUser } = useOutletContext() || { user: {} };
@@ -657,13 +658,18 @@ export default function Profile() {
   }, []);
 
   const handleConfirm = async () => {
-    if (confirmState.onConfirm) {
+    if (!confirmState.onConfirm || isConfirming) return;
+    setIsConfirming(true);
+    try {
       await confirmState.onConfirm();
+      setConfirmState((prev) => ({ ...prev, isOpen: false, onConfirm: null }));
+    } finally {
+      setIsConfirming(false);
     }
-    setConfirmState((prev) => ({ ...prev, isOpen: false, onConfirm: null }));
   };
 
   const handleCancelConfirm = () => {
+    if (isConfirming) return;
     setConfirmState((prev) => ({ ...prev, isOpen: false, onConfirm: null }));
   };
 
@@ -721,13 +727,18 @@ export default function Profile() {
   };
 
   const [notifSettings, setNotifSettings] = useState(() => {
-    return (
-      getSavedNotificationSettings() || {
-        dailyReminder: true,
-        reminderTime: "08:00",
-        emailUpdates: false,
-      }
-    );
+    const saved = getSavedNotificationSettings();
+    if (saved) {
+      return {
+        ...saved,
+        reminderTime: (saved.reminderTime || "08:00").slice(0, 5),
+      };
+    }
+    return {
+      dailyReminder: true,
+      reminderTime: "08:00",
+      emailUpdates: false,
+    };
   });
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: "",
@@ -959,7 +970,23 @@ export default function Profile() {
         userDob: formData.birthday || null,
       };
 
-      const updatedProfile = await updateProfile(payload);
+      let updatedProfile;
+      const isChangingEmail = Boolean(formData.email && formData.email !== (contextUser?.email || ""));
+      try {
+        updatedProfile = await updateProfile(payload);
+      } catch (primaryError) {
+        const message = primaryError?.message || "";
+        if (!isChangingEmail || !message.toLowerCase().includes("otp")) {
+          throw primaryError;
+        }
+
+        const otpCode = window.prompt("Enter the OTP sent to your current email to confirm email change:")?.trim();
+        if (!otpCode) {
+          showNotification("Email change canceled. OTP is required.", "warning");
+          return;
+        }
+        updatedProfile = await updateProfile({ ...payload, emailOtpCode: otpCode });
+      }
       const cachedUser = storage.getJson(STORAGE_KEYS.CACHE_USER_DATA, contextUser || {});
       const normalizedDob =
         updatedProfile?.userDob ||
@@ -1001,13 +1028,6 @@ export default function Profile() {
         gender: normalizedGender,
       }));
       showNotification("Profile updated successfully!");
-      setEditableFields({
-        username: false,
-        fullName: false,
-        email: false,
-        birthday: false,
-        gender: false,
-      });
       setShouldClearProfilePicture(false);
       window.dispatchEvent(new Event("nostressia:user-update"));
     } catch (error) {
@@ -1083,7 +1103,8 @@ export default function Profile() {
 
   const handleNotifChange = (e) => {
     const { name, value, type, checked } = e.target;
-    const nextValue = type === "checkbox" ? checked : value;
+    const normalizedValue = name === "reminderTime" && typeof value === "string" ? value.slice(0, 5) : value;
+    const nextValue = type === "checkbox" ? checked : normalizedValue;
     setNotifSettings((prev) => ({ ...prev, [name]: nextValue }));
     if (name === "reminderTime" && value === "04:04") {
       setShowGameModal(true);
@@ -1114,7 +1135,7 @@ export default function Profile() {
         return;
       }
       try {
-        const result = await subscribeDailyReminder(notifSettings.reminderTime);
+        const result = await subscribeDailyReminder((notifSettings.reminderTime || "08:00").slice(0, 5));
         if (!result.ok) {
           const disabledSettings = { ...notifSettings, dailyReminder: false };
           setNotifSettings(disabledSettings);
@@ -1169,7 +1190,7 @@ export default function Profile() {
         }
       }
       saveNotificationSettings(notifSettings);
-      const result = await subscribeDailyReminder(notifSettings.reminderTime, {
+      const result = await subscribeDailyReminder((notifSettings.reminderTime || "08:00").slice(0, 5), {
         skipPermissionPrompt: true,
       });
       if (!result.ok) {
@@ -1387,6 +1408,7 @@ export default function Profile() {
         confirmLabel={confirmState.confirmLabel}
         onConfirm={handleConfirm}
         onCancel={handleCancelConfirm}
+        isLoading={isConfirming}
       />
 
       {/* SETTINGS MODAL */}
@@ -1760,7 +1782,7 @@ export default function Profile() {
                     </div>
                     <button
                       onClick={() => toggleEdit("username")}
-                      className="px-4 py-3 rounded-xl border border-blue-200 text-blue-600 font-bold text-sm hover:bg-blue-50 transition-colors cursor-pointer whitespace-nowrap"
+                      className="hidden"
                     >
                       {editableFields.username ? "Lock" : "Change"}
                     </button>
@@ -1784,7 +1806,7 @@ export default function Profile() {
                     </div>
                     <button
                       onClick={() => toggleEdit("fullName")}
-                      className="px-4 py-3 rounded-xl border border-blue-200 text-blue-600 font-bold text-sm hover:bg-blue-50 transition-colors cursor-pointer whitespace-nowrap"
+                      className="hidden"
                     >
                       {editableFields.fullName ? "Lock" : "Change"}
                     </button>
@@ -1810,7 +1832,7 @@ export default function Profile() {
                     </div>
                     <button
                       onClick={() => toggleEdit("email")}
-                      className="px-4 py-3 rounded-xl border border-blue-200 text-blue-600 font-bold text-sm hover:bg-blue-50 transition-colors cursor-pointer whitespace-nowrap"
+                      className="hidden"
                     >
                       {editableFields.email ? "Lock" : "Change"}
                     </button>
@@ -1841,7 +1863,7 @@ export default function Profile() {
                       </div>
                       <button
                         onClick={() => toggleEdit("birthday")}
-                        className="px-4 py-3 rounded-xl border border-blue-200 text-blue-600 font-bold text-sm hover:bg-blue-50 transition-colors cursor-pointer whitespace-nowrap"
+                        className="hidden"
                       >
                         {editableFields.birthday ? "Lock" : "Change"}
                       </button>
@@ -1873,7 +1895,7 @@ export default function Profile() {
                       </div>
                       <button
                         onClick={() => toggleEdit("gender")}
-                        className="px-4 py-3 rounded-xl border border-blue-200 text-blue-600 font-bold text-sm hover:bg-blue-50 transition-colors cursor-pointer whitespace-nowrap"
+                        className="hidden"
                       >
                         {editableFields.gender ? "Lock" : "Change"}
                       </button>
