@@ -2,13 +2,13 @@ import pytest
 from unittest.mock import patch, MagicMock
 from app.services import push_notification_service
 from app.models.push_subscription_model import PushSubscription
-from app.schemas.notification_schema import NotificationSubscription, Keys
+from app.schemas.notification_schema import PushSubscriptionKeys, PushSubscriptionPayload
 
 def test_subscribe_user_new(db_session):
     user_id = 1
-    sub_data = NotificationSubscription(
+    sub_data = PushSubscriptionPayload(
         endpoint="https://fcm.googleapis.com/fcm/send/ABC",
-        keys=Keys(p256dh="key", auth="auth")
+        keys=PushSubscriptionKeys(p256dh="key", auth="auth")
     )
     
     with patch("app.services.push_notification_service.upsert_daily_reminder_job") as mock_upsert:
@@ -40,9 +40,9 @@ def test_subscribe_user_update(db_session):
     db_session.add(existing)
     db_session.commit()
     
-    sub_data = NotificationSubscription(
+    sub_data = PushSubscriptionPayload(
         endpoint="https://existing.com",
-        keys=Keys(p256dh="new", auth="new")
+        keys=PushSubscriptionKeys(p256dh="new", auth="new")
     )
     
     with patch("app.services.push_notification_service.upsert_daily_reminder_job") as mock_upsert:

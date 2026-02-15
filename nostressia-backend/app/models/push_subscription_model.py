@@ -13,7 +13,7 @@ class PushSubscription(Base):
     endpoint = Column(String(512), unique=True, nullable=False)
     p256dh = Column(String(255), nullable=False)
     auth = Column(String(255), nullable=False)
-    reminder_time = Column(String(5), nullable=False)
+    reminder_time = Column(String(5), nullable=False, default="08:00")
     timezone = Column(String(64), default="Asia/Jakarta")
     is_active = Column(Boolean, default=True)
     last_sent_date = Column(Date, nullable=True)

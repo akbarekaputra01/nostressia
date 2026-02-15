@@ -27,7 +27,7 @@ def test_register_user_success(db_session):
 
 def test_register_duplicate_username(db_session):
     # Create user 1
-    user1 = User(username="user1", email="u1@example.com", password="hash", is_verified=True, streak=0)
+    user1 = User(name="User 1", username="user1", email="u1@example.com", password="hash", gender="M", user_dob=date(1990,1,1), is_verified=True, streak=0)
     db_session.add(user1)
     db_session.commit()
     
@@ -48,9 +48,12 @@ def test_register_duplicate_username(db_session):
 
 def test_verify_otp_success(db_session):
     user = User(
+        name="OTP User",
         username="otp_user", 
         email="otp@example.com", 
-        password="hash", 
+        password="hash",
+        gender="M",
+        user_dob=date(1990,1,1), 
         is_verified=False,
         otp_code="123456",
         otp_created_at=user_auth_service._utcnow(),
@@ -68,9 +71,12 @@ def test_verify_otp_success(db_session):
 
 def test_verify_otp_invalid(db_session):
     user = User(
+        name="OTP Fail",
         username="otp_fail", 
         email="fail@example.com", 
-        password="hash", 
+        password="hash",
+        gender="M",
+        user_dob=date(1990,1,1), 
         is_verified=False,
         otp_code="123456",
         otp_created_at=user_auth_service._utcnow(),
@@ -87,9 +93,12 @@ def test_verify_otp_invalid(db_session):
 def test_verify_otp_expired(db_session):
     past = user_auth_service._utcnow() - timedelta(minutes=10)
     user = User(
+        name="Expired",
         username="expired", 
         email="expired@example.com", 
-        password="hash", 
+        password="hash",
+        gender="M",
+        user_dob=date(1990,1,1), 
         is_verified=False,
         otp_code="123456",
         otp_created_at=past,

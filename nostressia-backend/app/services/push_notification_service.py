@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.models.push_delivery_log_model import PushDeliveryLog
 from app.models.push_subscription_model import PushSubscription
-from app.schemas.notification_schema import NotificationSubscription
+from app.schemas.notification_schema import PushSubscriptionPayload
 from app.services.notification_scheduler import (
     upsert_daily_reminder_job,
     remove_daily_reminder_job,
@@ -56,7 +56,7 @@ def send_push(subscription: PushSubscription, payload: dict) -> None:
 def subscribe_user(
     db: Session, 
     user_id: int, 
-    subscription_data: NotificationSubscription, 
+    subscription_data: PushSubscriptionPayload, 
     reminder_time_str: str, 
     timezone: str
 ) -> str:

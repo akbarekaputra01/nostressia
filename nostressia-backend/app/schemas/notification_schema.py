@@ -25,10 +25,3 @@ class NotificationStatusResponse(BaseSchema):
     dailyReminder: bool
     reminderTime: Optional[str] = None
     timezone: Optional[str] = None
-
-
-class NotificationSubscription(BaseSchema):
-    """Schema for notification subscription data stored in DB"""
-    endpoint: str
-    p256dh: str
-    auth: str
