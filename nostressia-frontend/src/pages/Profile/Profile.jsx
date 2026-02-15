@@ -564,6 +564,8 @@ export default function Profile() {
   const [showPermissionPrompt, setShowPermissionPrompt] = useState(false);
   const [showGameModal, setShowGameModal] = useState(false);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
+  const [showUnsavedChangesPrompt, setShowUnsavedChangesPrompt] = useState(false);
+  const [pendingTab, setPendingTab] = useState(null);
   const [isLoadingSave, setIsLoadingSave] = useState(false);
   const [confirmState, setConfirmState] = useState({
     isOpen: false,
@@ -622,6 +624,7 @@ export default function Profile() {
     gender: "",
   });
   const [shouldClearProfilePicture, setShouldClearProfilePicture] = useState(false);
+  const initialProfileSnapshotRef = useRef(null);
   const fallbackAvatar = DEFAULT_AVATAR;
   const [localAvatarPreview, setLocalAvatarPreview] = useState(null);
   const displayAvatar = resolveAvatarUrl(localAvatarPreview || formData.avatar) || fallbackAvatar;
@@ -629,18 +632,26 @@ export default function Profile() {
   
   useEffect(() => {
     if (contextUser) {
-      setFormData({
+      const nextFormData = {
         username: contextUser.username || getDisplayUsername(contextUser),
         fullName: contextUser.name || contextUser.fullName || "",
         email: contextUser.email || "",
         avatar: contextUser.avatar || AVATAR_OPTIONS[0],
         birthday: contextUser.userDob || contextUser.birthday || "",
         gender: normalizeGender(contextUser.gender || contextUser.sex || ""),
-      });
+      };
+      setFormData(nextFormData);
       setLocalAvatarPreview(null);
       setShouldClearProfilePicture(false);
+      initialProfileSnapshotRef.current = JSON.stringify(nextFormData);
     }
   }, [contextUser]);
+
+  const hasUnsavedProfileChanges =
+    initialProfileSnapshotRef.current !== null &&
+    (JSON.stringify(formData) !== initialProfileSnapshotRef.current ||
+      Boolean(localAvatarPreview) ||
+      shouldClearProfilePicture);
 
   const showNotification = useCallback((message, type = "success") => {
     setNotification({ message, type });
@@ -940,7 +951,7 @@ export default function Profile() {
       const token = readAuthToken();
       if (!token) {
         showNotification("You are logged out", "error");
-        return;
+        return false;
       }
 
       if (formData.birthday) {
@@ -948,13 +959,13 @@ export default function Profile() {
         const now = new Date();
         if (birthDate > now) {
           showNotification("Birthday cannot be in the future.", "error");
-          return;
+          return false;
         }
       }
 
       if (formData.gender && !["male", "female", "other"].includes(formData.gender)) {
         showNotification("Please select a valid gender option.", "error");
-        return;
+        return false;
       }
 
       if (shouldClearProfilePicture) {
@@ -983,7 +994,7 @@ export default function Profile() {
         const otpCode = window.prompt("Enter the OTP sent to your current email to confirm email change:")?.trim();
         if (!otpCode) {
           showNotification("Email change canceled. OTP is required.", "warning");
-          return;
+          return false;
         }
         updatedProfile = await updateProfile({ ...payload, emailOtpCode: otpCode });
       }
@@ -1017,23 +1028,74 @@ export default function Profile() {
         userDob: normalizedDob,
       };
 
-      storage.setJson(STORAGE_KEYS.CACHE_USER_DATA, nextUser);
-      setFormData((prev) => ({
-        ...prev,
+      const nextFormData = {
         username: nextUser.username || "",
         fullName: nextUser.name || "",
         email: nextUser.email || "",
-        avatar: nextUser.avatar || prev.avatar,
+        avatar: nextUser.avatar || formData.avatar,
         birthday: normalizedDob,
         gender: normalizedGender,
-      }));
+      };
+
+      storage.setJson(STORAGE_KEYS.CACHE_USER_DATA, nextUser);
+      setFormData(nextFormData);
+      initialProfileSnapshotRef.current = JSON.stringify(nextFormData);
       showNotification("Profile updated successfully!");
       setShouldClearProfilePicture(false);
+      setLocalAvatarPreview(null);
       window.dispatchEvent(new Event("nostressia:user-update"));
+      return true;
     } catch (error) {
       showNotification(error?.message || "Failed to update profile", "error");
+      return false;
     } finally {
       setIsLoadingSave(false);
+    }
+  };
+
+  const handleTabChange = (nextTab) => {
+    if (nextTab === activeTab) return;
+    if (activeTab === "personal" && hasUnsavedProfileChanges) {
+      setPendingTab(nextTab);
+      setShowUnsavedChangesPrompt(true);
+      return;
+    }
+    setActiveTab(nextTab);
+  };
+
+  const handleDiscardChangesAndSwitchTab = () => {
+    if (!pendingTab) {
+      setShowUnsavedChangesPrompt(false);
+      return;
+    }
+
+    if (contextUser) {
+      const resetFormData = {
+        username: contextUser.username || getDisplayUsername(contextUser),
+        fullName: contextUser.name || contextUser.fullName || "",
+        email: contextUser.email || "",
+        avatar: contextUser.avatar || AVATAR_OPTIONS[0],
+        birthday: contextUser.userDob || contextUser.birthday || "",
+        gender: normalizeGender(contextUser.gender || contextUser.sex || ""),
+      };
+      setFormData(resetFormData);
+      initialProfileSnapshotRef.current = JSON.stringify(resetFormData);
+    }
+
+    setLocalAvatarPreview(null);
+    setShouldClearProfilePicture(false);
+    setActiveTab(pendingTab);
+    setPendingTab(null);
+    setShowUnsavedChangesPrompt(false);
+  };
+
+  const handleSaveChangesAndSwitchTab = async () => {
+    if (!pendingTab) return;
+    const saveSuccess = await handleSaveProfile();
+    if (saveSuccess) {
+      setActiveTab(pendingTab);
+      setPendingTab(null);
+      setShowUnsavedChangesPrompt(false);
     }
   };
 
@@ -1340,6 +1402,48 @@ export default function Profile() {
           uploading={isUploadingAvatar}
         />
       )}
+      {showUnsavedChangesPrompt && (
+        <div className="fixed inset-0 z-[220] flex items-center justify-center p-4 bg-neutral-950/40 backdrop-blur-sm animate-fade-in">
+          <div className="bg-surface-elevated glass-panel dark:bg-surface rounded-[24px] p-6 w-full max-w-md shadow-2xl border border-white/60 dark:border-border">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="bg-orange-100 text-orange-600 dark:bg-orange-500/20 dark:text-orange-300 p-2 rounded-full">
+                <AlertCircle className="w-5 h-5" />
+              </div>
+              <h3 className="text-lg font-bold text-text-primary">Unsaved changes</h3>
+            </div>
+            <p className="text-sm text-text-secondary mb-6">
+              You have unsaved profile changes. Save before leaving this section?
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={handleSaveChangesAndSwitchTab}
+                disabled={isLoadingSave}
+                className="flex-1 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl shadow-lg shadow-orange-200/80 dark:shadow-orange-500/20 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isLoadingSave ? "Saving..." : "Save changes"}
+              </button>
+              <button
+                onClick={handleDiscardChangesAndSwitchTab}
+                disabled={isLoadingSave}
+                className="flex-1 py-2.5 bg-surface-muted hover:bg-surface-elevated text-text-primary font-bold rounded-xl border border-border/60 shadow-sm transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Leave without saving
+              </button>
+              <button
+                onClick={() => {
+                  if (isLoadingSave) return;
+                  setPendingTab(null);
+                  setShowUnsavedChangesPrompt(false);
+                }}
+                className="flex-1 py-2.5 bg-transparent hover:bg-surface-muted text-text-muted font-bold rounded-xl border border-border/60 transition-all cursor-pointer"
+              >
+                Stay here
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showPermissionPrompt && (
         <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-neutral-950/40 backdrop-blur-sm animate-fade-in">
           <div className="bg-surface-elevated glass-panel dark:bg-surface rounded-[24px] p-6 w-full max-w-sm shadow-2xl border border-white/60 dark:border-border">
@@ -1747,7 +1851,7 @@ export default function Profile() {
             ].map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => handleTabChange(tab.id)}
                 className={`px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap ${activeTab === tab.id ? "bg-surface-elevated glass-panel text-blue-600 shadow-md scale-105" : "text-text-muted hover:text-text-secondary hover:bg-surface-elevated/30"}`}
               >
                 {tab.icon} {tab.label}
