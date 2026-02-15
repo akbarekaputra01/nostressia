@@ -53,6 +53,12 @@ const urlBase64ToUint8Array = (base64String) => {
 const getTimezone = () =>
   Intl.DateTimeFormat().resolvedOptions().timeZone || "Asia/Jakarta";
 
+const normalizeReminderTime = (timeValue) => {
+  if (typeof timeValue !== "string") return "08:00";
+  const [hours = "08", minutes = "00"] = timeValue.slice(0, 5).split(":");
+  return `${hours.padStart(2, "0")}:${minutes.padStart(2, "0")}`;
+};
+
 const ensurePushSubscription = async (registration) => {
   const existing = await registration.pushManager.getSubscription();
   if (existing) return existing;
@@ -143,7 +149,7 @@ export const subscribeDailyReminder = async (
     const subscription = await ensurePushSubscription(registration);
     const response = await client.post("/notifications/subscribe", {
       subscription,
-      reminderTime: timeValue,
+      reminderTime: normalizeReminderTime(timeValue),
       timezone: getTimezone(),
     });
     parseApiResponse(notificationStatusResponseSchema, response.data);

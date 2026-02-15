@@ -84,6 +84,8 @@ export default function AdminPage() {
     onConfirm: null,
   });
 
+  const [isConfirming, setIsConfirming] = useState(false);
+
   const { preference: themePreference, setPreference } = useTheme();
 
   const showToast = useCallback((message, type = "info") => {
@@ -102,13 +104,18 @@ export default function AdminPage() {
   }, []);
 
   const handleConfirm = async () => {
-    if (confirmState.onConfirm) {
+    if (!confirmState.onConfirm || isConfirming) return;
+    setIsConfirming(true);
+    try {
       await confirmState.onConfirm();
+      setConfirmState((prev) => ({ ...prev, isOpen: false, onConfirm: null }));
+    } finally {
+      setIsConfirming(false);
     }
-    setConfirmState((prev) => ({ ...prev, isOpen: false, onConfirm: null }));
   };
 
   const handleCancelConfirm = () => {
+    if (isConfirming) return;
     setConfirmState((prev) => ({ ...prev, isOpen: false, onConfirm: null }));
   };
 
@@ -1383,6 +1390,7 @@ export default function AdminPage() {
         confirmLabel={confirmState.confirmLabel}
         onConfirm={handleConfirm}
         onCancel={handleCancelConfirm}
+        isLoading={isConfirming}
       />
       <Toast message={toast?.message} type={toast?.type} onClose={() => setToast(null)} />
 
