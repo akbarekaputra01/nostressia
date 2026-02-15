@@ -1,1 +1,0 @@
-{"best_name": "LogReg", "best_type": "global_blend_model", "top_test_f1": 0.8539325842696629, "top_test_acc": 0.7833333333333333, "date_range": {"start_date": "2025-11-21", "end_date": "2026-02-15"}, "rows": 431, "latency_p50": 1.666349999140948, "latency_p90": 2.5361899999552406, "latency_p95": 2.730710001196712, "latency_p99": 3.1116049988486334}
