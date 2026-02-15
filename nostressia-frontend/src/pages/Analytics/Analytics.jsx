@@ -333,7 +333,7 @@ export default function Analytics() {
   );
 
   const streakValue = resolveDisplayedStreak(user?.streak ?? summary?.streak ?? 0);
-  const modeLabel = mode === "week" ? "Weekly" : "Monthly";
+  const modeLabel = mode === "week" ? "Daily" : "Weekly";
 
   const backgroundStyle = isDarkMode
     ? { backgroundColor: "transparent" }
@@ -389,7 +389,7 @@ export default function Analytics() {
               className="text-sm md:text-lg font-medium drop-shadow-sm px-4"
               style={{ color: "rgb(var(--text-secondary))" }}
             >
-              Track your stress and mood patterns in weekly or monthly views.
+              Track your stress and mood patterns in daily or weekly views.
             </p>
           </div>
         </div>
@@ -434,7 +434,7 @@ export default function Analytics() {
                   : "text-text-secondary hover:bg-surface/40"
               }`}
             >
-              Weekly
+              Daily
             </button>
             <button
               onClick={() => setMode("month")}
@@ -444,7 +444,7 @@ export default function Analytics() {
                   : "text-text-secondary hover:bg-surface/40"
               }`}
             >
-              Monthly
+              Weekly
             </button>
           </div>
         </div>

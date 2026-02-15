@@ -70,6 +70,7 @@ const EXPORT_SIZES = [{ id: "original", name: "Original", w: 464, h: 264 }];
 export default function Motivation() {
   const [likedIndex, setLikedIndex] = useState([]);
   const [toastMessage, setToastMessage] = useState("");
+  const [bookmarkLoadingIds, setBookmarkLoadingIds] = useState([]);
   const { resolvedTheme } = useTheme();
   const isDarkMode = resolvedTheme === "dark";
 
@@ -231,36 +232,35 @@ export default function Motivation() {
       return;
     }
 
-    // Skip bookmarks for the static hero quote that does not have an ID yet.
-    if (!id || id === HERO_INDEX) {
+    const normalizedId = Number(id);
+    if (!Number.isFinite(normalizedId) || normalizedId <= 0 || id === HERO_INDEX) {
       showToast("Cannot bookmark this yet.");
       return;
     }
+    if (bookmarkLoadingIds.includes(normalizedId)) return;
 
-    const isLiked = likedIndex.includes(id);
-
-    // Optimistic Update (Update UI dulu)
+    const isLiked = likedIndex.includes(normalizedId);
+    setBookmarkLoadingIds((prev) => [...prev, normalizedId]);
     setLikedIndex((prev) =>
-      isLiked ? prev.filter((i) => i !== id) : [...prev, id],
+      isLiked ? prev.filter((i) => i !== normalizedId) : [...prev, normalizedId],
     );
 
     try {
       if (isLiked) {
-        // Remove the bookmark.
-        await deleteBookmark(id);
+        await deleteBookmark(normalizedId);
         showToast("Bookmark removed 🗑️");
       } else {
-        // Add bookmark
-        await addBookmark(id);
+        await addBookmark(normalizedId);
         showToast("Saved to profile ❤️");
       }
     } catch (err) {
       logger.error("Bookmark API Error:", err);
       showToast("Failed to bookmark.");
-      // Roll back local state if the API request fails.
       setLikedIndex((prev) =>
-        isLiked ? [...prev, id] : prev.filter((i) => i !== id),
+        isLiked ? [...prev, normalizedId] : prev.filter((i) => i !== normalizedId),
       );
+    } finally {
+      setBookmarkLoadingIds((prev) => prev.filter((item) => item !== normalizedId));
     }
   };
 
@@ -449,7 +449,7 @@ export default function Motivation() {
       `}</style>
 
       {toastMessage && (
-        <div className="fixed top-6 right-6 z-[9999] bg-brand-accent/90 text-text-inverse glass-panel px-4 py-2 rounded-xl shadow-lg">
+        <div className="fixed top-6 right-6 z-[9999] bg-brand-accent text-text-inverse px-4 py-2 rounded-xl shadow-lg border border-brand-accent/80">
           {toastMessage}
         </div>
       )}
@@ -510,7 +510,7 @@ export default function Motivation() {
               {/* Pass the correct ID to toggleLike */}
               <button
                 onClick={() => toggleLike(heroQuote.motivationId)}
-                disabled={!hasHeroQuote}
+                disabled={!hasHeroQuote || bookmarkLoadingIds.includes(Number(heroQuote.motivationId))}
                 className="px-4 py-2 rounded-lg bg-surface-elevated glass-panel border font-medium flex items-center gap-2 shadow hover:scale-105 transition disabled:opacity-60 disabled:cursor-not-allowed dark:bg-surface dark:border-border dark:text-text-primary"
                 aria-label="bookmark-hero"
               >
@@ -582,7 +582,8 @@ export default function Motivation() {
                   <button
                     onClick={() => toggleLike(id)}
                     aria-label={`bookmark-${id}`}
-                    className="cursor-pointer"
+                    disabled={bookmarkLoadingIds.includes(Number(id))}
+                    className="cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Bookmark
                       className={`w-6 h-6 ${

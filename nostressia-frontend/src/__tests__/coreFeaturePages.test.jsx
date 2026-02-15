@@ -211,8 +211,8 @@ describe("Core feature pages", () => {
     renderWithProviders(<Analytics />);
 
     expect(await screen.findByRole("heading", { name: /analytics/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /daily/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /weekly/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /monthly/i })).toBeInTheDocument();
     expect(screen.getByText(/stress trend/i)).toBeInTheDocument();
     expect(screen.getByText(/mood trend/i)).toBeInTheDocument();
     expect(await screen.findByText(/analytics highlights/i)).toBeInTheDocument();

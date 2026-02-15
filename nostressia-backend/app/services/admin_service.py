@@ -5,6 +5,7 @@ from fastapi import HTTPException, status
 
 from app.models.user_model import User
 from app.models.diary_model import Diary
+from app.models.admin_model import Admin
 from app.schemas.user_auth_schema import AdminUserUpdate
 
 # User Management
@@ -49,6 +50,9 @@ def update_user_by_admin(db: Session, user_id: int, user_update: AdminUserUpdate
         existing = db.query(User).filter(User.email == user_update.email).first()
         if existing:
             raise HTTPException(status_code=400, detail="Email already used")
+        existing_admin = db.query(Admin).filter(Admin.email == user_update.email).first()
+        if existing_admin:
+            raise HTTPException(status_code=400, detail="Email is reserved for admin account")
         user.email = user_update.email
 
     if user_update.username is not None and user_update.username != user.username:

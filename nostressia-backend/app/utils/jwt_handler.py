@@ -52,10 +52,10 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
             raise credentials_exception
         
         # 2. Extract identity from the token.
-        user_identifier = payload.get("sub")  # Can be numeric ID or email string.
+        user_identifier = payload.get("user_id") or payload.get("id")
         if user_identifier is None:
-            user_identifier = payload.get("user_id") or payload.get("id")
-            
+            user_identifier = payload.get("sub")  # Backward compatible with older tokens.
+
         if user_identifier is None:
             raise credentials_exception
 

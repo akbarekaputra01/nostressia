@@ -1,13 +1,14 @@
 """User authentication routes and profile endpoints."""
 
 import logging
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm
 
 from app.core.database import get_db
 from app.models.user_model import User
+from app.models.admin_model import Admin
 from app.utils.jwt_handler import get_current_user
 from app.services import user_auth_service
 from app.services import stress_service
@@ -105,7 +106,35 @@ def update_user_profile(user_update: UserUpdate, db: Session = Depends(get_db), 
     if user_update.email and user_update.email != current_user.email:
         if db.query(User).filter(User.email == user_update.email).first():
             raise HTTPException(status_code=400, detail="Email already registered")
+        if db.query(Admin).filter(Admin.email == user_update.email).first():
+            raise HTTPException(status_code=400, detail="Email is reserved for admin account")
+
+        if not user_update.email_otp:
+            otp_code = generate_otp(6)
+            current_user.otp_code = otp_code
+            current_user.otp_created_at = _utcnow()
+            db.commit()
+            email_sent, email_error = send_reset_password_email(current_user.email, otp_code)
+            if not email_sent:
+                detail_message = "Failed to send verification OTP. Please try again later."
+                if email_error:
+                    detail_message = f"Failed to send verification OTP: {email_error}"
+                raise HTTPException(status_code=500, detail=detail_message)
+            raise HTTPException(
+                status_code=400,
+                detail="OTP sent to your current email. Please verify to change email.",
+            )
+
+        if current_user.otp_code != user_update.email_otp:
+            raise HTTPException(status_code=400, detail="Incorrect OTP code.")
+
+        otp_created_at = _normalize_otp_created_at(current_user.otp_created_at)
+        if otp_created_at and (_utcnow() - otp_created_at) > timedelta(minutes=OTP_EXPIRE_MINUTES):
+            raise HTTPException(status_code=400, detail="The OTP code has expired. Please request a new one.")
+
         current_user.email = user_update.email
+        current_user.otp_code = None
+        current_user.otp_created_at = None
 
     if user_update.user_dob and user_update.user_dob > date.today():
         raise HTTPException(status_code=400, detail="Birthday cannot be in the future.")
