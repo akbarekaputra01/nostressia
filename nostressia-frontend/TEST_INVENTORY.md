@@ -3,6 +3,7 @@
 Checklist of exported functions, components, and flows with test coverage.
 
 ## API Modules (`src/api/**`)
+- [x] API contract parsing (`parseApiResponse` + strict schemas) — `src/__tests__/serviceContracts.test.js`
 - [x] `src/api/client.js` (client instance, `apiOrigin`, `unwrapResponse`) — `src/__tests__/apiClientAuth.test.js`, `src/__tests__/exportSmoke.test.js`
 - [x] `src/api/config.js` (`BASE_URL`) — `src/__tests__/exportSmoke.test.js`
 - [x] `src/api/request.js` (`parseJsonResponse`) — `src/__tests__/request.test.js`

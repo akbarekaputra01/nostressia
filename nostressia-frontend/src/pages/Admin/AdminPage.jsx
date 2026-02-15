@@ -231,8 +231,8 @@ export default function AdminPage() {
           await deleteMotivation(id);
           setQuotes(quotes.filter((q) => q.id !== id));
           showToast("Quote deleted.", "success");
-        } catch (err) {
-          logger.error("Failed to delete quote.", err);
+        } catch (error) {
+          logger.error("Failed to delete quote.", error);
           showToast("Failed to delete quote.", "error");
         }
       },
@@ -280,7 +280,7 @@ export default function AdminPage() {
           }
         }
         setTipCountByCategory(counts);
-      } catch (err) {
+      } catch {
         setTipCategories([]);
         setCategoryError("Failed to load categories.");
       } finally {

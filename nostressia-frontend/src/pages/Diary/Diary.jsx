@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion as Motion, AnimatePresence } from "framer-motion";
 import { Heart, Calendar, X, Loader2, CheckCircle } from "lucide-react";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
@@ -9,7 +9,7 @@ import PageMeta from "../../components/PageMeta";
 import { useTheme } from "../../theme/ThemeProvider";
 
 import { createDiary, getMyDiaries, updateDiary } from "../../services/diaryService";
-import { clearAuthToken, readAuthToken } from "../../utils/auth";
+import { readAuthToken } from "../../utils/auth";
 import { createLogger } from "../../utils/logger";
 
 const logger = createLogger("DIARY");
@@ -203,17 +203,6 @@ export default function Diary() {
     }
   };
 
-  const scroll = (direction) => {
-    if (scrollRef.current) {
-      const { current } = scrollRef;
-      const scrollAmount = 300;
-      current.scrollBy({
-        left: direction === "left" ? -scrollAmount : scrollAmount,
-        behavior: "smooth",
-      });
-    }
-  };
-
   const handleEditEntry = (entry) => {
     if (!entry) return;
     setTitle(entry.title);
@@ -319,7 +308,7 @@ export default function Diary() {
 
       <main className="flex-grow flex flex-col items-center w-full max-w-[1400px] mx-auto px-4 md:px-8 lg:px-10 z-10 pt-0">
         {/* --- HEADER SECTION --- */}
-        <motion.div
+        <Motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
@@ -337,11 +326,11 @@ export default function Diary() {
           <p className="text-text-secondary mt-2 text-base md:text-lg font-medium dark:text-text-muted">
             Write your story today.
           </p>
-        </motion.div>
+        </Motion.div>
 
         {/* 3D BOOK ENGINE */}
         <div className="relative w-full max-w-[1000px] h-[450px] sm:h-[500px] md:h-[600px] flex items-center justify-center perspective-[2000px] mt-0">
-          <motion.div
+          <Motion.div
             className="relative w-full max-w-[320px] sm:max-w-[360px] md:max-w-[380px] h-full preserve-3d"
             animate={{ x: isBookOpen && !isMobile ? 190 : 0 }}
             transition={{ duration: 0.8, type: "spring", stiffness: 40, damping: 15 }}
@@ -433,7 +422,7 @@ export default function Diary() {
             </div>
 
             {/* COVER DEPAN */}
-            <motion.div
+            <Motion.div
               className="absolute inset-0 w-full h-full cursor-pointer preserve-3d origin-left z-20"
               animate={{ rotateY: isBookOpen ? -180 : 0, opacity: isBookOpen && isMobile ? 0 : 1 }}
               transition={{ duration: 0.8 }}
@@ -515,8 +504,8 @@ export default function Diary() {
                   </p>
                 </div>
               </div>
-            </motion.div>
-          </motion.div>
+            </Motion.div>
+          </Motion.div>
         </div>
 
         {/* History section with loading and animations */}
@@ -528,7 +517,7 @@ export default function Diary() {
             </div>
           ) : // View after data loads
           entries.length > 0 ? (
-            <motion.div
+            <Motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5 }}
@@ -552,7 +541,7 @@ export default function Diary() {
                 >
                   <AnimatePresence mode="popLayout">
                     {entries.map((entry) => (
-                      <motion.div
+                      <Motion.div
                         key={entry.id}
                         layout
                         initial={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -582,14 +571,14 @@ export default function Diary() {
                         <div className="mt-2 text-right">
                           <span className="text-xs font-semibold text-blue-400">Read more →</span>
                         </div>
-                      </motion.div>
+                      </Motion.div>
                     ))}
                   </AnimatePresence>
                 </div>
               </div>
-            </motion.div>
+            </Motion.div>
           ) : (
-            <motion.div
+            <Motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="flex flex-col items-center justify-center py-12 md:py-16 opacity-50 border-2 border-dashed border-border rounded-3xl w-full dark:border-border"
@@ -598,7 +587,7 @@ export default function Diary() {
               <p className="text-xs md:text-sm font-bold uppercase tracking-widest text-text-muted">
                 No stories recorded yet
               </p>
-            </motion.div>
+            </Motion.div>
           )}
         </div>
       </main>
@@ -607,7 +596,7 @@ export default function Diary() {
       <AnimatePresence>
         {selectedEntry && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <motion.div
+            <Motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -615,7 +604,7 @@ export default function Diary() {
               className="absolute inset-0 bg-surface-muted/60 dark:bg-surface/60 backdrop-blur-sm"
             />
 
-            <motion.div
+            <Motion.div
               initial={{ opacity: 0, scale: 0.9, y: 30 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 30 }}
@@ -681,7 +670,7 @@ export default function Diary() {
                   Close Journal
                 </button>
               </div>
-            </motion.div>
+            </Motion.div>
           </div>
         )}
       </AnimatePresence>
@@ -690,7 +679,7 @@ export default function Diary() {
       <AnimatePresence>
         {showSuccessModal && (
           <div className="fixed inset-0 z-[200] flex items-center justify-center pointer-events-none">
-            <motion.div
+            <Motion.div
               initial={{ opacity: 0, scale: 0.8, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.8, y: -20 }}
@@ -705,7 +694,7 @@ export default function Diary() {
               <p className="text-text-muted dark:text-text-muted text-sm">
                 Your memory has been safely recorded.
               </p>
-            </motion.div>
+            </Motion.div>
           </div>
         )}
       </AnimatePresence>

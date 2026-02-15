@@ -1,5 +1,5 @@
 // src/pages/Dashboard/Dashboard.jsx
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import {
   addStressLog,
@@ -479,9 +479,7 @@ export default function Dashboard() {
     selectedDate.getDate(),
   );
   const isSelectedPast = selectedCalendarDate < todayDate;
-  const isSelectedToday = selectedDateKey === TODAY_KEY;
   const normalizedEligibility = eligibilityData;
-  const restoreUsed = normalizedEligibility?.restoreUsed ?? 0;
   const restoreLimit = normalizedEligibility?.restoreLimit ?? 3;
   const restoreRemaining = normalizedEligibility?.restoreRemaining ?? 0;
   const canRestoreSelectedDay = isSelectedPast && !selectedDayHasData;
@@ -782,7 +780,7 @@ export default function Dashboard() {
   }
 
   const refreshEligibility = useCallback(
-    async ({ signal } = {}) => {
+    async () => {
       setEligibilityLoading(true);
       setEligibilityError("");
       try {
