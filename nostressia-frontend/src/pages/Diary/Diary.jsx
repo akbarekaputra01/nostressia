@@ -20,6 +20,8 @@ const FONT_PRESETS = {
   mono: "'Courier New', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace",
 };
 
+const normalizeFontValue = (fontValue) => (fontValue in FONT_PRESETS ? fontValue : "manrope");
+
 const resolveFontFamily = (fontValue) => FONT_PRESETS[fontValue] || FONT_PRESETS.manrope;
 
 const toApiDate = (value) => {
@@ -108,7 +110,7 @@ export default function Diary() {
           title: item.title,
           content: item.note,
           mood: item.emoji,
-          font: item.font || "manrope",
+          font: normalizeFontValue(item.font),
           rawDate: item.date,
           date: new Date(item.date).toLocaleDateString("en-US", {
             day: "numeric",
@@ -152,8 +154,8 @@ export default function Diary() {
         title: title.trim(),
         note: text.trim(),
         emoji: selectedMood,
-        font: selectedFont,
-        date: toApiDate(entryToEdit?.rawDate),
+        font: normalizeFontValue(selectedFont),
+        ...(!editingEntryId && { date: toApiDate(entryToEdit?.rawDate) }),
       };
 
       const savedData = editingEntryId
@@ -165,7 +167,7 @@ export default function Diary() {
         title: savedData.title,
         content: savedData.note,
         mood: savedData.emoji,
-        font: savedData.font || "manrope",
+        font: normalizeFontValue(savedData.font),
         rawDate: savedData.date,
         date: new Date(savedData.date).toLocaleDateString("en-US", {
           day: "numeric",
@@ -217,7 +219,7 @@ export default function Diary() {
     setTitle(entry.title);
     setText(entry.content);
     setSelectedMood(entry.mood);
-    setSelectedFont(entry.font || "manrope");
+    setSelectedFont(normalizeFontValue(entry.font));
     setEditingEntryId(entry.id);
     setIsBookOpen(true);
     setSelectedEntry(null);
