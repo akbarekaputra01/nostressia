@@ -20,7 +20,17 @@ const setupPushSupport = () => {
   const registration = {
     pushManager: {
       getSubscription: vi.fn().mockResolvedValue(null),
-      subscribe: vi.fn().mockResolvedValue({ endpoint: "test" }),
+      subscribe: vi.fn().mockResolvedValue({
+        endpoint: "https://example.com/subscription",
+        toJSON: () => ({
+          endpoint: "https://example.com/subscription",
+          expirationTime: null,
+          keys: {
+            p256dh: "test-p256dh",
+            auth: "test-auth",
+          },
+        }),
+      }),
     },
   };
 
@@ -131,6 +141,20 @@ describe("notificationService", () => {
     await expect(subscribeDailyReminder("08:00")).resolves.toMatchObject({
       ok: true,
     });
+
+    expect(client.post).toHaveBeenCalledWith(
+      "/notifications/subscribe",
+      expect.objectContaining({
+        subscription: {
+          endpoint: "https://example.com/subscription",
+          keys: {
+            p256dh: "test-p256dh",
+            auth: "test-auth",
+          },
+        },
+      }),
+      expect.any(Object),
+    );
   });
 
   it("reports backend failures on unsubscribe", async () => {

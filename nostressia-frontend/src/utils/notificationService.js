@@ -51,6 +51,51 @@ const urlBase64ToUint8Array = (base64String) => {
   return outputArray;
 };
 
+const uint8ArrayToBase64Url = (value) => {
+  const bytes = value instanceof Uint8Array ? value : new Uint8Array(value);
+  let binary = "";
+  bytes.forEach((byte) => {
+    binary += String.fromCharCode(byte);
+  });
+
+  return window
+    .btoa(binary)
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+};
+
+const serializePushSubscription = (subscription) => {
+  if (!subscription) return null;
+
+  const jsonPayload =
+    typeof subscription.toJSON === "function"
+      ? subscription.toJSON()
+      : subscription;
+
+  const endpoint = jsonPayload?.endpoint || subscription.endpoint;
+  const p256dh =
+    jsonPayload?.keys?.p256dh ||
+    (typeof subscription.getKey === "function" &&
+      uint8ArrayToBase64Url(subscription.getKey("p256dh")));
+  const auth =
+    jsonPayload?.keys?.auth ||
+    (typeof subscription.getKey === "function" &&
+      uint8ArrayToBase64Url(subscription.getKey("auth")));
+
+  if (!endpoint || !p256dh || !auth) {
+    return null;
+  }
+
+  return {
+    endpoint,
+    keys: {
+      p256dh,
+      auth,
+    },
+  };
+};
+
 const getTimezone = () =>
   Intl.DateTimeFormat().resolvedOptions().timeZone || "Asia/Jakarta";
 
@@ -162,10 +207,19 @@ export const subscribeDailyReminder = async (
 
   try {
     const subscription = await ensurePushSubscription(registration);
+    const subscriptionPayload = serializePushSubscription(subscription);
+    if (!subscriptionPayload) {
+      return {
+        ok: false,
+        reason: "subscribe-failed",
+        message: "Could not read push subscription details from this browser.",
+      };
+    }
+
     const response = await client.post(
       "/notifications/subscribe",
       {
-        subscription,
+        subscription: subscriptionPayload,
         reminderTime: normalizeReminderTime(timeValue),
         timezone: getTimezone(),
       },
