@@ -108,6 +108,8 @@ def _send_daily_reminder(subscription_id: int) -> None:
         delivery_log = PushDeliveryLog(
             subscription_id=sub.subscription_id,
             sent_date=now.date(),
+            # Simpan waktu lokal user agar mudah dibaca saat troubleshooting.
+            sent_at=now.replace(tzinfo=None),
         )
         db.add(delivery_log)
         db.commit()
