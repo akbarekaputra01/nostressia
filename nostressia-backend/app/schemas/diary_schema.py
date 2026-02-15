@@ -1,6 +1,8 @@
 from datetime import date, datetime
 from typing import Optional
 
+from pydantic import ConfigDict
+
 from app.schemas.base_schema import BaseSchema
 
 # Base schema (shared fields)
@@ -17,6 +19,14 @@ class DiaryCreate(DiaryBase):
 
 # Schema for edits (update)
 class DiaryUpdate(BaseSchema):
+    model_config = ConfigDict(
+        from_attributes=True,
+        populate_by_name=True,
+        alias_generator=BaseSchema.model_config.get("alias_generator"),
+        protected_namespaces=(),
+        extra="ignore",
+    )
+
     title: Optional[str] = None
     note: Optional[str] = None
     date: Optional[date] = None
