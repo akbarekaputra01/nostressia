@@ -1,12 +1,15 @@
 """Push notification delivery and subscription helpers."""
 import json
 import logging
+from datetime import datetime
 from typing import Optional
 
+import pytz
 from pywebpush import WebPushException, webpush
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
+from app.models.push_delivery_log_model import PushDeliveryLog
 from app.models.push_subscription_model import PushSubscription
 from app.schemas.notification_schema import NotificationSubscription
 from app.services.notification_scheduler import (
@@ -15,6 +18,7 @@ from app.services.notification_scheduler import (
 )
 
 logger = logging.getLogger(__name__)
+DEFAULT_TZ = "Asia/Jakarta"
 
 def _normalize_time(value: str) -> str:
     if not value or ":" not in value:
@@ -72,6 +76,11 @@ def subscribe_user(
     )
 
     if existing:
+        schedule_changed = (
+            existing.reminder_time != reminder_time
+            or (existing.timezone or DEFAULT_TZ) != (timezone or DEFAULT_TZ)
+        )
+
         existing.p256dh = subscription_data.keys.p256dh
         existing.auth = subscription_data.keys.auth
         existing.reminder_time = reminder_time
@@ -82,6 +91,25 @@ def subscribe_user(
         db.refresh(existing)
         
         target_sub_id = existing.subscription_id
+
+        # Jika user mengganti jam/timezone di hari yang sama, izinkan reminder baru
+        # di jadwal terbaru dengan membersihkan log kirim hari ini (berdasarkan timezone terbaru).
+        if schedule_changed:
+            tz_name = timezone or DEFAULT_TZ
+            try:
+                tz = pytz.timezone(tz_name)
+            except pytz.UnknownTimeZoneError:
+                tz = pytz.timezone(DEFAULT_TZ)
+            today_local = datetime.now(tz).date()
+            (
+                db.query(PushDeliveryLog)
+                .filter(
+                    PushDeliveryLog.subscription_id == target_sub_id,
+                    PushDeliveryLog.sent_date == today_local,
+                )
+                .delete(synchronize_session=False)
+            )
+            db.commit()
     else:
         new_subscription = PushSubscription(
             user_id=user_id,
