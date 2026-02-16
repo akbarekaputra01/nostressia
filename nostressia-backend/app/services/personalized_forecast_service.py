@@ -62,6 +62,7 @@ class PersonalizedForecastService(GlobalForecastService):
         mtime = os.path.getmtime(artifact_path)
         if self._artifact_loaded and self._artifact_mtime != mtime:
             self._artifact_loaded = False
+            self._artifact_load_error = None
 
         bundle = self._load_artifact()
         self._artifact_mtime = mtime

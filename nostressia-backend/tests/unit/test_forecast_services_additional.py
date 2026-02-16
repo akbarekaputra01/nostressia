@@ -160,7 +160,7 @@ def test_personalized_artifact_exists_for_user_false_when_user_missing(monkeypat
 
 def test_personalized_load_artifact_for_user_reloads_when_file_changes(monkeypatch):
     service = PersonalizedForecastService()
-    mtimes = iter([100.0, 101.0])
+    mtimes = iter([100.0, 100.0, 101.0, 101.0])
     loads = iter([
         {"artifact": {"type": "markov_user", "probs_by_user": {5: object()}}},
         {"artifact": {"type": "markov_user", "probs_by_user": {1: object()}}},
@@ -169,6 +169,10 @@ def test_personalized_load_artifact_for_user_reloads_when_file_changes(monkeypat
     monkeypatch.setattr(service, "_artifact_path", lambda: "/tmp/personalized_forecast.joblib")
     monkeypatch.setattr(
         "app.services.personalized_forecast_service.os.path.getmtime",
+        lambda *_: next(mtimes),
+    )
+    monkeypatch.setattr(
+        "app.services.global_forecast_service.os.path.getmtime",
         lambda *_: next(mtimes),
     )
     monkeypatch.setattr(
@@ -222,6 +226,7 @@ def test_global_load_artifact_caches_failed_load(monkeypatch):
     service = GlobalForecastService()
     monkeypatch.setattr(service, "_artifact_path", lambda: "/tmp/global_forecast.joblib")
     monkeypatch.setattr("app.services.global_forecast_service.os.path.exists", lambda *_: True)
+    monkeypatch.setattr("app.services.global_forecast_service.os.path.getmtime", lambda *_: 100.0)
 
     calls = {"count": 0}
 
@@ -239,6 +244,64 @@ def test_global_load_artifact_caches_failed_load(monkeypatch):
     assert first_exc.value.status_code == 503
     assert second_exc.value.status_code == 503
     assert calls["count"] == 1
+
+
+
+def test_global_load_artifact_retries_after_artifact_mtime_change(monkeypatch):
+    service = GlobalForecastService()
+    monkeypatch.setattr(service, "_artifact_path", lambda: "/tmp/global_forecast.joblib")
+    monkeypatch.setattr("app.services.global_forecast_service.os.path.exists", lambda *_: True)
+
+    mtimes = iter([100.0, 100.0, 101.0])
+    monkeypatch.setattr("app.services.global_forecast_service.os.path.getmtime", lambda *_: next(mtimes))
+
+    calls = {"count": 0}
+
+    def _load(*_args, **_kwargs):
+        calls["count"] += 1
+        if calls["count"] == 1:
+            raise ValueError("broken artifact")
+        return {"type": "global_markov", "probs": np.ones((2, 7, 2)), "meta": {"window": 2}}
+
+    monkeypatch.setattr("app.services.global_forecast_service.joblib.load", _load)
+
+    with pytest.raises(HTTPException):
+        service._load_artifact()
+    with pytest.raises(HTTPException):
+        service._load_artifact()
+
+    artifact = service._load_artifact()
+    assert artifact["type"] == "global_markov"
+    assert calls["count"] == 2
+
+
+def test_personalized_load_artifact_retries_after_mtime_change(monkeypatch):
+    service = PersonalizedForecastService()
+    monkeypatch.setattr(service, "_artifact_path", lambda: "/tmp/personalized_forecast.joblib")
+    monkeypatch.setattr("app.services.personalized_forecast_service.os.path.exists", lambda *_: True)
+
+    mtimes = iter([200.0, 200.0, 200.0, 200.0, 201.0, 201.0])
+    monkeypatch.setattr("app.services.personalized_forecast_service.os.path.getmtime", lambda *_: next(mtimes))
+    monkeypatch.setattr("app.services.global_forecast_service.os.path.getmtime", lambda *_: next(mtimes))
+
+    calls = {"count": 0}
+
+    def _load(*_args, **_kwargs):
+        calls["count"] += 1
+        if calls["count"] == 1:
+            raise ValueError("broken personalized artifact")
+        return {"artifact": {"type": "markov_user", "probs_by_user": {1: object()}}, "meta": {"window": 2}}
+
+    monkeypatch.setattr("app.services.global_forecast_service.joblib.load", _load)
+
+    with pytest.raises(HTTPException):
+        service._load_artifact_for_user(1)
+    with pytest.raises(HTTPException):
+        service._load_artifact_for_user(1)
+
+    bundle = service._load_artifact_for_user(1)
+    assert bundle["artifact"]["type"] == "markov_user"
+    assert calls["count"] == 2
 
 def test_global_load_artifact_returns_503_when_missing(monkeypatch):
     service = GlobalForecastService()
