@@ -44,6 +44,7 @@ pip install -r requirements.txt
 python Stress-Forecast/scripts/refresh_dataset.py
 python Stress-Forecast/scripts/train_global.py
 python Stress-Forecast/scripts/train_personalized.py
+mlflow ui
 ```
 
 ## Environment Variables
@@ -76,5 +77,6 @@ Buka `http://127.0.0.1:5000`.
 
 ## Troubleshooting Singkat
 - FE gagal request API: cek `VITE_API_BASE_URL`.
-- BE gagal startup: cek env wajib (`DB_*` atau `DATABASE_URL`, `JWT_SECRET`, `BREVO_API_KEY`).
+- BE gagal startup: cek env wajib (`DB_*` atau `DATABASE_URL`, `JWT_SECRET`).
+- Fitur email gagal dipakai: isi `BREVO_API_KEY` (opsional untuk startup, wajib untuk kirim email).
 - Forecast/current stress gagal: pastikan artifact model tersedia di `nostressia-backend/app/models_ml/`.

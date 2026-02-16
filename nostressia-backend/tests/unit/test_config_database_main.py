@@ -129,3 +129,16 @@ def test_settings_rejects_weak_jwt_secret():
             brevo_api_key="brevo",
             JWT_SECRET="short",
         )
+
+
+def test_settings_allows_missing_brevo_api_key(monkeypatch):
+    monkeypatch.delenv("BREVO_API_KEY", raising=False)
+    settings = Settings(
+        db_user="user",
+        db_password="pass",
+        db_host="localhost",
+        db_name="nostressia",
+        jwt_secret="very-secret-token",
+    )
+
+    assert settings.brevo_api_key == ""

@@ -243,10 +243,11 @@ except Exception as e:
     notebook.cells.append(latency_cell)
 
     executor = ExecutePreprocessor(timeout=timeout_seconds, kernel_name="python3")
+    execution_error: Exception | None = None
     try:
         executor.preprocess(notebook, {"metadata": {"path": str(notebook_path.parent)}})
     except Exception as e:
-        print(f"Notebook execution failed: {e}")
+        execution_error = e
     finally:
         # Save the executed notebook for debugging and MLflow logging
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -254,7 +255,14 @@ except Exception as e:
         with debug_path.open("w", encoding="utf-8") as f:
             nbformat.write(notebook, f)
         print(f"Executed notebook saved to {debug_path}")
-        return debug_path
+
+    if execution_error is not None:
+        raise RuntimeError(
+            "Notebook execution failed for personalized forecast. "
+            f"See executed notebook for details: {debug_path}"
+        ) from execution_error
+
+    return debug_path
 
 
 def _log_dataset_details(dataset_path: Path, artifact_subdir: str = "dataset") -> None:

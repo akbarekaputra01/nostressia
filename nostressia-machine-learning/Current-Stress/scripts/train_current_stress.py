@@ -140,19 +140,27 @@ except Exception as e:
     
     # Execute
     # Use the specified kernel (which should match the current env)
-    executor = ExecutePreprocessor(timeout=timeout_seconds, kernel_name=kernel_name, allow_errors=True)
+    executor = ExecutePreprocessor(timeout=timeout_seconds, kernel_name=kernel_name, allow_errors=False)
+    execution_error: Exception | None = None
     try:
         executor.preprocess(notebook, {"metadata": {"path": str(notebook_path.parent)}})
     except Exception as e:
-        print(f"Notebook execution failed (partially?): {e}")
-        
+        execution_error = e
+
     # Save executed notebook
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     executed_path = notebook_path.parent / f"executed_{notebook_path.stem}_{timestamp}.ipynb"
     with executed_path.open("w", encoding="utf-8") as f:
         nbformat.write(notebook, f)
-        
+
     print(f"Executed notebook saved to: {executed_path}")
+
+    if execution_error is not None:
+        raise RuntimeError(
+            "Notebook execution failed for current stress training. "
+            f"See executed notebook for details: {executed_path}"
+        ) from execution_error
+
     return executed_path
 
 def _log_dataset_details(dataset_path: Path, artifact_subdir: str = "dataset") -> None:

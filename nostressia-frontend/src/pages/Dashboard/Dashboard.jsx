@@ -804,7 +804,7 @@ export default function Dashboard() {
           navigate("/login", { replace: true });
           return;
         }
-        const detail = error?.payload?.detail || error?.message;
+        const detail = error?.message;
         setEligibilityError(`Failed to load eligibility.${detail ? ` ${detail}` : ""}`);
       } finally {
         setEligibilityLoading(false);
@@ -1026,7 +1026,7 @@ export default function Dashboard() {
           setForecastError("Not enough history to generate a forecast.");
           return;
         }
-        const detail = error?.payload?.message || error?.message;
+        const detail = error?.message;
         setForecastError(`Failed to load forecast.${detail ? ` ${detail}` : ""}`);
       } finally {
         setForecastLoading(false);

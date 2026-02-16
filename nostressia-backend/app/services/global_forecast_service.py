@@ -33,17 +33,18 @@ class GlobalForecastService:
         artifact_path = self._artifact_path()
         if not os.path.exists(artifact_path):
             raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Model artifact not found: {artifact_path}",
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Global forecast model artifact is not available.",
             )
 
         try:
             self._artifact = joblib.load(artifact_path)
             self._artifact_loaded = True
         except Exception as exc:
+            logger.exception("Failed to load global forecast model artifact.")
             raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Failed to load model artifact: {exc}",
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Global forecast model artifact could not be loaded.",
             ) from exc
 
         return self._artifact
