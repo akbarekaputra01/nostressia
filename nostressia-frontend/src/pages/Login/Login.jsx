@@ -66,23 +66,23 @@ export default function Login() {
   // resolvedTheme nilainya otomatis 'light' atau 'dark' (sudah menghandle 'system')
   const { resolvedTheme } = useTheme();
 
-  
+
   const [formData, setFormData] = useState(INITIAL_FORM_DATA);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  
+
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [showSignUpPassword, setShowSignUpPassword] = useState(false);
   const [isFlipped, setIsFlipped] = useState(false);
   const [isWinking, setIsWinking] = useState(false);
   const [showOTPForm, setShowOTPForm] = useState(false);
 
-  
+
   const [otp, setOtp] = useState("");
   const otpInputRef = useRef(null);
 
-  
+
   const [showForgotModal, setShowForgotModal] = useState(false);
   const [forgotStep, setForgotStep] = useState(1);
   const [forgotEmail, setForgotEmail] = useState("");
@@ -96,7 +96,7 @@ export default function Login() {
   const [loadingForgot, setLoadingForgot] = useState(false);
   const [forgotOtpVerified, setForgotOtpVerified] = useState(false);
 
-  
+
   const [countdown, setCountdown] = useState(0);
   const [toast, setToast] = useState(null);
   const [confirmState, setConfirmState] = useState({
@@ -110,7 +110,7 @@ export default function Login() {
   // [PERBAIKAN] Gunakan resolvedTheme langsung
   const isDarkMode = resolvedTheme === "dark";
 
-  
+
   useEffect(() => {
     const triggerBlink = () => {
       setIsWinking(true);
@@ -120,7 +120,7 @@ export default function Login() {
     return () => clearInterval(blinkInterval);
   }, []);
 
-  
+
   useEffect(() => {
     let timer;
     if (countdown > 0) {
@@ -129,14 +129,14 @@ export default function Login() {
     return () => clearInterval(timer);
   }, [countdown]);
 
-  
+
   useEffect(() => {
     if (showOTPForm && !isSuccess && otpInputRef.current) {
       setTimeout(() => otpInputRef.current?.focus(), 100);
     }
   }, [showOTPForm, isSuccess]);
 
-  
+
   useEffect(() => {
     if (showForgotModal && forgotStep === 2) {
       setTimeout(() => forgotOtpRefs.current[0]?.focus(), 100);
@@ -193,7 +193,7 @@ export default function Login() {
     }
   };
 
-  
+
   const handleLogin = async (e) => {
     e.preventDefault();
     if (!formData.email || !formData.password) return;
@@ -241,7 +241,7 @@ export default function Login() {
     }
   };
 
-  
+
   const handleSignUp = async (e) => {
     e.preventDefault();
     if (
@@ -269,7 +269,7 @@ export default function Login() {
     });
   };
 
-  
+
   const handleVerifyOTP = async (e) => {
     e.preventDefault();
     if (otp.length !== 6) return showToast("Please enter the 6-digit OTP code.", "warning");
@@ -295,7 +295,7 @@ export default function Login() {
     }
   };
 
-  
+
   const handleForgotRequest = async (e) => {
     e.preventDefault();
     if (!forgotEmail) return showToast("Please enter your email.", "warning");
@@ -578,11 +578,10 @@ export default function Login() {
                 <button
                   type="submit"
                   disabled={isLoading || isSuccess || !formData.email || !formData.password}
-                  className={`w-full py-4 rounded-2xl font-bold text-lg shadow-lg shadow-brand-primary/20 transition-all duration-300 transform flex items-center justify-center gap-2 cursor-pointer mt-6 disabled:opacity-60 disabled:cursor-not-allowed ${
-                    isSuccess
+                  className={`w-full py-4 rounded-2xl font-bold text-lg shadow-lg shadow-brand-primary/20 transition-all duration-300 transform flex items-center justify-center gap-2 cursor-pointer mt-6 disabled:opacity-60 disabled:cursor-not-allowed ${isSuccess
                       ? "bg-brand-info text-text-inverse scale-95"
                       : "bg-brand-primary text-text-inverse hover:bg-brand-primary/90 hover:scale-[1.02] active:scale-95"
-                  }`}
+                    }`}
                 >
                   {isLoading ? (
                     <Loader2 className="w-6 h-6 animate-spin" />
@@ -672,10 +671,9 @@ export default function Login() {
                             <div
                               key={idx}
                               className={`w-10 h-12 flex items-center justify-center transition-all duration-200 border rounded-lg
-                                ${
-                                  isActive
-                                    ? "border-brand-warning ring-4 ring-brand-warning/15 bg-brand-warning/10"
-                                    : "border-border bg-surface-elevated"
+                                ${isActive
+                                  ? "border-brand-warning ring-4 ring-brand-warning/15 bg-brand-warning/10"
+                                  : "border-border bg-surface-elevated"
                                 }
                                 ${digit ? "border-border bg-surface-muted" : ""}
                               `}
@@ -699,9 +697,8 @@ export default function Login() {
                     <button
                       onClick={handleVerifyOTP}
                       disabled={isLoading || otp.length < 6}
-                      className={`w-full py-4 rounded-2xl font-bold text-text-inverse text-lg shadow-lg shadow-brand-warning/20 bg-brand-warning hover:bg-brand-warning/90 cursor-pointer transition-all ${
-                        otp.length < 6 ? "opacity-50 cursor-not-allowed" : ""
-                      }`}
+                      className={`w-full py-4 rounded-2xl font-bold text-text-inverse text-lg shadow-lg shadow-brand-warning/20 bg-brand-warning hover:bg-brand-warning/90 cursor-pointer transition-all ${otp.length < 6 ? "opacity-50 cursor-not-allowed" : ""
+                        }`}
                     >
                       {isLoading ? (
                         <Loader2 className="w-6 h-6 animate-spin mx-auto" />
@@ -898,11 +895,10 @@ export default function Login() {
                           <div
                             key={index}
                             onClick={() => setFormData({ ...formData, avatar: avatarUrl })}
-                            className={`relative cursor-pointer transition-all duration-300 rounded-full p-0.5 ${
-                              formData.avatar === avatarUrl
+                            className={`relative cursor-pointer transition-all duration-300 rounded-full p-0.5 ${formData.avatar === avatarUrl
                                 ? "ring-2 ring-brand-warning scale-110 shadow-sm"
                                 : "hover:scale-105 opacity-70 hover:opacity-100"
-                            }`}
+                              }`}
                           >
                             <img
                               src={avatarUrl}
@@ -1020,9 +1016,8 @@ export default function Login() {
                       {[1, 2, 3].map((step) => (
                         <div
                           key={step}
-                          className={`h-2 rounded-full transition-all duration-300 ${
-                            forgotStep >= step ? "w-8 bg-blue-600" : "w-2 bg-surface-muted"
-                          }`}
+                          className={`h-2 rounded-full transition-all duration-300 ${forgotStep >= step ? "w-8 bg-blue-600" : "w-2 bg-surface-muted"
+                            }`}
                         />
                       ))}
                     </div>
@@ -1105,11 +1100,11 @@ export default function Login() {
                             value={digit}
                             onChange={(e) => handleForgotOtpChange(index, e.target.value)}
                             onKeyDown={(e) => handleForgotOtpKeyDown(index, e)}
+                            onPaste={handleForgotOtpPaste}
                             className={`w-10 h-12 border-2 rounded-lg text-center text-xl font-bold bg-surface-muted focus:bg-surface-elevated glass-panel outline-none transition-all
-                              ${
-                                digit
-                                  ? "border-blue-500 text-text-primary"
-                                  : "border-border text-transparent"
+                              ${digit
+                                ? "border-blue-500 text-text-primary"
+                                : "border-border text-transparent"
                               }
                               focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10
                             `}
