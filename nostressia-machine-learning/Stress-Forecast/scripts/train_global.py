@@ -15,6 +15,10 @@ import mlflow
 import pandas as pd
 
 import nbformat
+import joblib
+from mlflow.models import infer_signature
+import mlflow.sklearn
+import mlflow.data
 from nbconvert.preprocessors import ExecutePreprocessor
 
 from ml_state import MLState, utc_now_iso
@@ -29,6 +33,13 @@ DATASET_PATH = (
 MODEL_OUT = REPO_ROOT / "nostressia-backend" / "app" / "models_ml" / "global_forecast.joblib"
 META_OUT = REPO_ROOT / "nostressia-backend" / "app" / "models_ml" / "global_forecast.meta.json"
 STATE_PATH = REPO_ROOT / ".ml_state.json"
+TEMP_LOG_NAME = "metrics.json"
+
+# --- Constants for Feature Engineering (Mapping to Notebook) ---
+WINDOW = 7
+TARGET_COL = "stress_level"
+DATE_COL = "date"
+USER_COL = "user_id"
 
 GLOBAL_INTERVAL_DAYS = 60
 
@@ -152,6 +163,121 @@ except Exception as e:
             nbformat.write(notebook, f)
         print(f"Executed notebook saved to {debug_path}")
         return debug_path
+
+
+def _cleanup_log(log_path: Path) -> None:
+    if log_path.exists():
+        try:
+            log_path.unlink()
+            print(f"Log cleaned up: {log_path.name}")
+        except Exception as e:
+            print(f"Warning: Could not clean up log {log_path.name}: {e}")
+
+
+def _prepare_eval_data_global(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Replicates feature engineering from global_forecast.ipynb for evaluation.
+    WINDOW = 7 for global forecast.
+    """
+    import pandas as pd
+    import numpy as np
+    
+    BEHAVIOR_COLS = [
+        "extracurricular_hour_per_day", "physical_activity_hour_per_day",
+        "sleep_hour_per_day", "study_hour_per_day", "social_hour_per_day"
+    ]
+    
+    # Check required columns
+    for col in [DATE_COL, USER_COL, TARGET_COL]:
+        if col not in df.columns:
+            return pd.DataFrame()
+            
+    df[DATE_COL] = pd.to_datetime(df[DATE_COL], errors="coerce")
+    df = df.sort_values([USER_COL, DATE_COL]).reset_index(drop=True)
+    
+    rows = []
+    for uid, g in df.groupby(USER_COL):
+        g = g.sort_values(DATE_COL).reset_index(drop=True)
+
+        # Calendar features
+        g["dow"] = g[DATE_COL].dt.dayofweek.astype(int)
+        g["is_weekend"] = (g["dow"] >= 5).astype(int)
+
+        # Target lag features (t-1..t-W)
+        for k in range(1, WINDOW + 1):
+            g[f"lag_sp_{k}"] = g[TARGET_COL].shift(k)
+
+        # Gap features (days between records)
+        g["gap_days"] = g[DATE_COL].diff().dt.days
+        for k in range(1, WINDOW + 1):
+            g[f"gap_{k}"] = g["gap_days"].shift(k - 1)
+
+        # Behavior lag1 (t-1)
+        for c in BEHAVIOR_COLS:
+            if c in g.columns:
+                g[f"lag1_{c}"] = g[c].shift(1)
+            else:
+                g[f"lag1_{c}"] = 0.0
+
+        # Rolling stats on stress level
+        sp_shift = g[TARGET_COL].shift(1)
+        g["sp_mean"] = sp_shift.rolling(WINDOW).mean()
+        g["sp_std"]  = sp_shift.rolling(WINDOW).std().fillna(0.0)
+        g["sp_min"]  = sp_shift.rolling(WINDOW).min()
+        g["sp_max"]  = sp_shift.rolling(WINDOW).max()
+
+        g["count_high"] = (sp_shift >= 1).rolling(WINDOW).sum()
+        g["count_low"]  = (sp_shift == 0).rolling(WINDOW).sum()
+
+        # High streak
+        high = (sp_shift >= 1).astype(int).fillna(0).astype(int).tolist()
+        streak, cur = [], 0
+        for v in high:
+            cur = cur + 1 if v == 1 else 0
+            streak.append(cur)
+        g["streak_high"] = streak
+
+        # Transitions
+        diff = (sp_shift != sp_shift.shift(1)).astype(int)
+        g["transitions"] = diff.rolling(WINDOW).sum()
+
+        rows.append(g)
+
+    if not rows:
+        return pd.DataFrame()
+        
+    feat = pd.concat(rows, ignore_index=True)
+    
+    # Feature columns
+    feature_cols = (
+        ["dow", "is_weekend"]
+        + [f"lag_sp_{k}" for k in range(1, WINDOW + 1)]
+        + [f"gap_{k}" for k in range(1, WINDOW + 1)]
+        + [
+            "sp_mean", "sp_std", "sp_min", "sp_max",
+            "count_high", "count_low",
+            "streak_high", "transitions",
+        ]
+    )
+    # Add behavior lags
+    for c in BEHAVIOR_COLS:
+        if f"lag1_{c}" in feat.columns:
+            feature_cols.append(f"lag1_{c}")
+            
+    # Keep target for evaluation
+    final_cols = list(set(feature_cols)) + [TARGET_COL]
+    
+    # Drop rows with NaNs
+    feat = feat.dropna(subset=feature_cols).reset_index(drop=True)
+    
+    # Ensure all columns exist
+    for col in final_cols:
+        if col not in feat.columns:
+            feat[col] = 0  # Add missing columns with default value
+    
+    return feat[final_cols]
+
+
 
 
 def _log_dataset_details(dataset_path: Path, artifact_subdir: str = "dataset") -> None:
@@ -329,7 +455,7 @@ def train_global(force: bool) -> bool:
             "data_source": "csv",
             "dataset_path": str(DATASET_PATH),
             "output_path": str(MODEL_OUT),
-            "metrics_output_path": "metrics.json",
+            "metrics_output_path": TEMP_LOG_NAME, # Use the constant here
             "enable_eda": True, # FORCE EDA
         },
         timeout_seconds=1800,
@@ -341,21 +467,80 @@ def train_global(force: bool) -> bool:
     mlflow.set_tracking_uri("file:" + str(REPO_ROOT / "mlruns"))
     mlflow.set_experiment("Global Stress Forecast")
 
-    with mlflow.start_run():
+    with mlflow.start_run() as run: # Capture the run object
         mlflow.log_param("interval_days", GLOBAL_INTERVAL_DAYS)
         mlflow.log_param("data_hash", data_hash)
         mlflow.log_param("force", force)
         _log_dataset_details(DATASET_PATH, artifact_subdir="dataset")
 
-        # Log model artifact
-        mlflow.log_artifact(str(MODEL_OUT))
+        # Log model artifact (old way, kept for compatibility if needed)
+        # mlflow.log_artifact(str(MODEL_OUT))
+
+        _cleanup_log(REPO_ROOT / TEMP_LOG_NAME)
+
+        # --- MLflow Logging & Verification ---
+
+        # 1. Log training dataset
+        try:
+            df = pd.read_csv(DATASET_PATH)
+            training_ds = mlflow.data.from_pandas(df, name="Global_Stress_Training", targets=TARGET_COL)
+            mlflow.log_input(training_ds, context="training")
+            print("Logged training dataset to MLflow.")
+        except Exception as e:
+            print(f"Warning: Could not log training dataset: {e}")
+
+        # 2. Log Model Artifact
+        if MODEL_OUT.exists():
+            payload = joblib.load(MODEL_OUT)
+            model = payload.get("pipe") if isinstance(payload, dict) else payload
+            
+            if model is None:
+                print("Warning: Could not extract model from payload (key 'pipe' not found).")
+            else:
+                try:
+                    eval_data = _prepare_eval_data_global(df)
+                    if not eval_data.empty:
+                        sample_X = eval_data.drop(columns=[TARGET_COL]).head(5)
+                        sample_y = model.predict(sample_X)
+                        signature = infer_signature(sample_X, sample_y)
+                        
+                        mlflow.sklearn.log_model(
+                            sk_model=model,
+                            artifact_path="model",
+                            signature=signature,
+                            registered_model_name="Global_Stress_Forecast"
+                        )
+                        print("Model logged and registered as 'Global_Stress_Forecast'.")
+
+                        # 3. Evaluate to link metrics and dataset in UI
+                        eval_dataset = mlflow.data.from_pandas(
+                            eval_data.sample(min(100, len(eval_data))), 
+                            name="Global_Stress_Evaluation", 
+                            targets=TARGET_COL
+                        )
+                        model_uri = f"runs:/{run.info.run_id}/model"
+                        mlflow.evaluate(
+                            model=model_uri,
+                            data=eval_dataset,
+                            targets=None, # Already specified in Dataset
+                            model_type="classifier"
+                        )
+                        print("mlflow.evaluate() completed successfully.")
+                    else:
+                        print("Warning: Evaluation data is empty, skipping mlflow.evaluate().")
+                except Exception as e:
+                    print(f"Warning: Evaluation or Logging failed: {e}")
+        else:
+            print(f"Error: Model file {MODEL_OUT} not found!")
+
+        print("Global Forecast Training and MLflow logging finished.")
 
         # Check for metrics.json (generated in notebook directory or root)
         # Notebook execution CWD is set to NOTEBOOK_PATH.parent, so "metrics.json" is there.
-        metrics_file = NOTEBOOK_PATH.parent / "metrics.json"
+        metrics_file = NOTEBOOK_PATH.parent / TEMP_LOG_NAME
         if not metrics_file.exists():
             # Fallback: check current directory just in case
-            metrics_file = Path("metrics.json")
+            metrics_file = Path(TEMP_LOG_NAME)
 
         if metrics_file.exists():
             try:
@@ -375,7 +560,7 @@ def train_global(force: bool) -> bool:
                     mlflow.log_metrics(numeric_metrics)
                     print(f"MLFLOW: Successfully logged metrics from {metrics_file.name}: {list(numeric_metrics.keys())}")
                 
-                metrics_file.unlink() # Cleanup
+                _cleanup_log(metrics_file) # Cleanup using the helper
             except Exception as e:
                 print(f"Failed to log metrics: {e}")
 

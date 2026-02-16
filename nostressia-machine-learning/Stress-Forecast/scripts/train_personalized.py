@@ -7,13 +7,17 @@ import json
 import pprint
 import os
 import tempfile
-from datetime import timedelta
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import mlflow
 
 import nbformat
+import joblib
+from mlflow.models import infer_signature
+import mlflow.sklearn
+import mlflow.data
 import pandas as pd
 from nbconvert.preprocessors import ExecutePreprocessor
 
@@ -30,7 +34,12 @@ DEFAULT_MODEL_OUT = REPO_ROOT / "nostressia-backend" / "app" / "models_ml" / "pe
 DEFAULT_META_OUT = REPO_ROOT / "nostressia-backend" / "app" / "models_ml" / "personalized_forecast.meta.json"
 STATE_PATH = REPO_ROOT / ".ml_state.json"
 
-MILESTONE_INTERVAL = 60
+REPERSONALIZED_INTERVAL_DAYS = 1
+MILESTONE_INTERVAL = 7
+WINDOW = 7  # Personalized forecast uses 7-day window
+TARGET_COL = "stress_level"
+DATE_COL = "date"
+USER_COL = "user_id"
 
 
 def _load_artifact_payload(path: Path) -> Optional[Dict[str, Any]]:
@@ -240,8 +249,6 @@ except Exception as e:
         print(f"Notebook execution failed: {e}")
     finally:
         # Save the executed notebook for debugging and MLflow logging
-        timestamp = timedelta(seconds=0) # dummy
-        from datetime import datetime
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         debug_path = notebook_path.parent / f"executed_{notebook_path.stem}_{timestamp}.ipynb"
         with debug_path.open("w", encoding="utf-8") as f:
@@ -301,8 +308,24 @@ def _log_notebook_details(executed_nb_path: Path, artifact_subdir: str = "notebo
         tmp = Path(tmpdir)
         report_lines = [f"# Notebook output report: {executed_nb_path.name}", ""]
         output_index_payload = []
+        
+        current_context = "notebook_start"
+        image_name_counter = {} # Initialize here for the scope of this function
 
         for idx, cell in enumerate(notebook.cells, start=1):
+            # Update context if markdown cell with header/text
+            if cell.cell_type == "markdown":
+                source = cell.get("source", "").strip()
+                if source:
+                    # Take first line, remove markdown headers, limit length
+                    first_line = source.split('\n')[0].lstrip('#').strip()
+                    if first_line:
+                        # Sanitize: alphanumeric only, spaces to underscores
+                        safe_context = "".join(c if c.isalnum() else "_" for c in first_line)
+                        safe_context = "_".join(filter(None, safe_context.split("_")))
+                        if safe_context:
+                            current_context = safe_context[:60] # Reasonable length limit
+
             cell_dir = tmp / f"cell_{idx:03d}"
             cell_dir.mkdir(parents=True, exist_ok=True)
 
@@ -319,6 +342,7 @@ def _log_notebook_details(executed_nb_path: Path, artifact_subdir: str = "notebo
                 "cell_index": idx,
                 "cell_type": cell.cell_type,
                 "output_count": len(outputs),
+                "context": current_context,
             })
 
             for out_idx, output in enumerate(outputs, start=1):
@@ -359,8 +383,12 @@ def _log_notebook_details(executed_nb_path: Path, artifact_subdir: str = "notebo
                 for mime_type, value in data_bundle.items():
                     safe_mime = "".join(ch if ch.isalnum() or ch in {".", "_", "-"} else "_" for ch in mime_type)
                     extension = mime_extension.get(mime_type, "txt")
-                    out_file = output_dir / f"data_{safe_mime}.{extension}"
-
+                    
+                    base_name = current_context
+                    filename = f"{base_name}.{extension}"
+                    
+                    out_file = output_dir / filename
+                    
                     if mime_type in {"image/png", "image/jpeg"}:
                         binary_value = "".join(value) if isinstance(value, list) else str(value)
                         out_file.write_bytes(base64.b64decode(binary_value))
@@ -373,6 +401,20 @@ def _log_notebook_details(executed_nb_path: Path, artifact_subdir: str = "notebo
                         report_lines.append("```")
                         report_lines.append("\n".join(value) if isinstance(value, list) else str(value))
                         report_lines.append("```")
+                    
+                    # 2. Log image artifacts to 'notebook/images' with DEDUPLICATION
+                    if mime_type in {"image/png", "image/jpeg", "image/svg+xml"}:
+                         # Deduplicate base_name for the global images folder
+                         count = image_name_counter.get(base_name, 0)
+                         image_name_counter[base_name] = count + 1
+                         
+                         if count == 0:
+                             image_filename = f"{base_name}.{extension}"
+                         else:
+                             image_filename = f"{base_name}_{count + 1}.{extension}"
+                             
+                         mlflow.log_artifact(str(out_file), artifact_path=f"{artifact_subdir}/images/{image_filename}")
+
 
             report_lines.append("")
 
@@ -382,6 +424,111 @@ def _log_notebook_details(executed_nb_path: Path, artifact_subdir: str = "notebo
         )
         (tmp / "notebook_report.md").write_text("\n".join(report_lines), encoding="utf-8")
         mlflow.log_artifacts(str(tmp), artifact_path=artifact_subdir)
+def _prepare_eval_data_personalized(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Replicates feature engineering from personalized_forecast.ipynb for evaluation.
+    WINDOW = 7 for personalized forecast.
+    Same logic as global but per-user.
+    """
+    import pandas as pd
+    import numpy as np
+    
+    BEHAVIOR_COLS = [
+        "extracurricular_hour_per_day", "physical_activity_hour_per_day",
+        "sleep_hour_per_day", "study_hour_per_day", "social_hour_per_day"
+    ]
+    
+    # Check required columns
+    for col in [DATE_COL, USER_COL, TARGET_COL]:
+        if col not in df.columns:
+            return pd.DataFrame()
+            
+    df[DATE_COL] = pd.to_datetime(df[DATE_COL], errors="coerce")
+    df = df.sort_values([USER_COL, DATE_COL]).reset_index(drop=True)
+    
+    rows = []
+    for uid, g in df.groupby(USER_COL):
+        g = g.sort_values(DATE_COL).reset_index(drop=True)
+
+        # Calendar features
+        g["dow"] = g[DATE_COL].dt.dayofweek.astype(int)
+        g["is_weekend"] = (g["dow"] >= 5).astype(int)
+
+        # Target lag features (t-1..t-W)
+        for k in range(1, WINDOW + 1):
+            g[f"lag_sp_{k}"] = g[TARGET_COL].shift(k)
+
+        # Gap features (days between records)
+        g["gap_days"] = g[DATE_COL].diff().dt.days
+        for k in range(1, WINDOW + 1):
+            g[f"gap_{k}"] = g["gap_days"].shift(k - 1)
+
+        # Behavior lag1 (t-1)
+        for c in BEHAVIOR_COLS:
+            if c in g.columns:
+                g[f"lag1_{c}"] = g[c].shift(1)
+            else:
+                g[f"lag1_{c}"] = 0.0
+
+        # Rolling stats on stress level
+        sp_shift = g[TARGET_COL].shift(1)
+        g["sp_mean"] = sp_shift.rolling(WINDOW).mean()
+        g["sp_std"]  = sp_shift.rolling(WINDOW).std().fillna(0.0)
+        g["sp_min"]  = sp_shift.rolling(WINDOW).min()
+        g["sp_max"]  = sp_shift.rolling(WINDOW).max()
+
+        g["count_high"] = (sp_shift >= 1).rolling(WINDOW).sum()
+        g["count_low"]  = (sp_shift == 0).rolling(WINDOW).sum()
+
+        # High streak
+        high = (sp_shift >= 1).astype(int).fillna(0).astype(int).tolist()
+        streak, cur = [], 0
+        for v in high:
+            cur = cur + 1 if v == 1 else 0
+            streak.append(cur)
+        g["streak_high"] = streak
+
+        # Transitions
+        diff = (sp_shift != sp_shift.shift(1)).astype(int)
+        g["transitions"] = diff.rolling(WINDOW).sum()
+
+        rows.append(g)
+
+    if not rows:
+        return pd.DataFrame()
+        
+    feat = pd.concat(rows, ignore_index=True)
+    
+    # Feature columns
+    feature_cols = (
+        ["dow", "is_weekend"]
+        + [f"lag_sp_{k}" for k in range(1, WINDOW + 1)]
+        + [f"gap_{k}" for k in range(1, WINDOW + 1)]
+        + [
+            "sp_mean", "sp_std", "sp_min", "sp_max",
+            "count_high", "count_low",
+            "streak_high", "transitions",
+        ]
+    )
+    # Add behavior lags
+    for c in BEHAVIOR_COLS:
+        if f"lag1_{c}" in feat.columns:
+            feature_cols.append(f"lag1_{c}")
+            
+    # Keep target and user_id for filtering
+    final_cols = list(set(feature_cols)) + [TARGET_COL, USER_COL]
+    
+    # Drop rows with NaNs
+    feat = feat.dropna(subset=feature_cols).reset_index(drop=True)
+    
+    # Ensure all columns exist
+    for col in final_cols:
+        if col not in feat.columns:
+            feat[col] = 0  # Add missing columns with default value
+    
+    return feat[final_cols]
+
+
 def _current_streak(dates: List[datetime.date]) -> Tuple[int, Optional[datetime.date], Optional[datetime.date]]:
     if not dates:
         return 0, None, None
@@ -512,7 +659,9 @@ def train_personalized(
         merged_payload = _merge_personalized_artifact(merged_payload, incoming_payload)
 
         # MLflow logging
-        mlflow.set_tracking_uri("file:" + str(REPO_ROOT / "mlruns"))
+        # Use simplified URI format "file:D:/..." as requested (replace backslashes with forward slashes)
+        tracking_uri = "file:" + str(REPO_ROOT / "mlruns").replace("\\", "/")
+        mlflow.set_tracking_uri(tracking_uri)
         mlflow.set_experiment("Personalized Stress Forecast")
 
         with mlflow.start_run(run_name=f"user_{user_id}_milestone_{milestone}"):
@@ -521,8 +670,131 @@ def train_personalized(
             mlflow.log_param("window_size", milestone)
             mlflow.log_param("data_hash", data_hash)
             _log_dataset_details(DATASET_PATH, artifact_subdir="dataset")
+            
+            # Log Dataset Input (MLflow 2.x/3.x)
+            try:
+                # Log the training dataset
+                training_ds = mlflow.data.from_pandas(
+                    df, 
+                    name="Personalized_Stress_Training", 
+                    targets=TARGET_COL
+                )
+                mlflow.log_input(training_ds, context="training")
+                print(f"Logged training dataset 'Personalized_Stress_Training' for user {user_id}.")
+            except Exception as e:
+                print(f"Warning: Could not log training dataset: {e}")
 
             mlflow.log_artifact(str(output_path))
+            
+            # Log Model (extract from payload)
+            try:
+                model = None
+                # incoming_payload is the artifact just loaded from output_path
+                # Logic to find model based on known structure
+                if isinstance(incoming_payload, dict):
+                    if 'models_by_user' in incoming_payload:
+                        model = incoming_payload['models_by_user'].get(user_id)
+                    elif 'artifact' in incoming_payload and isinstance(incoming_payload['artifact'], dict):
+                        model = incoming_payload['artifact'].get('models_by_user', {}).get(user_id)
+                
+                if model:
+                     # Prepare input example for this user
+                     signature = None
+                     input_example = None
+                     # df is available in outer scope
+                     if 'df' in locals():
+                         # Filter for user to get relevant sample
+                         user_df = df[df['user_id'] == user_id]
+                         if not user_df.empty:
+                             input_example = user_df.head(1)
+                             try:
+                                 prediction = model.predict_proba(input_example) # Personalized models use predict_proba usually
+                                 signature = infer_signature(input_example, prediction)
+                             except Exception as sub_e:
+                                 # Fallback to verify predict if predict_proba fails
+                                 try:
+                                     prediction = model.predict(input_example)
+                                     signature = infer_signature(input_example, prediction)
+                                 except:
+                                     print(f"Warning: Could not infer signature for user {user_id}: {sub_e}")
+
+                     mlflow.sklearn.log_model(
+                         sk_model=model,
+                         artifact_path="model",
+                         signature=signature,
+                         input_example=input_example,
+                         registered_model_name="Personalized_Stress_Forecast"
+                     )
+                     print(f"Logged sklearn model for user {user_id} with metadata and registered as 'Personalized_Stress_Forecast'.")
+                     
+                     # --- NEW: Evaluate to populate 'Dataset' in Model Registry ---
+                     try:
+                         # Extract actual model from payload
+                         # Personalized might use different keys
+                         model_payload = joblib.load(DEFAULT_MODEL_OUT)
+                         
+                         # Try to find the model for this specific user
+                         if isinstance(model_payload, dict):
+                             models_by_user = model_payload.get('models_by_user', {})
+                             if user_id in models_by_user:
+                                 model_for_eval = models_by_user[user_id]
+                             else:
+                                 # Fallback: try 'pipe', 'pipeline', or 'model' keys
+                                 model_for_eval = model_payload.get('pipe', model_payload.get('pipeline', model_payload.get('model', None)))
+                         else:
+                             model_for_eval = model_payload
+                             
+                         if model_for_eval is None:
+                             print(f"Warning: Could not extract model for user {user_id} from payload.")
+                         else:
+                             # Load evaluation data with feature engineering
+                             if DATASET_PATH.exists():
+                                 # Load more rows to ensure enough data after feature engineering
+                                 eval_df_raw = pd.read_csv(DATASET_PATH, nrows=200)
+                                 
+                                 # Filter for this user only
+                                 user_data = eval_df_raw[eval_df_raw[USER_COL] == user_id]
+                                 
+                                 if not user_data.empty:
+                                     # Apply feature engineering
+                                     print(f"Preparing evaluation data with feature engineering for User {user_id}...")
+                                     user_eval_df = _prepare_eval_data_personalized(user_data)
+                                     
+                                     # Drop user_id from features (keep only for filtering)
+                                     if USER_COL in user_eval_df.columns:
+                                         user_eval_df = user_eval_df.drop(columns=[USER_COL])
+                                     
+                                         if not user_eval_df.empty:
+                                             # Take sample after processing
+                                             user_eval_df = user_eval_df.sample(min(len(user_eval_df), 100))
+                                             
+                                             print(f"Running mlflow.evaluate() for User {user_id}...")
+                                             
+                                             eval_dataset = mlflow.data.from_pandas(
+                                                 user_eval_df, 
+                                                 name=f"Personalized_User_{user_id}_Evaluation", 
+                                                 targets=TARGET_COL
+                                             )
+                                             
+                                             # Use model_uri to ensure metrics are linked to the model in the UI
+                                             model_uri = f"runs:/{mlflow.active_run().info.run_id}/model"
+                                             
+                                             mlflow.evaluate(
+                                                model=model_uri,
+                                                data=eval_dataset,
+                                                targets=None,
+                                                model_type="classifier"
+                                             )
+                                             print(f"mlflow.evaluate() for User {user_id} completed successfully.")
+                                     else:
+                                         print(f"Warning: No evaluation data for user {user_id} after feature engineering.")
+                     except Exception as eval_e:
+                           print(f"Warning: mlflow.evaluate() failed for user {user_id}: {eval_e}")
+
+                else:
+                    print(f"Could not find model for user {user_id} in payload to log as sklearn model.")
+            except Exception as e:
+                print(f"Failed to log sklearn model: {e}")
 
             # Check for metrics.json (generated in notebook directory)
             metrics_file = NOTEBOOK_PATH.parent / "metrics.json"

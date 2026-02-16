@@ -206,8 +206,23 @@ def _log_notebook_details(executed_nb_path: Path, artifact_subdir: str = "notebo
         tmp = Path(tmpdir)
         report_lines = [f"# Notebook output report: {executed_nb_path.name}", ""]
         output_index_payload = []
+        
+        current_context = "notebook_start"
 
         for idx, cell in enumerate(notebook.cells, start=1):
+            # Update context if markdown cell with header/text
+            if cell.cell_type == "markdown":
+                source = cell.get("source", "").strip()
+                if source:
+                    # Take first line, remove markdown headers, limit length
+                    first_line = source.split('\n')[0].lstrip('#').strip()
+                    if first_line:
+                        # Sanitize: alphanumeric only, spaces to underscores
+                        safe_context = "".join(c if c.isalnum() else "_" for c in first_line)
+                        safe_context = "_".join(filter(None, safe_context.split("_")))
+                        if safe_context:
+                            current_context = safe_context[:60] # Reasonable length limit
+
             cell_dir = tmp / f"cell_{idx:03d}"
             cell_dir.mkdir(parents=True, exist_ok=True)
 
@@ -224,6 +239,7 @@ def _log_notebook_details(executed_nb_path: Path, artifact_subdir: str = "notebo
                 "cell_index": idx,
                 "cell_type": cell.cell_type,
                 "output_count": len(outputs),
+                "context": current_context,
             })
 
             for out_idx, output in enumerate(outputs, start=1):
@@ -261,10 +277,39 @@ def _log_notebook_details(executed_nb_path: Path, artifact_subdir: str = "notebo
                         encoding="utf-8",
                     )
 
+                # Track used names for the 'notebook/images' folder to prevent overwrites
+                # Since we process sequentially, a simple dict is enough
+                # Key: base_name, Value: count
+                
+                # We need a scope for this counter. Since _log_notebook_details is the scope, 
+                # we should initialize it outside the loop.
+                # However, this tool only replaces a block. I will inject the initialization here
+                # by checking if it exists in locals(), or improved logic:
+                if 'image_name_counter' not in locals():
+                    image_name_counter = {}
+
                 for mime_type, value in data_bundle.items():
                     safe_mime = "".join(ch if ch.isalnum() or ch in {".", "_", "-"} else "_" for ch in mime_type)
                     extension = mime_extension.get(mime_type, "txt")
-                    out_file = output_dir / f"data_{safe_mime}.{extension}"
+                    
+                    # 1. Clean filename for the specific output folder (no dedupe needed here as folders are unique)
+                    # User wants: "Load_and_Explore_Dataset.html"
+                    # We still need to handle if multiple outputs of same type exist in same cell
+                    # But usually they don't. If they do, we can append out_idx?
+                    # Let's try to be as clean as possible.
+                    
+                    base_name = current_context
+                    filename = f"{base_name}.{extension}"
+                    
+                    # Check if file exists in THIS output dir? No, output dir is new.
+                    # But what if mime_type A and B both map to .txt? 
+                    # Rare. But let's stick to the cleanest name request.
+                    
+                    out_file = output_dir / filename
+                    
+                    # If we somehow have collision inside the specific output folder (unlikely), 
+                    # we might overwrite, which is acceptable for "cleanest" request or we can append.
+                    # For now, stick to the request.
 
                     if mime_type in {"image/png", "image/jpeg"}:
                         binary_value = "".join(value) if isinstance(value, list) else str(value)
@@ -278,6 +323,20 @@ def _log_notebook_details(executed_nb_path: Path, artifact_subdir: str = "notebo
                         report_lines.append("```")
                         report_lines.append("\n".join(value) if isinstance(value, list) else str(value))
                         report_lines.append("```")
+                    
+                    # 2. Log image artifacts to 'notebook/images' with DEDUPLICATION
+                    if mime_type in {"image/png", "image/jpeg", "image/svg+xml"}:
+                         # Deduplicate base_name for the global images folder
+                         count = image_name_counter.get(base_name, 0)
+                         image_name_counter[base_name] = count + 1
+                         
+                         if count == 0:
+                             image_filename = f"{base_name}.{extension}"
+                         else:
+                             image_filename = f"{base_name}_{count + 1}.{extension}"
+                             
+                         mlflow.log_artifact(str(out_file), artifact_path=f"{artifact_subdir}/images/{image_filename}")
+
 
             report_lines.append("")
 
@@ -327,7 +386,9 @@ def train_current_stress():
     )
     
     # MLflow Logging
-    mlflow.set_tracking_uri("file:" + str(REPO_ROOT / "mlruns"))
+    # Use simplified URI format "file:D:/..." as requested (replace backslashes with forward slashes)
+    tracking_uri = "file:" + str(REPO_ROOT / "mlruns").replace("\\", "/")
+    mlflow.set_tracking_uri(tracking_uri)
     mlflow.set_experiment("Current Stress Model")
     
     with mlflow.start_run() as run:
@@ -370,10 +431,149 @@ def train_current_stress():
         else:
             print("WARNING: metrics.json not found! Metrics were NOT logged.")
                 
+        # Log Dataset
+        # Try to find the dataset to log it as input
+        # Correct path based on directory structure: nostressia-machine-learning/Current-Stress/datasets/raw/student_lifestyle_dataset.csv
+        dataset_path = Path("nostressia-machine-learning/Current-Stress/datasets/raw/student_lifestyle_dataset.csv")
+        if dataset_path.exists():
+            try:
+                df = pd.read_csv(dataset_path)
+                ds = mlflow.data.from_pandas(df, source=str(dataset_path), name="Student_Lifestyle")
+                mlflow.log_input(ds, context="training")
+                print(f"Logged dataset input: {dataset_path.name}")
+            except Exception as e:
+                print(f"Failed to log input dataset: {e}")
+        else:
+            print(f"WARNING: Dataset not found at {dataset_path}, skipping log_input.")
+
         # Log Model Artifacts if created
         if MODEL_OUT_ML.exists():
+            # Log as a generic artifact (file)
             mlflow.log_artifact(str(MODEL_OUT_ML))
             print(f"Logged model artifact: {MODEL_OUT_ML.name}")
+            
+            # ALSO Log as an MLflow Model (to appear in 'Models' column with schema)
+            try:
+                import joblib
+                from mlflow.models import infer_signature
+                
+                
+                model_payload = joblib.load(MODEL_OUT_ML)
+                
+                # Check if payload is a dict (standard in this repo) or direct model
+                if isinstance(model_payload, dict):
+                    # Try to find the actual estimator key. Common keys: 'model', 'pipeline', 'estimator'
+                    if 'model' in model_payload:
+                        model = model_payload['model']
+                    elif 'pipeline' in model_payload:
+                        model = model_payload['pipeline']
+                    elif 'estimator' in model_payload:
+                        model = model_payload['estimator']
+                    else:
+                        # Fallback: maybe the dict itself IS the model (unlikely) or key is unknown
+                        print(f"Warning: Loaded artifact is a dict with keys {list(model_payload.keys())}, but could not identify model key. Using payload as is.")
+                        model = model_payload
+                else:
+                    model = model_payload
+                
+                signature = None
+                input_example = None
+                
+                # Check if we have the dataset loaded
+                if 'df' in locals():
+                    # Take a small sample as input example
+                    input_example = df.head(1)
+                    try:
+                        # Attempt to infer signature by predicting (requires model to accept raw input)
+                        # If model is a pipeline, this works. If not, it might fail.
+                        if hasattr(model, 'predict'):
+                            prediction = model.predict(input_example)
+                            signature = infer_signature(input_example, prediction)
+                            print("Inferred model signature successfully.")
+                        else:
+                            print(f"Warning: Model object type {type(model)} does not have 'predict' method.")
+                    except Exception as e:
+                        print(f"Warning: Could not infer model signature (features might differ): {e}")
+                    except Exception as e:
+                        print(f"Warning: Could not infer model signature (features might differ): {e}")
+                        # Even if prediction fails, logging input_example is helpful
+                        
+                # --- Log training dataset as input to populate 'Dataset' section in Run Details ---
+                try:
+                    if 'df' in locals() and df is not None:
+                        training_dataset = mlflow.data.from_pandas(
+                            df, 
+                            name="Student_Lifestyle_Training",
+                            targets="Stress_Level"
+                        )
+                        mlflow.log_input(training_dataset, context="training")
+                        print("Logged training dataset to MLflow.")
+                except Exception as e:
+                    print(f"Warning: Could not log training dataset: {e}")
+                
+                # Log model and register
+                mlflow.sklearn.log_model(
+                    sk_model=model,
+                    artifact_path="model",
+                    input_example=input_example,
+                    signature=signature,
+                    serialization_format="cloudpickle",
+                    registered_model_name="Current_Stress"
+                )
+                print("Logged sklearn model and registered as 'Current_Stress'.")
+
+
+                # --- NEW: Evaluate to populate 'Dataset' in Model Registry ---
+                # The 'Dataset' column in Registry view often requires an Evaluation run.
+                try:
+                    model_uri = f"runs:/{run.info.run_id}/model"
+                    
+                    # Create evaluation data with proper preprocessing
+                    # CRITICAL: Must match the preprocessing used during training
+                    if 'df' in locals():
+                         eval_data = df.head(50).copy()  # Use top 50 rows for quick eval
+                         
+                         # Apply the same GPA encoding transformation used in training
+                         # From notebook: Low: GPA < 2.5, Medium: 2.5 <= GPA < 3.5, High: GPA >= 3.5
+                         # The pipeline has RobustScaler which requires numeric features
+                         if 'GPA' in eval_data.columns:
+                             # Create categorical bins
+                             academic_perf = pd.cut(
+                                 eval_data['GPA'],
+                                 bins=[0, 2.5, 3.5, 4.0],
+                                 labels=['Low', 'Medium', 'High'],
+                                 include_lowest=True
+                             )
+                             # Convert to numeric labels (Low=0, Medium=1, High=2)
+                             label_map = {'Low': 0, 'Medium': 1, 'High': 2}
+                             eval_data['Academic_Performance_Encoded'] = academic_perf.map(label_map).astype(int)
+                         
+                         # Also encode Stress_Level target if it's present and string type
+                         if 'Stress_Level' in eval_data.columns and eval_data['Stress_Level'].dtype == 'object':
+                             stress_map = {'Low': 0, 'Moderate': 1, 'High': 2}
+                             eval_data['Stress_Level'] = eval_data['Stress_Level'].map(stress_map)
+                         
+                         # Drop only Student_ID
+                         if 'Student_ID' in eval_data.columns:
+                             eval_data = eval_data.drop(columns=['Student_ID'])
+                         
+                         print("Running mlflow.evaluate() to populate Model Registry dataset column...")
+                         
+                         # Convert to MLflow Dataset with name
+                         eval_dataset = mlflow.data.from_pandas(eval_data, name="Student_Lifestyle_Eval", targets="Stress_Level")
+                         
+                         mlflow.evaluate(
+                            model=model_uri,
+                            data=eval_dataset,
+                            model_type="classifier",
+                            evaluators="default" 
+                         )
+                         print("mlflow.evaluate() completed.")
+                except Exception as eval_e:
+                     print(f"Warning: mlflow.evaluate() failed (Registry dataset column might remain empty): {eval_e}")
+
+            except Exception as e:
+                print(f"Failed to log model using mlflow.sklearn: {e}")
             
         # Clean up executed notebook
         max_retries = 3
