@@ -19,7 +19,7 @@
     "@heroicons/react": "^2.2.0",
     "@hookform/resolvers": "^5.2.2",
     "@tailwindcss/vite": "^4.1.17",
-    "axios": "^1.13.2",
+    "axios": "^1.13.5",
     "classnames": "^2.5.1",
     "date-fns": "^4.1.0",
     "framer-motion": "^12.24.7",
