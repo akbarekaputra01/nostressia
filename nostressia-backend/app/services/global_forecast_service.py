@@ -1,3 +1,4 @@
+import importlib
 import logging
 import os
 import re
@@ -20,6 +21,8 @@ class GlobalForecastService:
     def __init__(self) -> None:
         self._artifact: Dict[str, Any] = {}
         self._artifact_loaded = False
+        self._artifact_load_error: Optional[HTTPException] = None
+        self._artifact_mtime: Optional[float] = None
 
     def _artifact_path(self) -> str:
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -29,9 +32,6 @@ class GlobalForecastService:
         return os.path.exists(self._artifact_path())
 
     def _load_artifact(self) -> Dict[str, Any]:
-        if self._artifact_loaded:
-            return self._artifact
-
         artifact_path = self._artifact_path()
         if not os.path.exists(artifact_path):
             raise HTTPException(
@@ -39,15 +39,30 @@ class GlobalForecastService:
                 detail="Global forecast model artifact is not available.",
             )
 
+        current_mtime = os.path.getmtime(artifact_path)
+        if self._artifact_mtime != current_mtime:
+            self._artifact_loaded = False
+            self._artifact_load_error = None
+
+        if self._artifact_load_error is not None:
+            raise self._artifact_load_error
+
+        if self._artifact_loaded:
+            return self._artifact
+
         try:
             self._artifact = self._load_artifact_with_compat(artifact_path)
             self._artifact_loaded = True
+            self._artifact_load_error = None
+            self._artifact_mtime = current_mtime
         except Exception as exc:
             logger.exception("Failed to load global forecast model artifact.")
-            raise HTTPException(
+            self._artifact_load_error = HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail="Global forecast model artifact could not be loaded.",
-            ) from exc
+            )
+            self._artifact_mtime = current_mtime
+            raise self._artifact_load_error from exc
 
         return self._artifact
 
@@ -59,7 +74,28 @@ class GlobalForecastService:
                 raise
 
             self._register_legacy_loss_module()
+            return self._load_with_numpy_bitgenerator_compat(artifact_path)
+        except ValueError as exc:
+            if "known BitGenerator module" not in str(exc):
+                raise
+            return self._load_with_numpy_bitgenerator_compat(artifact_path)
+
+    def _load_with_numpy_bitgenerator_compat(self, artifact_path: str) -> Dict[str, Any]:
+        numpy_pickle = importlib.import_module("numpy.random._pickle")
+        original_ctor = getattr(numpy_pickle, "__bit_generator_ctor")
+
+        def _compat_ctor(bit_generator_name: Any = "MT19937") -> Any:
+            if isinstance(bit_generator_name, type):
+                bit_generator_name = bit_generator_name.__name__
+            elif not isinstance(bit_generator_name, str):
+                bit_generator_name = getattr(bit_generator_name, "__name__", str(bit_generator_name))
+            return original_ctor(bit_generator_name)
+
+        setattr(numpy_pickle, "__bit_generator_ctor", _compat_ctor)
+        try:
             return joblib.load(artifact_path)
+        finally:
+            setattr(numpy_pickle, "__bit_generator_ctor", original_ctor)
 
     def _register_legacy_loss_module(self) -> None:
         """Backfill sklearn legacy module path used by older serialized artifacts."""
