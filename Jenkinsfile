@@ -3,32 +3,37 @@ pipeline {
   options { timestamps() }
 
   environment {
-    PY310 = 'C:\\Users\\akbar\\AppData\\Local\\Programs\\Python\\Python310\\python.exe'
     PYTHONUNBUFFERED = '1'
+    PIP_DISABLE_PIP_VERSION_CHECK = '1'
   }
 
   stages {
     stage('Checkout') {
       steps {
         checkout scm
-        bat 'git --version'
-        bat "\"%PY310%\" --version"
-        bat 'node --version'
-        bat 'npm --version'
+        sh 'git --version'
+        sh 'python3 --version || true'
+        sh 'python --version || true'
+        sh 'node --version || true'
+        sh 'npm --version || true'
       }
     }
 
     // =========================
     // BACKEND (Python/FastAPI)
     // =========================
-    stage('Backend: Setup venv + install deps (Py3.10)') {
+    stage('Backend: Setup venv + install deps') {
       steps {
         dir('nostressia-backend') {
-          bat "\"%PY310%\" -m venv .venv"
-          bat ".venv\\Scripts\\python -m pip install --upgrade pip"
-          bat "if exist requirements.txt ( .venv\\Scripts\\pip install -r requirements.txt ) else ( echo requirements.txt not found & exit /b 1 )"
-          // sanity check: pastikan sklearn bisa diimport
-          bat ".venv\\Scripts\\python -c \"import sklearn; print('sklearn=', sklearn.__version__)\""
+          sh '''
+            set -euxo pipefail
+            python3 -m venv .venv
+            . .venv/bin/activate
+            python -m pip install --upgrade pip
+            test -f requirements.txt
+            pip install -r requirements.txt
+            python -c "import sklearn; print('sklearn=', sklearn.__version__)"
+          '''
         }
       }
     }
@@ -36,8 +41,11 @@ pipeline {
     stage('Backend: Test') {
       steps {
         dir('nostressia-backend') {
-          // Kalau belum ada test, ini akan fail.
-          bat ".venv\\Scripts\\pytest -q"
+          sh '''
+            set -euxo pipefail
+            . .venv/bin/activate
+            pytest -q
+          '''
         }
       }
     }
@@ -48,7 +56,10 @@ pipeline {
     stage('Frontend: Install deps') {
       steps {
         dir('nostressia-frontend') {
-          bat "npm ci"
+          sh '''
+            set -euxo pipefail
+            npm ci
+          '''
         }
       }
     }
@@ -56,7 +67,10 @@ pipeline {
     stage('Frontend: Build') {
       steps {
         dir('nostressia-frontend') {
-          bat "npm run build"
+          sh '''
+            set -euxo pipefail
+            npm run build
+          '''
         }
       }
     }
@@ -67,7 +81,10 @@ pipeline {
     stage('ML: Sanity (optional)') {
       steps {
         dir('nostressia-machine-learning') {
-          bat "\"%PY310%\" -c \"print('ML folder OK')\""
+          sh '''
+            set -euxo pipefail
+            python3 -c "print('ML folder OK')"
+          '''
         }
       }
     }
