@@ -179,6 +179,7 @@ pytest
 - **Startup gagal**: pastikan `JWT_SECRET`, `DB_*`, dan `BREVO_API_KEY` tersedia.
 - **Forecast error**: pastikan tabel `stress_levels` terisi dan artifact ML tersedia.
 - **`/api/stress/current` mengembalikan 503**: artifact `app/models_ml/current_stress.joblib` belum tersedia atau gagal dimuat.
+- **`/api/stress/current` mengembalikan 422**: payload numerik untuk fitur stress tidak valid (mis. `NaN`/tipe non-numerik).
 - **Avatar upload gagal**: pastikan `AZURE_STORAGE_CONNECTION_STRING` tersedia (atau gunakan fallback lokal).
 - **Push notification gagal**: pastikan `VAPID_PRIVATE_KEY` terisi.
 

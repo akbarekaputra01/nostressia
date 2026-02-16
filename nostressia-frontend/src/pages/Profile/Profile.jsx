@@ -4,6 +4,7 @@ import { Link, useOutletContext } from "react-router-dom";
 import Navbar from "../../components/Navbar";
 import PageMeta from "../../components/PageMeta";
 import { changePassword, updateProfile, verifyCurrentPassword } from "../../services/authService";
+import { sendWeeklyReport } from "../../services/analyticsService";
 import { deleteBookmark, getMyBookmarks } from "../../services/bookmarkService";
 import {
   User,
@@ -748,7 +749,6 @@ export default function Profile() {
     return {
       dailyReminder: true,
       reminderTime: "08:00",
-      emailUpdates: false,
     };
   });
   const [passwordForm, setPasswordForm] = useState({
@@ -1216,6 +1216,19 @@ export default function Profile() {
     showNotification("Notification preferences saved!", "success");
   };
 
+  const handleSendWeeklyReport = async () => {
+    try {
+      const reportResult = await sendWeeklyReport();
+      const targetEmail = reportResult?.email || contextUser?.email || "your email";
+      showNotification(`Weekly report has been sent to ${targetEmail}.`, "success");
+    } catch (error) {
+      showNotification(
+        error?.message || "Weekly report could not be sent. Please try again later.",
+        "error",
+      );
+    }
+  };
+
   const handlePermissionAllow = async () => {
     if (
       typeof window !== "undefined" &&
@@ -1587,20 +1600,16 @@ export default function Profile() {
                       Weekly Report
                     </p>
                     <p className="text-xs text-text-muted dark:text-text-muted">
-                      Receive summary via email
+                      Send weekly summary to your email on demand.
                     </p>
                   </div>
                 </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    name="emailUpdates"
-                    checked={notifSettings.emailUpdates}
-                    onChange={handleNotifChange}
-                    className="sr-only peer"
-                  />
-                  <div className="w-11 h-6 bg-surface-muted dark:bg-surface-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-surface-elevated glass-panel after:border-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-info"></div>
-                </label>
+                <button
+                  onClick={handleSendWeeklyReport}
+                  className="px-4 py-2 text-xs font-bold rounded-xl border border-brand-info/30 text-brand-primary bg-surface-elevated/70 hover:bg-surface-elevated transition-colors dark:border-brand-info/40 dark:text-brand-info dark:bg-surface"
+                >
+                  Send Report
+                </button>
               </div>
               <button
                 onClick={saveNotifSettings}

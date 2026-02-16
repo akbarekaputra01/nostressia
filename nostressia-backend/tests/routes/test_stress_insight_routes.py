@@ -3,6 +3,7 @@ from datetime import date
 from app.models.user_model import User
 from app.schemas.response_schema import APIResponse
 from app.schemas.stress_schema import EligibilityResponse, GlobalForecastPayload, GlobalForecastResult
+from app.services.ml_service import MLServiceError
 from app.utils.hashing import hash_password
 from app.utils.jwt_handler import create_access_token
 
@@ -25,7 +26,7 @@ def _create_user(db_session):
 
 
 def test_predict_current_stress_success(client, monkeypatch):
-    monkeypatch.setattr("app.routes.stress_insight_route.ml_service.predict_stress", lambda *_: "Low")
+    monkeypatch.setattr("app.routes.stress_insight_route.ml_service.predict_stress_or_raise", lambda *_: "Low")
 
     response = client.post(
         "/api/stress/current",
@@ -44,7 +45,7 @@ def test_predict_current_stress_success(client, monkeypatch):
 
 
 def test_predict_current_stress_error(client, monkeypatch):
-    monkeypatch.setattr("app.routes.stress_insight_route.ml_service.predict_stress", lambda *_: "Error")
+    monkeypatch.setattr("app.routes.stress_insight_route.ml_service.predict_stress_or_raise", lambda *_: (_ for _ in ()).throw(MLServiceError("prediction_failed", "An error occurred in the stress prediction model.")))
 
     response = client.post(
         "/api/stress/current",
@@ -63,8 +64,8 @@ def test_predict_current_stress_error(client, monkeypatch):
 
 def test_predict_current_stress_model_not_ready(client, monkeypatch):
     monkeypatch.setattr(
-        "app.routes.stress_insight_route.ml_service.predict_stress",
-        lambda *_: "Error: Model not ready",
+        "app.routes.stress_insight_route.ml_service.predict_stress_or_raise",
+        lambda *_: (_ for _ in ()).throw(MLServiceError("model_not_ready", "Stress prediction model is not available right now.")),
     )
 
     response = client.post(
@@ -81,6 +82,28 @@ def test_predict_current_stress_model_not_ready(client, monkeypatch):
 
     assert response.status_code == 503
     assert response.json()["message"] == "Stress prediction model is not available right now."
+
+
+def test_predict_current_stress_invalid_input_error(client, monkeypatch):
+    monkeypatch.setattr(
+        "app.routes.stress_insight_route.ml_service.predict_stress_or_raise",
+        lambda *_: (_ for _ in ()).throw(MLServiceError("invalid_input", "Invalid numeric value for feature 'gpa'.")),
+    )
+
+    response = client.post(
+        "/api/stress/current",
+        json={
+            "studyHours": 4,
+            "extracurricularHours": 1,
+            "sleepHours": 7,
+            "socialHours": 2,
+            "physicalHours": 1,
+            "gpa": 3.5,
+        },
+    )
+
+    assert response.status_code == 422
+    assert response.json()["message"] == "Invalid numeric value for feature 'gpa'."
 
 
 def test_forecast_requires_eligibility(client, db_session, monkeypatch):

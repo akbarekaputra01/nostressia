@@ -19,7 +19,10 @@ class MLState:
     def load(cls, path: Path) -> "MLState":
         if not path.exists():
             return cls()
-        payload = json.loads(path.read_text())
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as exc:
+            raise RuntimeError(f"Invalid ML state JSON at {path}: {exc}") from exc
         return cls(
             global_state=payload.get("global", {"last_trained_at": None, "data_hash": None}),
             personalized=payload.get("personalized", {"users": {}}),
@@ -31,7 +34,7 @@ class MLState:
     def save(self, path: Path) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
         temp_path = path.with_suffix(path.suffix + ".tmp")
-        temp_path.write_text(json.dumps(self.dump(), indent=2, sort_keys=True))
+        temp_path.write_text(json.dumps(self.dump(), indent=2, sort_keys=True), encoding="utf-8")
         temp_path.replace(path)
 
 

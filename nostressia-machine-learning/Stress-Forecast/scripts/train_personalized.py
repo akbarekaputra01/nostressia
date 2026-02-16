@@ -594,7 +594,9 @@ def _write_meta_multi(
     data_hash: str,
     trained_at: str,
     trained_users: List[Tuple[int, int]],
+    run_ids: List[str],
 ) -> None:
+    deduped_run_ids = list(dict.fromkeys(run_ids))
     payload = {
         "created_at": trained_at,
         "trained_at": trained_at,
@@ -603,6 +605,8 @@ def _write_meta_multi(
         "features": ["lag_sp_*", "gap_*", "dow", "behavior_lag_features"],
         "data_hash": data_hash,
         "git_sha": os.getenv("GITHUB_SHA") or os.getenv("GIT_SHA") or "",
+        "mlflow_run_id": deduped_run_ids[-1] if deduped_run_ids else "",
+        "mlflow_run_ids": deduped_run_ids,
         "users": [
             {"user_id": user_id, "milestone": milestone}
             for user_id, milestone in trained_users
@@ -642,6 +646,7 @@ def train_personalized(
     print("DATA_HASH    :", data_hash)
     trained_any = False
     trained_users: List[Tuple[int, int]] = []
+    trained_run_ids: List[str] = []
     merged_payload = _load_artifact_payload(DEFAULT_MODEL_OUT)
 
     for candidate in candidates:
@@ -862,6 +867,8 @@ def train_personalized(
         }
         trained_any = True
         trained_users.append((user_id, milestone))
+        if run_id:
+            trained_run_ids.append(run_id)
         print(f"Trained personalized model for user_id={user_id} milestone={milestone}.")
 
     if trained_any:
@@ -869,7 +876,7 @@ def train_personalized(
 
         DEFAULT_MODEL_OUT.parent.mkdir(parents=True, exist_ok=True)
         joblib.dump(merged_payload, DEFAULT_MODEL_OUT)
-        _write_meta_multi(DEFAULT_META_OUT, data_hash, utc_now_iso(), trained_users)
+        _write_meta_multi(DEFAULT_META_OUT, data_hash, utc_now_iso(), trained_users, trained_run_ids)
         state.save(STATE_PATH)
     return trained_any
 

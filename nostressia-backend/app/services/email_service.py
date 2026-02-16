@@ -147,7 +147,7 @@ def send_weekly_report_email(
     date_range = report.get("date_range", "the past week")
     stress_count = report.get("stress_logs", 0)
     diary_count = report.get("diary_entries", 0)
-    avg_stress = report.get("avg_stress_level", "-")
+    dominant_stress = report.get("dominant_stress_level", "-")
     streak = report.get("streak", 0)
 
     html_content = f"""
@@ -159,7 +159,7 @@ def send_weekly_report_email(
           <div style="text-align: left; margin-top: 20px;">
             <p style="margin: 6px 0;"><strong>Stress logs:</strong> {stress_count}</p>
             <p style="margin: 6px 0;"><strong>Diary entries:</strong> {diary_count}</p>
-            <p style="margin: 6px 0;"><strong>Average stress level:</strong> {avg_stress}</p>
+            <p style="margin: 6px 0;"><strong>Most frequent stress level:</strong> {dominant_stress}</p>
             <p style="margin: 6px 0;"><strong>Current streak:</strong> {streak} days</p>
           </div>
           <p style="margin-top: 18px; font-size: 12px; color: #6b7280;">

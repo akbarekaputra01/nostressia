@@ -55,6 +55,10 @@ describe("Dashboard scroll behavior", () => {
     );
 
     const saveButton = await screen.findByText(/save data/i);
+
+    expect(
+      await screen.findByText(/Forecast will open after you submit today's stress log\./i),
+    ).toBeInTheDocument();
     const form = saveButton.closest("form");
     const scrollArea = form?.querySelector(".overflow-y-auto");
     expect(scrollArea).toBeInTheDocument();

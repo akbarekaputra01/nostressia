@@ -1,13 +1,20 @@
 from datetime import date, timedelta
-from typing import Dict, Any, Tuple
+from typing import Any, Dict, Iterable, Tuple
 
-from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
+from sqlalchemy.orm import Session
 
-from app.models.stress_log_model import StressLevel
 from app.models.diary_model import Diary
+from app.models.stress_log_model import StressLevel
 from app.models.user_model import User
 from app.services.email_service import send_weekly_report_email
+
+STRESS_LABELS = {
+    1: "Low",
+    2: "Moderate",
+    3: "High",
+}
+
 
 def get_user_summary(db: Session, user: User) -> Dict[str, Any]:
     stress_logs_count = (
@@ -20,6 +27,26 @@ def get_user_summary(db: Session, user: User) -> Dict[str, Any]:
         "diaryCount": diary_count,
         "streak": user.streak,
     }
+
+
+def _get_dominant_stress_label(stress_logs: Iterable[StressLevel]) -> str:
+    stats: Dict[int, Tuple[int, date]] = {}
+    for log in stress_logs:
+        level = int(log.stress_level or 0)
+        if level not in STRESS_LABELS:
+            continue
+        current_count, latest_date = stats.get(level, (0, date.min))
+        stats[level] = (current_count + 1, max(latest_date, log.date or date.min))
+
+    if not stats:
+        return "-"
+
+    dominant_level = max(
+        stats.items(),
+        key=lambda item: (item[1][0], item[1][1], item[0]),
+    )[0]
+    return STRESS_LABELS[dominant_level]
+
 
 def send_weekly_report(db: Session, user: User) -> Dict[str, Any]:
     end_date = date.today()
@@ -44,16 +71,11 @@ def send_weekly_report(db: Session, user: User) -> Dict[str, Any]:
         .count()
     )
 
-    avg_stress = "-"
-    if stress_logs:
-        avg_stress_value = sum(log.stress_level or 0 for log in stress_logs) / len(stress_logs)
-        avg_stress = round(avg_stress_value, 2)
-
     report_payload = {
         "date_range": f"{start_date.isoformat()} - {end_date.isoformat()}",
         "stress_logs": len(stress_logs),
         "diary_entries": diary_count,
-        "avg_stress_level": avg_stress,
+        "dominant_stress_level": _get_dominant_stress_label(stress_logs),
         "streak": user.streak or 0,
     }
 

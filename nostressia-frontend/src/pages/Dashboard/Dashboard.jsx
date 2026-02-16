@@ -263,6 +263,10 @@ function buildForecastList(forecast) {
   const startDate = new Date(forecast.forecastDate);
   if (Number.isNaN(startDate.getTime())) return [];
 
+  const now = new Date();
+  const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+  const effectiveStartDate = startDate < tomorrow ? tomorrow : startDate;
+
   const threshold = Number(forecast.threshold);
   const baseChance = Number(forecast.chancePercent);
   const baseProbability = Math.max(0, Math.min(baseChance, 100)) / 100;
@@ -283,8 +287,8 @@ function buildForecastList(forecast) {
           ? moderateStressAdvices
           : lowStressAdvices;
     const adviceText = adviceOptions[Math.floor(Math.random() * adviceOptions.length)];
-    const iterDate = new Date(startDate);
-    iterDate.setDate(startDate.getDate() + idx);
+    const iterDate = new Date(effectiveStartDate);
+    iterDate.setDate(effectiveStartDate.getDate() + idx);
     const theme = getForecastTheme(status);
 
     return {
@@ -952,6 +956,17 @@ export default function Dashboard() {
         const restoreLimit = eligibilitySnapshot?.restoreLimit ?? 3;
         const restoreRemainingCalc = eligibilitySnapshot?.restoreRemaining ?? 0;
 
+        if (isLoadingLogs) {
+          return;
+        }
+
+        if (!hasSubmittedToday) {
+          setForecastList([]);
+          setForecastError("Forecast will open after you submit today's stress log.");
+          setForecastMode("global");
+          return;
+        }
+
         if (!eligibilitySnapshot || !eligibilitySnapshot.eligible) {
           setForecastList([]);
           setForecastError(
@@ -1020,7 +1035,7 @@ export default function Dashboard() {
 
     fetchForecast();
     return () => controller.abort();
-  }, [navigate, normalizedEligibility]);
+  }, [hasSubmittedToday, isLoadingLogs, navigate, normalizedEligibility]);
 
   function handleOpenForm({ mode = "today", dateKey = TODAY_KEY, restoreMode = "manual" } = {}) {
     if (mode === "restore") {
