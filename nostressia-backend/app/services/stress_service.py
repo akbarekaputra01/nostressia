@@ -229,6 +229,20 @@ def update_stress_log(
     db.refresh(existing_log)
     return existing_log
 
-def get_user_stress_logs(db: Session, user_id: int, page: int = 1, limit: int = 10):
+def get_user_stress_logs(
+    db: Session,
+    user_id: int,
+    page: int = 1,
+    limit: int = 10,
+    start_date: date | None = None,
+    end_date: date | None = None,
+):
     skip = (page - 1) * limit
-    return db.query(StressLevel).filter(StressLevel.user_id == user_id).order_by(StressLevel.date.desc()).offset(skip).limit(limit).all()
+    query = db.query(StressLevel).filter(StressLevel.user_id == user_id)
+
+    if start_date:
+        query = query.filter(StressLevel.date >= start_date)
+    if end_date:
+        query = query.filter(StressLevel.date <= end_date)
+
+    return query.order_by(StressLevel.date.desc()).offset(skip).limit(limit).all()
