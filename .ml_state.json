@@ -1,43 +1,43 @@
 {
   "global": {
     "data_hash": "1c9f8aea49c3f3f3257301c95eb99a395b39405162496dfb6f2be336ac1afc8a",
-    "last_trained_at": "2026-02-15T17:22:58.671323+00:00"
+    "last_trained_at": "2026-02-15T17:55:43.817699+00:00"
   },
   "personalized": {
     "users": {
       "1": {
-        "data_hash": "d01d6d97c2d86768f4767d1674adae0c6d2845ad956abd314754777660ea7f37",
-        "last_trained_at": "2026-02-14T20:05:54.210059+00:00",
+        "data_hash": "1c9f8aea49c3f3f3257301c95eb99a395b39405162496dfb6f2be336ac1afc8a",
+        "last_trained_at": "2026-02-15T18:04:53.250810+00:00",
         "last_trained_milestone": 60,
         "streak_end_date": "2026-02-15",
         "streak_start_date": "2025-11-21"
       },
       "2": {
-        "data_hash": "ffe59c5b23e8e2ecadbc190dd61dce0e983b3147998503b3d6e2b569e36467b3",
-        "last_trained_at": "2026-02-14T16:58:44.031146+00:00",
+        "data_hash": "1c9f8aea49c3f3f3257301c95eb99a395b39405162496dfb6f2be336ac1afc8a",
+        "last_trained_at": "2026-02-15T18:23:32.970444+00:00",
         "last_trained_milestone": 60,
-        "streak_end_date": "2026-01-19",
+        "streak_end_date": "2026-02-14",
         "streak_start_date": "2025-11-21"
       },
       "3": {
-        "data_hash": "ffe59c5b23e8e2ecadbc190dd61dce0e983b3147998503b3d6e2b569e36467b3",
-        "last_trained_at": "2026-02-14T17:00:38.029901+00:00",
+        "data_hash": "1c9f8aea49c3f3f3257301c95eb99a395b39405162496dfb6f2be336ac1afc8a",
+        "last_trained_at": "2026-02-15T18:26:46.775626+00:00",
         "last_trained_milestone": 60,
-        "streak_end_date": "2026-01-19",
+        "streak_end_date": "2026-02-14",
         "streak_start_date": "2025-11-21"
       },
       "4": {
-        "data_hash": "ffe59c5b23e8e2ecadbc190dd61dce0e983b3147998503b3d6e2b569e36467b3",
-        "last_trained_at": "2026-02-14T17:03:40.575710+00:00",
+        "data_hash": "1c9f8aea49c3f3f3257301c95eb99a395b39405162496dfb6f2be336ac1afc8a",
+        "last_trained_at": "2026-02-15T18:30:08.319008+00:00",
         "last_trained_milestone": 60,
-        "streak_end_date": "2026-01-19",
+        "streak_end_date": "2026-02-14",
         "streak_start_date": "2025-11-21"
       },
       "5": {
-        "data_hash": "ffe59c5b23e8e2ecadbc190dd61dce0e983b3147998503b3d6e2b569e36467b3",
-        "last_trained_at": "2026-02-14T17:05:16.994409+00:00",
+        "data_hash": "1c9f8aea49c3f3f3257301c95eb99a395b39405162496dfb6f2be336ac1afc8a",
+        "last_trained_at": "2026-02-15T18:33:14.184325+00:00",
         "last_trained_milestone": 60,
-        "streak_end_date": "2026-01-19",
+        "streak_end_date": "2026-02-14",
         "streak_start_date": "2025-11-21"
       }
     }
