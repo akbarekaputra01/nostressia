@@ -580,6 +580,8 @@ export default function Profile() {
   const [isConfirming, setIsConfirming] = useState(false);
   const [isVerifyingCurrentPassword, setIsVerifyingCurrentPassword] = useState(false);
   const [isCurrentPasswordVerified, setIsCurrentPasswordVerified] = useState(false);
+  const [isSavingNotifSettings, setIsSavingNotifSettings] = useState(false);
+  const [isSendingWeeklyReport, setIsSendingWeeklyReport] = useState(false);
 
   // Visibility toggles
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
@@ -1185,67 +1187,45 @@ export default function Profile() {
     }
   };
   const saveNotifSettings = async () => {
+    if (isSavingNotifSettings || isSendingWeeklyReport) return;
+
+    setIsSavingNotifSettings(true);
     saveNotificationSettings(notifSettings);
     setShowNotifModal(false);
+    try {
+      if (notifSettings.dailyReminder) {
+        const permissionState = getNotificationPermissionStatus();
 
-    let weeklyReportMessage = "";
-    let weeklyReportFailed = false;
-
-    if (notifSettings.emailUpdates) {
-      try {
-        const reportResult = await sendWeeklyReport();
-        const targetEmail = reportResult?.email || contextUser?.email || "your email";
-        weeklyReportMessage = ` Weekly report has been sent to ${targetEmail}.`;
-      } catch (error) {
-        weeklyReportFailed = true;
-        weeklyReportMessage = ` Weekly report could not be sent. ${error?.message || "Please try again later."}`;
-      }
-    }
-
-    if (notifSettings.dailyReminder) {
-      const permissionState = getNotificationPermissionStatus();
-
-      if (permissionState && permissionState !== "granted") {
-        setPermissionStatus(permissionState);
-        setShowPermissionPrompt(true);
-        if (weeklyReportMessage) {
-          showNotification(weeklyReportMessage.trim(), weeklyReportFailed ? "error" : "success");
+        if (permissionState && permissionState !== "granted") {
+          setPermissionStatus(permissionState);
+          setShowPermissionPrompt(true);
+          return;
         }
-        return;
-      }
-      try {
         const result = await subscribeDailyReminder((notifSettings.reminderTime || "08:00").slice(0, 5));
         if (!result.ok) {
           const disabledSettings = { ...notifSettings, dailyReminder: false };
           setNotifSettings(disabledSettings);
           saveNotificationSettings(disabledSettings);
-          showNotification(
-            `${result.message || "Failed to schedule reminders."}${weeklyReportMessage}`,
-            "error",
-          );
+          showNotification(result.message || "Failed to schedule reminders.", "error");
           return;
         }
-        showNotification(
-          `${result.message || "Notification preferences saved!"}${weeklyReportMessage}`,
-          weeklyReportFailed ? "error" : "success",
-        );
-      } catch (error) {
-        showNotification(
-          `${error?.message || "Failed to schedule reminders."}${weeklyReportMessage}`,
-          "error",
-        );
+        showNotification(result.message || "Notification preferences saved!", "success");
+        return;
       }
-      return;
-    }
 
-    await unsubscribeDailyReminder();
-    showNotification(
-      `Notification preferences saved!${weeklyReportMessage}`,
-      weeklyReportFailed ? "error" : "success",
-    );
+      await unsubscribeDailyReminder();
+      showNotification("Notification preferences saved!", "success");
+    } catch (error) {
+      showNotification(error?.message || "Failed to schedule reminders.", "error");
+    } finally {
+      setIsSavingNotifSettings(false);
+    }
   };
 
   const handleSendWeeklyReport = async () => {
+    if (isSendingWeeklyReport || isSavingNotifSettings) return;
+
+    setIsSendingWeeklyReport(true);
     try {
       const reportResult = await sendWeeklyReport();
       const targetEmail = reportResult?.email || contextUser?.email || "your email";
@@ -1255,6 +1235,8 @@ export default function Profile() {
         error?.message || "Weekly report could not be sent. Please try again later.",
         "error",
       );
+    } finally {
+      setIsSendingWeeklyReport(false);
     }
   };
 
@@ -1635,16 +1617,30 @@ export default function Profile() {
                 </div>
                 <button
                   onClick={handleSendWeeklyReport}
-                  className="px-4 py-2 text-xs font-bold rounded-xl border border-brand-info/30 text-brand-primary bg-surface-elevated/70 hover:bg-surface-elevated transition-colors dark:border-brand-info/40 dark:text-brand-info dark:bg-surface"
+                  disabled={isSendingWeeklyReport || isSavingNotifSettings}
+                  className="px-4 py-2 text-xs font-bold rounded-xl border border-brand-info/30 text-brand-primary bg-surface-elevated/70 hover:bg-surface-elevated transition-colors disabled:opacity-70 disabled:cursor-not-allowed dark:border-brand-info/40 dark:text-brand-info dark:bg-surface"
                 >
-                  Send Report
+                  {isSendingWeeklyReport ? (
+                    <span className="inline-flex items-center gap-2">
+                      <Loader2 className="w-4 h-4 animate-spin" /> Sending...
+                    </span>
+                  ) : (
+                    "Send Report"
+                  )}
                 </button>
               </div>
               <button
                 onClick={saveNotifSettings}
-                className="w-full mt-4 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl shadow-lg shadow-orange-200/80 dark:shadow-orange-500/20 transition-all cursor-pointer transform active:scale-95"
+                disabled={isSavingNotifSettings || isSendingWeeklyReport}
+                className="w-full mt-4 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl shadow-lg shadow-orange-200/80 dark:shadow-orange-500/20 transition-all cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed transform active:scale-95"
               >
-                Save Preferences
+                {isSavingNotifSettings ? (
+                  <span className="inline-flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin" /> Saving...
+                  </span>
+                ) : (
+                  "Save Preferences"
+                )}
               </button>
             </div>
           </div>
