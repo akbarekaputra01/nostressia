@@ -127,7 +127,7 @@ def test_dashboard_stress_level_flow(client, db_session, monkeypatch):
     restore_response = client.post(
         "/api/stress-levels/restore",
         json={
-            "date": date.today().isoformat(),
+            "date": date(2024, 1, 2).isoformat(),
             "stressLevel": 1,
             "gpa": 3.5,
             "sleepHourPerDay": 8,
