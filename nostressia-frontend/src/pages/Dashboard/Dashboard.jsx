@@ -822,7 +822,7 @@ export default function Dashboard() {
   useEffect(() => {
     const controller = new AbortController();
 
-    const fetchLogs = async () => {
+    const fetchBaseLogs = async () => {
       setIsLoadingLogs(true);
       setLoadError("");
       try {
@@ -843,13 +843,7 @@ export default function Dashboard() {
           return;
         }
 
-        const monthStartDate = new Date(calendarDate.getFullYear(), calendarDate.getMonth(), 1);
-        const monthEndDate = new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 0);
-        const monthStartKey = formatDate(monthStartDate);
-        const monthEndKey = formatDate(monthEndDate);
-
-        const [monthLogs, todayLogs, latestLogData] = await Promise.all([
-          getMyStressLogs({ startDate: monthStartKey, endDate: monthEndKey }),
+        const [todayLogs, latestLogData] = await Promise.all([
           getMyStressLogs({ startDate: TODAY_KEY, endDate: TODAY_KEY, pageSize: 100 }),
           getMyStressLogs({ pageSize: 1, fetchAll: false }),
         ]);
@@ -887,23 +881,18 @@ export default function Dashboard() {
           };
         };
 
-        const monthMap = buildLogMap(monthLogs);
         const todayMap = buildLogMap(todayLogs);
 
-        const nextStressData = {};
-
-        monthMap.forEach((log, dateKey) => {
-          nextStressData[dateKey] = mapLogToUi(log, dateKey);
+        setStressData((prev) => {
+          const nextStressData = { ...prev };
+          const todayLog = todayMap.get(TODAY_KEY);
+          if (todayLog) {
+            nextStressData[TODAY_KEY] = mapLogToUi(todayLog, TODAY_KEY);
+          } else {
+            Object.assign(nextStressData, createEmptyTodayData(TODAY_KEY));
+          }
+          return nextStressData;
         });
-
-        const todayLog = todayMap.get(TODAY_KEY);
-        if (todayLog) {
-          nextStressData[TODAY_KEY] = mapLogToUi(todayLog, TODAY_KEY);
-        } else if (!nextStressData[TODAY_KEY]) {
-          Object.assign(nextStressData, createEmptyTodayData(TODAY_KEY));
-        }
-
-        setStressData(nextStressData);
 
         const latestLog = Array.isArray(latestLogData) ? latestLogData[0] : null;
         const latestDateRaw = latestLog?.date ? new Date(latestLog.date) : null;
@@ -914,8 +903,9 @@ export default function Dashboard() {
         setMissingDateKeys(getMissingDateKeys(latestLogDate, todayDate));
         setDismissedMissingPopup(false);
 
-        const todayData = nextStressData[TODAY_KEY];
-        if (todayData && !todayData.isEmpty) {
+        const todayLog = todayMap.get(TODAY_KEY);
+        if (todayLog) {
+          const todayData = mapLogToUi(todayLog, TODAY_KEY);
           setHasSubmittedToday(true);
           setStressScore(todayData.level);
           setTodayLogId(todayData.logId ?? null);
@@ -950,9 +940,76 @@ export default function Dashboard() {
       }
     };
 
-    fetchLogs();
+    fetchBaseLogs();
     return () => controller.abort();
   }, [TODAY_KEY, calendarDate]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const fetchCalendarMonthLogs = async () => {
+      try {
+        const token = readAuthToken();
+        if (!token) return;
+
+        const monthStartDate = new Date(calendarDate.getFullYear(), calendarDate.getMonth(), 1);
+        const monthEndDate = new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 0);
+        const monthStartKey = formatDate(monthStartDate);
+        const monthEndKey = formatDate(monthEndDate);
+        const monthPrefix = `${calendarDate.getFullYear()}-${String(calendarDate.getMonth() + 1).padStart(2, "0")}-`;
+
+        const monthLogs = await getMyStressLogs({ startDate: monthStartKey, endDate: monthEndKey });
+
+        const byDate = new Map();
+        (Array.isArray(monthLogs) ? monthLogs : []).forEach((log) => {
+          const dt = log?.date ? new Date(log.date) : null;
+          if (!dt || Number.isNaN(dt.getTime())) return;
+          const dateKey = formatDate(new Date(dt.getFullYear(), dt.getMonth(), dt.getDate()));
+          const prev = byDate.get(dateKey);
+          const prevTs = prev?.createdAt ? new Date(prev.createdAt).getTime() : 0;
+          const curTs = log?.createdAt ? new Date(log.createdAt).getTime() : 0;
+          if (!prev || curTs >= prevTs) byDate.set(dateKey, log);
+        });
+
+        setStressData((prev) => {
+          const nextStressData = Object.fromEntries(
+            Object.entries(prev).filter(([dateKey]) => !dateKey.startsWith(monthPrefix)),
+          );
+
+          byDate.forEach((log, dateKey) => {
+            const { score, color } = mapPredictionToUI(log?.stressLevel);
+            const moodIdx = Number(log?.emoji);
+            nextStressData[dateKey] = {
+              level: score,
+              sleep: Number(log?.sleepHourPerDay) || 0,
+              study: Number(log?.studyHourPerDay) || 0,
+              extra: Number(log?.extracurricularHourPerDay) || 0,
+              social: Number(log?.socialHourPerDay) || 0,
+              physical: Number(log?.physicalActivityHourPerDay) || 0,
+              mood: moods[moodIdx] || "😐",
+              color,
+              isToday: dateKey === TODAY_KEY,
+              isEmpty: false,
+              isRestored: log?.isRestored ?? false,
+              logId: log?.stressLevelId ?? null,
+            };
+          });
+
+          if (!nextStressData[TODAY_KEY]) {
+            Object.assign(nextStressData, createEmptyTodayData(TODAY_KEY));
+          }
+
+          return nextStressData;
+        });
+      } catch (error) {
+        if (error?.name === "AbortError") return;
+        logger.error("Failed to fetch calendar month logs:", error);
+      }
+    };
+
+    fetchCalendarMonthLogs();
+    return () => controller.abort();
+  }, [calendarDate, TODAY_KEY]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -981,10 +1038,6 @@ export default function Dashboard() {
         const requiredStreak = eligibilitySnapshot?.requiredStreak ?? 7;
         const restoreLimit = eligibilitySnapshot?.restoreLimit ?? 3;
         const restoreRemainingCalc = eligibilitySnapshot?.restoreRemaining ?? 0;
-
-        if (isLoadingLogs) {
-          return;
-        }
 
         if (!hasSubmittedToday) {
           setForecastList([]);
@@ -1061,7 +1114,7 @@ export default function Dashboard() {
 
     fetchForecast();
     return () => controller.abort();
-  }, [hasSubmittedToday, isLoadingLogs, navigate, normalizedEligibility]);
+  }, [hasSubmittedToday, navigate, normalizedEligibility]);
 
   function handleOpenForm({ mode = "today", dateKey = TODAY_KEY, restoreMode = "manual" } = {}) {
     if (mode === "restore") {
