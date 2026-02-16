@@ -65,6 +65,7 @@ curl http://localhost:8000/health
   - `status`
   - `errors`
   - `payload`
+- Weekly report pada Profile menggunakan endpoint `POST /api/analytics/weekly-report` saat preferensi email report disimpan.
 
 ## Available Scripts
 | Script | Description |

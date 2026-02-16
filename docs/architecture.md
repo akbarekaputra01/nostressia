@@ -38,8 +38,10 @@ Dokumen ini menjelaskan arsitektur end-to-end Nostressia (Frontend, Backend, dan
 3. Backend memanggil ML service untuk memproses input dan mengembalikan hasil prediksi.
 
 ### 4) Forecast Global
-1. Frontend memanggil `GET /api/stress/forecast`.
-2. Backend memuat artefak forecast dan mengembalikan dataset ringkas untuk chart.
+1. Frontend menampilkan forecast setelah check-in harian user tercatat.
+2. Frontend memanggil `GET /api/stress/forecast`.
+3. Backend memvalidasi eligibility (`/api/stress-levels/eligibility`) sebelum mengembalikan hasil forecast.
+4. Backend memuat artefak forecast dan mengembalikan payload forecast + eligibility.
 
 ### 5) Retraining Forecast (Global & Personalized)
 1. Workflow GitHub Actions merefresh `stress_forecast.csv` dari database.
@@ -53,10 +55,10 @@ Semua response sukses menggunakan schema:
 { "success": true, "message": "OK", "data": { } }
 ```
 
-Error validation (422) dan HTTPException menggunakan:
+Error validation (422) dan HTTPException menggunakan shape konsisten:
 
 ```json
-{ "success": false, "message": "Validation error", "data": [ ... ] }
+{ "success": false, "message": "Validation error", "data": null, "errors": [ ... ], "meta": null }
 ```
 
 ## Diagram (Ringkas)

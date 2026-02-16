@@ -109,3 +109,15 @@ def test_collect_candidates_force_mode_bypasses_milestone_gate():
 
     forced = train_personalized_module._collect_candidates(df, state, force_user_id=3)
     assert forced and forced[0]["milestone"] == 3
+
+
+def test_ml_state_load_invalid_json_raises_clear_error(tmp_path: Path):
+    state_path = tmp_path / ".ml_state.json"
+    state_path.write_text("{invalid", encoding="utf-8")
+
+    try:
+        MLState.load(state_path)
+    except RuntimeError as error:
+        assert "Invalid ML state JSON" in str(error)
+    else:
+        raise AssertionError("Expected RuntimeError for invalid state file.")

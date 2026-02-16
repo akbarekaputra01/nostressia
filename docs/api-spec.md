@@ -124,7 +124,7 @@ Endpoint root & health disediakan tanpa prefix untuk kebutuhan monitoring/health
     "chancePercent": 60,
     "threshold": 0.5,
     "predictionBinary": 1,
-    "predictionLabel": "HighRisk",
+    "predictionLabel": "High",
     "modelType": "global_markov"
   },
   "eligibility": {
@@ -153,6 +153,25 @@ Endpoint root & health disediakan tanpa prefix untuk kebutuhan monitoring/health
 - `POST /api/motivations/`
 - `DELETE /api/motivations/{id}`
 
+## Analytics
+
+### Weekly Report Email
+`POST /api/analytics/weekly-report`
+
+**Response (data)**
+```json
+{
+  "email": "user@example.com",
+  "report": {
+    "date_range": "2026-02-10 - 2026-02-16",
+    "stress_logs": 7,
+    "diary_entries": 4,
+    "avg_stress_level": 1.29,
+    "streak": 87
+  }
+}
+```
+
 ## Notifications
 
 ### Subscribe
@@ -170,6 +189,7 @@ Endpoint root & health disediakan tanpa prefix untuk kebutuhan monitoring/health
 
 ## Catatan
 - Semua endpoint privat memerlukan header `Authorization: Bearer <token>`.
+- Endpoint forecast hanya akan berhasil jika user sudah memenuhi eligibility backend.
 - Detail lengkap tersedia via Swagger UI `/docs` saat server berjalan.
 
 ## Root & Health Endpoints

@@ -7,3 +7,11 @@ export const analyticsSummarySchema = z
     streak: z.number(),
   })
   .strict();
+
+
+export const weeklyReportSchema = z
+  .object({
+    email: z.string().email().optional(),
+    report: z.unknown().optional(),
+  })
+  .passthrough();

@@ -95,7 +95,6 @@ export const readAdminToken = () => {
   const currentToken = resolveStoredToken(storage.getItem(ADMIN_TOKEN_KEY));
   if (currentToken) {
     cleanupLegacyTokens(LEGACY_ADMIN_TOKEN_KEYS);
-    logger.debug("[ADMIN] readAdminToken found token");
     return currentToken;
   }
 
@@ -105,11 +104,9 @@ export const readAdminToken = () => {
 
   if (legacyToken) {
     storage.setItem(ADMIN_TOKEN_KEY, legacyToken);
-    logger.debug("[ADMIN] readAdminToken migrated legacy token");
   }
 
   cleanupLegacyTokens([ADMIN_TOKEN_KEY, ...LEGACY_ADMIN_TOKEN_KEYS]);
-  logger.debug("[ADMIN] readAdminToken resolved token", Boolean(legacyToken));
   return legacyToken || null;
 };
 
@@ -125,7 +122,6 @@ export const readTokenForScope = (scope) =>
 export const persistAdminToken = (token) => {
   if (!isValidTokenValue(token)) return;
   storage.setItem(ADMIN_TOKEN_KEY, token);
-  logger.debug("[ADMIN] set token");
 };
 
 /**
@@ -148,10 +144,6 @@ export const readAdminProfile = () => {
   const storedProfile = storage.getItem(ADMIN_PROFILE_KEY);
   if (storedProfile) {
     const parsed = parseAdminProfilePayload(storedProfile);
-    logger.debug("[ADMIN] readAdminProfile from storage", {
-      parsed,
-      hasRaw: true,
-    });
     return parsed;
   }
 
@@ -161,15 +153,10 @@ export const readAdminProfile = () => {
 
   if (legacyProfile) {
     storage.setItem(ADMIN_PROFILE_KEY, legacyProfile);
-    logger.debug("[ADMIN] readAdminProfile migrated legacy profile");
   }
 
   LEGACY_ADMIN_PROFILE_KEYS.forEach((key) => storage.removeItem(key));
   const parsedLegacy = parseAdminProfilePayload(legacyProfile);
-  logger.debug("[ADMIN] readAdminProfile resolved profile", {
-    parsed: parsedLegacy,
-    hasRaw: Boolean(legacyProfile),
-  });
   return parsedLegacy;
 };
 
@@ -180,7 +167,6 @@ export const persistAdminProfile = (profile) => {
   if (!profile) return;
   const payload = JSON.stringify(profile);
   storage.setItem(ADMIN_PROFILE_KEY, payload);
-  logger.debug("[ADMIN] set profile");
 };
 
 /**
@@ -197,10 +183,6 @@ export const clearAdminProfile = () => {
 export const hasAdminSession = () => {
   const token = readAdminToken();
   const storedProfile = readAdminProfile();
-  logger.debug("[ADMIN] hasAdminSession check", {
-    hasToken: Boolean(token),
-    profileType: typeof storedProfile,
-  });
   if (!token || !storedProfile) return false;
 
   return typeof storedProfile === "object";
@@ -210,7 +192,7 @@ export const hasAdminSession = () => {
  * Remove all admin session artifacts (token + profile).
  */
 export const clearAdminSession = () => {
-  logger.warn("[ADMIN] clearAdminSession called", new Error().stack);
+  logger.info("[ADMIN] Clearing admin session from storage.");
   storage.removeItem(ADMIN_TOKEN_KEY);
   LEGACY_ADMIN_TOKEN_KEYS.forEach((key) => storage.removeItem(key));
   clearAdminProfile();

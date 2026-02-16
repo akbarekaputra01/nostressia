@@ -79,6 +79,11 @@ Artefak utama ditulis ke:
   - `nostressia-backend/app/models_ml/global_forecast.meta.json`
   - `nostressia-backend/app/models_ml/personalized_forecast.meta.json`
 
+Field minimum metadata forecast:
+- `created_at`, `version`, `features`, `horizon_days`, `data_hash`
+- `mlflow_run_id` (dan `mlflow_run_ids` untuk personalized multi-user run)
+- ringkasan `metrics` untuk global forecast
+
 State gating disimpan di root repo:
 - `.ml_state.json`
 
