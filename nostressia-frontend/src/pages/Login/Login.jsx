@@ -62,7 +62,7 @@ const INITIAL_FORM_DATA = {
 export default function Login() {
   const navigate = useNavigate();
 
-  // [PERBAIKAN] Mengambil resolvedTheme dari ThemeProvider
+  // Mengambil resolvedTheme dari ThemeProvider
   // resolvedTheme nilainya otomatis 'light' atau 'dark' (sudah menghandle 'system')
   const { resolvedTheme } = useTheme();
 
@@ -107,7 +107,7 @@ export default function Login() {
     onConfirm: null,
   });
 
-  // [PERBAIKAN] Gunakan resolvedTheme langsung
+  // Gunakan resolvedTheme langsung
   const isDarkMode = resolvedTheme === "dark";
 
 
@@ -310,6 +310,27 @@ export default function Login() {
       showToast(error?.message || "Email not found.", "error");
     } finally {
       setLoadingForgot(false);
+    }
+  };
+
+  const handleForgotOtpPaste = (e) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+    if (!pastedData) return;
+
+    const newOtp = [...forgotOtpValues];
+    pastedData.split("").forEach((char, i) => {
+      newOtp[i] = char;
+    });
+    setForgotOtpValues(newOtp);
+
+    // Focus the last input (since we filled up to 6)
+    if (pastedData.length === 6) {
+      forgotOtpRefs.current[5]?.focus();
+    } else {
+      // If partial paste, focus the next empty one
+      const nextIdx = Math.min(newOtp.findIndex(v => !v), 5);
+      if (nextIdx !== -1) forgotOtpRefs.current[nextIdx]?.focus();
     }
   };
 
@@ -579,8 +600,8 @@ export default function Login() {
                   type="submit"
                   disabled={isLoading || isSuccess || !formData.email || !formData.password}
                   className={`w-full py-4 rounded-2xl font-bold text-lg shadow-lg shadow-brand-primary/20 transition-all duration-300 transform flex items-center justify-center gap-2 cursor-pointer mt-6 disabled:opacity-60 disabled:cursor-not-allowed ${isSuccess
-                      ? "bg-brand-info text-text-inverse scale-95"
-                      : "bg-brand-primary text-text-inverse hover:bg-brand-primary/90 hover:scale-[1.02] active:scale-95"
+                    ? "bg-brand-info text-text-inverse scale-95"
+                    : "bg-brand-primary text-text-inverse hover:bg-brand-primary/90 hover:scale-[1.02] active:scale-95"
                     }`}
                 >
                   {isLoading ? (
@@ -896,8 +917,8 @@ export default function Login() {
                             key={index}
                             onClick={() => setFormData({ ...formData, avatar: avatarUrl })}
                             className={`relative cursor-pointer transition-all duration-300 rounded-full p-0.5 ${formData.avatar === avatarUrl
-                                ? "ring-2 ring-brand-warning scale-110 shadow-sm"
-                                : "hover:scale-105 opacity-70 hover:opacity-100"
+                              ? "ring-2 ring-brand-warning scale-110 shadow-sm"
+                              : "hover:scale-105 opacity-70 hover:opacity-100"
                               }`}
                           >
                             <img
