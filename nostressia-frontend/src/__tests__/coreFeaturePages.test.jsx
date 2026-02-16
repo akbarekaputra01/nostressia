@@ -158,17 +158,17 @@ vi.mock("recharts", () => ({
 vi.mock("framer-motion", () => {
   const filterMotionProps = (props = {}) => {
     const {
-      animate,
-      exit,
-      initial,
-      layout,
-      layoutId,
-      transition,
-      variants,
-      whileHover,
-      whileTap,
-      whileInView,
-      viewport,
+      animate: _animate,
+      exit: _exit,
+      initial: _initial,
+      layout: _layout,
+      layoutId: _layoutId,
+      transition: _transition,
+      variants: _variants,
+      whileHover: _whileHover,
+      whileTap: _whileTap,
+      whileInView: _whileInView,
+      viewport: _viewport,
       ...domProps
     } = props;
     return domProps;
