@@ -388,6 +388,7 @@ export default function Dashboard() {
   const [stressScore, setStressScore] = useState(0);
   const [todayLogId, setTodayLogId] = useState(null);
   const [isLoadingLogs, setIsLoadingLogs] = useState(true);
+  const [isCalendarLoading, setIsCalendarLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
@@ -942,12 +943,14 @@ export default function Dashboard() {
 
     fetchBaseLogs();
     return () => controller.abort();
-  }, [TODAY_KEY, calendarDate]);
+  }, [TODAY_KEY]);
 
   useEffect(() => {
     const controller = new AbortController();
+    let isMounted = true;
 
     const fetchCalendarMonthLogs = async () => {
+      setIsCalendarLoading(true);
       try {
         const token = readAuthToken();
         if (!token) return;
@@ -970,6 +973,8 @@ export default function Dashboard() {
           const curTs = log?.createdAt ? new Date(log.createdAt).getTime() : 0;
           if (!prev || curTs >= prevTs) byDate.set(dateKey, log);
         });
+
+        if (!isMounted) return;
 
         setStressData((prev) => {
           const nextStressData = Object.fromEntries(
@@ -1004,11 +1009,16 @@ export default function Dashboard() {
       } catch (error) {
         if (error?.name === "AbortError") return;
         logger.error("Failed to fetch calendar month logs:", error);
+      } finally {
+        if (isMounted) setIsCalendarLoading(false);
       }
     };
 
     fetchCalendarMonthLogs();
-    return () => controller.abort();
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
   }, [calendarDate, TODAY_KEY]);
 
   useEffect(() => {
@@ -2034,14 +2044,14 @@ export default function Dashboard() {
             className="col-span-1 md:col-span-2 p-6 md:p-8 rounded-[20px] bg-surface-elevated/40 glass-panel backdrop-blur-md border border-white/20 shadow-xl relative overflow-hidden"
             style={{ minHeight: 600 }}
           >
-            {isLoadingLogs && (
+            {(isLoadingLogs || isCalendarLoading) && (
               <div className="absolute inset-0 z-20 flex items-center justify-center bg-surface-elevated/70 glass-panel backdrop-blur-sm">
                 <div className="h-12 w-12 rounded-full border-4 border-blue-200 border-t-blue-500 animate-spin" />
               </div>
             )}
 
             <div
-              className={`flex flex-col h-full ${isLoadingLogs ? "opacity-0 pointer-events-none" : ""}`}
+              className={`flex flex-col h-full ${isLoadingLogs || isCalendarLoading ? "opacity-0 pointer-events-none" : ""}`}
             >
               <header className="flex justify-between items-center mb-6">
                 {/* Back button (previous month) using SVG for consistent rendering */}
