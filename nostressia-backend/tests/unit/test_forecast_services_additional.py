@@ -186,6 +186,60 @@ def test_personalized_load_artifact_for_user_reloads_when_file_changes(monkeypat
 
 
 
+
+
+
+
+def test_global_load_artifact_retries_with_numpy_compat(monkeypatch):
+    service = GlobalForecastService()
+
+    class _DummyNumpyPickle:
+        pass
+
+    dummy_numpy_pickle = _DummyNumpyPickle()
+    setattr(dummy_numpy_pickle, "__bit_generator_ctor", lambda *_args, **_kwargs: "ok")
+    monkeypatch.setattr(
+        "app.services.global_forecast_service.importlib.import_module",
+        lambda *_: dummy_numpy_pickle,
+    )
+
+    calls = {"count": 0}
+
+    def _load(*_args, **_kwargs):
+        calls["count"] += 1
+        if calls["count"] == 1:
+            raise ValueError("MT19937 is not a known BitGenerator module")
+        return {"type": "global_markov", "probs": np.ones((2, 7, 2)), "meta": {"window": 2}}
+
+    monkeypatch.setattr("app.services.global_forecast_service.joblib.load", _load)
+
+    artifact = service._load_artifact_with_compat("/tmp/fake.joblib")
+
+    assert calls["count"] == 2
+    assert artifact["type"] == "global_markov"
+
+def test_global_load_artifact_caches_failed_load(monkeypatch):
+    service = GlobalForecastService()
+    monkeypatch.setattr(service, "_artifact_path", lambda: "/tmp/global_forecast.joblib")
+    monkeypatch.setattr("app.services.global_forecast_service.os.path.exists", lambda *_: True)
+
+    calls = {"count": 0}
+
+    def _raise(*_args, **_kwargs):
+        calls["count"] += 1
+        raise ValueError("broken artifact")
+
+    monkeypatch.setattr("app.services.global_forecast_service.joblib.load", _raise)
+
+    with pytest.raises(HTTPException) as first_exc:
+        service._load_artifact()
+    with pytest.raises(HTTPException) as second_exc:
+        service._load_artifact()
+
+    assert first_exc.value.status_code == 503
+    assert second_exc.value.status_code == 503
+    assert calls["count"] == 1
+
 def test_global_load_artifact_returns_503_when_missing(monkeypatch):
     service = GlobalForecastService()
     monkeypatch.setattr(service, "_artifact_path", lambda: "/tmp/missing_global.joblib")
