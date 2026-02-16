@@ -1,13 +1,10 @@
 pipeline {
   agent any
-
-  options {
-    timestamps()
-  }
+  options { timestamps() }
 
   environment {
-    // Biar output Python tidak nge-buffer dan log jelas
-    PYTHONUNBUFFERED = "1"
+    PY310 = 'C:\\Users\\akbar\\AppData\\Local\\Programs\\Python\\Python310\\python.exe'
+    PYTHONUNBUFFERED = '1'
   }
 
   stages {
@@ -15,23 +12,23 @@ pipeline {
       steps {
         checkout scm
         bat 'git --version'
-        bat 'python --version'
+        bat "\"%PY310%\" --version"
         bat 'node --version'
         bat 'npm --version'
       }
     }
 
     // =========================
-    // BACKEND (FastAPI / Python)
+    // BACKEND (Python/FastAPI)
     // =========================
-    stage('Backend: Install deps') {
+    stage('Backend: Setup venv + install deps (Py3.10)') {
       steps {
         dir('nostressia-backend') {
-          bat 'python -m pip install --upgrade pip'
-          // kalau kamu pakai requirements.txt
-          bat 'if exist requirements.txt (pip install -r requirements.txt) else (echo requirements.txt not found & exit /b 1)'
-          // opsional: tools test/lint (kalau belum ada di requirements)
-          bat 'pip install pytest'
+          bat "\"%PY310%\" -m venv .venv"
+          bat ".venv\\Scripts\\python -m pip install --upgrade pip"
+          bat "if exist requirements.txt ( .venv\\Scripts\\pip install -r requirements.txt ) else ( echo requirements.txt not found & exit /b 1 )"
+          // sanity check: pastikan sklearn bisa diimport
+          bat ".venv\\Scripts\\python -c \"import sklearn; print('sklearn=', sklearn.__version__)\""
         }
       }
     }
@@ -39,9 +36,9 @@ pipeline {
     stage('Backend: Test') {
       steps {
         dir('nostressia-backend') {
-          // kalau repo kamu belum punya test, ini akan gagal
-          // kalau belum ada test, bilang ya—nanti aku ubah jadi smoke test import + lint
-          bat 'pytest -q'
+          // Kalau belum ada test, ini akan fail.
+          // Kalau fail karena no tests, bilang ya—aku ubah jadi smoke test.
+          bat ".venv\\Scripts\\pytest -q"
         }
       }
     }
@@ -52,8 +49,7 @@ pipeline {
     stage('Frontend: Install deps') {
       steps {
         dir('nostressia-frontend') {
-          // npm ci lebih stabil untuk CI karena pakai package-lock.json
-          bat 'npm ci'
+          bat "npm ci"
         }
       }
     }
@@ -61,7 +57,7 @@ pipeline {
     stage('Frontend: Build') {
       steps {
         dir('nostressia-frontend') {
-          bat 'npm run build'
+          bat "npm run build"
         }
       }
     }
@@ -72,9 +68,7 @@ pipeline {
     stage('ML: Sanity (optional)') {
       steps {
         dir('nostressia-machine-learning') {
-          // Kalau ada requirements/pyproject untuk ML, sesuaikan.
-          // Ini cuma cek folder ada dan python bisa jalan.
-          bat 'python -c "print(\\"ML folder OK\\")"'
+          bat "\"%PY310%\" -c \"print('ML folder OK')\""
         }
       }
     }
