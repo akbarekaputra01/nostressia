@@ -942,7 +942,7 @@ export default function Dashboard() {
 
     fetchBaseLogs();
     return () => controller.abort();
-  }, [TODAY_KEY]);
+  }, [TODAY_KEY, calendarDate]);
 
   useEffect(() => {
     const controller = new AbortController();
