@@ -37,7 +37,6 @@ pipeline {
       steps {
         dir('nostressia-backend') {
           // Kalau belum ada test, ini akan fail.
-          // Kalau fail karena no tests, bilang ya—aku ubah jadi smoke test.
           bat ".venv\\Scripts\\pytest -q"
         }
       }
