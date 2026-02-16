@@ -1188,12 +1188,29 @@ export default function Profile() {
     saveNotificationSettings(notifSettings);
     setShowNotifModal(false);
 
+    let weeklyReportMessage = "";
+    let weeklyReportFailed = false;
+
+    if (notifSettings.emailUpdates) {
+      try {
+        const reportResult = await sendWeeklyReport();
+        const targetEmail = reportResult?.email || contextUser?.email || "your email";
+        weeklyReportMessage = ` Weekly report has been sent to ${targetEmail}.`;
+      } catch (error) {
+        weeklyReportFailed = true;
+        weeklyReportMessage = ` Weekly report could not be sent. ${error?.message || "Please try again later."}`;
+      }
+    }
+
     if (notifSettings.dailyReminder) {
       const permissionState = getNotificationPermissionStatus();
 
       if (permissionState && permissionState !== "granted") {
         setPermissionStatus(permissionState);
         setShowPermissionPrompt(true);
+        if (weeklyReportMessage) {
+          showNotification(weeklyReportMessage.trim(), weeklyReportFailed ? "error" : "success");
+        }
         return;
       }
       try {
@@ -1202,18 +1219,30 @@ export default function Profile() {
           const disabledSettings = { ...notifSettings, dailyReminder: false };
           setNotifSettings(disabledSettings);
           saveNotificationSettings(disabledSettings);
-          showNotification(result.message || "Failed to schedule reminders.", "error");
+          showNotification(
+            `${result.message || "Failed to schedule reminders."}${weeklyReportMessage}`,
+            "error",
+          );
           return;
         }
-        showNotification(result.message || "Notification preferences saved!", "success");
+        showNotification(
+          `${result.message || "Notification preferences saved!"}${weeklyReportMessage}`,
+          weeklyReportFailed ? "error" : "success",
+        );
       } catch (error) {
-        showNotification(error?.message || "Failed to schedule reminders.", "error");
+        showNotification(
+          `${error?.message || "Failed to schedule reminders."}${weeklyReportMessage}`,
+          "error",
+        );
       }
       return;
     }
 
     await unsubscribeDailyReminder();
-    showNotification("Notification preferences saved!", "success");
+    showNotification(
+      `Notification preferences saved!${weeklyReportMessage}`,
+      weeklyReportFailed ? "error" : "success",
+    );
   };
 
   const handleSendWeeklyReport = async () => {
