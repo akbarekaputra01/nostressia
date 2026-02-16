@@ -12,22 +12,19 @@ pipeline {
       steps {
         checkout scm
         sh 'git --version'
-        sh 'python3 --version || true'
         sh 'python --version || true'
+        sh 'python3 --version || true'
         sh 'node --version || true'
         sh 'npm --version || true'
       }
     }
 
-    // =========================
-    // BACKEND (Python/FastAPI)
-    // =========================
     stage('Backend: Setup venv + install deps') {
       steps {
         dir('nostressia-backend') {
           sh '''
-            set -euxo pipefail
-            python3 -m venv .venv
+            set -eux
+            python -m venv .venv
             . .venv/bin/activate
             python -m pip install --upgrade pip
             test -f requirements.txt
@@ -42,7 +39,7 @@ pipeline {
       steps {
         dir('nostressia-backend') {
           sh '''
-            set -euxo pipefail
+            set -eux
             . .venv/bin/activate
             pytest -q
           '''
@@ -50,14 +47,11 @@ pipeline {
       }
     }
 
-    // =========================
-    // FRONTEND (React/Vite)
-    // =========================
     stage('Frontend: Install deps') {
       steps {
         dir('nostressia-frontend') {
           sh '''
-            set -euxo pipefail
+            set -eux
             npm ci
           '''
         }
@@ -68,22 +62,19 @@ pipeline {
       steps {
         dir('nostressia-frontend') {
           sh '''
-            set -euxo pipefail
+            set -eux
             npm run build
           '''
         }
       }
     }
 
-    // =========================
-    // ML (optional sanity check)
-    // =========================
     stage('ML: Sanity (optional)') {
       steps {
         dir('nostressia-machine-learning') {
           sh '''
-            set -euxo pipefail
-            python3 -c "print('ML folder OK')"
+            set -eux
+            python -c "print('ML folder OK')"
           '''
         }
       }
