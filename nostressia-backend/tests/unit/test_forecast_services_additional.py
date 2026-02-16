@@ -337,3 +337,35 @@ def test_get_global_forecast_for_user_uses_global_for_sub60_streak(monkeypatch):
 
     payload = get_global_forecast_for_user(user_id=1, eligibility=eligibility, db=None)
     assert payload["forecast"]["modelType"] == "global_markov"
+
+
+def test_get_global_forecast_for_user_falls_back_when_global_unavailable(monkeypatch, db_session):
+    user = _create_user(db_session)
+    _create_logs(db_session, user.user_id, days=7)
+
+    eligibility = EligibilityResponse(
+        user_id=user.user_id,
+        eligible=True,
+        streak=10,
+        required_streak=7,
+        restore_used=0,
+        restore_remaining=3,
+        restore_limit=3,
+        missing=0,
+        note="Eligible",
+    )
+
+    from app.services.forecast_service import get_global_forecast_for_user
+
+    def _raise_global(*_args, **_kwargs):
+        raise HTTPException(status_code=503, detail="artifact unavailable")
+
+    monkeypatch.setattr(
+        "app.services.forecast_service.global_forecast_service.predict_next_day_for_user",
+        _raise_global,
+    )
+
+    payload = get_global_forecast_for_user(user_id=user.user_id, eligibility=eligibility, db=db_session)
+    assert payload["forecast"]["modelType"] == "global_rule_based_fallback"
+    assert payload["forecast"]["forecastDate"]
+    assert 0 <= payload["forecast"]["chancePercent"] <= 100
