@@ -166,7 +166,7 @@ Endpoint root & health disediakan tanpa prefix untuk kebutuhan monitoring/health
     "date_range": "2026-02-10 - 2026-02-16",
     "stress_logs": 7,
     "diary_entries": 4,
-    "avg_stress_level": 1.29,
+    "dominant_stress_level": "Moderate",
     "streak": 87
   }
 }

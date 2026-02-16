@@ -3,12 +3,13 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 
 import Profile from "../pages/Profile/Profile";
-import { updateProfile } from "../services/authService";
+import { sendWeeklyReport } from "../services/analyticsService";
 
 vi.mock("../services/authService", () => ({
   changePassword: vi.fn().mockResolvedValue({}),
   updateProfile: vi.fn().mockResolvedValue({}),
   verifyCurrentPassword: vi.fn().mockResolvedValue({}),
+  getProfile: vi.fn().mockResolvedValue({}),
 }));
 
 vi.mock("../services/bookmarkService", () => ({
@@ -59,39 +60,27 @@ vi.mock("react-router-dom", async () => {
   const actual = await vi.importActual("react-router-dom");
   return {
     ...actual,
-    useOutletContext: () => ({
-      user: mockUser,
-    }),
+    useOutletContext: () => ({ user: mockUser }),
   };
 });
 
-describe("Profile updates", () => {
-  it("submits birthday and gender updates", async () => {
+describe("Profile weekly report", () => {
+  it("sends weekly report only when Send Report button is clicked", async () => {
     const user = userEvent.setup();
-    Object.defineProperty(window, "location", {
-      value: { reload: vi.fn() },
-      writable: true,
-    });
+
     render(
       <MemoryRouter>
         <Profile />
       </MemoryRouter>,
     );
 
-    const birthdayInput = screen.getByLabelText(/birthday/i);
-    const genderSelect = screen.getByLabelText(/gender/i);
+    await user.click(screen.getByRole("button", { name: /settings/i }));
+    await user.click(screen.getByRole("button", { name: /^notifications$/i }));
 
-    await user.clear(birthdayInput);
-    await user.type(birthdayInput, "1999-12-31");
-    await user.selectOptions(genderSelect, "female");
+    expect(sendWeeklyReport).not.toHaveBeenCalled();
 
-    await user.click(screen.getByRole("button", { name: /save changes/i }));
+    await user.click(screen.getByRole("button", { name: /send report/i }));
 
-    expect(updateProfile).toHaveBeenCalledWith(
-      expect.objectContaining({
-        userDob: "1999-12-31",
-        gender: "female",
-      }),
-    );
+    expect(sendWeeklyReport).toHaveBeenCalledTimes(1);
   });
 });

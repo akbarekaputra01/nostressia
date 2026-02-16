@@ -20,6 +20,11 @@ vi.mock("../services/stressService", () => ({
   getMyStressLogs: vi.fn().mockResolvedValue([]),
 }));
 
+vi.mock("../services/analyticsService", () => ({
+  sendWeeklyReport: vi.fn().mockResolvedValue({ email: "user@example.com" }),
+  getAnalyticsSummary: vi.fn().mockResolvedValue({ streak: 0, stressLogsCount: 0, diaryCount: 0 }),
+}));
+
 vi.mock("../utils/notificationService", () => ({
   getSavedNotificationSettings: vi.fn().mockReturnValue(null),
   saveNotificationSettings: vi.fn(),
