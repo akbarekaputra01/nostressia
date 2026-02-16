@@ -573,11 +573,16 @@ def _collect_candidates(
     return candidates
 
 
-def _write_meta(path: Path, data_hash: str, trained_at: str, user_id: int, milestone: int) -> None:
+def _write_meta(path: Path, data_hash: str, trained_at: str, user_id: int, milestone: int, run_id: str) -> None:
     payload = {
+        "created_at": trained_at,
         "trained_at": trained_at,
+        "version": "personalized-forecast-v1",
+        "horizon_days": WINDOW,
+        "features": ["lag_sp_*", "gap_*", "dow", "behavior_lag_features"],
         "data_hash": data_hash,
         "git_sha": os.getenv("GITHUB_SHA") or os.getenv("GIT_SHA") or "",
+        "mlflow_run_id": run_id,
         "user_id": user_id,
         "milestone": milestone,
     }
@@ -591,7 +596,11 @@ def _write_meta_multi(
     trained_users: List[Tuple[int, int]],
 ) -> None:
     payload = {
+        "created_at": trained_at,
         "trained_at": trained_at,
+        "version": "personalized-forecast-v1",
+        "horizon_days": WINDOW,
+        "features": ["lag_sp_*", "gap_*", "dow", "behavior_lag_features"],
         "data_hash": data_hash,
         "git_sha": os.getenv("GITHUB_SHA") or os.getenv("GIT_SHA") or "",
         "users": [
@@ -616,6 +625,12 @@ def train_personalized(
     state = MLState.load(STATE_PATH)
     candidates = _collect_candidates(df, state, force_user_id)
     if not candidates:
+        tracking_uri = "file:" + str(REPO_ROOT / "mlruns").replace("\\", "/")
+        mlflow.set_tracking_uri(tracking_uri)
+        mlflow.set_experiment("Personalized Stress Forecast")
+        with mlflow.start_run(run_name="personalized_skip"):
+            mlflow.set_tag("skipped_due_interval", "true")
+            mlflow.log_param("force_user_id", force_user_id if force_user_id is not None else "")
         if force_user_id is not None:
             print("Force training requested but user_id not found in dataset.")
         else:
@@ -664,7 +679,9 @@ def train_personalized(
         mlflow.set_tracking_uri(tracking_uri)
         mlflow.set_experiment("Personalized Stress Forecast")
 
+        run_id = ""
         with mlflow.start_run(run_name=f"user_{user_id}_milestone_{milestone}"):
+            run_id = mlflow.active_run().info.run_id
             mlflow.log_param("user_id", user_id)
             mlflow.log_param("milestone", milestone)
             mlflow.log_param("window_size", milestone)
@@ -834,7 +851,7 @@ def train_personalized(
 
         trained_at = utc_now_iso()
         DEFAULT_MODEL_OUT.parent.mkdir(parents=True, exist_ok=True)
-        _write_meta(meta_path, data_hash, trained_at, user_id, milestone)
+        _write_meta(meta_path, data_hash, trained_at, user_id, milestone, run_id)
 
         state.personalized.setdefault("users", {})[str(user_id)] = {
             "last_trained_at": trained_at,

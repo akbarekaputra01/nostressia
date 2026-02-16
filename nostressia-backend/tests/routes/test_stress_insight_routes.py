@@ -61,6 +61,28 @@ def test_predict_current_stress_error(client, monkeypatch):
     assert response.status_code == 500
 
 
+def test_predict_current_stress_model_not_ready(client, monkeypatch):
+    monkeypatch.setattr(
+        "app.routes.stress_insight_route.ml_service.predict_stress",
+        lambda *_: "Error: Model not ready",
+    )
+
+    response = client.post(
+        "/api/stress/current",
+        json={
+            "studyHours": 4,
+            "extracurricularHours": 1,
+            "sleepHours": 7,
+            "socialHours": 2,
+            "physicalHours": 1,
+            "gpa": 3.5,
+        },
+    )
+
+    assert response.status_code == 503
+    assert response.json()["message"] == "Stress prediction model is not available right now."
+
+
 def test_forecast_requires_eligibility(client, db_session, monkeypatch):
     user = _create_user(db_session)
     token = create_access_token(

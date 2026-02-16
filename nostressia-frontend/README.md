@@ -55,6 +55,17 @@ curl http://localhost:8000/
 curl http://localhost:8000/health
 ```
 
+
+## API Integration Notes
+- Axios client tunggal ada di `src/api/client.js` dengan base URL normalisasi otomatis ke suffix `/api`.
+- Header `Authorization: Bearer <token>` di-inject via interceptor berdasarkan scope auth (`user` / `admin`).
+- Redirect login setelah `401` hanya dijalankan saat token memang invalid/expired untuk mencegah loop.
+- Normalisasi error terpusat di `src/api/normalizeError.js` dengan format internal:
+  - `message`
+  - `status`
+  - `errors`
+  - `payload`
+
 ## Available Scripts
 | Script | Description |
 | --- | --- |

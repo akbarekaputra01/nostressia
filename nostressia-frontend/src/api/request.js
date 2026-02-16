@@ -1,3 +1,5 @@
+import { createApiError } from "./normalizeError";
+
 export const parseJsonResponse = async (res) => {
   let payload = null;
   try {
@@ -7,13 +9,11 @@ export const parseJsonResponse = async (res) => {
   }
 
   if (!res.ok) {
-    const detail = payload?.detail || payload?.message;
-    const error = new Error(
-      detail ? String(detail) : `Request failed (HTTP ${res.status}).`
-    );
-    error.status = res.status;
-    error.payload = payload;
-    throw error;
+    throw createApiError({
+      message: payload?.message,
+      status: res.status,
+      payload,
+    });
   }
 
   return payload;

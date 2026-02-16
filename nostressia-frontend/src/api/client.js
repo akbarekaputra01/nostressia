@@ -1,5 +1,6 @@
 import axios from "axios";
 
+import { createApiError } from "./normalizeError";
 import {
   AUTH_SCOPE,
   clearAdminSession,
@@ -89,10 +90,12 @@ const createApiClient = ({ authMode = AUTH_SCOPE.USER } = {}) => {
   instance.interceptors.response.use(
     (response) => {
       if (response?.data?.success === false) {
-        const error = new Error(response?.data?.message || "Request failed");
-        error.status = response?.status;
-        error.payload = response?.data;
-        return Promise.reject(error);
+        const normalized = createApiError({
+          message: response?.data?.message,
+          status: response?.status,
+          payload: response?.data,
+        });
+        return Promise.reject(normalized);
       }
 
       return response;
@@ -102,9 +105,11 @@ const createApiClient = ({ authMode = AUTH_SCOPE.USER } = {}) => {
       const payload = error?.response?.data;
       const message = payload?.message || error.message || "Request failed";
 
-      const normalizedError = new Error(message);
-      normalizedError.status = status;
-      normalizedError.payload = payload;
+      const normalizedError = createApiError({
+        message,
+        status,
+        payload,
+      });
 
       const resolvedAuth = error?.config?.authScope ?? error?.config?.auth ?? authMode;
       const token = resolvedAuth === false ? null : readTokenForScope(resolvedAuth);

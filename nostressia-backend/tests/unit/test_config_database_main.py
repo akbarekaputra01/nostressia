@@ -1,3 +1,4 @@
+import pytest
 from fastapi.testclient import TestClient
 
 from app.core.config import Settings
@@ -18,7 +19,7 @@ def test_settings_db_port_parsing_and_database_url(monkeypatch):
         db_host="localhost",
         db_name="nostressia",
         brevo_api_key="brevo",
-        jwt_secret="secret",
+        jwt_secret="very-secret-token",
         db_port=None,
         database_url_override=None,
     )
@@ -34,7 +35,7 @@ def test_settings_db_port_parsing_and_database_url(monkeypatch):
         db_host="localhost",
         db_name="nostressia",
         brevo_api_key="brevo",
-        jwt_secret="secret",
+        jwt_secret="very-secret-token",
         db_port="",
         database_url_override=None,
     )
@@ -46,7 +47,7 @@ def test_settings_db_port_parsing_and_database_url(monkeypatch):
         db_host="localhost",
         db_name="nostressia",
         brevo_api_key="brevo",
-        jwt_secret="secret",
+        jwt_secret="very-secret-token",
         database_url_override="sqlite:///override.db",
     )
     assert settings_override.database_url == "sqlite:///override.db"
@@ -106,3 +107,25 @@ def test_app_startup_and_shutdown(monkeypatch):
 
     assert started["value"] is True
     assert stopped["value"] is True
+
+
+def test_settings_rejects_weak_jwt_secret():
+    with pytest.raises(ValueError, match="JWT_SECRET must be changed from the default placeholder"):
+        Settings(
+            db_user="user",
+            db_password="pass",
+            db_host="localhost",
+            db_name="nostressia",
+            brevo_api_key="brevo",
+            JWT_SECRET="change-me",
+        )
+
+    with pytest.raises(ValueError, match="at least 8 characters"):
+        Settings(
+            db_user="user",
+            db_password="pass",
+            db_host="localhost",
+            db_name="nostressia",
+            brevo_api_key="brevo",
+            JWT_SECRET="short",
+        )

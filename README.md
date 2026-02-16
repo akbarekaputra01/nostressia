@@ -9,74 +9,17 @@ pinned: false
 
 # Nostressia
 
-Nostressia adalah platform pemantauan stres harian yang menggabungkan aplikasi web (frontend), API backend, dan model machine learning untuk prediksi stres. Repo ini berisi tiga proyek utama yang saling terhubung dan siap dipakai untuk kebutuhan akademik maupun demo end-to-end.
+Nostressia adalah platform pemantauan stres harian dengan tiga komponen utama: frontend (React), backend (FastAPI), dan pipeline machine learning untuk prediksi/forecast stres.
 
 ## Struktur Repo
+- `nostressia-frontend/` — React + Vite.
+- `nostressia-backend/` — FastAPI API + integrasi ML inference.
+- `nostressia-machine-learning/` — training scripts berbasis eksekusi notebook + MLflow.
+- `docs/` — dokumentasi arsitektur, API, DB, logging, testing, MLflow.
 
-- `nostressia-frontend/` — Aplikasi web (Vite + React).
-- `nostressia-backend/` — API FastAPI + layanan notifikasi & integrasi ML.
-- `nostressia-machine-learning/` — Eksperimen data, model, dan pipeline ML.
-- `docs/` — Dokumentasi teknis (arsitektur, API spec, DB, logging, testing).
+## Quickstart
 
-## Frontend (React + Vite)
-
-**Lokasi:** `nostressia-frontend/`
-
-**Teknologi:** React, Vite, TailwindCSS, Zustand, React Router, Vitest.
-
-**Halaman utama:**
-- Dashboard: ringkasan stres, tips, dan motivasi.
-- Profile: profil pengguna, ringkasan stres, dan preferensi.
-- Diary: jurnal harian.
-- Tips & Motivation: konten edukasi dan motivasi.
-- Admin: manajemen user, diary, tips, dan motivation.
-
-**Entry point:** `index.html` dan `src/main.jsx`.
-
-## Backend (FastAPI)
-
-**Lokasi:** `nostressia-backend/`
-
-**Teknologi:** FastAPI, SQLAlchemy, MySQL, APScheduler, JWT.
-**Python:** 3.10.
-
-**Fitur utama:**
-- Autentikasi & profile user.
-- CRUD diary dan tips.
-- Integrasi prediksi ML.
-- Push notification scheduler.
-
-**Healthcheck tanpa prefix `/api`:**
-- `GET /` → `{ "status": "ok", "message": "Nostressia API is running" }`
-- `GET /health` → `{ "status": "ok" }`
-
-**Dokumentasi API:**
-- `/docs` → Swagger UI
-- `/openapi.json`
-
-## Machine Learning
-
-**Lokasi:** `nostressia-machine-learning/`
-
-**Teknologi:** pandas, scikit-learn, joblib.
-**Python:** 3.10.
-
-**Fokus:**
-- Imputasi data, validasi schema, dan forecasting stres.
-- Artifacts model disimpan via `.joblib`.
-
-## Setup Singkat
-
-### Frontend
-
-```bash
-cd nostressia-frontend
-npm install
-npm run dev
-```
-
-### Backend
-
+### 1) Backend
 ```bash
 cd nostressia-backend
 python3.10 -m venv .venv
@@ -85,76 +28,53 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
-### Machine Learning
+### 2) Frontend
+```bash
+cd nostressia-frontend
+npm install
+npm run dev
+```
 
+### 3) Machine Learning (opsional training)
 ```bash
 cd nostressia-machine-learning
 python3.10 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+python Stress-Forecast/scripts/refresh_dataset.py
+python Stress-Forecast/scripts/train_global.py
+python Stress-Forecast/scripts/train_personalized.py
 ```
 
 ## Environment Variables
-
-> Gunakan contoh `.env.example` sebagai acuan.
-
-### Frontend (`nostressia-frontend/.env`)
-```
-VITE_API_BASE_URL=
-VITE_VAPID_PUBLIC_KEY=
-VITE_AZURE_BLOB_CONTAINER=
-VITE_LOG_LEVEL=
-```
-
-### Backend (`nostressia-backend/.env`)
-```
-DB_USER=
-DB_PASSWORD=
-DB_HOST=
-DB_PORT=
-DB_NAME=
-DATABASE_URL=
-BREVO_API_KEY=
-JWT_SECRET=
-JWT_ALGORITHM=
-ACCESS_TOKEN_EXPIRE_MINUTES=
-AZURE_STORAGE_CONNECTION_STRING=
-AZURE_STORAGE_ACCOUNT_NAME=
-AZURE_STORAGE_CONTAINER_NAME=
-VAPID_PUBLIC_KEY=
-VAPID_PRIVATE_KEY=
-VAPID_SUBJECT=
-```
+Gunakan file contoh pada masing-masing proyek:
+- `nostressia-frontend/.env.example`
+- `nostressia-backend/.env.example`
 
 ## Testing
-
 ```bash
-cd nostressia-frontend && npm run test
-cd ../nostressia-backend && pytest
-cd ../nostressia-machine-learning && pytest
+cd nostressia-frontend && npm run test && npm run build
+cd ../nostressia-backend && pytest -q
+cd ../nostressia-machine-learning && pytest -q
 ```
 
-## ML Forecast Refresh & Training (Ringkas)
+## MLflow
+Tracking lokal disimpan di `mlruns/`.
 ```bash
-python nostressia-machine-learning/Stress-Forecast/scripts/refresh_dataset.py
-python nostressia-machine-learning/Stress-Forecast/scripts/train_global.py
-python nostressia-machine-learning/Stress-Forecast/scripts/train_personalized.py --update-default
+mlflow ui
 ```
+Buka `http://127.0.0.1:5000`.
 
 ## Dokumentasi Teknis
-- Arsitektur: `docs/architecture.md`
-- API Spec: `docs/api-spec.md`
-- Database: `docs/database.md`
-- Logging Guidelines: `docs/logging-guidelines.md`
-- Testing Strategy: `docs/testing-strategy.md`
-- ML Training: `docs/ml-training.md`
+- `docs/architecture.md`
+- `docs/api-spec.md`
+- `docs/database.md`
+- `docs/logging-guidelines.md`
+- `docs/testing-strategy.md`
+- `docs/ml-training.md`
+- `docs/mlflow-guide.md`
 
-## Deployment Notes (Ringkas)
-- Pastikan konfigurasi environment tersedia di platform target (Vercel/Docker/VM).
-- Update `public/sitemap.xml` dan `public/robots.txt` pada frontend sesuai domain produksi.
-- Jalankan test suite sebelum rilis.
-
-## Troubleshooting
-- **Frontend gagal fetch**: cek `VITE_API_BASE_URL` dan pastikan backend berjalan.
-- **Backend startup gagal**: pastikan variabel `DB_*`, `JWT_SECRET`, dan `BREVO_API_KEY` terisi.
-- **ML artifacts tidak terbaca**: pastikan file `.joblib` tersedia sesuai path di repo.
+## Troubleshooting Singkat
+- FE gagal request API: cek `VITE_API_BASE_URL`.
+- BE gagal startup: cek env wajib (`DB_*` atau `DATABASE_URL`, `JWT_SECRET`, `BREVO_API_KEY`).
+- Forecast/current stress gagal: pastikan artifact model tersedia di `nostressia-backend/app/models_ml/`.
