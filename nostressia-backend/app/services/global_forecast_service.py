@@ -1,6 +1,8 @@
 import logging
 import os
 import re
+import sys
+import types
 from datetime import timedelta
 from typing import Any, Dict, List, Optional
 
@@ -38,7 +40,7 @@ class GlobalForecastService:
             )
 
         try:
-            self._artifact = joblib.load(artifact_path)
+            self._artifact = self._load_artifact_with_compat(artifact_path)
             self._artifact_loaded = True
         except Exception as exc:
             logger.exception("Failed to load global forecast model artifact.")
@@ -48,6 +50,30 @@ class GlobalForecastService:
             ) from exc
 
         return self._artifact
+
+    def _load_artifact_with_compat(self, artifact_path: str) -> Dict[str, Any]:
+        try:
+            return joblib.load(artifact_path)
+        except ModuleNotFoundError as exc:
+            if exc.name != "_loss":
+                raise
+
+            self._register_legacy_loss_module()
+            return joblib.load(artifact_path)
+
+    def _register_legacy_loss_module(self) -> None:
+        """Backfill sklearn legacy module path used by older serialized artifacts."""
+        if "_loss" in sys.modules:
+            return
+
+        import sklearn._loss.loss as sklearn_loss
+
+        legacy_module = types.ModuleType("_loss")
+        for name in dir(sklearn_loss):
+            if not name.startswith("__"):
+                setattr(legacy_module, name, getattr(sklearn_loss, name))
+
+        sys.modules["_loss"] = legacy_module
 
     # Python 3.10 compatible (avoid `int | None`).
     def get_required_history_days(self) -> Optional[int]:
