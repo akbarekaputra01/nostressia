@@ -842,29 +842,36 @@ export default function Dashboard() {
           setIsLoadingLogs(false);
           return;
         }
-        const logs = await getMyStressLogs();
-        const logList = Array.isArray(logs) ? logs : [];
 
-        const byDate = new Map();
-        let latestLogDate = null;
-        logList.forEach((log) => {
-          const dt = log?.date ? new Date(log.date) : null;
-          if (!dt || Number.isNaN(dt.getTime())) return;
-          const dateKey = formatDate(new Date(dt.getFullYear(), dt.getMonth(), dt.getDate()));
-          if (!latestLogDate || dt > latestLogDate) {
-            latestLogDate = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
-          }
-          const prev = byDate.get(dateKey);
-          const prevTs = prev?.createdAt ? new Date(prev.createdAt).getTime() : 0;
-          const curTs = log?.createdAt ? new Date(log.createdAt).getTime() : 0;
-          if (!prev || curTs >= prevTs) byDate.set(dateKey, log);
-        });
+        const monthStartDate = new Date(calendarDate.getFullYear(), calendarDate.getMonth(), 1);
+        const monthEndDate = new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 0);
+        const monthStartKey = formatDate(monthStartDate);
+        const monthEndKey = formatDate(monthEndDate);
 
-        const updatedData = {};
-        byDate.forEach((log, dateKey) => {
+        const [monthLogs, todayLogs, latestLogData] = await Promise.all([
+          getMyStressLogs({ startDate: monthStartKey, endDate: monthEndKey }),
+          getMyStressLogs({ startDate: TODAY_KEY, endDate: TODAY_KEY, pageSize: 100 }),
+          getMyStressLogs({ pageSize: 1, fetchAll: false }),
+        ]);
+
+        const buildLogMap = (logs) => {
+          const byDate = new Map();
+          (Array.isArray(logs) ? logs : []).forEach((log) => {
+            const dt = log?.date ? new Date(log.date) : null;
+            if (!dt || Number.isNaN(dt.getTime())) return;
+            const dateKey = formatDate(new Date(dt.getFullYear(), dt.getMonth(), dt.getDate()));
+            const prev = byDate.get(dateKey);
+            const prevTs = prev?.createdAt ? new Date(prev.createdAt).getTime() : 0;
+            const curTs = log?.createdAt ? new Date(log.createdAt).getTime() : 0;
+            if (!prev || curTs >= prevTs) byDate.set(dateKey, log);
+          });
+          return byDate;
+        };
+
+        const mapLogToUi = (log, dateKey) => {
           const { score, color } = mapPredictionToUI(log?.stressLevel);
           const moodIdx = Number(log?.emoji);
-          updatedData[dateKey] = {
+          return {
             level: score,
             sleep: Number(log?.sleepHourPerDay) || 0,
             study: Number(log?.studyHourPerDay) || 0,
@@ -878,17 +885,36 @@ export default function Dashboard() {
             isRestored: log?.isRestored ?? false,
             logId: log?.stressLevelId ?? null,
           };
+        };
+
+        const monthMap = buildLogMap(monthLogs);
+        const todayMap = buildLogMap(todayLogs);
+
+        const nextStressData = {};
+
+        monthMap.forEach((log, dateKey) => {
+          nextStressData[dateKey] = mapLogToUi(log, dateKey);
         });
 
-        if (!updatedData[TODAY_KEY]) {
-          Object.assign(updatedData, createEmptyTodayData(TODAY_KEY));
+        const todayLog = todayMap.get(TODAY_KEY);
+        if (todayLog) {
+          nextStressData[TODAY_KEY] = mapLogToUi(todayLog, TODAY_KEY);
+        } else if (!nextStressData[TODAY_KEY]) {
+          Object.assign(nextStressData, createEmptyTodayData(TODAY_KEY));
         }
 
-        setStressData(updatedData);
+        setStressData(nextStressData);
+
+        const latestLog = Array.isArray(latestLogData) ? latestLogData[0] : null;
+        const latestDateRaw = latestLog?.date ? new Date(latestLog.date) : null;
+        const latestLogDate =
+          latestDateRaw && !Number.isNaN(latestDateRaw.getTime())
+            ? new Date(latestDateRaw.getFullYear(), latestDateRaw.getMonth(), latestDateRaw.getDate())
+            : null;
         setMissingDateKeys(getMissingDateKeys(latestLogDate, todayDate));
         setDismissedMissingPopup(false);
 
-        const todayData = updatedData[TODAY_KEY];
+        const todayData = nextStressData[TODAY_KEY];
         if (todayData && !todayData.isEmpty) {
           setHasSubmittedToday(true);
           setStressScore(todayData.level);
@@ -926,7 +952,7 @@ export default function Dashboard() {
 
     fetchLogs();
     return () => controller.abort();
-  }, [TODAY_KEY]);
+  }, [TODAY_KEY, calendarDate]);
 
   useEffect(() => {
     const controller = new AbortController();

@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends
+from datetime import date
+
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -56,6 +58,8 @@ def restore_stress_log(
 def read_my_stress_logs(
     page: int = 1,
     limit: int = 10,
+    start_date: date | None = Query(default=None),
+    end_date: date | None = Query(default=None),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -66,6 +70,8 @@ def read_my_stress_logs(
             user_id=current_user.user_id,
             page=page,
             limit=limit,
+            start_date=start_date,
+            end_date=end_date,
         ),
         message="Stress logs fetched",
     )

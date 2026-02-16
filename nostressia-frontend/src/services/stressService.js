@@ -36,9 +36,37 @@ export const updateStressLog = async (stressLevelId, payload) => {
   return parseApiResponse(stressLevelResponseApiSchema, response.data);
 };
 
-export const getMyStressLogs = async () => {
-  const response = await client.get("/stress-levels/my-logs");
-  return parseApiResponse(stressLevelListResponseSchema, response.data);
+export const getMyStressLogs = async ({
+  startDate,
+  endDate,
+  pageSize = 200,
+  fetchAll = true,
+  page = 1,
+} = {}) => {
+  const allLogs = [];
+  let currentPage = page;
+
+  while (true) {
+    const response = await client.get("/stress-levels/my-logs", {
+      params: {
+        page: currentPage,
+        limit: pageSize,
+        ...(startDate ? { start_date: startDate } : {}),
+        ...(endDate ? { end_date: endDate } : {}),
+      },
+    });
+
+    const currentPageLogs = parseApiResponse(stressLevelListResponseSchema, response.data);
+    allLogs.push(...currentPageLogs);
+
+    if (!fetchAll || currentPageLogs.length < pageSize) {
+      break;
+    }
+
+    currentPage += 1;
+  }
+
+  return allLogs;
 };
 
 /**
