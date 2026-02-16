@@ -3,6 +3,7 @@ from datetime import date, timedelta
 import numpy as np
 import pandas as pd
 import pytest
+from fastapi import HTTPException
 
 from app.models.stress_log_model import StressLevel
 from app.models.user_model import User
@@ -182,6 +183,33 @@ def test_personalized_load_artifact_for_user_reloads_when_file_changes(monkeypat
     assert service.artifact_exists_for_user(1) is False
     assert service.artifact_exists_for_user(1) is True
 
+
+
+
+def test_global_load_artifact_returns_503_when_missing(monkeypatch):
+    service = GlobalForecastService()
+    monkeypatch.setattr(service, "_artifact_path", lambda: "/tmp/missing_global.joblib")
+    monkeypatch.setattr("app.services.global_forecast_service.os.path.exists", lambda *_: False)
+
+    with pytest.raises(HTTPException) as exc_info:
+        service._load_artifact()
+
+    exc = exc_info.value
+    assert getattr(exc, "status_code", None) == 503
+    assert "not available" in str(getattr(exc, "detail", "")).lower()
+
+
+def test_personalized_load_artifact_for_user_returns_503_when_missing(monkeypatch):
+    service = PersonalizedForecastService()
+    monkeypatch.setattr(service, "_artifact_path", lambda: "/tmp/missing_personalized.joblib")
+    monkeypatch.setattr("app.services.personalized_forecast_service.os.path.exists", lambda *_: False)
+
+    with pytest.raises(HTTPException) as exc_info:
+        service._load_artifact_for_user(1)
+
+    exc = exc_info.value
+    assert getattr(exc, "status_code", None) == 503
+    assert "not available" in str(getattr(exc, "detail", "")).lower()
 
 def test_get_global_forecast_for_user_prefers_personalized_when_streak_60(monkeypatch):
     eligibility = EligibilityResponse(

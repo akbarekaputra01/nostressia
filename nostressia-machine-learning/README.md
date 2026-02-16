@@ -102,6 +102,8 @@ Cakupan utama test:
 ## Troubleshooting
 - **`No module named ipykernel` / notebook gagal dieksekusi**
   - Pastikan dependensi terpasang dari `requirements.txt`.
+- **Notebook training error saat dieksekusi script**
+  - Script akan melempar error yang menyertakan path `executed_*.ipynb`; buka file tersebut untuk melihat sel yang gagal.
 - **`Dataset not found` saat training**
   - Jalankan command dari folder `nostressia-machine-learning`.
 - **MLflow UI kosong**

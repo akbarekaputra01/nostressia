@@ -46,8 +46,8 @@ class Settings(BaseSettings):
         default=None, validation_alias="DATABASE_URL"
     )
 
-    # Extra settings needed for email delivery.
-    brevo_api_key: str = Field(..., validation_alias="BREVO_API_KEY")
+    # Optional email provider key; email features degrade gracefully when missing.
+    brevo_api_key: str = Field("", validation_alias="BREVO_API_KEY")
 
     # JWT configuration
     jwt_secret: str = Field(..., validation_alias="JWT_SECRET")

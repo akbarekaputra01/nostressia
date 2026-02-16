@@ -45,10 +45,10 @@ nostressia-backend/
 **Wajib (aplikasi akan fail-fast jika tidak ada):**
 - `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`, `DB_NAME` (wajib jika `DATABASE_URL` tidak diisi)
 - `JWT_SECRET`, `JWT_ALGORITHM`, `ACCESS_TOKEN_EXPIRE_MINUTES` (`JWT_SECRET` minimal 8 chars dan bukan placeholder default)
-- `BREVO_API_KEY`
 - `LOG_LEVEL` (opsional, default `INFO`)
 
 **Opsional (fitur terkait hanya aktif jika ada):**
+- `BREVO_API_KEY` (opsional; endpoint email OTP/reset tetap mengembalikan error terkontrol jika key tidak diisi)
 - `AZURE_STORAGE_CONNECTION_STRING`, `AZURE_STORAGE_ACCOUNT_NAME`, `AZURE_STORAGE_CONTAINER`, `AZURE_STORAGE_CONTAINER_NAME`
 - `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`
 - `INTERNAL_TOKEN` (untuk endpoint training data internal)
@@ -176,8 +176,9 @@ pytest
 - Dependency `get_db` di-override agar endpoint test menggunakan DB test
 
 ## Troubleshooting
-- **Startup gagal**: pastikan `JWT_SECRET`, `DB_*`, dan `BREVO_API_KEY` tersedia.
-- **Forecast error**: pastikan tabel `stress_levels` terisi dan artifact ML tersedia.
+- **Startup gagal**: pastikan `JWT_SECRET` dan konfigurasi database (`DATABASE_URL` atau `DB_*`) terisi benar.
+- **`/api/stress/forecast` mengembalikan 503**: artifact forecast belum tersedia atau gagal dimuat. Pastikan file `app/models_ml/global_forecast.joblib` dan `app/models_ml/personalized_forecast.joblib` ada dan valid.
+- **Forecast error 400**: pastikan tabel `stress_levels` terisi cukup riwayat harian untuk membentuk fitur forecast.
 - **`/api/stress/current` mengembalikan 503**: artifact `app/models_ml/current_stress.joblib` belum tersedia atau gagal dimuat.
 - **`/api/stress/current` mengembalikan 422**: payload numerik untuk fitur stress tidak valid (mis. `NaN`/tipe non-numerik).
 - **Avatar upload gagal**: pastikan `AZURE_STORAGE_CONNECTION_STRING` tersedia (atau gunakan fallback lokal).

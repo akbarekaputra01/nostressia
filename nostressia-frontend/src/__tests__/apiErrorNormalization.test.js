@@ -28,6 +28,40 @@ describe("normalizeApiError", () => {
     expect(normalized.status).toBe(422);
   });
 
+
+  it("uses detail.code when backend returns object detail without message", () => {
+    const normalized = normalizeApiError({
+      status: 403,
+      payload: {
+        detail: {
+          code: "FORECAST_NOT_ELIGIBLE",
+          eligibility: { streak: 2 },
+        },
+      },
+    });
+
+    expect(normalized.message).toBe("Forecast not eligible");
+    expect(normalized.errors).toEqual([
+      {
+        code: "FORECAST_NOT_ELIGIBLE",
+        eligibility: { streak: 2 },
+      },
+    ]);
+  });
+
+  it("prefers nested detail.message when available", () => {
+    const normalized = normalizeApiError({
+      status: 503,
+      payload: {
+        detail: {
+          message: "Forecast model is currently unavailable",
+        },
+      },
+    });
+
+    expect(normalized.message).toBe("Forecast model is currently unavailable");
+    expect(normalized.status).toBe(503);
+  });
   it("generates a generic message when payload is unavailable", () => {
     const normalized = normalizeApiError({ status: 503, payload: null });
 

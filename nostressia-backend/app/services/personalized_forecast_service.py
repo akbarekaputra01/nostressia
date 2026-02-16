@@ -53,6 +53,12 @@ class PersonalizedForecastService(GlobalForecastService):
         routing can immediately use newly-trained per-user models.
         """
         artifact_path = self._artifact_path()
+        if not os.path.exists(artifact_path):
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Personalized forecast model artifact is not available.",
+            )
+
         mtime = os.path.getmtime(artifact_path)
         if self._artifact_loaded and self._artifact_mtime != mtime:
             self._artifact_loaded = False
