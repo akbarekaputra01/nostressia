@@ -62,7 +62,7 @@ tqdm==4.66.4
 typer-slim==0.12.3
 typing-extensions==4.11.0
 tzdata==2024.1
-urllib3==2.2.1
+urllib3==2.6.3
 watchfiles==0.21.0
 websockets==12.0
 pytest==8.2.0
