@@ -2,11 +2,21 @@
 
 Dokumen ini menjelaskan alur training model yang dipakai saat ini di repository Nostressia.
 
+## Business Logic
+
+### Interval Retraining
+- **Global Forecast**: Retrain setiap 60 hari
+- **Personalized Forecast**: Retrain ketika user mencapai milestone 60, 120, 180, ... hari
+
+### User Access Rules
+- **Streak >= 7 hari**: User dapat menggunakan **Global Forecast**
+- **Streak >= 60 hari**: User dapat menggunakan **Personalized Forecast** (model khusus untuk user tersebut)
+
 ## Komponen
 - Folder kerja: `nostressia-machine-learning/`
+- Training current stress: `Current-Stress/scripts/train_current_stress.py`
 - Training global forecast: `Stress-Forecast/scripts/train_global.py`
 - Training personalized forecast: `Stress-Forecast/scripts/train_personalized.py`
-- Training current stress: `Current-Stress/scripts/train_current_stress.py`
 - State gating: `.ml_state.json`
 - Output inference backend: `nostressia-backend/app/models_ml/*.joblib` dan `*.meta.json`
 
@@ -22,12 +32,13 @@ Dari root repo:
 
 ```bash
 python nostressia-machine-learning/Stress-Forecast/scripts/refresh_dataset.py
+python nostressia-machine-learning/Current-Stress/scripts/train_current_stress.py
 python nostressia-machine-learning/Stress-Forecast/scripts/train_global.py
 python nostressia-machine-learning/Stress-Forecast/scripts/train_personalized.py
-python nostressia-machine-learning/Current-Stress/scripts/train_current_stress.py
 ```
 
 ## Catatan Operasional
 - `train_global.py` memakai gate interval retrain (default 60 hari, bisa `--force`).
-- `train_personalized.py` hanya melatih user yang eligible milestone, atau gunakan `--force-user-id` untuk manual test.
+- `train_personalized.py` hanya melatih user yang mencapai milestone 60 hari atau kelipatannya (60, 120, 180, ...). Gunakan `--force-user-id` untuk manual test.
+- Personalized menggunakan **model merging** (bukan stacking) untuk menggabungkan model multi-user.
 - Backend tidak melakukan training; backend hanya load artifact untuk inference.

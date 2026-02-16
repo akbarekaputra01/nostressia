@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import argparse
 import base64
+import sys
+import subprocess
 import hashlib
 import json
 import pprint
@@ -53,7 +55,7 @@ def _sha256(path: Path) -> str:
     return sha.hexdigest()
 
 
-def _execute_notebook(notebook_path: Path, parameters: Dict[str, Any], timeout_seconds: int) -> Path:
+def _execute_notebook(notebook_path: Path, parameters: Dict[str, Any], timeout_seconds: int, kernel_name: str = "python3") -> Path:
     notebook = nbformat.read(str(notebook_path), as_version=4)
     param_cell = nbformat.v4.new_code_cell(
         f"PARAMETERS = {pprint.pformat(parameters, sort_dicts=False)}"
@@ -151,7 +153,7 @@ except Exception as e:
     latency_cell = nbformat.v4.new_code_cell(latency_code)
     notebook.cells.append(latency_cell)
     
-    executor = ExecutePreprocessor(timeout=timeout_seconds, kernel_name="python3", allow_errors=False)
+    executor = ExecutePreprocessor(timeout=timeout_seconds, kernel_name=kernel_name, allow_errors=False)
     execution_error: Exception | None = None
     try:
         executor.preprocess(notebook, {"metadata": {"path": str(notebook_path.parent)}})
@@ -464,7 +466,22 @@ def train_global(force: bool) -> bool:
     data_hash = _sha256(DATASET_PATH)
     print("DATASET_PATH :", DATASET_PATH)
     print("DATA_HASH    :", data_hash)
+    print("DATA_HASH    :", data_hash)
     MODEL_OUT.parent.mkdir(parents=True, exist_ok=True)
+    
+    # --- KERNEL SETUP ---
+    kernel_name = "nostressia_current_env"
+    try:
+        subprocess.check_call([
+            sys.executable, "-m", "ipykernel", "install", 
+            "--user", 
+            "--name", kernel_name, 
+            "--display-name", "Nostressia Training Env"
+        ])
+    except Exception as e:
+        print(f"Warning: Failed to install local kernel: {e}. Defaulting to 'python3'.")
+        kernel_name = "python3"
+
     executed_nb_path = _execute_notebook(
         NOTEBOOK_PATH,
         {
@@ -475,6 +492,7 @@ def train_global(force: bool) -> bool:
             "enable_eda": True, # FORCE EDA
         },
         timeout_seconds=1800,
+        kernel_name=kernel_name
     )
     if not MODEL_OUT.exists():
         raise FileNotFoundError(f"Global model output not created: {MODEL_OUT}")

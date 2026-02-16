@@ -7,6 +7,14 @@ Folder ini berisi pipeline machine learning untuk fitur **Stress Insights**:
 
 Training dijalankan melalui script Python yang mengeksekusi notebook menggunakan `nbconvert` + `ExecutePreprocessor`.
 
+### Business Logic Interval Training
+- **Global forecast**: Retrain setiap 60 hari
+- **Personalized forecast**: Retrain ketika user mencapai milestone 60 hari atau kelipatannya (60, 120, 180, ...)
+
+### User Access Rules
+- **Streak >= 7 hari**: User dapat menggunakan **Global Forecast**
+- **Streak >= 60 hari**: User dapat menggunakan **Personalized Forecast**
+
 ## Setup Environment
 ```bash
 python -m venv .venv
@@ -56,9 +64,11 @@ Tambahkan `--force` untuk bypass interval retrain 60 hari.
 ```bash
 python Stress-Forecast/scripts/train_personalized.py
 ```
-Force user tertentu:
+Script ini hanya akan melatih user yang telah mencapai milestone 60 hari (60, 120, 180, ...).
+
+Force user tertentu untuk testing:
 ```bash
-python Stress-Forecast/scripts/train_personalized.py --force-user-id 123 --force-window-size 74
+python Stress-Forecast/scripts/train_personalized.py --force-user-id 123
 ```
 
 ## MLflow
