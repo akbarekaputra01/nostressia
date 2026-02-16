@@ -65,6 +65,10 @@ vi.mock("react-router-dom", async () => {
 });
 
 describe("Profile weekly report", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it("sends weekly report only when Send Report button is clicked", async () => {
     const user = userEvent.setup();
 
@@ -82,5 +86,22 @@ describe("Profile weekly report", () => {
     await user.click(screen.getByRole("button", { name: /send report/i }));
 
     expect(sendWeeklyReport).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not send weekly report when Save Preferences button is clicked", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter>
+        <Profile />
+      </MemoryRouter>,
+    );
+
+    await user.click(screen.getByRole("button", { name: /settings/i }));
+    await user.click(screen.getByRole("button", { name: /^notifications$/i }));
+
+    await user.click(screen.getByRole("button", { name: /save preferences/i }));
+
+    expect(sendWeeklyReport).not.toHaveBeenCalled();
   });
 });
