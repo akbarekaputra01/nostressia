@@ -2,7 +2,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Instagram, Twitter, Mail, Heart } from "lucide-react";
-import LogoNostressia from "../assets/images/Logo-Nostressia.png"; 
+import LogoNostressia from "../assets/images/Logo-Nostressia.png";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -11,14 +11,14 @@ export default function Footer() {
     <footer className="relative z-30 mt-6 border-t border-border/50 bg-surface/70 backdrop-blur-md dark:border-border/60 dark:bg-surface/80 glass-panel">
       <div className="max-w-[1400px] mx-auto px-6 pt-6 pb-3 md:pt-8 md:pb-4">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8">
-          
+
           {/* KOLOM 1: Brand & Deskripsi */}
           <div className="md:col-span-5 flex flex-col gap-2">
             <Link to="/" className="flex items-center gap-2 w-fit">
-              <img 
-                src={LogoNostressia} 
-                alt="Nostressia Logo" 
-                className="h-8 w-auto" 
+              <img
+                src={LogoNostressia}
+                alt="Nostressia Logo"
+                className="h-8 w-auto"
               />
               <span className="text-xl font-extrabold text-text-primary tracking-tight dark:text-text-primary">
                 Nostressia
@@ -35,7 +35,7 @@ export default function Footer() {
             <ul className="space-y-1.5">
               <li><Link to="/dashboard" className="text-text-secondary hover:text-brand-primary transition-colors text-xs font-medium dark:text-text-secondary dark:hover:text-brand-info">Dashboard</Link></li>
               <li><Link to="/tips" className="text-text-secondary hover:text-brand-primary transition-colors text-xs font-medium dark:text-text-secondary dark:hover:text-brand-info">Daily Tips</Link></li>
-              <li><Link to="/motivation" className="text-text-secondary hover:text-brand-primary transition-colors text-xs font-medium dark:text-text-secondary dark:hover:text-brand-info">Motivation</Link></li>
+              <li><Link to="/motivations" className="text-text-secondary hover:text-brand-primary transition-colors text-xs font-medium dark:text-text-secondary dark:hover:text-brand-info">Motivation</Link></li>
               <li><Link to="/analytics" className="text-text-secondary hover:text-brand-primary transition-colors text-xs font-medium dark:text-text-secondary dark:hover:text-brand-info">Analytics</Link></li>
               <li><Link to="/diary" className="text-text-secondary hover:text-brand-primary transition-colors text-xs font-medium dark:text-text-secondary dark:hover:text-brand-info">My Diary</Link></li>
             </ul>
@@ -47,12 +47,12 @@ export default function Footer() {
             <p className="text-text-secondary text-xs mb-3 dark:text-text-secondary">
               Have questions? Reach out to us directly via email.
             </p>
-            
+
             {/* Clearer "Contact Us" button */}
             <div className="flex flex-col gap-3">
-              <a 
-                href="https://mail.google.com/mail/?view=cm&fs=1&to=nostressia.official@gmail.com" 
-                target="_blank" 
+              <a
+                href="https://mail.google.com/mail/?view=cm&fs=1&to=nostressia.official@gmail.com"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 w-fit px-4 py-2 rounded-lg bg-surface-elevated border border-border text-text-secondary hover:text-brand-accent hover:border-brand-accent/40 hover:shadow-sm transition-all group dark:bg-surface-muted dark:border-border dark:text-text-secondary dark:hover:text-brand-accent"
               >
@@ -62,18 +62,18 @@ export default function Footer() {
 
               {/* Social media icons (optional, kept for additional channels). */}
               <div className="flex items-center gap-3 mt-1">
-                <a 
-                  href="https://www.instagram.com/nostressia" 
-                  target="_blank" 
+                <a
+                  href="https://www.instagram.com/nostressia"
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="w-8 h-8 flex items-center justify-center rounded-full bg-surface-elevated border border-border/60 text-text-muted hover:text-brand-accent transition-all dark:bg-surface-muted dark:border-border dark:text-text-secondary dark:hover:text-brand-accent"
                 >
                   <Instagram size={16} />
                 </a>
 
-                <a 
-                  href="https://x.com/nostressia" 
-                  target="_blank" 
+                <a
+                  href="https://x.com/nostressia"
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="w-8 h-8 flex items-center justify-center rounded-full bg-surface-elevated border border-border/60 text-text-muted hover:text-brand-info transition-all dark:bg-surface-muted dark:border-border dark:text-text-secondary dark:hover:text-brand-info"
                 >
