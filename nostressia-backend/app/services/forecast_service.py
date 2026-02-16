@@ -1,5 +1,7 @@
 import logging
+from datetime import date, timedelta
 
+from app.models.stress_log_model import StressLevel
 from app.schemas.stress_schema import EligibilityResponse
 from fastapi import HTTPException
 
@@ -58,6 +60,47 @@ def _normalize_forecast_payload(raw_forecast: dict) -> dict:
     }
 
 
+
+
+def _build_rule_based_fallback_forecast(db, user_id: int) -> dict:
+    recent_logs = (
+        db.query(StressLevel)
+        .filter(StressLevel.user_id == user_id)
+        .order_by(StressLevel.date.desc())
+        .limit(7)
+        .all()
+    )
+
+    if not recent_logs:
+        raise HTTPException(
+            status_code=503,
+            detail="Global forecast is temporarily unavailable and no history exists for fallback.",
+        )
+
+    recent_logs = list(reversed(recent_logs))
+    highs = [1 if log.stress_level >= 1 else 0 for log in recent_logs]
+    last_high = highs[-1]
+    high_ratio = sum(highs) / len(highs)
+
+    probability = min(max((0.6 * last_high) + (0.4 * high_ratio), 0.05), 0.95)
+    threshold = 0.5
+    prediction_binary = int(probability >= threshold)
+    prediction_label = "HighRisk" if prediction_binary == 1 else "LowRisk"
+
+    last_date = recent_logs[-1].date
+    forecast_date = (last_date + timedelta(days=1)).isoformat() if last_date else (date.today() + timedelta(days=1)).isoformat()
+
+    return {
+        "user_id": user_id,
+        "forecast_date": forecast_date,
+        "probability": float(probability),
+        "chance_percent": round(float(probability) * 100, 2),
+        "threshold": threshold,
+        "prediction_binary": prediction_binary,
+        "prediction_label": prediction_label,
+        "model_type": "global_rule_based_fallback",
+    }
+
 def build_global_forecast_payload(eligibility: EligibilityResponse, forecast: dict) -> dict:
     return {
         "forecast": _normalize_forecast_payload(forecast),
@@ -95,5 +138,16 @@ def get_global_forecast_for_user(user_id: int, eligibility: EligibilityResponse,
     else:
         logger.info("Forecast routing | user_id=%s | selected=global", user_id)
 
-    forecast = global_forecast_service.predict_next_day_for_user(db, user_id)
+    try:
+        forecast = global_forecast_service.predict_next_day_for_user(db, user_id)
+    except HTTPException as exc:
+        if exc.status_code != 503:
+            raise
+        logger.warning(
+            "Forecast routing | user_id=%s | global_unavailable status=%s | fallback=rule_based",
+            user_id,
+            exc.status_code,
+        )
+        forecast = _build_rule_based_fallback_forecast(db, user_id)
+
     return build_global_forecast_payload(eligibility, forecast)

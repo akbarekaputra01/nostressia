@@ -186,6 +186,60 @@ def test_personalized_load_artifact_for_user_reloads_when_file_changes(monkeypat
 
 
 
+
+
+
+
+def test_global_load_artifact_retries_with_numpy_compat(monkeypatch):
+    service = GlobalForecastService()
+
+    class _DummyNumpyPickle:
+        pass
+
+    dummy_numpy_pickle = _DummyNumpyPickle()
+    setattr(dummy_numpy_pickle, "__bit_generator_ctor", lambda *_args, **_kwargs: "ok")
+    monkeypatch.setattr(
+        "app.services.global_forecast_service.importlib.import_module",
+        lambda *_: dummy_numpy_pickle,
+    )
+
+    calls = {"count": 0}
+
+    def _load(*_args, **_kwargs):
+        calls["count"] += 1
+        if calls["count"] == 1:
+            raise ValueError("MT19937 is not a known BitGenerator module")
+        return {"type": "global_markov", "probs": np.ones((2, 7, 2)), "meta": {"window": 2}}
+
+    monkeypatch.setattr("app.services.global_forecast_service.joblib.load", _load)
+
+    artifact = service._load_artifact_with_compat("/tmp/fake.joblib")
+
+    assert calls["count"] == 2
+    assert artifact["type"] == "global_markov"
+
+def test_global_load_artifact_caches_failed_load(monkeypatch):
+    service = GlobalForecastService()
+    monkeypatch.setattr(service, "_artifact_path", lambda: "/tmp/global_forecast.joblib")
+    monkeypatch.setattr("app.services.global_forecast_service.os.path.exists", lambda *_: True)
+
+    calls = {"count": 0}
+
+    def _raise(*_args, **_kwargs):
+        calls["count"] += 1
+        raise ValueError("broken artifact")
+
+    monkeypatch.setattr("app.services.global_forecast_service.joblib.load", _raise)
+
+    with pytest.raises(HTTPException) as first_exc:
+        service._load_artifact()
+    with pytest.raises(HTTPException) as second_exc:
+        service._load_artifact()
+
+    assert first_exc.value.status_code == 503
+    assert second_exc.value.status_code == 503
+    assert calls["count"] == 1
+
 def test_global_load_artifact_returns_503_when_missing(monkeypatch):
     service = GlobalForecastService()
     monkeypatch.setattr(service, "_artifact_path", lambda: "/tmp/missing_global.joblib")
@@ -283,3 +337,35 @@ def test_get_global_forecast_for_user_uses_global_for_sub60_streak(monkeypatch):
 
     payload = get_global_forecast_for_user(user_id=1, eligibility=eligibility, db=None)
     assert payload["forecast"]["modelType"] == "global_markov"
+
+
+def test_get_global_forecast_for_user_falls_back_when_global_unavailable(monkeypatch, db_session):
+    user = _create_user(db_session)
+    _create_logs(db_session, user.user_id, days=7)
+
+    eligibility = EligibilityResponse(
+        user_id=user.user_id,
+        eligible=True,
+        streak=10,
+        required_streak=7,
+        restore_used=0,
+        restore_remaining=3,
+        restore_limit=3,
+        missing=0,
+        note="Eligible",
+    )
+
+    from app.services.forecast_service import get_global_forecast_for_user
+
+    def _raise_global(*_args, **_kwargs):
+        raise HTTPException(status_code=503, detail="artifact unavailable")
+
+    monkeypatch.setattr(
+        "app.services.forecast_service.global_forecast_service.predict_next_day_for_user",
+        _raise_global,
+    )
+
+    payload = get_global_forecast_for_user(user_id=user.user_id, eligibility=eligibility, db=db_session)
+    assert payload["forecast"]["modelType"] == "global_rule_based_fallback"
+    assert payload["forecast"]["forecastDate"]
+    assert 0 <= payload["forecast"]["chancePercent"] <= 100
