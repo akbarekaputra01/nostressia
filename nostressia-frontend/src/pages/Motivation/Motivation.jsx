@@ -167,7 +167,8 @@ export default function Motivation() {
 
         if (!mounted) return;
 
-        const normalized = data.map((d) => ({
+        const source = Array.isArray(data) ? data : [];
+        const normalized = source.map((d) => ({
           motivationId: d.motivationId ?? null,
           quote: d.quote ?? "",
           authorName: d.authorName ?? "Anonymous",
@@ -739,7 +740,7 @@ export default function Motivation() {
         </div>
       )}
 
-      <style jsx>{`
+      <style>{`
         .animate-slide-up {
           opacity: 1 !important;
           transform: translateY(0) !important;

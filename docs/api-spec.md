@@ -108,7 +108,7 @@ Endpoint root & health disediakan tanpa prefix untuk kebutuhan monitoring/health
 
 **Response (data)**
 ```json
-{ "stressLevel": "moderate", "score": 0.62 }
+{ "result": "Low", "message": "Your stress level is detected as: Low" }
 ```
 
 ### Forecast
@@ -116,7 +116,28 @@ Endpoint root & health disediakan tanpa prefix untuk kebutuhan monitoring/health
 
 **Response (data)**
 ```json
-{ "dates": ["2024-01-01"], "values": [0.6] }
+{
+  "forecast": {
+    "userId": 1,
+    "forecastDate": "2024-01-01",
+    "probability": 0.6,
+    "chancePercent": 60,
+    "threshold": 0.5,
+    "predictionBinary": 1,
+    "predictionLabel": "HighRisk",
+    "modelType": "global_markov"
+  },
+  "eligibility": {
+    "eligible": true,
+    "streak": 7,
+    "requiredStreak": 7,
+    "restoreUsed": 0,
+    "restoreRemaining": 3,
+    "restoreLimit": 3,
+    "missing": 0,
+    "note": "Eligible for global forecast."
+  }
+}
 ```
 
 ## Tips & Motivation

@@ -77,6 +77,19 @@ class Settings(BaseSettings):
 
     internal_training_token: str = Field("", validation_alias="INTERNAL_TOKEN")
 
+
+    @field_validator("jwt_secret")
+    @classmethod
+    def validate_jwt_secret(cls, value: str) -> str:
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("JWT_SECRET must not be empty.")
+        if normalized.lower() in {"change-me", "changeme", "secret", "default"}:
+            raise ValueError("JWT_SECRET must be changed from the default placeholder.")
+        if len(normalized) < 8:
+            raise ValueError("JWT_SECRET must be at least 8 characters long.")
+        return normalized
+
     @field_validator("db_port", mode="before")
     @classmethod
     def parse_db_port(cls, value: object) -> object:

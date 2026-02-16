@@ -30,8 +30,16 @@ def predict_current_stress(
 
     result = ml_service.predict_stress(input_data)
 
-    if result == "Error":
-        raise HTTPException(status_code=500, detail="An error occurred in the ML model.")
+    if isinstance(result, str) and result.lower().startswith("error"):
+        if "model not ready" in result.lower():
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Stress prediction model is not available right now.",
+            )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occurred in the stress prediction model.",
+        )
 
     payload = PredictResponse(
         result=result,

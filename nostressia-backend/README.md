@@ -44,7 +44,7 @@ nostressia-backend/
 ### Environment Variables (ringkas)
 **Wajib (aplikasi akan fail-fast jika tidak ada):**
 - `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`, `DB_NAME` (wajib jika `DATABASE_URL` tidak diisi)
-- `JWT_SECRET`, `JWT_ALGORITHM`, `ACCESS_TOKEN_EXPIRE_MINUTES`
+- `JWT_SECRET`, `JWT_ALGORITHM`, `ACCESS_TOKEN_EXPIRE_MINUTES` (`JWT_SECRET` minimal 8 chars dan bukan placeholder default)
 - `BREVO_API_KEY`
 - `LOG_LEVEL` (opsional, default `INFO`)
 
@@ -178,6 +178,7 @@ pytest
 ## Troubleshooting
 - **Startup gagal**: pastikan `JWT_SECRET`, `DB_*`, dan `BREVO_API_KEY` tersedia.
 - **Forecast error**: pastikan tabel `stress_levels` terisi dan artifact ML tersedia.
+- **`/api/stress/current` mengembalikan 503**: artifact `app/models_ml/current_stress.joblib` belum tersedia atau gagal dimuat.
 - **Avatar upload gagal**: pastikan `AZURE_STORAGE_CONNECTION_STRING` tersedia (atau gunakan fallback lokal).
 - **Push notification gagal**: pastikan `VAPID_PRIVATE_KEY` terisi.
 

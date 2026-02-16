@@ -168,7 +168,7 @@ class StressModelService:
             return label_map.get(prediction_idx, "Unknown")
 
         except Exception as exc:
-            logger.exception("Prediction failed: %s", exc)
-            return f"Error: {str(exc)}"
+            logger.exception("Prediction failed.", exc_info=exc)
+            return "Error: Prediction failed"
 
 ml_service = StressModelService()

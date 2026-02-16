@@ -35,3 +35,7 @@ htmlcov/
 .vscode/
 .idea/
 .DS_Store
+
+# Executed notebook outputs
+Stress-Forecast/notebooks/executed_*.ipynb
+Current-Stress/notebooks/executed_*.ipynb

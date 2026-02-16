@@ -1,16 +1,33 @@
-# ML Training Audit & Flow
+# ML Training Flow
 
-## Audit of the Previous Flow (before this change)
-- **Dataset source:** the forecast notebooks loaded data from DB/API (`data_source=db|api`) and did not read the CSV directly, while the CSV existed as a static artifact in the repo. This meant CI relied on runtime DB/API access rather than the tracked dataset file. 
-- **Training execution:** GitHub Actions invoked a training worker that pulled from a DB queue (`training_jobs`) and persisted active artifacts in a `model_registry` table, then uploaded artifacts to Azure Blob Storage. The workflow itself did not commit artifacts back to the repo. 
-- **Notebook behavior:** both forecast notebooks perform full training runs and `joblib.dump(...)` the resulting artifacts (they do not simply load a prebuilt model). 
-- **Personalized failure mode:** the personalized worker marked the Action as “success” even when no jobs were queued; if no eligible user hit the milestone logic in the DB queue, the worker would exit without training or artifacts. This explains “success” runs without Azure artifacts or DB records. 
+Dokumen ini menjelaskan alur training model yang dipakai saat ini di repository Nostressia.
 
-## New Flow (current)
-1. Refresh dataset from the realtime DB into `Stress-Forecast/datasets/stress_forecast.csv`.
-2. Execute forecast notebooks headlessly for training.
-3. Overwrite model artifacts directly inside `nostressia-backend/app/models_ml/` and generate `.meta.json` sidecars.
-4. Commit the updated dataset, models, and `.ml_state.json` gate state back to the repo.
+## Komponen
+- Folder kerja: `nostressia-machine-learning/`
+- Training global forecast: `Stress-Forecast/scripts/train_global.py`
+- Training personalized forecast: `Stress-Forecast/scripts/train_personalized.py`
+- Training current stress: `Current-Stress/scripts/train_current_stress.py`
+- State gating: `.ml_state.json`
+- Output inference backend: `nostressia-backend/app/models_ml/*.joblib` dan `*.meta.json`
 
-The 60-day global gate and personalized milestone gates are implemented in scripts and tracked in `.ml_state.json`.
-For manual tests, the personalized workflow accepts `force_user_id`/`force_window_size` to bypass the 60x gate while still writing a single shared artifact.
+## Alur Forecast
+1. Refresh dataset forecast ke `Stress-Forecast/datasets/stress_forecast.csv`.
+2. Jalankan training global/personalized melalui script.
+3. Script mengeksekusi notebook (`nbconvert` / `ExecutePreprocessor`).
+4. Artifact model (`.joblib`) dan metadata (`.meta.json`) ditulis ke backend models directory.
+5. Informasi gating retrain disimpan di `.ml_state.json`.
+
+## Command Utama
+Dari root repo:
+
+```bash
+python nostressia-machine-learning/Stress-Forecast/scripts/refresh_dataset.py
+python nostressia-machine-learning/Stress-Forecast/scripts/train_global.py
+python nostressia-machine-learning/Stress-Forecast/scripts/train_personalized.py
+python nostressia-machine-learning/Current-Stress/scripts/train_current_stress.py
+```
+
+## Catatan Operasional
+- `train_global.py` memakai gate interval retrain (default 60 hari, bisa `--force`).
+- `train_personalized.py` hanya melatih user yang eligible milestone, atau gunakan `--force-user-id` untuk manual test.
+- Backend tidak melakukan training; backend hanya load artifact untuk inference.

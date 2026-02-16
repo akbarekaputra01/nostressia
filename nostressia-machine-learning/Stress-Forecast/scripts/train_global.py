@@ -7,7 +7,7 @@ import json
 import pprint
 import os
 import tempfile
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict
 
@@ -21,7 +21,7 @@ import mlflow.sklearn
 import mlflow.data
 from nbconvert.preprocessors import ExecutePreprocessor
 
-from ml_state import MLState, utc_now_iso
+from ml_state import MLState, should_retrain_global, utc_now_iso
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 NOTEBOOK_PATH = (
@@ -42,6 +42,7 @@ DATE_COL = "date"
 USER_COL = "user_id"
 
 GLOBAL_INTERVAL_DAYS = 60
+FORECAST_HORIZON_DAYS = 7
 
 
 def _sha256(path: Path) -> str:
@@ -413,22 +414,23 @@ def _log_notebook_details(executed_nb_path: Path, artifact_subdir: str = "notebo
         (tmp / "notebook_report.md").write_text("\n".join(report_lines), encoding="utf-8")
         mlflow.log_artifacts(str(tmp), artifact_path=artifact_subdir)
 def _is_due(state: MLState, now: datetime) -> bool:
-    last = state.global_state.get("last_trained_at")
-    if not last:
-        return True
-    try:
-        last_dt = datetime.fromisoformat(last)
-    except ValueError:
-        return True
-    if last_dt.tzinfo is None:
-        last_dt = last_dt.replace(tzinfo=timezone.utc)
-    return now - last_dt >= timedelta(days=GLOBAL_INTERVAL_DAYS)
+    return should_retrain_global(
+        last_trained_at=state.global_state.get("last_trained_at"),
+        now=now,
+        interval_days=GLOBAL_INTERVAL_DAYS,
+    )
 
 
-def _write_meta(data_hash: str, trained_at: str) -> None:
+def _write_meta(data_hash: str, trained_at: str, run_id: str, metrics: Dict[str, float]) -> None:
     META_OUT.parent.mkdir(parents=True, exist_ok=True)
     payload = {
+        "created_at": trained_at,
         "trained_at": trained_at,
+        "version": "global-forecast-v1",
+        "horizon_days": FORECAST_HORIZON_DAYS,
+        "features": ["lag_sp_*", "gap_*", "dow", "behavior_lag_features"],
+        "metrics": metrics,
+        "mlflow_run_id": run_id,
         "data_hash": data_hash,
         "git_sha": os.getenv("GITHUB_SHA") or os.getenv("GIT_SHA") or "",
     }
@@ -439,6 +441,12 @@ def train_global(force: bool) -> bool:
     state = MLState.load(STATE_PATH)
     now = datetime.now(timezone.utc)
     if not force and not _is_due(state, now):
+        mlflow.set_tracking_uri("file:" + str(REPO_ROOT / "mlruns"))
+        mlflow.set_experiment("Global Stress Forecast")
+        with mlflow.start_run(run_name="global_skip"):
+            mlflow.set_tag("skipped_due_interval", "true")
+            mlflow.log_param("interval_days", GLOBAL_INTERVAL_DAYS)
+            mlflow.log_param("force", force)
         print("Global training skipped: last run is within 60 days.")
         return False
 
@@ -467,8 +475,10 @@ def train_global(force: bool) -> bool:
     mlflow.set_tracking_uri("file:" + str(REPO_ROOT / "mlruns"))
     mlflow.set_experiment("Global Stress Forecast")
 
+    run_metrics: Dict[str, float] = {}
     with mlflow.start_run() as run: # Capture the run object
         mlflow.log_param("interval_days", GLOBAL_INTERVAL_DAYS)
+        mlflow.log_param("horizon_days", FORECAST_HORIZON_DAYS)
         mlflow.log_param("data_hash", data_hash)
         mlflow.log_param("force", force)
         _log_dataset_details(DATASET_PATH, artifact_subdir="dataset")
@@ -558,6 +568,7 @@ def train_global(force: bool) -> bool:
                 
                 if numeric_metrics:
                     mlflow.log_metrics(numeric_metrics)
+                    run_metrics.update({k: float(v) for k, v in numeric_metrics.items()})
                     print(f"MLFLOW: Successfully logged metrics from {metrics_file.name}: {list(numeric_metrics.keys())}")
                 
                 _cleanup_log(metrics_file) # Cleanup using the helper
@@ -577,7 +588,7 @@ def train_global(force: bool) -> bool:
     state.global_state["last_trained_at"] = trained_at
     state.global_state["data_hash"] = data_hash
     state.save(STATE_PATH)
-    _write_meta(data_hash, trained_at)
+    _write_meta(data_hash, trained_at, run.info.run_id, run_metrics)
     print("Global training completed.")
     return True
 
