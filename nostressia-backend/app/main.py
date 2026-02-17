@@ -9,6 +9,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
+from prometheus_fastapi_instrumentator import Instrumentator
 from sqlalchemy import inspect
 from sqlalchemy.exc import SQLAlchemyError
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -161,6 +162,14 @@ def create_app() -> FastAPI:
     # Routers
     app.include_router(root_router)
     app.include_router(api_router, prefix=settings.api_prefix)
+
+    # Prometheus metrics endpoint (/metrics)
+    Instrumentator(
+        should_group_status_codes=True,
+        should_ignore_untemplated=True,
+        should_respect_env_var=True,
+        env_var_name="ENABLE_METRICS",
+    ).instrument(app).expose(app, include_in_schema=False, endpoint="/metrics")
 
     return app
 

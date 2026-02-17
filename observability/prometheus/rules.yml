@@ -1,0 +1,38 @@
+groups:
+  - name: nostressia-backend-alerts
+    rules:
+      - alert: BackendDown
+        expr: up{job="nostressia-backend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Nostressia backend is down"
+          description: "Prometheus cannot scrape nostressia-backend for over 1 minute."
+
+      - alert: HighErrorRate
+        expr: |
+          (
+            sum(rate(http_requests_total{job="nostressia-backend",status=~"5.."}[5m]))
+            /
+            sum(rate(http_requests_total{job="nostressia-backend"}[5m]))
+          ) > 0.02
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High backend 5xx ratio"
+          description: "5xx responses are above 2% for the last 5 minutes."
+
+      - alert: HighLatencyP95
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum by (le) (rate(http_request_duration_seconds_bucket{job="nostressia-backend"}[10m]))
+          ) > 0.5
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High backend latency p95"
+          description: "p95 latency is above 500ms for the last 10 minutes."
