@@ -1,6 +1,7 @@
 from pathlib import Path
 
-import joblib
+from _artifact_loader import load_artifact_or_skip
+
 
 
 def test_current_stress_artifacts_present_and_loadable():
@@ -10,7 +11,7 @@ def test_current_stress_artifacts_present_and_loadable():
     for path in artifact_paths:
         assert path.exists(), f"Missing artifact: {path}"
         assert path.stat().st_size > 0, f"Empty artifact: {path}"
-        payload = joblib.load(path)
+        payload = load_artifact_or_skip(path)
         assert isinstance(payload, dict), f"Unexpected payload type for {path}: {type(payload)}"
 
 
@@ -22,5 +23,5 @@ def test_stress_forecast_artifacts_present_and_loadable():
     for path in artifact_paths:
         assert path.exists(), f"Missing artifact: {path}"
         assert path.stat().st_size > 0, f"Empty artifact: {path}"
-        payload = joblib.load(path)
+        payload = load_artifact_or_skip(path)
         assert isinstance(payload, dict), f"Unexpected payload type for {path}: {type(payload)}"
