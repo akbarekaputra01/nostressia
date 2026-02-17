@@ -45,7 +45,7 @@ pipeline {
               pip install -r requirements-dev.txt
             fi
 
-            # Quality checks (advisory for legacy code; do not block tests)
+            # Quality checks
             set +e
             ruff check .
             RUFF_EXIT=$?
