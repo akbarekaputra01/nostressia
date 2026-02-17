@@ -11,7 +11,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "format": "prettier . --check"
+    "format": "prettier . --check",
+    "test:unit": "vitest run --config vitest.unit.config.js",
+    "test:integration": "vitest run --config vitest.integration.config.js"
   },
   "dependencies": {
     "@azure/storage-blob": "^12.27.0",

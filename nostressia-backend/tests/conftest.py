@@ -41,6 +41,16 @@ from app.main import create_app
 from app.models import register_models
 
 
+def pytest_collection_modifyitems(items):
+    """Auto-assign markers based on existing test folder structure."""
+    for item in items:
+        test_path = str(item.fspath)
+        if "/tests/unit/" in test_path:
+            item.add_marker(pytest.mark.unit)
+        elif "/tests/routes/" in test_path or "/tests/security/" in test_path:
+            item.add_marker(pytest.mark.integration)
+
+
 @pytest.fixture(scope="session")
 def engine():
     # Ensure all models are registered
