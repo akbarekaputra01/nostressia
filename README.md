@@ -23,13 +23,36 @@ Nostressia adalah platform pemantauan stres harian dengan tiga komponen utama: f
 
 ## Quickstart
 
+> [!WARNING]
+> **Critical:** Python 3.10, 3.11, or 3.12 required. Python 3.14+ is NOT supported.
+
 ### 1) Backend
+
+**Option A: Automated Setup (Recommended)**
 ```bash
 cd nostressia-backend
+# Windows
+setup_env.bat
+# Git Bash/Linux/Mac
+bash setup_env.sh
+```
+
+**Option B: Manual Setup**
+```bash
+cd nostressia-backend
+
+# IMPORTANT: Use Python 3.10 explicitly!
+# Windows:
+py -3.10 -m venv .venv
+source .venv/Scripts/activate  # for Git Bash
+# OR: .venv\Scripts\activate.bat  # for CMD
+
+# Linux/Mac:
 python3.10 -m venv .venv
 source .venv/bin/activate
+
 pip install -r requirements.txt
-uvicorn app.main:app --reload
+uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 ### 2) Frontend

@@ -20,11 +20,21 @@ This guide sets up local monitoring for the Nostressia backend using Docker Comp
 
 ## 1) Start backend (Windows host mode)
 
-From repo root:
+> [!IMPORTANT]
+> Use Python 3.10/3.11/3.12 only. Python 3.14 is not supported.
 
+**Option A: Using setup script (recommended for first-time setup)**
 ```bash
 cd nostressia-backend
-pip install -r requirements.txt
+setup_env.bat  # Windows
+# OR: bash setup_env.sh  # Git Bash
+```
+
+**Option B: Manual activation (if already set up)**
+```bash
+cd nostressia-backend
+source .venv/Scripts/activate  # Git Bash
+# OR: .venv\Scripts\activate.bat  # CMD
 uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
