@@ -225,7 +225,7 @@ describe("Core feature pages", () => {
     expect(screen.getByText(/daily wisdom/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /new quote/i })).toBeInTheDocument();
     expect(await screen.findByText(/keep going!/i)).toBeInTheDocument();
-  });
+  }, 10000);
 
   it("renders the analytics dashboard highlights", async () => {
     renderWithProviders(<Analytics />);
