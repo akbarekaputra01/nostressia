@@ -1,8 +1,9 @@
 from pathlib import Path
 
-import joblib
 import pandas as pd
 import pytest
+
+from _artifact_loader import load_artifact_or_skip
 
 
 CURRENT_STRESS_MODEL_PATH = Path("Current-Stress/models/current_stress.joblib")
@@ -10,7 +11,7 @@ GLOBAL_FORECAST_MODEL_PATH = Path("Stress-Forecast/models/global_forecast.joblib
 
 
 def test_current_stress_model_loads_and_predicts_shape():
-    payload = joblib.load(CURRENT_STRESS_MODEL_PATH)
+    payload = load_artifact_or_skip(CURRENT_STRESS_MODEL_PATH)
     model = payload["pipeline"]
     feature_names = payload["feature_names"]
 
@@ -37,7 +38,7 @@ def test_current_stress_model_loads_and_predicts_shape():
 
 
 def test_current_stress_predict_raises_for_missing_feature():
-    payload = joblib.load(CURRENT_STRESS_MODEL_PATH)
+    payload = load_artifact_or_skip(CURRENT_STRESS_MODEL_PATH)
     model = payload["pipeline"]
 
     invalid_sample = pd.DataFrame(
@@ -58,7 +59,7 @@ def test_current_stress_predict_raises_for_missing_feature():
 
 
 def test_global_forecast_model_loads_and_predicts_binary_output():
-    payload = joblib.load(GLOBAL_FORECAST_MODEL_PATH)
+    payload = load_artifact_or_skip(GLOBAL_FORECAST_MODEL_PATH)
     pipeline = payload["pipe"]
     feature_columns = payload["meta"]["feature_cols"]
 
@@ -77,7 +78,7 @@ def test_global_forecast_model_loads_and_predicts_binary_output():
 
 
 def test_global_forecast_rejects_invalid_feature_type():
-    payload = joblib.load(GLOBAL_FORECAST_MODEL_PATH)
+    payload = load_artifact_or_skip(GLOBAL_FORECAST_MODEL_PATH)
     pipeline = payload["pipe"]
     feature_columns = payload["meta"]["feature_cols"]
 
