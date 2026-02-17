@@ -267,6 +267,7 @@ describe("Core feature pages", () => {
 
     expect(await screen.findByRole("heading", { name: /^tips$/i })).toBeInTheDocument();
     expect(screen.getByPlaceholderText(/find topics/i)).toBeInTheDocument();
+    expect(await screen.findByText(/data updated/i)).toBeInTheDocument();
 
     const categoryCard = await screen.findByRole("heading", { name: /focus boost/i });
     const tipsBadges = screen.getAllByText(/2 tips/i);
@@ -274,9 +275,10 @@ describe("Core feature pages", () => {
 
     await user.click(categoryCard);
 
-    expect(await screen.findByRole("heading", { name: /focus boost/i })).toBeInTheDocument();
-    expect(screen.getByText(/25-minute focus sprint/i)).toBeInTheDocument();
-    expect(screen.getByText(/silence notifications/i)).toBeInTheDocument();
+    const detailHeadings = await screen.findAllByRole("heading", { name: /focus boost/i });
+    expect(detailHeadings.length).toBeGreaterThan(0);
+    expect(await screen.findByText(/focus sprint/i)).toBeInTheDocument();
+    expect(await screen.findByText(/notifications for 30 minutes/i)).toBeInTheDocument();
   });
 
   it("renders the diary experience", async () => {
