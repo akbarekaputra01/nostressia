@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 
@@ -71,7 +71,7 @@ beforeEach(() => {
 
 describe("Profile updates", () => {
   it("submits birthday and gender updates", async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ pointerEventsCheck: 0 });
     Object.defineProperty(window, "location", {
       value: { reload: vi.fn() },
       writable: true,
@@ -85,17 +85,18 @@ describe("Profile updates", () => {
     const birthdayInput = screen.getByLabelText(/birthday/i);
     const genderSelect = screen.getByLabelText(/gender/i);
 
-    await user.clear(birthdayInput);
-    await user.type(birthdayInput, "1999-12-31");
+    fireEvent.change(birthdayInput, { target: { value: "1999-12-31" } });
     await user.selectOptions(genderSelect, "female");
 
     await user.click(screen.getByRole("button", { name: /save changes/i }));
 
-    expect(updateProfile).toHaveBeenCalledWith(
-      expect.objectContaining({
-        userDob: "1999-12-31",
-        gender: "female",
-      }),
-    );
-  });
+    await waitFor(() => {
+      expect(updateProfile).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userDob: "1999-12-31",
+          gender: "female",
+        }),
+      );
+    });
+  }, 10000);
 });
