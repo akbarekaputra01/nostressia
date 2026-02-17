@@ -23,6 +23,10 @@ vi.mock("../theme/ThemeProvider", () => ({
 }));
 
 describe("Login signup flow", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it("flips to the signup card", async () => {
     const user = userEvent.setup();
     render(
@@ -66,7 +70,7 @@ describe("Login signup flow", () => {
       screen.getAllByPlaceholderText("••••••")[1],
       "Password123!",
     );
-    await user.selectOptions(screen.getByDisplayValue(/select gender/i), "male");
+    await user.selectOptions(screen.getByRole("combobox"), "male");
     await user.type(screen.getByLabelText(/date of birth/i), "2000-01-01");
 
     await user.click(
@@ -114,7 +118,7 @@ describe("Login signup flow", () => {
       screen.getAllByPlaceholderText("••••••")[1],
       "Password123!",
     );
-    await user.selectOptions(screen.getByDisplayValue(/select gender/i), "male");
+    await user.selectOptions(screen.getByRole("combobox"), "male");
     await user.type(screen.getByLabelText(/date of birth/i), "2000-01-01");
 
     await user.click(

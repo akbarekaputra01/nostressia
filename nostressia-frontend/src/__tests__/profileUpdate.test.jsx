@@ -65,6 +65,10 @@ vi.mock("react-router-dom", async () => {
   };
 });
 
+beforeEach(() => {
+  vi.clearAllMocks();
+});
+
 describe("Profile updates", () => {
   it("submits birthday and gender updates", async () => {
     const user = userEvent.setup();
