@@ -1,8 +1,11 @@
-"""FastAPI application entry point."""
-
 import logging
+import os
 from contextlib import asynccontextmanager
 from pathlib import Path
+
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
@@ -164,12 +167,21 @@ def create_app() -> FastAPI:
     app.include_router(api_router, prefix=settings.api_prefix)
 
     # Prometheus metrics endpoint (/metrics)
-    Instrumentator(
-        should_group_status_codes=True,
-        should_ignore_untemplated=True,
-        should_respect_env_var=True,
-        env_var_name="ENABLE_METRICS",
-    ).instrument(app).expose(app, include_in_schema=False, endpoint="/metrics")
+    enable_metrics = os.getenv("ENABLE_METRICS", "false").lower() == "true"
+    logger.info(f"ENABLE_METRICS environment variable: {os.getenv('ENABLE_METRICS')}")
+    logger.info(f"Parsed ENABLE_METRICS: {enable_metrics}")
+
+    if enable_metrics:
+        logger.info("Initializing Prometheus Instrumentator...")
+        Instrumentator(
+            should_group_status_codes=True,
+            should_ignore_untemplated=True,
+            should_respect_env_var=True,
+            env_var_name="ENABLE_METRICS",
+        ).instrument(app).expose(app, include_in_schema=False, endpoint="/metrics")
+        logger.info("Prometheus Instrumentator initialized and exposed at /metrics")
+    else:
+        logger.info("Prometheus metrics DISABLED")
 
     return app
 
