@@ -11,9 +11,12 @@ pinned: false
 
 Nostressia adalah platform pemantauan stres harian dengan tiga komponen utama: frontend (React), backend (FastAPI), dan pipeline machine learning untuk prediksi/forecast stres.
 
+
 [![Quality gate](https://sonarcloud.io/api/project_badges/quality_gate?project=akbarekaputra01_nostressia)](https://sonarcloud.io/summary/new_code?id=akbarekaputra01_nostressia)
 
+
 [![Build Status](https://akbarekaputra01-nostressia-jenkins-ci.hf.space/buildStatus/icon?job=nostressia-jenkins&subject=build&status=passing)](https://akbarekaputra01-nostressia-jenkins-ci.hf.space/job/nostressia-jenkins/)
+
 
 ## Struktur Repo
 - `nostressia-frontend/` — React + Vite.
