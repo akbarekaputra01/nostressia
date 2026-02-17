@@ -19,6 +19,33 @@ pipeline {
       }
     }
 
+    stage('ML: Setup venv + install deps') {
+      steps {
+        dir('nostressia-machine-learning') {
+          sh '''
+            set -eux
+            python -m venv .venv
+            . .venv/bin/activate
+            python -m pip install --upgrade pip
+            test -f requirements.txt
+            pip install -r requirements.txt
+          '''
+        }
+      }
+    }
+
+    stage('ML: Test') {
+      steps {
+        dir('nostressia-machine-learning') {
+          sh '''
+            set -eux
+            . .venv/bin/activate
+            pytest -q
+          '''
+        }
+      }
+    }
+
     stage('Backend: Setup venv + install deps') {
       steps {
         dir('nostressia-backend') {
@@ -58,23 +85,23 @@ pipeline {
       }
     }
 
+    stage('Frontend: Test') {
+      steps {
+        dir('nostressia-frontend') {
+          sh '''
+            set -eux
+            npm run test
+          '''
+        }
+      }
+    }
+
     stage('Frontend: Build') {
       steps {
         dir('nostressia-frontend') {
           sh '''
             set -eux
             npm run build
-          '''
-        }
-      }
-    }
-
-    stage('ML: Sanity (optional)') {
-      steps {
-        dir('nostressia-machine-learning') {
-          sh '''
-            set -eux
-            python -c "print('ML folder OK')"
           '''
         }
       }

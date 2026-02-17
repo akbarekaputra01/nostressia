@@ -63,17 +63,15 @@ def test_global_is_due_delegates_to_state_timestamp():
 
 
 def test_collect_candidates_filters_by_milestone_and_state():
+    milestone = train_personalized_module.MILESTONE_INTERVAL
+    start = pd.Timestamp("2026-01-01")
+    user_1_dates = [(start + pd.Timedelta(days=idx)).strftime("%Y-%m-%d") for idx in range(milestone)]
+
     df = pd.DataFrame(
         {
-            "user_id": [1] * 7 + [2] * 5,
-            "date": [
-                "2026-01-01",
-                "2026-01-02",
-                "2026-01-03",
-                "2026-01-04",
-                "2026-01-05",
-                "2026-01-06",
-                "2026-01-07",
+            "user_id": [1] * milestone + [2] * 5,
+            "date": user_1_dates
+            + [
                 "2026-01-01",
                 "2026-01-02",
                 "2026-01-03",
@@ -86,11 +84,11 @@ def test_collect_candidates_filters_by_milestone_and_state():
     state = MLState()
     candidates = train_personalized_module._collect_candidates(df, state, force_user_id=None)
     assert [candidate["user_id"] for candidate in candidates] == [1]
-    assert candidates[0]["milestone"] == 7
+    assert candidates[0]["milestone"] == milestone
 
     state.personalized["users"] = {
         "1": {
-            "last_trained_milestone": 7,
+            "last_trained_milestone": milestone,
             "streak_start_date": "2026-01-01",
         }
     }
