@@ -42,6 +42,8 @@ Dokumen ini menjelaskan arsitektur end-to-end Nostressia (Frontend, Backend, dan
 2. Frontend memanggil `GET /api/stress/forecast`.
 3. Backend memvalidasi eligibility (`/api/stress-levels/eligibility`) sebelum mengembalikan hasil forecast.
 4. Backend memuat artefak forecast dan mengembalikan payload forecast + eligibility.
+5. The Analytics page uses `predictionLabel` for the **Tomorrow Stress Forecast** insight card as a next-day risk summary.
+6. Forecast mode in Analytics follows Dashboard logic (global/personalized) based on eligibility + modelType, while displayed as a 1-day-ahead horizon.
 
 ### 5) Retraining Forecast (Global & Personalized)
 1. Workflow GitHub Actions merefresh `stress_forecast.csv` dari database.

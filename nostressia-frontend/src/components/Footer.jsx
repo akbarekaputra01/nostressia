@@ -34,9 +34,9 @@ export default function Footer() {
             <h3 className="text-text-primary text-sm font-bold mb-2 dark:text-text-primary">Explore</h3>
             <ul className="space-y-1.5">
               <li><Link to="/dashboard" className="text-text-secondary hover:text-brand-primary transition-colors text-xs font-medium dark:text-text-secondary dark:hover:text-brand-info">Dashboard</Link></li>
+              <li><Link to="/analytics" className="text-text-secondary hover:text-brand-primary transition-colors text-xs font-medium dark:text-text-secondary dark:hover:text-brand-info">Analytics</Link></li>
               <li><Link to="/tips" className="text-text-secondary hover:text-brand-primary transition-colors text-xs font-medium dark:text-text-secondary dark:hover:text-brand-info">Daily Tips</Link></li>
               <li><Link to="/motivations" className="text-text-secondary hover:text-brand-primary transition-colors text-xs font-medium dark:text-text-secondary dark:hover:text-brand-info">Motivation</Link></li>
-              <li><Link to="/analytics" className="text-text-secondary hover:text-brand-primary transition-colors text-xs font-medium dark:text-text-secondary dark:hover:text-brand-info">Analytics</Link></li>
               <li><Link to="/diary" className="text-text-secondary hover:text-brand-primary transition-colors text-xs font-medium dark:text-text-secondary dark:hover:text-brand-info">My Diary</Link></li>
             </ul>
           </div>

@@ -241,7 +241,8 @@ describe("Core feature pages", () => {
     expect(screen.getByText(/current streak/i)).toBeInTheDocument();
     expect(screen.getByText(/most common stress/i)).toBeInTheDocument();
     expect(screen.getByText(/most common mood/i)).toBeInTheDocument();
-    expect(screen.getByText(/average stress level/i)).toBeInTheDocument();
+    expect(screen.getByText(/tomorrow stress forecast/i)).toBeInTheDocument();
+    expect(screen.getByText(/1-day ahead/i)).toBeInTheDocument();
   });
 
   it("renders the motivation hub sections", async () => {

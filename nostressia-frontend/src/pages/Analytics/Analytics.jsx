@@ -22,7 +22,11 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { getAnalyticsSummary } from "../../services/analyticsService";
-import { getMyStressLogs } from "../../services/stressService";
+import {
+  getGlobalForecast,
+  getMyStressLogs,
+  getStressEligibility,
+} from "../../services/stressService";
 import { resolveDisplayedStreak } from "../../utils/streak";
 
 
@@ -31,6 +35,21 @@ const bgOrange = "rgb(var(--bg-gradient-orange))";
 const bgSky = "rgb(var(--bg-gradient-sky))";
 const moodEmojis = ["😢", "😕", "😐", "😊", "😄"];
 const stressLabels = ["Low", "Moderate", "High"];
+
+const PERSONALIZED_STREAK_THRESHOLD = 60;
+
+const resolveForecastMode = (eligibility, modelType = "") => {
+  const normalizedModelType = String(modelType || "").toLowerCase();
+  const isEligibleForPersonalized =
+    Number(eligibility?.streak ?? 0) >= PERSONALIZED_STREAK_THRESHOLD;
+
+  if (normalizedModelType.includes("markov_user") || normalizedModelType.includes("personalized")) {
+    return "personalized";
+  }
+
+  if (isEligibleForPersonalized) return "personalized";
+  return "global";
+};
 
 // ===== Helpers =====
 const clampNumber = (v, fallback = 0) => {
@@ -169,18 +188,9 @@ const calcSummary = (logsInRange) => {
     normalizeAnalyticsValue(d?.emoji, 5),
   );
 
-  const nonZeroStress = stressVals.filter(
-    (value) => Number.isFinite(value) && value > 0,
-  );
-
-  const avgStress = nonZeroStress.length
-    ? nonZeroStress.reduce((sum, v) => sum + v, 0) / nonZeroStress.length
-    : 0;
-
   return {
     modeStress: calcMode(stressVals),
     modeMood: calcMode(moodVals),
-    avgStress,
   };
 };
 
@@ -275,6 +285,8 @@ export default function Analytics() {
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
   const [summary, setSummary] = useState(null);
+  const [tomorrowForecastLabel, setTomorrowForecastLabel] = useState("-");
+  const [tomorrowForecastMode, setTomorrowForecastMode] = useState("global");
 
   useEffect(() => {
     if (!headerRef.current) return;
@@ -287,13 +299,55 @@ export default function Analytics() {
       setLoading(true);
       setErrorMsg("");
 
-      const data = await getMyStressLogs();
-      setLogs(Array.isArray(data) ? data : []);
-      const summaryData = await getAnalyticsSummary();
-      setSummary(summaryData);
-    } catch (err) {
-      if (err?.name === "AbortError") return;
-      setErrorMsg(err?.message || "Failed to fetch stress logs.");
+      const [logsResult, summaryResult, eligibilityResult] = await Promise.allSettled([
+        getMyStressLogs(),
+        getAnalyticsSummary(),
+        getStressEligibility(),
+      ]);
+
+      if (logsResult.status === "fulfilled") {
+        setLogs(Array.isArray(logsResult.value) ? logsResult.value : []);
+      }
+
+      if (summaryResult.status === "fulfilled") {
+        setSummary(summaryResult.value);
+      }
+
+      if (eligibilityResult.status === "fulfilled" && eligibilityResult.value?.eligible) {
+        try {
+          const forecastData = await getGlobalForecast();
+          const label = forecastData?.forecast?.predictionLabel;
+          const eligibilityFromForecast = forecastData?.eligibility || eligibilityResult.value;
+          setTomorrowForecastLabel(label || "-");
+          setTomorrowForecastMode(
+            resolveForecastMode(eligibilityFromForecast, forecastData?.forecast?.modelType),
+          );
+        } catch {
+          setTomorrowForecastLabel("Unavailable");
+          setTomorrowForecastMode(resolveForecastMode(eligibilityResult.value));
+        }
+      } else {
+        setTomorrowForecastLabel("Unavailable");
+        const fallbackEligibility =
+          eligibilityResult.status === "fulfilled" ? eligibilityResult.value : null;
+        setTomorrowForecastMode(resolveForecastMode(fallbackEligibility));
+      }
+
+      if (
+        logsResult.status === "rejected" ||
+        summaryResult.status === "rejected" ||
+        eligibilityResult.status === "rejected"
+      ) {
+        const reason =
+          logsResult.status === "rejected"
+            ? logsResult.reason
+            : summaryResult.status === "rejected"
+              ? summaryResult.reason
+              : eligibilityResult.reason;
+        if (reason?.name !== "AbortError") {
+          setErrorMsg(reason?.message || "Failed to fetch stress logs.");
+        }
+      }
     } finally {
       setLoading(false);
     }
@@ -327,7 +381,7 @@ export default function Analytics() {
     [data],
   );
 
-  const { modeStress, modeMood, avgStress } = useMemo(
+  const { modeStress, modeMood } = useMemo(
     () => calcSummary(rangeLogs),
     [rangeLogs],
   );
@@ -689,8 +743,12 @@ export default function Analytics() {
               icon: Sparkles,
             },
             {
-              title: "Average Stress Level",
-              value: getStressLabel(avgStress),
+              title: "Tomorrow Stress Forecast",
+              value: tomorrowForecastLabel,
+              meta:
+                tomorrowForecastMode === "personalized"
+                  ? "Personalized • 1-Day Ahead"
+                  : "Global • 1-Day Ahead",
               icon: BarChart3,
             },
           ].map((item, i) => {
@@ -715,9 +773,12 @@ export default function Analytics() {
                     <div className="skeleton h-3 w-24 rounded-full" />
                   </div>
                 ) : (
-                  <p className="text-3xl md:text-4xl font-bold text-text-primary mt-4">
-                    {item.value}
-                  </p>
+                  <div className="mt-4">
+                    <p className="text-3xl md:text-4xl font-bold text-text-primary">{item.value}</p>
+                    {item.meta ? (
+                      <p className="mt-1 text-xs font-medium text-text-muted">{item.meta}</p>
+                    ) : null}
+                  </div>
                 )}
               </div>
             );

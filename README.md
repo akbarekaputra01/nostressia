@@ -15,6 +15,10 @@ Nostressia adalah platform pemantauan stres harian dengan tiga komponen utama: f
 
 [![Build Status](https://akbarekaputra01-nostressia-jenkins-ci.hf.space/buildStatus/icon?job=nostressia-jenkins&subject=build&status=passing)](https://akbarekaputra01-nostressia-jenkins-ci.hf.space/job/nostressia-jenkins/)
 
+## Highlight Produk
+- Dashboard menampilkan prediksi stres saat ini dan forecast 3 hari.
+- Analytics presents daily insights including a **Tomorrow Stress Forecast** card (1-day horizon) with global/personalized mode based on backend eligibility.
+
 ## Struktur Repo
 - `nostressia-frontend/` — React + Vite.
 - `nostressia-backend/` — FastAPI API + integrasi ML inference.
