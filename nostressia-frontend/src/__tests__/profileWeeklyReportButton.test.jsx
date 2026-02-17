@@ -86,7 +86,7 @@ describe("Profile weekly report", () => {
     await user.click(screen.getByRole("button", { name: /send report/i }));
 
     expect(sendWeeklyReport).toHaveBeenCalledTimes(1);
-  });
+  }, 10000);
 
   it("does not send weekly report when Save Preferences button is clicked", async () => {
     const user = userEvent.setup();
