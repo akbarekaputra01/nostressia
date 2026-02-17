@@ -34,13 +34,25 @@ pipeline {
       }
     }
 
-    stage('ML: Test') {
+    stage('ML: Unit Test') {
       steps {
         dir('nostressia-machine-learning') {
           sh '''
             set -eux
             . .venv/bin/activate
-            pytest -q
+            pytest -q -m unit
+          '''
+        }
+      }
+    }
+
+    stage('ML: Integration Test') {
+      steps {
+        dir('nostressia-machine-learning') {
+          sh '''
+            set -eux
+            . .venv/bin/activate
+            pytest -q -m integration
           '''
         }
       }
@@ -62,13 +74,25 @@ pipeline {
       }
     }
 
-    stage('Backend: Test') {
+    stage('Backend: Unit Test') {
       steps {
         dir('nostressia-backend') {
           sh '''
             set -eux
             . .venv/bin/activate
-            pytest -q
+            pytest -q -m unit
+          '''
+        }
+      }
+    }
+
+    stage('Backend: Integration Test') {
+      steps {
+        dir('nostressia-backend') {
+          sh '''
+            set -eux
+            . .venv/bin/activate
+            pytest -q -m integration
           '''
         }
       }
@@ -85,12 +109,23 @@ pipeline {
       }
     }
 
-    stage('Frontend: Test') {
+    stage('Frontend: Unit Test') {
       steps {
         dir('nostressia-frontend') {
           sh '''
             set -eux
-            npm run test
+            npm run test:unit
+          '''
+        }
+      }
+    }
+
+    stage('Frontend: Integration Test') {
+      steps {
+        dir('nostressia-frontend') {
+          sh '''
+            set -eux
+            npm run test:integration
           '''
         }
       }

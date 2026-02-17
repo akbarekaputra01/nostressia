@@ -33,3 +33,22 @@ np_random_pickle.__bit_generator_ctor = _compat_bit_generator_ctor
 
 # NumPy compatibility alias for artifacts created with newer module paths.
 sys.modules.setdefault("numpy._core.numeric", np_core_numeric)
+
+
+import pytest
+
+
+def pytest_collection_modifyitems(items):
+    """Auto-assign ML test markers based on test file intent."""
+    integration_files = {
+        "test_model_artifacts.py",
+        "test_inference_contracts.py",
+        "test_notebook_execution_failures.py",
+    }
+
+    for item in items:
+        filename = item.fspath.basename
+        if filename in integration_files:
+            item.add_marker(pytest.mark.integration)
+        else:
+            item.add_marker(pytest.mark.unit)
