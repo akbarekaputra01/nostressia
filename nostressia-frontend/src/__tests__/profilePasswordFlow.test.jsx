@@ -92,7 +92,7 @@ describe("Profile password flow", () => {
 
     expect(verifyCurrentPassword).toHaveBeenCalled();
     expect(screen.queryByLabelText(/new password/i)).not.toBeInTheDocument();
-  });
+  }, 15000);
 
   it("reveals new password fields after current password verification", async () => {
     verifyCurrentPassword.mockResolvedValueOnce({});

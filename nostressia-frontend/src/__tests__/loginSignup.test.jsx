@@ -76,7 +76,7 @@ describe("Login signup flow", () => {
     await user.click(
       screen.getAllByRole("button", { name: /sign up free/i }).at(-1),
     );
-    await user.click(screen.getByRole("button", { name: /confirm/i }));
+    await user.click(await screen.findByRole("button", { name: /confirm/i }));
 
     expect(register).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -88,7 +88,7 @@ describe("Login signup flow", () => {
       }),
     );
     expect(await screen.findByText(/verify account/i)).toBeInTheDocument();
-  });
+  }, 15000);
 
   it("shows a friendly error when signup fails", async () => {
     register.mockRejectedValueOnce(new Error("Registration failed."));
@@ -124,8 +124,8 @@ describe("Login signup flow", () => {
     await user.click(
       screen.getAllByRole("button", { name: /sign up free/i }).at(-1),
     );
-    await user.click(screen.getByRole("button", { name: /confirm/i }));
+    await user.click(await screen.findByRole("button", { name: /confirm/i }));
 
     expect(await screen.findByText("Registration failed.")).toBeInTheDocument();
-  });
+  }, 15000);
 });

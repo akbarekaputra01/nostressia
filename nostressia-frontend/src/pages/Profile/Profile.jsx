@@ -656,9 +656,25 @@ export default function Profile() {
       Boolean(localAvatarPreview) ||
       shouldClearProfilePicture);
 
+  const notificationTimeoutRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (notificationTimeoutRef.current) {
+        clearTimeout(notificationTimeoutRef.current);
+      }
+    };
+  }, []);
+
   const showNotification = useCallback((message, type = "success") => {
     setNotification({ message, type });
-    setTimeout(() => setNotification(null), 3000);
+    if (notificationTimeoutRef.current) {
+      clearTimeout(notificationTimeoutRef.current);
+    }
+    notificationTimeoutRef.current = setTimeout(() => {
+      setNotification(null);
+      notificationTimeoutRef.current = null;
+    }, 3000);
   }, []);
 
   const openConfirm = useCallback((config) => {
