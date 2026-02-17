@@ -274,7 +274,7 @@ describe("Core feature pages", () => {
     await user.click(categoryCard);
 
     expect(await screen.findByRole("heading", { name: /focus boost/i })).toBeInTheDocument();
-    expect(screen.getByText(/try a 25-minute focus sprint/i)).toBeInTheDocument();
+    expect(screen.getByText(/25-minute focus sprint/i)).toBeInTheDocument();
     expect(screen.getByText(/silence notifications/i)).toBeInTheDocument();
   });
 
