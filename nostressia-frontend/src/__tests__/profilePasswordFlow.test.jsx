@@ -65,6 +65,10 @@ vi.mock("react-router-dom", async () => {
   };
 });
 
+beforeEach(() => {
+  vi.clearAllMocks();
+});
+
 describe("Profile password flow", () => {
   it("keeps new password fields hidden until current password is verified", async () => {
     verifyCurrentPassword.mockRejectedValueOnce(
