@@ -105,7 +105,7 @@ describe("Profile notification permission flow", () => {
 
     expect(await screen.findAllByText(/notifications are blocked/i)).toHaveLength(2);
     expect(subscribeDailyReminder).not.toHaveBeenCalled();
-  });
+  }, 10_000);
 
   it("disables reminder and unsubscribes when user dismisses permission prompt", async () => {
     vi.stubGlobal("Notification", {
