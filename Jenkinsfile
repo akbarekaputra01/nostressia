@@ -112,7 +112,7 @@ pipeline {
 
     stage('Frontend: Install + Lint + Test + Build') {
       steps {
-        dir('nostressia-frontend') {
+        dir('nostressia-machine-learning') {
           sh '''
             set -eux
             npm ci
@@ -120,6 +120,11 @@ pipeline {
             npm run test
             npm run build
           '''
+        }
+      }
+      post {
+        always {
+          junit allowEmptyResults: true, testResults: 'nostressia-machine-learning/pytest-report.xml'
         }
       }
     }
