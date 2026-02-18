@@ -33,6 +33,7 @@ import { motion as Motion, AnimatePresence } from "framer-motion";
 import Toast from "../../components/Toast";
 import ConfirmModal from "../../components/ConfirmModal";
 import PageMeta from "../../components/PageMeta";
+import { playUiSound, soundTypeFromToast } from "../../utils/uiSound";
 
 
 import logoBuka from "../../assets/images/Logo-Buka.png";
@@ -151,6 +152,7 @@ export default function Login() {
 
   const showToast = (message, type = "info") => {
     setToast({ message, type });
+    playUiSound(soundTypeFromToast(type));
     setTimeout(() => setToast(null), 3000);
   };
 

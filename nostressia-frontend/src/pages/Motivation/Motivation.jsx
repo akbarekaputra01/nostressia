@@ -25,6 +25,7 @@ import { getMotivations } from "../../services/motivationService";
 import { readAuthToken } from "../../utils/auth";
 import { createLogger } from "../../utils/logger";
 import { useTheme } from "../../theme/ThemeProvider";
+import { playUiSound, soundTypeFromToast } from "../../utils/uiSound";
 
 const logger = createLogger("MOTIVATION");
 
@@ -80,6 +81,7 @@ export default function Motivation() {
 
   const showToast = (message, type = "success") => {
     setToast({ message, type });
+    playUiSound(soundTypeFromToast(type));
     setTimeout(() => setToast(null), 2000);
   };
 
