@@ -21,6 +21,11 @@ import { clearAuthToken, readAuthToken } from "../../utils/auth";
 import { createLogger } from "../../utils/logger";
 import { storage, STORAGE_KEYS } from "../../utils/storage";
 import { useTheme } from "../../theme/ThemeProvider";
+import {
+  calculateDailyActivityHours,
+  isWithinDailyActivityLimit,
+  MAX_DAILY_ACTIVITY_HOURS,
+} from "./stressInputRules";
 
 const logger = createLogger("DASHBOARD");
 
@@ -1281,6 +1286,21 @@ export default function Dashboard() {
 
     if (sleepHours === "" || sleepHours < 0 || sleepHours > 24) {
       return showToast("Please enter valid sleep hours (0-24).", "warning");
+    }
+
+    const totalDailyHours = calculateDailyActivityHours({
+      studyHours,
+      extracurricularHours: extraHours,
+      sleepHours,
+      socialHours,
+      physicalHours,
+    });
+
+    if (!isWithinDailyActivityLimit(totalDailyHours)) {
+      return showToast(
+        `Total daily activity hours cannot exceed ${MAX_DAILY_ACTIVITY_HOURS} hours.`,
+        "warning",
+      );
     }
 
     try {

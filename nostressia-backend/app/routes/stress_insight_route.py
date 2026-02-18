@@ -14,6 +14,9 @@ from app.utils.response import success_response
 router = APIRouter(prefix="/stress", tags=["Stress Insights"])
 
 
+MAX_DAILY_ACTIVITY_HOURS = 24
+
+
 @router.post("/current", response_model=APIResponse[PredictResponse])
 def predict_current_stress(
     request: PredictRequest,
@@ -27,6 +30,21 @@ def predict_current_stress(
         "physical_hours": request.physical_hours,
         "gpa": request.gpa,
     }
+
+    total_daily_hours = (
+        request.study_hours
+        + request.extracurricular_hours
+        + request.sleep_hours
+        + request.social_hours
+        + request.physical_hours
+    )
+    if total_daily_hours > MAX_DAILY_ACTIVITY_HOURS:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=(
+                f"Total daily activity hours cannot exceed {MAX_DAILY_ACTIVITY_HOURS} hours."
+            ),
+        )
 
     try:
         result = ml_service.predict_stress_or_raise(input_data)
