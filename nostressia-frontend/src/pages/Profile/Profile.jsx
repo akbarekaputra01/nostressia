@@ -43,6 +43,7 @@ import { clearAuthToken, readAuthToken } from "../../utils/auth";
 import { createLogger } from "../../utils/logger";
 import { resolveLegacyValue, storage, STORAGE_KEYS } from "../../utils/storage";
 import { resolveDisplayedStreak } from "../../utils/streak";
+import { playUiSound, soundTypeFromToast } from "../../utils/uiSound";
 import {
   saveProfilePictureUrl,
   uploadToAzure,
@@ -668,6 +669,7 @@ export default function Profile() {
 
   const showNotification = useCallback((message, type = "success") => {
     setNotification({ message, type });
+    playUiSound(soundTypeFromToast(type));
     if (notificationTimeoutRef.current) {
       clearTimeout(notificationTimeoutRef.current);
     }

@@ -11,6 +11,7 @@ import { useTheme } from "../../theme/ThemeProvider";
 import { createDiary, getMyDiaries, updateDiary } from "../../services/diaryService";
 import { readAuthToken } from "../../utils/auth";
 import { createLogger } from "../../utils/logger";
+import { playUiSound, soundTypeFromToast } from "../../utils/uiSound";
 
 const logger = createLogger("DIARY");
 
@@ -90,6 +91,7 @@ export default function Diary() {
 
   const showToast = (message, type = "info") => {
     setToast({ message, type });
+    playUiSound(soundTypeFromToast(type));
     setTimeout(() => setToast(null), 3000);
   };
 

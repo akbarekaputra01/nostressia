@@ -20,6 +20,7 @@ import { updateProfile } from "../../services/authService";
 import { clearAuthToken, readAuthToken } from "../../utils/auth";
 import { createLogger } from "../../utils/logger";
 import { storage, STORAGE_KEYS } from "../../utils/storage";
+import { playUiSound, soundTypeFromToast } from "../../utils/uiSound";
 import { useTheme } from "../../theme/ThemeProvider";
 import {
   calculateDailyActivityHours,
@@ -429,6 +430,7 @@ export default function Dashboard() {
 
   const showToast = useCallback((message, type = "info") => {
     setToast({ message, type });
+    playUiSound(soundTypeFromToast(type));
     setTimeout(() => setToast(null), 3000);
   }, []);
 
