@@ -17,8 +17,18 @@ Training dijalankan melalui script Python yang mengeksekusi notebook menggunakan
 
 ## Setup Environment
 ```bash
+# Create venv
 python -m venv .venv
+
+# Activate venv
+# Windows (Git Bash):
+source .venv/Scripts/activate
+# Windows (Command Prompt):
+.venv\Scripts\activate.bat
+# Linux / Mac:
 source .venv/bin/activate
+
+# Install dependencies
 pip install -r requirements.txt
 ```
 
@@ -46,15 +56,26 @@ Kolom inti:
 `sleep_hour_per_day`, `study_hour_per_day`, `social_hour_per_day`, `emoji`,
 `is_restored`, `created_at`.
 
-## Menjalankan Training
+## Automated Training (Production)
+
+Produksi menggunakan **GitHub Actions** untuk training otomatis (Background/Offline Training).
+
+| Model | Workflow | Trigger |
+|-------|----------|---------|
+| **Global Forecast** | `global-training-worker.yml` | Setiap hari 00:00 UTC. Script mengecek interval 60 hari. |
+| **Personalized Forecast** | `personalized-training-worker.yml` | Setiap hari 00:00 UTC. Script mengecek milestone user (60, 120, ... hari). |
+| **Current Stress** | - | **Manual**. Tidak ada otomatisasi saat ini. |
+
+## Manual Training (Development & Testing)
+Gunakan command ini untuk reproduksi lokal, debugging, atau memaksa update (force).
 Jalankan dari folder `nostressia-machine-learning`.
 
-### Current stress
+### Current stress (Manual Only)
 ```bash
 python Current-Stress/scripts/train_current_stress.py
 ```
 
-### Global forecast
+### Global forecast (Dev/Force)
 ```bash
 python Stress-Forecast/scripts/train_global.py
 ```

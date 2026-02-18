@@ -27,7 +27,16 @@ Dokumen ini menjelaskan alur training model yang dipakai saat ini di repository 
 4. Artifact model (`.joblib`) dan metadata (`.meta.json`) ditulis ke backend models directory.
 5. Informasi gating retrain disimpan di `.ml_state.json`.
 
-## Command Utama
+## Otomatisasi (Production Environment)
+
+Sistem menggunakan **GitHub Actions** sebagai runner untuk "Offline Training".
+1.  **Global Forecast**: `global-training-worker.yml` (Daily Check).
+2.  **Personalized Forecast**: `personalized-training-worker.yml` (Daily Check).
+
+Backend tidak melakukan training. Backend hanya memuat artifact (`.joblib`) yang dihasilkan oleh workflow ini.
+
+## Command Manual (Untuk Development & Testing)
+Gunakan command ini hanya untuk testing lokal atau debugging.
 Dari root repo:
 
 ```bash
