@@ -84,6 +84,26 @@ def test_predict_current_stress_model_not_ready(client, monkeypatch):
     assert response.json()["message"] == "Stress prediction model is not available right now."
 
 
+def test_predict_current_stress_rejects_total_daily_hours_above_24(client):
+    response = client.post(
+        "/api/stress/current",
+        json={
+            "studyHours": 10,
+            "extracurricularHours": 5,
+            "sleepHours": 8,
+            "socialHours": 2,
+            "physicalHours": 1,
+            "gpa": 3.5,
+        },
+    )
+
+    assert response.status_code == 422
+    assert (
+        "Total daily activity hours cannot exceed 24 hours."
+        in response.json()["message"]
+    )
+
+
 def test_predict_current_stress_invalid_input_error(client, monkeypatch):
     monkeypatch.setattr(
         "app.routes.stress_insight_route.ml_service.predict_stress_or_raise",

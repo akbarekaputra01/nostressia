@@ -106,9 +106,27 @@ Endpoint root & health disediakan tanpa prefix untuk kebutuhan monitoring/health
 }
 ```
 
+> Validation rule: `studyHours + extracurricularHours + sleepHours + socialHours + physicalHours <= 24`.
+
 **Response (data)**
 ```json
 { "result": "Low", "message": "Your stress level is detected as: Low" }
+```
+
+**Validation error example (`422`)**
+```json
+{
+  "success": false,
+  "message": "Total daily activity hours cannot exceed 24 hours.",
+  "errors": [
+    {
+      "field": "body",
+      "message": "Total daily activity hours cannot exceed 24 hours."
+    }
+  ],
+  "data": null,
+  "meta": null
+}
 ```
 
 ### Forecast
