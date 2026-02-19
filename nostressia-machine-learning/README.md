@@ -16,8 +16,15 @@ Training dijalankan melalui script Python yang mengeksekusi notebook menggunakan
 - **Streak >= 60 hari**: User dapat menggunakan **Personalized Forecast**
 
 ## Setup Environment
+**Prerequisite**: Python 3.10 is required.
+
 ```bash
-# Create venv
+# Create venv (Ensure Python 3.10)
+# Windows (if multiple versions installed):
+py -3.10 -m venv .venv
+# Linux / Mac / Default Windows:
+python3.10 -m venv .venv
+# OR if python 3.10 is your default:
 python -m venv .venv
 
 # Activate venv
