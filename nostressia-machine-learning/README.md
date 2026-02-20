@@ -100,7 +100,7 @@ python Stress-Forecast/scripts/train_personalized.py --force-user-id 123
 ```
 
 ## MLflow
-Tracking lokal disimpan di `mlruns/`.
+Tracking lokal disimpan di `mlruns/` dan menggunakan **MLflow 3.9.0**.
 
 Menjalankan UI:
 ```bash

@@ -91,7 +91,7 @@ cd ../nostressia-machine-learning && pytest -q
 ```
 
 ## MLflow
-Tracking lokal disimpan di `mlruns/`.
+Tracking lokal disimpan di `mlruns/` dan menggunakan **MLflow 3.9.0**.
 ```bash
 mlflow ui
 ```
