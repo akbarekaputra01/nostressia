@@ -100,13 +100,19 @@ python Stress-Forecast/scripts/train_personalized.py --force-user-id 123
 ```
 
 ## MLflow
-Tracking lokal disimpan di `mlruns/`.
+Tracking lokal disimpan di `mlruns/` dan menggunakan **MLflow 3.9.0**.
 
 Menjalankan UI:
 ```bash
 mlflow ui
 ```
 Lalu buka `http://127.0.0.1:5000`.
+
+Verifikasi versi MLflow lokal:
+```bash
+python -c "import mlflow; print(mlflow.__version__)"
+```
+Output harus `3.9.0`.
 
 ## Output Artefak untuk Backend
 Artefak utama ditulis ke:
