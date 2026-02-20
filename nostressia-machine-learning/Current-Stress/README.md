@@ -79,3 +79,20 @@ Dataset ini bertujuan untuk menganalisis bagaimana pola aktivitas harian mahasis
 #### Distribusi Kelas
 
 - Sebagian besar mahasiswa berada pada kategori **stres sedang** dan **stres tinggi**, sementara jumlah mahasiswa dengan **stres rendah** relatif lebih sedikit
+
+---
+
+## Current-Stress Experiment Pipeline (MLflow)
+
+Gunakan script berikut untuk menjalankan seluruh eksperimen Current-Stress dengan style pipeline yang konsisten:
+
+```bash
+python nostressia-machine-learning/Current-Stress/scripts/run_current_stress_experiments.py
+```
+
+Perbaikan utama yang sudah dicakup:
+- Semua model didaftarkan ke MLflow Model Registry (otomatis membuat version).
+- Dataset selalu dilog sebagai `mlflow.log_input(...)` agar kolom Dataset tidak `-`.
+- Metrik diperluas (accuracy, precision/recall/f1 macro-micro-weighted, balanced accuracy, ROC-AUC, log loss, MCC, Cohen Kappa, dan per-class metrics).
+- Description run ditulis ke `mlflow.note.content` + tag deskripsi run.
+- Struktur training seragam dan rapi dengan pendekatan pipeline profesional.
