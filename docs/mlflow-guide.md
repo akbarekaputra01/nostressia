@@ -2,6 +2,32 @@
 
 This guide explains how to run the training scripts for Nostressia models and view the results in the MLflow UI.
 
+## Fresh Clone Quickstart (MLflow 3.9.0)
+
+If you just cloned the repository, use these steps first.
+
+### Linux / macOS
+```bash
+git clone <repo-url>
+cd nostressia
+python3.10 -m venv .venv
+source .venv/bin/activate
+pip install -r nostressia-machine-learning/requirements.txt
+python -c "import mlflow; print(mlflow.__version__)"
+```
+Expected output: `3.9.0`
+
+### Windows (PowerShell)
+```powershell
+git clone <repo-url>
+cd nostressia
+py -3.10 -m venv .venv
+.venv\Scripts\Activate.ps1
+pip install -r nostressia-machine-learning/requirements.txt
+python -c "import mlflow; print(mlflow.__version__)"
+```
+Expected output: `3.9.0`
+
 ## Prerequisites
 
 Ensure you are in the project root directory and your Python virtual environment is activated.
@@ -61,6 +87,15 @@ Open your web browser and go to:
 - **Runs**: List of individual training runs with timestamps.
 - **Metrics**: Click on a run to see performance metrics (e.g., RMSE, accuracy, latency).
 - **Artifacts**: View the actual model files (`.joblib`) and the **executed notebook** (`.ipynb` converted to HTML/Markdown) which contains charts and EDA from the run.
+
+### Quick Verification Checklist
+After running one training script, verify these points in MLflow UI:
+1. Experiment name appears (`Global Stress Forecast`, `Personalized Stress Forecast`, or `Current Stress Model`).
+2. A new run row appears with a recent timestamp.
+3. `Parameters` and `Metrics` are populated.
+4. Under `Artifacts`, you can open model artifacts and notebook outputs.
+
+If no run appears, re-run training from project root and ensure `mlruns/` is created there.
 
 ### Troubleshooting
 If you see `ModuleNotFoundError` or other missing package errors, you are likely using the wrong Python environment.

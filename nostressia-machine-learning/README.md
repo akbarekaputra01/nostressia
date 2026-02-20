@@ -108,6 +108,12 @@ mlflow ui
 ```
 Lalu buka `http://127.0.0.1:5000`.
 
+Verifikasi versi MLflow lokal:
+```bash
+python -c "import mlflow; print(mlflow.__version__)"
+```
+Output harus `3.9.0`.
+
 ## Output Artefak untuk Backend
 Artefak utama ditulis ke:
 - `nostressia-backend/app/models_ml/current_stress.joblib`
