@@ -161,4 +161,8 @@ def log_and_register_model(model, X_train, model_name: str, artifact_path: str =
 
 
 def setup_mlflow() -> None:
+    repo_root = resolve_repo_root()
+    tracking_dir = repo_root / "nostressia-machine-learning" / "Current-Stress" / "notebooks" / "experiments" / "mlruns"
+    tracking_dir.mkdir(parents=True, exist_ok=True)
+    mlflow.set_tracking_uri(f"file:{tracking_dir.resolve().as_posix()}")
     mlflow.set_experiment(EXPERIMENT_NAME)
