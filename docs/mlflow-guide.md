@@ -43,7 +43,7 @@ python nostressia-machine-learning/Current-Stress/scripts/train_current_stress.p
 
 ## 2. Viewing Results in MLflow UI
 
-All training scripts log their metrics, parameters, and artifacts (including executed notebooks) to the local `mlruns` directory.
+All training scripts log their metrics, parameters, and artifacts (including executed notebooks) to the local `mlruns` directory using MLflow 3.9.0.
 
 ### Start the UI Server
 Run the following command from the project root:
