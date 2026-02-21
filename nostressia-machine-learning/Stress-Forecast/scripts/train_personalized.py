@@ -118,6 +118,17 @@ def _execute_notebook(notebook_path: Path, parameters: Dict[str, Any], timeout_s
     )
     notebook.cells.insert(0, param_cell)
 
+    svm_grid_fallback_cell = nbformat.v4.new_code_cell(
+        "\n".join(
+            [
+                "# Safety fallback for notebooks that reference SVM_GRID without defining it.",
+                "if \"SVM_GRID\" not in globals():",
+                "    SVM_GRID = {\"C\": [0.03, 0.1, 0.3, 1.0, 3.0]}",
+            ]
+        )
+    )
+    notebook.cells.insert(1, svm_grid_fallback_cell)
+
     # Inject Latency Measurement Cell
     # Robust logic for Markov and Personalized models
     latency_code = """
