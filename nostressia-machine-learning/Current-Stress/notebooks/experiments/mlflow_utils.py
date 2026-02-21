@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import random
 import tempfile
+from time import perf_counter
 from pathlib import Path
 from typing import Any
 
@@ -83,10 +84,50 @@ def evaluate_classification(y_true, y_pred, y_proba=None) -> dict[str, float]:
         try:
             metrics["roc_auc_ovr_weighted"] = roc_auc_score(y_true, y_proba, multi_class="ovr", average="weighted")
             metrics["log_loss"] = log_loss(y_true, y_proba)
+            confidence = np.max(np.asarray(y_proba), axis=1)
+            metrics["confidence_p50"] = float(np.percentile(confidence, 50))
+            metrics["confidence_p90"] = float(np.percentile(confidence, 90))
+            metrics["confidence_p95"] = float(np.percentile(confidence, 95))
+            metrics["confidence_p99"] = float(np.percentile(confidence, 99))
         except ValueError:
             pass
     return {k: float(v) for k, v in metrics.items()}
 
+
+
+def measure_latency_percentiles(model, X: pd.DataFrame, include_predict_proba: bool = True, max_samples: int = 200) -> dict[str, float]:
+    sample = X.head(max_samples)
+    predict_latencies_ms: list[float] = []
+
+    for i in range(len(sample)):
+        row = sample.iloc[[i]]
+        start = perf_counter()
+        model.predict(row)
+        predict_latencies_ms.append((perf_counter() - start) * 1000.0)
+
+    metrics = {
+        "latency_predict_p50_ms": float(np.percentile(predict_latencies_ms, 50)),
+        "latency_predict_p90_ms": float(np.percentile(predict_latencies_ms, 90)),
+        "latency_predict_p95_ms": float(np.percentile(predict_latencies_ms, 95)),
+        "latency_predict_p99_ms": float(np.percentile(predict_latencies_ms, 99)),
+    }
+
+    if include_predict_proba and hasattr(model, "predict_proba"):
+        proba_latencies_ms: list[float] = []
+        for i in range(len(sample)):
+            row = sample.iloc[[i]]
+            start = perf_counter()
+            model.predict_proba(row)
+            proba_latencies_ms.append((perf_counter() - start) * 1000.0)
+
+        metrics.update({
+            "latency_predict_proba_p50_ms": float(np.percentile(proba_latencies_ms, 50)),
+            "latency_predict_proba_p90_ms": float(np.percentile(proba_latencies_ms, 90)),
+            "latency_predict_proba_p95_ms": float(np.percentile(proba_latencies_ms, 95)),
+            "latency_predict_proba_p99_ms": float(np.percentile(proba_latencies_ms, 99)),
+        })
+
+    return metrics
 
 def log_classification_artifacts(y_true, y_pred, output_dir: Path, y_proba=None, prefix: str = "test") -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
