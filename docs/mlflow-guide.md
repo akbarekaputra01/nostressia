@@ -72,13 +72,23 @@ python nostressia-machine-learning/Current-Stress/scripts/train_current_stress.p
 All training scripts log their metrics, parameters, and artifacts (including executed notebooks) to the local `mlruns` directory using MLflow 3.9.0.
 
 ### Start the UI Server
-Run the following command from the project root:
+Recommended (ensures UI reads exactly the same `mlruns/` directory used by training scripts):
 
 ```bash
-mlflow ui
+python nostressia-machine-learning/runner/start_mlflow_ui.py
 ```
 
-This remains the default and simplest way to open MLflow UI.
+Jika port `5000` sedang dipakai aplikasi lain, gunakan auto-port:
+
+```bash
+python nostressia-machine-learning/runner/start_mlflow_ui.py --auto-port
+```
+
+Alternative (manual command):
+
+```bash
+mlflow ui --backend-store-uri file:./mlruns --registry-store-uri file:./mlruns --workers 1 --port 5000
+```
 
 ### Access the Dashboard
 Open your web browser and go to:
@@ -89,7 +99,9 @@ Open your web browser and go to:
 If terminal output says `Uvicorn running on http://127.0.0.1:5000` but browser only spins, check this in order:
 
 1. **Use exact URL**: open `http://127.0.0.1:5000` (not `https://`, not other hostname).
-2. **If you see `[Errno 10048] ... bind ... 5000`**: it means port `5000` is already used by another process (usually old MLflow still running).
+2. **If you see `[Errno 10048] ... bind ... 5000`**: it means port `5000` is already used by another process (usually old MLflow still running). Kamu bisa:
+   - kill proses lama, **atau**
+   - langsung jalankan `python nostressia-machine-learning/runner/start_mlflow_ui.py --auto-port` supaya otomatis pindah ke port kosong.
    - Check PID pemakai port:
    ```powershell
    netstat -ano | findstr :5000
@@ -136,6 +148,8 @@ After running one training script, verify these points in MLflow UI:
 4. Under `Artifacts`, you can open model artifacts and notebook outputs.
 
 If no run appears, re-run training from project root and ensure `mlruns/` is created there.
+
+> Common cause: training logs to `<repo>/mlruns`, but MLflow UI was started from another folder so it reads a different `./mlruns` path. Using `start_mlflow_ui.py` prevents this mismatch.
 
 
 ## 3. Reset MLflow (Biar Benar-Benar Bersih Seperti Belum Pernah Training)
