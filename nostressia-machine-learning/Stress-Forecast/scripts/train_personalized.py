@@ -770,210 +770,200 @@ def train_personalized(
             raise RuntimeError("Personalized training output is not a valid dictionary artifact payload.")
         merged_payload = _merge_personalized_artifact(merged_payload, incoming_payload)
 
-        # MLflow logging
+        # Checkpoint merged model immediately so training result is not lost
+        # even if subsequent MLflow logging/registration fails.
+        DEFAULT_MODEL_OUT.parent.mkdir(parents=True, exist_ok=True)
+        joblib.dump(merged_payload, DEFAULT_MODEL_OUT)
+        print(f"Checkpointed personalized model artifact to: {DEFAULT_MODEL_OUT}")
+
+        # MLflow logging (best-effort; training artifact is already checkpointed above)
         # Use simplified URI format "file:D:/..." as requested (replace backslashes with forward slashes)
-        tracking_uri = "file:" + str(REPO_ROOT / "mlruns").replace("\\", "/")
-        mlflow.set_tracking_uri(tracking_uri)
-        mlflow.set_experiment("Personalized Forecast")
-
         run_id = ""
-        with mlflow.start_run(run_name=f"user_{user_id}_milestone_{milestone}"):
-            run_id = mlflow.active_run().info.run_id
-            mlflow.set_tag("mlflow.note.content", f"Personalized stress forecast training run for user_id={user_id}.")
-            mlflow.log_param("user_id", user_id)
-            mlflow.log_param("milestone", milestone)
-            mlflow.log_param("window_size", milestone)
-            mlflow.log_param("data_hash", data_hash)
-            _log_dataset_details(DATASET_PATH, artifact_subdir="dataset")
-            
-            # Log Dataset Input (MLflow 2.x/3.x)
-            try:
-                # Log the training dataset
-                training_ds = mlflow.data.from_pandas(
-                    df, 
-                    name="Personalized_Stress_Training", 
-                    targets=TARGET_COL
-                )
-                mlflow.log_input(training_ds, context="training")
-                print(f"Logged training dataset 'Personalized_Stress_Training' for user {user_id}.")
-            except Exception as e:
-                print(f"Warning: Could not log training dataset: {e}")
+        try:
+            tracking_uri = "file:" + str(REPO_ROOT / "mlruns").replace("\\", "/")
+            mlflow.set_tracking_uri(tracking_uri)
+            mlflow.set_experiment("Personalized Forecast")
 
-            mlflow.log_artifact(str(output_path))
-            
-            # Log Model (extract from payload)
-            try:
-                model = None
-                model_type = None
-                
-                # Identify model type from payload
-                if isinstance(incoming_payload, dict):
-                    best_name = incoming_payload.get('best_name', '')
-                    artifact = incoming_payload.get('artifact', {})
-                    
-                    # Check for Markov model
-                    if 'probs_by_user' in artifact:
-                        model_type = 'markov'
-                        # For Markov, we'll log the entire artifact payload
-                        model = incoming_payload
-                    # Check for sklearn model
-                    elif 'models_by_user' in artifact:
-                        model_type = 'sklearn'
-                        models_by_user = artifact.get('models_by_user', {})
-                        model = models_by_user.get(user_id) or models_by_user.get(str(user_id))
-                    # Fallback: check top-level keys
-                    elif 'models_by_user' in incoming_payload:
-                        model_type = 'sklearn'
-                        models_by_user = incoming_payload['models_by_user']
-                        model = models_by_user.get(user_id) or models_by_user.get(str(user_id))
-                
-                model_logged = False
-                if model:
-                    if model_type == 'sklearn':
-                        # Log sklearn model
-                        signature = None
-                        input_example = None
-                        user_df = df[df['user_id'] == user_id]
-                        if not user_df.empty:
-                            input_example = user_df.head(1)
-                            try:
-                                prediction = model.predict_proba(input_example)
-                                signature = infer_signature(input_example, prediction)
-                            except Exception as sub_e:
+            with mlflow.start_run(run_name=f"user_{user_id}_milestone_{milestone}"):
+                run_id = mlflow.active_run().info.run_id
+                mlflow.set_tag("mlflow.note.content", f"Personalized stress forecast training run for user_id={user_id}.")
+                mlflow.log_param("user_id", user_id)
+                mlflow.log_param("milestone", milestone)
+                mlflow.log_param("window_size", milestone)
+                mlflow.log_param("data_hash", data_hash)
+                _log_dataset_details(DATASET_PATH, artifact_subdir="dataset")
+
+                # Log Dataset Input (MLflow 2.x/3.x)
+                try:
+                    training_ds = mlflow.data.from_pandas(
+                        df,
+                        name="Personalized_Stress_Training",
+                        targets=TARGET_COL,
+                    )
+                    mlflow.log_input(training_ds, context="training")
+                    print(f"Logged training dataset 'Personalized_Stress_Training' for user {user_id}.")
+                except Exception as e:
+                    print(f"Warning: Could not log training dataset: {e}")
+
+                mlflow.log_artifact(str(output_path))
+
+                # Log Model (extract from payload)
+                try:
+                    model = None
+                    model_type = None
+
+                    # Identify model type from payload
+                    if isinstance(incoming_payload, dict):
+                        artifact = incoming_payload.get("artifact", {})
+
+                        # Check for Markov model
+                        if "probs_by_user" in artifact:
+                            model_type = "markov"
+                            model = incoming_payload
+                        # Check for sklearn model
+                        elif "models_by_user" in artifact:
+                            model_type = "sklearn"
+                            models_by_user = artifact.get("models_by_user", {})
+                            model = models_by_user.get(user_id) or models_by_user.get(str(user_id))
+                        # Fallback: check top-level keys
+                        elif "models_by_user" in incoming_payload:
+                            model_type = "sklearn"
+                            models_by_user = incoming_payload["models_by_user"]
+                            model = models_by_user.get(user_id) or models_by_user.get(str(user_id))
+
+                    model_logged = False
+                    if model:
+                        if model_type == "sklearn":
+                            signature = None
+                            input_example = None
+                            user_df = df[df["user_id"] == user_id]
+                            if not user_df.empty:
+                                input_example = user_df.head(1)
                                 try:
-                                    prediction = model.predict(input_example)
+                                    prediction = model.predict_proba(input_example)
                                     signature = infer_signature(input_example, prediction)
-                                except:
-                                    print(f"Warning: Could not infer signature for user {user_id}: {sub_e}")
+                                except Exception as sub_e:
+                                    try:
+                                        prediction = model.predict(input_example)
+                                        signature = infer_signature(input_example, prediction)
+                                    except Exception:
+                                        print(f"Warning: Could not infer signature for user {user_id}: {sub_e}")
 
-                        model_info = mlflow.sklearn.log_model(
-                            sk_model=model,
-                            artifact_path="model",
-                            signature=signature,
-                            input_example=input_example,
-                            registered_model_name=REGISTERED_MODEL_NAME
-                        )
-                        _ensure_registered_model_with_description(
-                            registered_model_name=REGISTERED_MODEL_NAME,
-                            model_uri=model_info.model_uri,
-                            run_id=mlflow.active_run().info.run_id,
-                            model_description="Per-user personalized stress forecasting model.",
-                            version_description=f"Run {mlflow.active_run().info.run_id} | user_id={user_id} | personalized forecast",
-                        )
-                        model_logged = True
-                        print(f"Logged sklearn model for user {user_id} and registered as '{REGISTERED_MODEL_NAME}' with descriptions.")
-                    
-                    elif model_type == 'markov':
-                        # Log Markov model artifact using pyfunc
-                        # Create a simple wrapper for Markov model
-                        
-                        class MarkovModelWrapper(mlflow.pyfunc.PythonModel):
-                            def __init__(self, artifact_payload, user_id):
-                                self.artifact = artifact_payload.get('artifact', {})
-                                self.user_id = user_id
-                                self.probs = self.artifact.get('probs_by_user', {}).get(user_id, {})
-                            
+                            model_info = mlflow.sklearn.log_model(
+                                sk_model=model,
+                                artifact_path="model",
+                                signature=signature,
+                                input_example=input_example,
+                                registered_model_name=REGISTERED_MODEL_NAME,
+                            )
+                            _ensure_registered_model_with_description(
+                                registered_model_name=REGISTERED_MODEL_NAME,
+                                model_uri=model_info.model_uri,
+                                run_id=mlflow.active_run().info.run_id,
+                                model_description="Per-user personalized stress forecasting model.",
+                                version_description=f"Run {mlflow.active_run().info.run_id} | user_id={user_id} | personalized forecast",
+                            )
+                            model_logged = True
+                            print(f"Logged sklearn model for user {user_id} and registered as '{REGISTERED_MODEL_NAME}' with descriptions.")
+
+                        elif model_type == "markov":
+                            class MarkovModelWrapper(mlflow.pyfunc.PythonModel):
+                                def __init__(self, artifact_payload, user_id):
+                                    self.artifact = artifact_payload.get("artifact", {})
+                                    self.user_id = user_id
+                                    self.probs = self.artifact.get("probs_by_user", {}).get(user_id, {})
+
+                                def predict(self, context, model_input):
+                                    import numpy as np
+
+                                    n = len(model_input) if hasattr(model_input, "__len__") else 1
+                                    return np.array([[0.33, 0.33, 0.34]] * n)
+
+                            markov_wrapper = MarkovModelWrapper(model, user_id)
+                            model_info = mlflow.pyfunc.log_model(
+                                artifact_path="model",
+                                python_model=markov_wrapper,
+                                registered_model_name=REGISTERED_MODEL_NAME,
+                            )
+                            _ensure_registered_model_with_description(
+                                registered_model_name=REGISTERED_MODEL_NAME,
+                                model_uri=model_info.model_uri,
+                                run_id=mlflow.active_run().info.run_id,
+                                model_description="Per-user personalized stress forecasting model.",
+                                version_description=f"Run {mlflow.active_run().info.run_id} | user_id={user_id} | markov personalized forecast",
+                            )
+                            model_logged = True
+                            print(f"Logged Markov model for user {user_id} as pyfunc and registered as '{REGISTERED_MODEL_NAME}' with descriptions.")
+
+                    if not model_logged:
+                        class PersonalizedPayloadWrapper(mlflow.pyfunc.PythonModel):
+                            def __init__(self, payload: Dict[str, Any], uid: int):
+                                self.payload = payload
+                                self.uid = uid
+
                             def predict(self, context, model_input):
-                                # Simple predict for Markov: return probabilities
-                                import pandas as pd
                                 import numpy as np
-                                n = len(model_input) if hasattr(model_input, '__len__') else 1
-                                # Return dummy predictions (Markov needs state-based logic)
+
+                                n = len(model_input) if hasattr(model_input, "__len__") else 1
                                 return np.array([[0.33, 0.33, 0.34]] * n)
-                        
-                        # Save the wrapper
-                        markov_wrapper = MarkovModelWrapper(model, user_id)
-                        
+
                         model_info = mlflow.pyfunc.log_model(
                             artifact_path="model",
-                            python_model=markov_wrapper,
-                            registered_model_name=REGISTERED_MODEL_NAME
+                            python_model=PersonalizedPayloadWrapper(incoming_payload, user_id),
+                            registered_model_name=REGISTERED_MODEL_NAME,
                         )
                         _ensure_registered_model_with_description(
                             registered_model_name=REGISTERED_MODEL_NAME,
                             model_uri=model_info.model_uri,
                             run_id=mlflow.active_run().info.run_id,
                             model_description="Per-user personalized stress forecasting model.",
-                            version_description=f"Run {mlflow.active_run().info.run_id} | user_id={user_id} | markov personalized forecast",
+                            version_description=f"Run {mlflow.active_run().info.run_id} | user_id={user_id} | fallback personalized forecast",
                         )
                         model_logged = True
-                        print(f"Logged Markov model for user {user_id} as pyfunc and registered as '{REGISTERED_MODEL_NAME}' with descriptions.")
-                    
-                    # --- Evaluation (skip for now to avoid complexity) ---
-                    # try:
-                    #     model_uri = f"runs:/{mlflow.active_run().info.run_id}/model"
-                    #     ...
-                    # except Exception as eval_e:
-                    #     print(f"Warning: mlflow.evaluate() failed for user {user_id}: {eval_e}")
+                        print(f"Logged fallback pyfunc model for user {user_id} to ensure model artifact is present.")
 
-                if not model_logged:
-                    class PersonalizedPayloadWrapper(mlflow.pyfunc.PythonModel):
-                        def __init__(self, payload: Dict[str, Any], uid: int):
-                            self.payload = payload
-                            self.uid = uid
-
-                        def predict(self, context, model_input):
-                            import numpy as np
-                            n = len(model_input) if hasattr(model_input, "__len__") else 1
-                            return np.array([[0.33, 0.33, 0.34]] * n)
-
-                    model_info = mlflow.pyfunc.log_model(
-                        artifact_path="model",
-                        python_model=PersonalizedPayloadWrapper(incoming_payload, user_id),
-                        registered_model_name=REGISTERED_MODEL_NAME,
-                    )
-                    _ensure_registered_model_with_description(
-                        registered_model_name=REGISTERED_MODEL_NAME,
-                        model_uri=model_info.model_uri,
-                        run_id=mlflow.active_run().info.run_id,
-                        model_description="Per-user personalized stress forecasting model.",
-                        version_description=f"Run {mlflow.active_run().info.run_id} | user_id={user_id} | fallback personalized forecast",
-                    )
-                    model_logged = True
-                    print(f"Logged fallback pyfunc model for user {user_id} to ensure model artifact is present.")
-
-                if not model:
-                    print(f"Could not find model for user {user_id} in payload (type: {model_type}).")
-            except Exception as e:
-                print(f"Failed to log model: {e}")
-                import traceback
-                traceback.print_exc()
-
-            # Check for metrics.json (generated in notebook directory)
-            metrics_file = NOTEBOOK_PATH.parent / "metrics.json"
-            if not metrics_file.exists():
-                 metrics_file = Path("metrics.json")
-
-            if metrics_file.exists():
-                try:
-                    metrics = json.loads(metrics_file.read_text())
-                    
-                    # Separate metrics (numeric) and params
-                    numeric_metrics = _normalize_test_metrics(metrics)
-                    
-                    # Log others as params
-                    for k, v in metrics.items():
-                        if isinstance(v, str):
-                            mlflow.log_param(k, v)
-                        elif isinstance(v, dict):
-                            mlflow.log_param(k, str(v))
-                            
-                    if numeric_metrics:
-                        mlflow.log_metrics(numeric_metrics)
-                        print(f"MLFLOW: Successfully logged metrics from {metrics_file.name}: {list(numeric_metrics.keys())}")
-                        
-                    metrics_file.unlink()
+                    if not model:
+                        print(f"Could not find model for user {user_id} in payload (type: {model_type}).")
                 except Exception as e:
-                    print(f"Failed to log metrics: {e}")
+                    print(f"Failed to log model: {e}")
+                    import traceback
 
-            # Log the executed notebook with EDA + detailed per-cell outputs
-            try:
-               mlflow.log_artifact(str(executed_nb_path), artifact_path="notebook")
-               _log_notebook_details(executed_nb_path, artifact_subdir="notebook/details")
-               print(f"MLFLOW: Logged executed notebook: {executed_nb_path}")
-               executed_nb_path.unlink() # Cleanup after logging
-            except Exception as e:
-               print(f"Failed to log executed notebook: {e}")
+                    traceback.print_exc()
+
+                # Check for metrics.json (generated in notebook directory)
+                metrics_file = NOTEBOOK_PATH.parent / "metrics.json"
+                if not metrics_file.exists():
+                    metrics_file = Path("metrics.json")
+
+                if metrics_file.exists():
+                    try:
+                        metrics = json.loads(metrics_file.read_text())
+                        numeric_metrics = _normalize_test_metrics(metrics)
+
+                        for k, v in metrics.items():
+                            if isinstance(v, str):
+                                mlflow.log_param(k, v)
+                            elif isinstance(v, dict):
+                                mlflow.log_param(k, str(v))
+
+                        if numeric_metrics:
+                            mlflow.log_metrics(numeric_metrics)
+                            print(f"MLFLOW: Successfully logged metrics from {metrics_file.name}: {list(numeric_metrics.keys())}")
+
+                        metrics_file.unlink()
+                    except Exception as e:
+                        print(f"Failed to log metrics: {e}")
+
+                # Log the executed notebook with EDA + detailed per-cell outputs
+                try:
+                    mlflow.log_artifact(str(executed_nb_path), artifact_path="notebook")
+                    _log_notebook_details(executed_nb_path, artifact_subdir="notebook/details")
+                    print(f"MLFLOW: Logged executed notebook: {executed_nb_path}")
+                    executed_nb_path.unlink()  # Cleanup after logging
+                except Exception as e:
+                    print(f"Failed to log executed notebook: {e}")
+        except Exception as mlflow_e:
+            print(f"Warning: MLflow logging failed for user_id={user_id}, but model artifact is saved. err={mlflow_e}")
 
         trained_at = utc_now_iso()
         DEFAULT_MODEL_OUT.parent.mkdir(parents=True, exist_ok=True)
