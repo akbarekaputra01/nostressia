@@ -97,6 +97,40 @@ After running one training script, verify these points in MLflow UI:
 
 If no run appears, re-run training from project root and ensure `mlruns/` is created there.
 
+
+## 3. Reset MLflow (Biar Benar-Benar Bersih Seperti Belum Pernah Training)
+
+Kalau kamu ingin **mulai dari nol** (experiment, run, artifact, dan versi model registry tidak loncat), lakukan reset storage MLflow, bukan hanya delete dari UI.
+
+1. **Stop MLflow UI** (kalau sedang jalan).
+2. Dari root project, hapus storage MLflow lokal:
+
+```bash
+rm -rf mlruns
+```
+
+> Windows PowerShell:
+```powershell
+Remove-Item -Recurse -Force .\mlruns
+```
+
+3. (Opsional, kalau kamu pakai backend DB MLflow terpisah seperti sqlite) hapus juga file DB tracking-nya, contoh:
+
+```bash
+rm -f mlflow.db
+```
+
+> Windows PowerShell:
+```powershell
+Remove-Item -Force .\mlflow.db
+```
+
+4. Jalankan lagi training script dan `mlflow ui`.
+
+### Kenapa versi model bisa loncat walau sudah dihapus di UI?
+Delete di UI biasanya **soft-delete** (masuk trash / metadata masih ada), jadi counter versi model registry tetap lanjut.
+Dengan menghapus folder `mlruns` (dan DB tracking jika ada), semua metadata di-reset total sehingga numbering mulai lagi dari awal.
+
 ### Troubleshooting
 If you see `ModuleNotFoundError` or other missing package errors, you are likely using the wrong Python environment.
 
