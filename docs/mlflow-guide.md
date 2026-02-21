@@ -42,14 +42,14 @@ cd \projects\nostressia
 
 ## 1. Running Training Scripts
 
-### Global Stress Forecast
+### Global Forecast
 Trains the global forecasting model. Use `--force` to bypass the 60-day retraining interval check.
 
 ```bash
 python nostressia-machine-learning/Stress-Forecast/scripts/train_global.py --force
 ```
 
-### Personalized Stress Forecast
+### Personalized Forecast
 Trains personalized models for eligible users (based on streak milestones).
 
 ```bash
@@ -123,14 +123,14 @@ If terminal output says `Uvicorn running on http://127.0.0.1:5000` but browser o
    If this returns HTTP headers, server is up and issue is usually browser-side (hard refresh / Incognito / disable extensions).
 
 ### What You Will See
-- **Experiments**: grouped by model type (e.g., "Global Stress Forecast", "Personalized Stress Forecast", "Current Stress Model").
+- **Experiments**: grouped by model type (e.g., "Global Forecast", "Personalized Forecast", "Current Stress").
 - **Runs**: List of individual training runs with timestamps.
 - **Metrics**: Click on a run to see performance metrics (e.g., RMSE, accuracy, latency).
 - **Artifacts**: View the actual model files (`.joblib`) and the **executed notebook** (`.ipynb` converted to HTML/Markdown) which contains charts and EDA from the run.
 
 ### Quick Verification Checklist
 After running one training script, verify these points in MLflow UI:
-1. Experiment name appears (`Global Stress Forecast`, `Personalized Stress Forecast`, or `Current Stress Model`).
+1. Experiment name appears (`Global Forecast`, `Personalized Forecast`, or `Current Stress`).
 2. A new run row appears with a recent timestamp.
 3. `Parameters` and `Metrics` are populated.
 4. Under `Artifacts`, you can open model artifacts and notebook outputs.

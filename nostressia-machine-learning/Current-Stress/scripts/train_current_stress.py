@@ -397,7 +397,7 @@ def train_current_stress():
     # Use simplified URI format "file:D:/..." as requested (replace backslashes with forward slashes)
     tracking_uri = "file:" + str(REPO_ROOT / "mlruns").replace("\\", "/")
     mlflow.set_tracking_uri(tracking_uri)
-    mlflow.set_experiment("Current Stress Model")
+    mlflow.set_experiment("Current Stress")
     
     with mlflow.start_run() as run:
         print(f"MLflow run started: {run.info.run_id}")
