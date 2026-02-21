@@ -38,6 +38,7 @@ TEST_SIZE = 0.2
 EXPERIMENT_NAME = "Current Stress"
 DATASET_NAME = "current_stress_v1"
 DATASET_VERSION = "v1"
+LOCAL_RESULTS_DIR = "local_results"
 
 
 def resolve_repo_root() -> Path:
@@ -264,8 +265,18 @@ def train_test_dataset_frame(X_train, X_test, y_train, y_test) -> pd.DataFrame:
 
 def create_local_output_dir(repo_root: Path, notebook_name: str, run_id: str) -> Path:
     safe_name = notebook_name.replace(".ipynb", "")
-    out_dir = repo_root / "nostressia-machine-learning" / "Current-Stress" / "notebooks" / "experiments" / "local_outputs" / safe_name / run_id
+    out_dir = (
+        repo_root
+        / "nostressia-machine-learning"
+        / "Current-Stress"
+        / "notebooks"
+        / "experiments"
+        / LOCAL_RESULTS_DIR
+        / safe_name
+        / run_id
+    )
     out_dir.mkdir(parents=True, exist_ok=True)
+    print(f"[local-result] Saved artifacts directory: {out_dir}")
     return out_dir
 
 def temp_artifact_dir():

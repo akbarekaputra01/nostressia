@@ -86,20 +86,41 @@ Open your web browser and go to:
 
 
 ### If UI keeps loading forever (especially on Windows)
-If terminal output says `Uvicorn running on http://127.0.0.1:5000` but browser only spins, usually one of these causes applies:
+If terminal output says `Uvicorn running on http://127.0.0.1:5000` but browser only spins, check this in order:
 
-1. **Backend mismatch**: if your `mlflow ui` defaults to `sqlite:///mlflow.db` while training logs to `file:./mlruns`, start UI with explicit backend/registry URI.
-2. **Host mismatch**: open exactly `http://127.0.0.1:5000` (not random hostname/URL).
-3. **Worker/process issue** on Windows: force single worker (`--workers 1`).
-4. **Port/process conflict**: stop old MLflow process first, then keep using the same default port `5000` (avoid confusion with multiple ports).
-
-Fallback command (only when needed):
-
-```bash
-mlflow ui --backend-store-uri file:./mlruns --registry-store-uri file:./mlruns --workers 1 --port 5000
-```
-
-Then open `http://127.0.0.1:5000`.
+1. **Use exact URL**: open `http://127.0.0.1:5000` (not `https://`, not other hostname).
+2. **If you see `[Errno 10048] ... bind ... 5000`**: it means port `5000` is already used by another process (usually old MLflow still running).
+   - Check PID pemakai port:
+   ```powershell
+   netstat -ano | findstr :5000
+   ```
+   - Dari outputmu, PID listener-nya adalah `22084`, jadi kill proses itu (beserta child process):
+   ```powershell
+   taskkill /F /T /PID 22084
+   ```
+   - Kalau mau cek nama proses dulu:
+   ```powershell
+   tasklist /FI "PID eq 22084"
+   ```
+   - Git Bash setara:
+   ```bash
+   netstat -ano | findstr :5000
+   taskkill //F //T //PID 22084
+   ```
+   Setelah itu, jalankan ulang `mlflow ui --workers 1 --port 5000`.
+3. **Run UI in single worker mode** (Windows-safe):
+   ```bash
+   mlflow ui --workers 1 --port 5000
+   ```
+4. **If data source mismatch occurs** (`mlflow ui` shows `sqlite:///mlflow.db` but training logs to `mlruns`), use explicit store URI:
+   ```bash
+   mlflow ui --backend-store-uri file:./mlruns --registry-store-uri file:./mlruns --workers 1 --port 5000
+   ```
+5. **Quick connectivity check** from terminal:
+   ```bash
+   curl -I http://127.0.0.1:5000
+   ```
+   If this returns HTTP headers, server is up and issue is usually browser-side (hard refresh / Incognito / disable extensions).
 
 ### What You Will See
 - **Experiments**: grouped by model type (e.g., "Global Stress Forecast", "Personalized Stress Forecast", "Current Stress Model").
