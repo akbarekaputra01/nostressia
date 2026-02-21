@@ -276,6 +276,7 @@ def create_local_output_dir(repo_root: Path, notebook_name: str, run_id: str) ->
         / run_id
     )
     out_dir.mkdir(parents=True, exist_ok=True)
+    print(f"[local-result] Saved artifacts directory: {out_dir}")
     return out_dir
 
 def temp_artifact_dir():
