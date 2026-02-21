@@ -51,6 +51,7 @@ def resolve_repo_root() -> Path:
 def configure_mlflow() -> Path:
     repo_root = resolve_repo_root()
     mlruns_dir = (repo_root / "mlruns").resolve()
+    mlruns_dir.mkdir(parents=True, exist_ok=True)
     tracking_uri = "file:" + str(mlruns_dir).replace("\\", "/")
     mlflow.set_tracking_uri(tracking_uri)
 
