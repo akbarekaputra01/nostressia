@@ -1,0 +1,1 @@
+{"best_name": "RandomForest", "best_type": "global_blend_model", "top_test_f1": 0.7586206896551724, "top_test_acc": 0.7666666666666667, "date_range": {"start_date": "2025-11-21", "end_date": "2026-02-18"}, "rows": 446}

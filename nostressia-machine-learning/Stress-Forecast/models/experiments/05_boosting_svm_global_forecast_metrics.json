@@ -1,0 +1,1 @@
+{"best_name": "GradBoost", "best_type": "global_blend_model", "top_test_f1": 0.7384615384615385, "top_test_acc": 0.7166666666666667, "date_range": {"start_date": "2025-11-21", "end_date": "2026-02-18"}, "rows": 446}
