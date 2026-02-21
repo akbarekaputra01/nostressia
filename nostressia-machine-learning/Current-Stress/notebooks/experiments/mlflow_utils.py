@@ -10,6 +10,9 @@ from typing import Any
 import mlflow
 import numpy as np
 import pandas as pd
+from mlflow.entities import ViewType
+from mlflow.exceptions import MlflowException
+from mlflow.tracking import MlflowClient
 from mlflow.data import from_pandas
 from sklearn.compose import ColumnTransformer
 from sklearn.metrics import (
@@ -49,7 +52,29 @@ def configure_mlflow() -> Path:
     repo_root = resolve_repo_root()
     tracking_uri = "file:" + str((repo_root / "mlruns").resolve()).replace("\\", "/")
     mlflow.set_tracking_uri(tracking_uri)
-    mlflow.set_experiment(EXPERIMENT_NAME)
+
+    client = MlflowClient()
+    experiment = client.get_experiment_by_name(EXPERIMENT_NAME)
+
+    if experiment and experiment.lifecycle_stage == "deleted":
+        runs = client.search_runs(
+            experiment_ids=[experiment.experiment_id],
+            run_view_type=ViewType.DELETED_ONLY,
+            max_results=50000,
+        )
+        for run in runs:
+            client.delete_run(run.info.run_id)
+        client.delete_experiment(experiment.experiment_id)
+
+    try:
+        mlflow.set_experiment(EXPERIMENT_NAME)
+    except MlflowException as exc:
+        if "deleted experiment" not in str(exc).lower():
+            raise
+        recovered_experiment = client.get_experiment_by_name(EXPERIMENT_NAME)
+        if recovered_experiment and recovered_experiment.lifecycle_stage == "deleted":
+            client.restore_experiment(recovered_experiment.experiment_id)
+        mlflow.set_experiment(EXPERIMENT_NAME)
     return repo_root
 
 
