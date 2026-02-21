@@ -15,6 +15,8 @@ from typing import Any, Dict
 
 import mlflow
 import pandas as pd
+from mlflow.exceptions import MlflowException
+from mlflow.tracking import MlflowClient
 
 import nbformat
 import joblib
@@ -45,6 +47,51 @@ USER_COL = "user_id"
 
 GLOBAL_INTERVAL_DAYS = 60
 FORECAST_HORIZON_DAYS = 7
+REGISTERED_MODEL_NAME = "Global_Stress_Forecast"
+
+
+def _ensure_registered_model_with_description(
+    *,
+    registered_model_name: str,
+    model_uri: str,
+    run_id: str,
+    model_description: str,
+    version_description: str,
+) -> None:
+    client = MlflowClient()
+    try:
+        client.get_registered_model(registered_model_name)
+    except MlflowException:
+        client.create_registered_model(name=registered_model_name)
+
+    try:
+        client.update_registered_model(
+            name=registered_model_name,
+            description=model_description,
+        )
+    except Exception as e:
+        print(f"Warning: could not update registered model description: {e}")
+
+    version_obj = None
+    try:
+        for mv in client.search_model_versions(f"name='{registered_model_name}'"):
+            if getattr(mv, "run_id", None) == run_id or getattr(mv, "source", None) == model_uri:
+                version_obj = mv
+                break
+    except Exception as e:
+        print(f"Warning: could not inspect model versions: {e}")
+
+    if version_obj is None:
+        version_obj = mlflow.register_model(model_uri=model_uri, name=registered_model_name)
+
+    try:
+        client.update_model_version(
+            name=registered_model_name,
+            version=str(version_obj.version),
+            description=version_description,
+        )
+    except Exception as e:
+        print(f"Warning: could not update model version description: {e}")
 
 
 def _sha256(path: Path) -> str:
@@ -503,6 +550,10 @@ def train_global(force: bool) -> bool:
 
     run_metrics: Dict[str, float] = {}
     with mlflow.start_run() as run: # Capture the run object
+        mlflow.set_tag(
+            "mlflow.note.content",
+            "Global stress forecast training run (window=7, target=stress_level).",
+        )
         mlflow.log_param("interval_days", GLOBAL_INTERVAL_DAYS)
         mlflow.log_param("horizon_days", FORECAST_HORIZON_DAYS)
         mlflow.log_param("data_hash", data_hash)
@@ -540,13 +591,22 @@ def train_global(force: bool) -> bool:
                         sample_y = model.predict(sample_X)
                         signature = infer_signature(sample_X, sample_y)
                         
-                        mlflow.sklearn.log_model(
+                        model_info = mlflow.sklearn.log_model(
                             sk_model=model,
                             artifact_path="model",
                             signature=signature,
-                            registered_model_name="Global_Stress_Forecast"
+                            registered_model_name=REGISTERED_MODEL_NAME
                         )
-                        print("Model logged and registered as 'Global_Stress_Forecast'.")
+                        _ensure_registered_model_with_description(
+                            registered_model_name=REGISTERED_MODEL_NAME,
+                            model_uri=model_info.model_uri,
+                            run_id=run.info.run_id,
+                            model_description="Global stress forecasting model for all users.",
+                            version_description=(
+                                f"Run {run.info.run_id} | global forecast | data_hash={data_hash[:12]}"
+                            ),
+                        )
+                        print("Model logged and registered as 'Global_Stress_Forecast' with descriptions.")
 
                         # 3. Evaluate to link metrics and dataset in UI
                         eval_dataset = mlflow.data.from_pandas(
