@@ -5,6 +5,8 @@ import sys
 import subprocess
 import nbformat
 import mlflow
+from mlflow.exceptions import MlflowException
+from mlflow.tracking import MlflowClient
 import pandas as pd
 import pprint
 import json
@@ -23,6 +25,38 @@ REPO_ROOT = SCRIPT_DIR.parent.parent.parent
 DATASET_PATH = REPO_ROOT / "nostressia-machine-learning" / "Current-Stress" / "datasets" / "raw" / "student_lifestyle_dataset.csv"
 MODEL_OUT_ML = REPO_ROOT / "nostressia-machine-learning" / "Current-Stress" / "models" / "current_stress.joblib"
 MODEL_OUT_BE = REPO_ROOT / "nostressia-backend" / "app" / "models_ml" / "current_stress.joblib"
+REGISTERED_MODEL_NAME = "Current_Stress"
+
+
+def _ensure_registered_model_with_description(*, registered_model_name: str, model_uri: str, run_id: str, model_description: str, version_description: str) -> None:
+    client = MlflowClient()
+    try:
+        client.get_registered_model(registered_model_name)
+    except MlflowException:
+        client.create_registered_model(name=registered_model_name)
+
+    try:
+        client.update_registered_model(name=registered_model_name, description=model_description)
+    except Exception as e:
+        print(f"Warning: could not update registered model description: {e}")
+
+    version_obj = None
+    try:
+        for mv in client.search_model_versions(f"name='{registered_model_name}'"):
+            if getattr(mv, "run_id", None) == run_id or getattr(mv, "source", None) == model_uri:
+                version_obj = mv
+                break
+    except Exception as e:
+        print(f"Warning: could not inspect model versions: {e}")
+
+    if version_obj is None:
+        version_obj = mlflow.register_model(model_uri=model_uri, name=registered_model_name)
+
+    try:
+        client.update_model_version(name=registered_model_name, version=str(version_obj.version), description=version_description)
+    except Exception as e:
+        print(f"Warning: could not update model version description: {e}")
+
 
 def _execute_notebook(notebook_path: Path, parameters: Dict[str, Any], timeout_seconds: int, kernel_name: str = "python3") -> Path:
     print(f"Executing notebook: {notebook_path} with kernel: {kernel_name}")
@@ -401,6 +435,7 @@ def train_current_stress():
     
     with mlflow.start_run() as run:
         print(f"MLflow run started: {run.info.run_id}")
+        mlflow.set_tag("mlflow.note.content", "Current stress training run from current_stress.ipynb.")
         _log_dataset_details(DATASET_PATH, artifact_subdir="dataset")
 
         # Log executed notebook (EDA + Training Logs + detail outputs)
@@ -520,15 +555,22 @@ def train_current_stress():
                     print(f"Warning: Could not log training dataset: {e}")
                 
                 # Log model and register
-                mlflow.sklearn.log_model(
+                model_info = mlflow.sklearn.log_model(
                     sk_model=model,
                     artifact_path="model",
                     input_example=input_example,
                     signature=signature,
                     serialization_format="cloudpickle",
-                    registered_model_name="Current_Stress"
+                    registered_model_name=REGISTERED_MODEL_NAME
                 )
-                print("Logged sklearn model and registered as 'Current_Stress'.")
+                _ensure_registered_model_with_description(
+                    registered_model_name=REGISTERED_MODEL_NAME,
+                    model_uri=model_info.model_uri,
+                    run_id=run.info.run_id,
+                    model_description="Current stress classification model.",
+                    version_description=f"Run {run.info.run_id} | current stress training",
+                )
+                print("Logged sklearn model and registered as 'Current_Stress' with descriptions.")
 
 
                 # --- NEW: Evaluate to populate 'Dataset' in Model Registry ---

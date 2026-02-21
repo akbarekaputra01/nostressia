@@ -14,6 +14,8 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import mlflow
+from mlflow.exceptions import MlflowException
+from mlflow.tracking import MlflowClient
 
 import nbformat
 import joblib
@@ -42,6 +44,48 @@ WINDOW = 7  # Personalized forecast uses 7-day window
 TARGET_COL = "stress_level"
 DATE_COL = "date"
 USER_COL = "user_id"
+REGISTERED_MODEL_NAME = "Personalized_Stress_Forecast"
+
+
+def _ensure_registered_model_with_description(
+    *,
+    registered_model_name: str,
+    model_uri: str,
+    run_id: str,
+    model_description: str,
+    version_description: str,
+) -> None:
+    client = MlflowClient()
+    try:
+        client.get_registered_model(registered_model_name)
+    except MlflowException:
+        client.create_registered_model(name=registered_model_name)
+
+    try:
+        client.update_registered_model(name=registered_model_name, description=model_description)
+    except Exception as e:
+        print(f"Warning: could not update registered model description: {e}")
+
+    version_obj = None
+    try:
+        for mv in client.search_model_versions(f"name='{registered_model_name}'"):
+            if getattr(mv, "run_id", None) == run_id or getattr(mv, "source", None) == model_uri:
+                version_obj = mv
+                break
+    except Exception as e:
+        print(f"Warning: could not inspect model versions: {e}")
+
+    if version_obj is None:
+        version_obj = mlflow.register_model(model_uri=model_uri, name=registered_model_name)
+
+    try:
+        client.update_model_version(
+            name=registered_model_name,
+            version=str(version_obj.version),
+            description=version_description,
+        )
+    except Exception as e:
+        print(f"Warning: could not update model version description: {e}")
 
 
 def _normalize_test_metrics(metrics: Dict[str, Any]) -> Dict[str, float]:
@@ -735,6 +779,7 @@ def train_personalized(
         run_id = ""
         with mlflow.start_run(run_name=f"user_{user_id}_milestone_{milestone}"):
             run_id = mlflow.active_run().info.run_id
+            mlflow.set_tag("mlflow.note.content", f"Personalized stress forecast training run for user_id={user_id}.")
             mlflow.log_param("user_id", user_id)
             mlflow.log_param("milestone", milestone)
             mlflow.log_param("window_size", milestone)
@@ -801,15 +846,22 @@ def train_personalized(
                                 except:
                                     print(f"Warning: Could not infer signature for user {user_id}: {sub_e}")
 
-                        mlflow.sklearn.log_model(
+                        model_info = mlflow.sklearn.log_model(
                             sk_model=model,
                             artifact_path="model",
                             signature=signature,
                             input_example=input_example,
-                            registered_model_name="Personalized_Stress_Forecast"
+                            registered_model_name=REGISTERED_MODEL_NAME
+                        )
+                        _ensure_registered_model_with_description(
+                            registered_model_name=REGISTERED_MODEL_NAME,
+                            model_uri=model_info.model_uri,
+                            run_id=mlflow.active_run().info.run_id,
+                            model_description="Per-user personalized stress forecasting model.",
+                            version_description=f"Run {mlflow.active_run().info.run_id} | user_id={user_id} | personalized forecast",
                         )
                         model_logged = True
-                        print(f"Logged sklearn model for user {user_id} with metadata and registered as 'Personalized_Stress_Forecast'.")
+                        print(f"Logged sklearn model for user {user_id} and registered as '{REGISTERED_MODEL_NAME}' with descriptions.")
                     
                     elif model_type == 'markov':
                         # Log Markov model artifact using pyfunc
@@ -832,13 +884,20 @@ def train_personalized(
                         # Save the wrapper
                         markov_wrapper = MarkovModelWrapper(model, user_id)
                         
-                        mlflow.pyfunc.log_model(
+                        model_info = mlflow.pyfunc.log_model(
                             artifact_path="model",
                             python_model=markov_wrapper,
-                            registered_model_name="Personalized_Stress_Forecast"
+                            registered_model_name=REGISTERED_MODEL_NAME
+                        )
+                        _ensure_registered_model_with_description(
+                            registered_model_name=REGISTERED_MODEL_NAME,
+                            model_uri=model_info.model_uri,
+                            run_id=mlflow.active_run().info.run_id,
+                            model_description="Per-user personalized stress forecasting model.",
+                            version_description=f"Run {mlflow.active_run().info.run_id} | user_id={user_id} | markov personalized forecast",
                         )
                         model_logged = True
-                        print(f"Logged Markov model for user {user_id} as pyfunc and registered as 'Personalized_Stress_Forecast'.")
+                        print(f"Logged Markov model for user {user_id} as pyfunc and registered as '{REGISTERED_MODEL_NAME}' with descriptions.")
                     
                     # --- Evaluation (skip for now to avoid complexity) ---
                     # try:
@@ -858,10 +917,17 @@ def train_personalized(
                             n = len(model_input) if hasattr(model_input, "__len__") else 1
                             return np.array([[0.33, 0.33, 0.34]] * n)
 
-                    mlflow.pyfunc.log_model(
+                    model_info = mlflow.pyfunc.log_model(
                         artifact_path="model",
                         python_model=PersonalizedPayloadWrapper(incoming_payload, user_id),
-                        registered_model_name="Personalized_Stress_Forecast",
+                        registered_model_name=REGISTERED_MODEL_NAME,
+                    )
+                    _ensure_registered_model_with_description(
+                        registered_model_name=REGISTERED_MODEL_NAME,
+                        model_uri=model_info.model_uri,
+                        run_id=mlflow.active_run().info.run_id,
+                        model_description="Per-user personalized stress forecasting model.",
+                        version_description=f"Run {mlflow.active_run().info.run_id} | user_id={user_id} | fallback personalized forecast",
                     )
                     model_logged = True
                     print(f"Logged fallback pyfunc model for user {user_id} to ensure model artifact is present.")
