@@ -32,7 +32,7 @@ import matplotlib.pyplot as plt
 
 RANDOM_STATE = 42
 TEST_SIZE = 0.2
-EXPERIMENT_NAME = "Current Stress - Experiments"
+EXPERIMENT_NAME = "Current Stress"
 DATASET_NAME = "current_stress_v1"
 DATASET_VERSION = "v1"
 
