@@ -78,9 +78,28 @@ Run the following command from the project root:
 mlflow ui
 ```
 
+This remains the default and simplest way to open MLflow UI.
+
 ### Access the Dashboard
 Open your web browser and go to:
 [http://127.0.0.1:5000](http://127.0.0.1:5000)
+
+
+### If UI keeps loading forever (especially on Windows)
+If terminal output says `Uvicorn running on http://127.0.0.1:5000` but browser only spins, usually one of these causes applies:
+
+1. **Backend mismatch**: if your `mlflow ui` defaults to `sqlite:///mlflow.db` while training logs to `file:./mlruns`, start UI with explicit backend/registry URI.
+2. **Host mismatch**: open exactly `http://127.0.0.1:5000` (not random hostname/URL).
+3. **Worker/process issue** on Windows: force single worker (`--workers 1`).
+4. **Port already occupied**: run on another port.
+
+Fallback command (only when needed):
+
+```bash
+mlflow ui --backend-store-uri file:./mlruns --registry-store-uri file:./mlruns --workers 1 --port 5001
+```
+
+Then open `http://127.0.0.1:5001`.
 
 ### What You Will See
 - **Experiments**: grouped by model type (e.g., "Global Stress Forecast", "Personalized Stress Forecast", "Current Stress Model").
@@ -96,6 +115,40 @@ After running one training script, verify these points in MLflow UI:
 4. Under `Artifacts`, you can open model artifacts and notebook outputs.
 
 If no run appears, re-run training from project root and ensure `mlruns/` is created there.
+
+
+## 3. Reset MLflow (Biar Benar-Benar Bersih Seperti Belum Pernah Training)
+
+Kalau kamu ingin **mulai dari nol** (experiment, run, artifact, dan versi model registry tidak loncat), lakukan reset storage MLflow, bukan hanya delete dari UI.
+
+1. **Stop MLflow UI** (kalau sedang jalan).
+2. Dari root project, hapus storage MLflow lokal:
+
+```bash
+rm -rf mlruns
+```
+
+> Windows PowerShell:
+```powershell
+Remove-Item -Recurse -Force .\mlruns
+```
+
+3. (Opsional, kalau kamu pakai backend DB MLflow terpisah seperti sqlite) hapus juga file DB tracking-nya, contoh:
+
+```bash
+rm -f mlflow.db
+```
+
+> Windows PowerShell:
+```powershell
+Remove-Item -Force .\mlflow.db
+```
+
+4. Jalankan lagi training script dan `mlflow ui`.
+
+### Kenapa versi model bisa loncat walau sudah dihapus di UI?
+Delete di UI biasanya **soft-delete** (masuk trash / metadata masih ada), jadi counter versi model registry tetap lanjut.
+Dengan menghapus folder `mlruns` (dan DB tracking jika ada), semua metadata di-reset total sehingga numbering mulai lagi dari awal.
 
 ### Troubleshooting
 If you see `ModuleNotFoundError` or other missing package errors, you are likely using the wrong Python environment.
