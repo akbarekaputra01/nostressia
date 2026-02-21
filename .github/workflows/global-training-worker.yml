@@ -40,6 +40,8 @@ jobs:
           python nostressia-machine-learning/Stress-Forecast/scripts/refresh_dataset.py
 
       - name: Train global model (60-day gate)
+        env:
+          GLOBAL_FORECAST_NOTEBOOK_PATH: nostressia-machine-learning/Stress-Forecast/notebooks/experiments/12_full_replay_global_forecast.ipynb
         run: |
           python nostressia-machine-learning/Stress-Forecast/scripts/train_global.py
 

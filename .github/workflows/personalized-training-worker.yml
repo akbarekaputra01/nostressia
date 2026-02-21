@@ -48,6 +48,8 @@ jobs:
           python nostressia-machine-learning/Stress-Forecast/scripts/refresh_dataset.py
 
       - name: Train personalized models (milestone gate)
+        env:
+          PERSONALIZED_FORECAST_NOTEBOOK_PATH: nostressia-machine-learning/Stress-Forecast/notebooks/experiments_personalized/11_bagging_tree_personalized_forecast.ipynb
         run: |
           python nostressia-machine-learning/Stress-Forecast/scripts/train_personalized.py \
             ${{ inputs.force_user_id && format('--force-user-id {0}', inputs.force_user_id) || '' }} \

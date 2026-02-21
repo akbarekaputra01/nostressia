@@ -18,3 +18,7 @@ Folder ini khusus eksperimen personalized dan disusun **satu model per notebook*
 Default path:
 - dataset: `../../datasets/stress_forecast.csv`
 - output model: `../../models/experiments_personalized/...`
+
+
+## Catatan
+- Deprecated notebooks lama sudah dihapus dari folder ini agar tidak ada nomor step duplikat (mis. `04_*`/`05_*` ganda).
