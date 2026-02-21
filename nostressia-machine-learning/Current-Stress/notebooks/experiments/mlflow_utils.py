@@ -52,6 +52,8 @@ def configure_mlflow() -> Path:
     repo_root = resolve_repo_root()
     mlruns_dir = (repo_root / "mlruns").resolve()
     mlruns_dir.mkdir(parents=True, exist_ok=True)
+    trash_dir = mlruns_dir / ".trash"
+    trash_dir.mkdir(parents=True, exist_ok=True)
     tracking_uri = "file:" + str(mlruns_dir).replace("\\", "/")
     mlflow.set_tracking_uri(tracking_uri)
 
@@ -59,7 +61,7 @@ def configure_mlflow() -> Path:
     experiment = client.get_experiment_by_name(EXPERIMENT_NAME)
 
     if experiment and experiment.lifecycle_stage == "deleted":
-        trash_experiment_dir = mlruns_dir / ".trash" / experiment.experiment_id
+        trash_experiment_dir = trash_dir / experiment.experiment_id
         if trash_experiment_dir.exists():
             shutil.rmtree(trash_experiment_dir)
 
