@@ -116,6 +116,8 @@ def log_run_metadata(
     params: dict[str, Any],
     dataset_df: pd.DataFrame,
     dataset_context: str = "training",
+    dataset_source: str | None = None,
+    split_column: str = "split_set",
 ) -> None:
     merged_tags = {
         "project": "nostressia",
@@ -130,12 +132,27 @@ def log_run_metadata(
     mlflow.set_tag("mlflow.note.content", run_description)
     mlflow.log_params({k: str(v) for k, v in params.items()})
 
-    dataset = from_pandas(dataset_df, name=DATASET_NAME)
-    mlflow.log_input(dataset, context=dataset_context)
+    if split_column in dataset_df.columns:
+        train_df = dataset_df[dataset_df[split_column] == "train"].drop(columns=[split_column], errors="ignore")
+        test_df = dataset_df[dataset_df[split_column] == "test"].drop(columns=[split_column], errors="ignore")
+
+        if not train_df.empty:
+            train_dataset = from_pandas(train_df, name=f"{DATASET_NAME}_train", source=dataset_source)
+            mlflow.log_input(train_dataset, context="training")
+        if not test_df.empty:
+            test_dataset = from_pandas(test_df, name=f"{DATASET_NAME}_test", source=dataset_source)
+            mlflow.log_input(test_dataset, context="testing")
+    else:
+        dataset = from_pandas(dataset_df, name=DATASET_NAME, source=dataset_source)
+        mlflow.log_input(dataset, context=dataset_context)
+
+
+def get_dataset_path(repo_root: Path) -> Path:
+    return repo_root / "nostressia-machine-learning" / "Current-Stress" / "datasets" / "raw" / "student_lifestyle_dataset.csv"
 
 
 def load_current_stress_dataset(repo_root: Path) -> tuple[pd.DataFrame, pd.DataFrame, pd.Series]:
-    dataset_path = repo_root / "nostressia-machine-learning" / "Current-Stress" / "datasets" / "raw" / "student_lifestyle_dataset.csv"
+    dataset_path = get_dataset_path(repo_root)
     df = pd.read_csv(dataset_path)
     mapping = {"Low": 0, "Moderate": 1, "High": 2}
 
@@ -178,6 +195,13 @@ def train_test_dataset_frame(X_train, X_test, y_train, y_test) -> pd.DataFrame:
     test_df["split_set"] = "test"
     return pd.concat([train_df, test_df], ignore_index=True)
 
+
+
+def create_local_output_dir(repo_root: Path, notebook_name: str, run_id: str) -> Path:
+    safe_name = notebook_name.replace(".ipynb", "")
+    out_dir = repo_root / "nostressia-machine-learning" / "Current-Stress" / "notebooks" / "experiments" / "local_outputs" / safe_name / run_id
+    out_dir.mkdir(parents=True, exist_ok=True)
+    return out_dir
 
 def temp_artifact_dir():
     return tempfile.TemporaryDirectory()
