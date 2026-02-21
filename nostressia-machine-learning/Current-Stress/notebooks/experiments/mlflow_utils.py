@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import random
+import shutil
 import tempfile
 from time import perf_counter
 from pathlib import Path
@@ -10,7 +11,6 @@ from typing import Any
 import mlflow
 import numpy as np
 import pandas as pd
-from mlflow.entities import ViewType
 from mlflow.exceptions import MlflowException
 from mlflow.tracking import MlflowClient
 from mlflow.data import from_pandas
@@ -50,21 +50,17 @@ def resolve_repo_root() -> Path:
 
 def configure_mlflow() -> Path:
     repo_root = resolve_repo_root()
-    tracking_uri = "file:" + str((repo_root / "mlruns").resolve()).replace("\\", "/")
+    mlruns_dir = (repo_root / "mlruns").resolve()
+    tracking_uri = "file:" + str(mlruns_dir).replace("\\", "/")
     mlflow.set_tracking_uri(tracking_uri)
 
     client = MlflowClient()
     experiment = client.get_experiment_by_name(EXPERIMENT_NAME)
 
     if experiment and experiment.lifecycle_stage == "deleted":
-        runs = client.search_runs(
-            experiment_ids=[experiment.experiment_id],
-            run_view_type=ViewType.DELETED_ONLY,
-            max_results=50000,
-        )
-        for run in runs:
-            client.delete_run(run.info.run_id)
-        client.delete_experiment(experiment.experiment_id)
+        trash_experiment_dir = mlruns_dir / ".trash" / experiment.experiment_id
+        if trash_experiment_dir.exists():
+            shutil.rmtree(trash_experiment_dir)
 
     try:
         mlflow.set_experiment(EXPERIMENT_NAME)
