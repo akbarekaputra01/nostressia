@@ -1,17 +1,21 @@
-# Global Forecast Experiments
+# Global Forecast Experiments (Step-by-Step)
 
-Notebook eksperimen untuk mencoba berbagai pendekatan model global forecast, mengikuti alur utama di `../global_forecast.ipynb`.
+Folder ini khusus eksperimen **global** dan disusun satu model per notebook agar progres eksperimen terlihat jelas.
 
-## Daftar notebook
-- `01_eda_global_forecast.ipynb`: full flow + EDA aktif
-- `02_baseline_global_forecast.ipynb`: baseline persistence dan markov saja
-- `03_logreg_global_forecast.ipynb`: fokus Logistic Regression
-- `04_tree_ensemble_global_forecast.ipynb`: fokus Decision Tree / RandomForest / ExtraTrees
-- `05_boosting_svm_global_forecast.ipynb`: fokus boosting & linear SVM terkalibrasi
+## Urutan eksperimen
+1. `01_eda_global_forecast.ipynb` (EDA only)
+2. `02_baseline_global_forecast.ipynb` (baseline only)
+3. `03_logreg_global_forecast.ipynb`
+4. `04_decision_tree_global_forecast.ipynb`
+5. `05_random_forest_global_forecast.ipynb`
+6. `06_extra_trees_global_forecast.ipynb`
+7. `07_gradboost_global_forecast.ipynb`
+8. `08_histgb_global_forecast.ipynb`
+9. `09_linearsvc_global_forecast.ipynb`
+10. `10_adaboost_global_forecast.ipynb`
+11. `11_bagging_tree_global_forecast.ipynb`
+12. `12_full_replay_global_forecast.ipynb` (replay final semua kandidat)
 
-Semua notebook diset default pakai dataset CSV lokal `../datasets/stress_forecast.csv` agar cocok untuk eksperimen coba-coba.
-
-## Tambahan untuk replay leaderboard global
-- `06_full_candidates_replay_global_forecast.ipynb`: replay semua kandidat seperti `global_forecast.ipynb` (termasuk GradBoost, HistGB, AdaBoost, BaggingTree, LinearSVC_Calibrated, dll).
-- `07_adaboost_focus_global_forecast.ipynb`: fokus tuning AdaBoost.
-- `08_bagging_tree_focus_global_forecast.ipynb`: fokus tuning Bagging + DecisionTree base estimator.
+Default path:
+- dataset: `../../datasets/stress_forecast.csv`
+- output model: `../../models/experiments/...`
