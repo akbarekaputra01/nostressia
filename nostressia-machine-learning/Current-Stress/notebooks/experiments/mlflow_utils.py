@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import random
+import shutil
 import tempfile
 from time import perf_counter
 from pathlib import Path
@@ -10,6 +11,8 @@ from typing import Any
 import mlflow
 import numpy as np
 import pandas as pd
+from mlflow.exceptions import MlflowException
+from mlflow.tracking import MlflowClient
 from mlflow.data import from_pandas
 from sklearn.compose import ColumnTransformer
 from sklearn.metrics import (
@@ -35,6 +38,7 @@ TEST_SIZE = 0.2
 EXPERIMENT_NAME = "Current Stress"
 DATASET_NAME = "current_stress_v1"
 DATASET_VERSION = "v1"
+LOCAL_RESULTS_DIR = "local_results"
 
 
 def resolve_repo_root() -> Path:
@@ -47,9 +51,30 @@ def resolve_repo_root() -> Path:
 
 def configure_mlflow() -> Path:
     repo_root = resolve_repo_root()
-    tracking_uri = "file:" + str((repo_root / "mlruns").resolve()).replace("\\", "/")
+    mlruns_dir = (repo_root / "mlruns").resolve()
+    mlruns_dir.mkdir(parents=True, exist_ok=True)
+    trash_dir = mlruns_dir / ".trash"
+    trash_dir.mkdir(parents=True, exist_ok=True)
+    tracking_uri = "file:" + str(mlruns_dir).replace("\\", "/")
     mlflow.set_tracking_uri(tracking_uri)
-    mlflow.set_experiment(EXPERIMENT_NAME)
+
+    client = MlflowClient()
+    experiment = client.get_experiment_by_name(EXPERIMENT_NAME)
+
+    if experiment and experiment.lifecycle_stage == "deleted":
+        trash_experiment_dir = trash_dir / experiment.experiment_id
+        if trash_experiment_dir.exists():
+            shutil.rmtree(trash_experiment_dir)
+
+    try:
+        mlflow.set_experiment(EXPERIMENT_NAME)
+    except MlflowException as exc:
+        if "deleted experiment" not in str(exc).lower():
+            raise
+        recovered_experiment = client.get_experiment_by_name(EXPERIMENT_NAME)
+        if recovered_experiment and recovered_experiment.lifecycle_stage == "deleted":
+            client.restore_experiment(recovered_experiment.experiment_id)
+        mlflow.set_experiment(EXPERIMENT_NAME)
     return repo_root
 
 
@@ -240,8 +265,18 @@ def train_test_dataset_frame(X_train, X_test, y_train, y_test) -> pd.DataFrame:
 
 def create_local_output_dir(repo_root: Path, notebook_name: str, run_id: str) -> Path:
     safe_name = notebook_name.replace(".ipynb", "")
-    out_dir = repo_root / "nostressia-machine-learning" / "Current-Stress" / "notebooks" / "experiments" / "local_outputs" / safe_name / run_id
+    out_dir = (
+        repo_root
+        / "nostressia-machine-learning"
+        / "Current-Stress"
+        / "notebooks"
+        / "experiments"
+        / LOCAL_RESULTS_DIR
+        / safe_name
+        / run_id
+    )
     out_dir.mkdir(parents=True, exist_ok=True)
+    print(f"[local-result] Saved artifacts directory: {out_dir}")
     return out_dir
 
 def temp_artifact_dir():
