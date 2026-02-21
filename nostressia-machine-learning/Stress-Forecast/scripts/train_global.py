@@ -452,7 +452,7 @@ def train_global(force: bool) -> bool:
     now = datetime.now(timezone.utc)
     if not force and not _is_due(state, now):
         mlflow.set_tracking_uri("file:" + str(REPO_ROOT / "mlruns"))
-        mlflow.set_experiment("Global Stress Forecast")
+        mlflow.set_experiment("Global Forecast")
         with mlflow.start_run(run_name="global_skip"):
             mlflow.set_tag("skipped_due_interval", "true")
             mlflow.log_param("interval_days", GLOBAL_INTERVAL_DAYS)
@@ -499,7 +499,7 @@ def train_global(force: bool) -> bool:
 
     # MLflow logging
     mlflow.set_tracking_uri("file:" + str(REPO_ROOT / "mlruns"))
-    mlflow.set_experiment("Global Stress Forecast")
+    mlflow.set_experiment("Global Forecast")
 
     run_metrics: Dict[str, float] = {}
     with mlflow.start_run() as run: # Capture the run object

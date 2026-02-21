@@ -641,7 +641,7 @@ def train_personalized(
     if not candidates:
         tracking_uri = "file:" + str(REPO_ROOT / "mlruns").replace("\\", "/")
         mlflow.set_tracking_uri(tracking_uri)
-        mlflow.set_experiment("Personalized Stress Forecast")
+        mlflow.set_experiment("Personalized Forecast")
         with mlflow.start_run(run_name="personalized_skip"):
             mlflow.set_tag("skipped_due_interval", "true")
             mlflow.log_param("force_user_id", force_user_id if force_user_id is not None else "")
@@ -706,7 +706,7 @@ def train_personalized(
         # Use simplified URI format "file:D:/..." as requested (replace backslashes with forward slashes)
         tracking_uri = "file:" + str(REPO_ROOT / "mlruns").replace("\\", "/")
         mlflow.set_tracking_uri(tracking_uri)
-        mlflow.set_experiment("Personalized Stress Forecast")
+        mlflow.set_experiment("Personalized Forecast")
 
         run_id = ""
         with mlflow.start_run(run_name=f"user_{user_id}_milestone_{milestone}"):
