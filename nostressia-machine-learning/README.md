@@ -99,6 +99,13 @@ Force user tertentu untuk testing:
 python Stress-Forecast/scripts/train_personalized.py --force-user-id 123
 ```
 
+
+### Generate 8 EDA plots (Current Stress + Forecast)
+```bash
+python scripts/generate_eda_plots.py
+```
+Output default akan tersimpan di folder `eda_plots/`.
+
 ## MLflow
 Tracking lokal disimpan di `mlruns/` dan menggunakan **MLflow 3.9.0**.
 
