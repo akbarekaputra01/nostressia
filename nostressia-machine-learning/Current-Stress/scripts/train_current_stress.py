@@ -25,7 +25,7 @@ REPO_ROOT = SCRIPT_DIR.parent.parent.parent
 DATASET_PATH = REPO_ROOT / "nostressia-machine-learning" / "Current-Stress" / "datasets" / "raw" / "student_lifestyle_dataset.csv"
 MODEL_OUT_ML = REPO_ROOT / "nostressia-machine-learning" / "Current-Stress" / "models" / "current_stress.joblib"
 MODEL_OUT_BE = REPO_ROOT / "nostressia-backend" / "app" / "models_ml" / "current_stress.joblib"
-REGISTERED_MODEL_NAME = "Current_Stress"
+REGISTERED_MODEL_NAME = "CurrentStress"
 
 
 def _ensure_registered_model_with_description(*, registered_model_name: str, model_uri: str, run_id: str, model_description: str, version_description: str) -> None:

@@ -47,7 +47,7 @@ USER_COL = "user_id"
 
 GLOBAL_INTERVAL_DAYS = 60
 FORECAST_HORIZON_DAYS = 7
-REGISTERED_MODEL_NAME = "Global_Stress_Forecast"
+REGISTERED_MODEL_NAME = "StressForecastGlobal"
 
 
 def _ensure_registered_model_with_description(

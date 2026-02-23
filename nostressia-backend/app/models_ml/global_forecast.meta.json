@@ -1,6 +1,6 @@
 {
-  "created_at": "2026-02-16T12:23:31.076338+00:00",
-  "data_hash": "7fe155126df0a2752be3831898135b7c6063c5d4d1505b58fbbe832d230ed14d",
+  "created_at": "2026-02-22T14:46:26.602309+00:00",
+  "data_hash": "54715fc4f4f2491a4da301fd643010674a093b33b802abf2d0a54a35e922d067",
   "features": [
     "lag_sp_*",
     "gap_*",
@@ -10,15 +10,15 @@
   "git_sha": "",
   "horizon_days": 7,
   "metrics": {
-    "latency_p50": 2.091800000926014,
-    "latency_p90": 2.6815400022314866,
-    "latency_p95": 3.0435100008617155,
-    "latency_p99": 3.4723049987951495,
+    "latency_p50": 7.344100005866494,
+    "latency_p90": 20.038260001456365,
+    "latency_p95": 22.238944993296155,
+    "latency_p99": 50.60076799811196,
     "rows": 300.0,
     "top_test_acc": 0.75,
     "top_test_f1": 0.7887323943661971
   },
-  "mlflow_run_id": "3acca0fa126647318baf93ff75c62047",
-  "trained_at": "2026-02-16T12:23:31.076338+00:00",
+  "mlflow_run_id": "ac410ad8373d47ebad7ba561418b4c6f",
+  "trained_at": "2026-02-22T14:46:26.602309+00:00",
   "version": "global-forecast-v1"
 }

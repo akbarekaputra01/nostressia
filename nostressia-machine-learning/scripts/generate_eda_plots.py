@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate eight EDA plots for Current Stress and Forecast datasets (user_id=4 only)."""
+"""Generate eight EDA plots for Current Stress and Forecast datasets (all users)."""
 
 from __future__ import annotations
 
@@ -11,9 +11,6 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from sklearn.decomposition import PCA
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import f1_score
-from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -136,12 +133,12 @@ def _build_transition_matrix(forecast_df):
 
 
 def plot_temporal_pattern(forecast_df, out_dir):
-    user_df = forecast_df.sort_values("date")
+    user_df = forecast_df.sort_values(["user_id", "date"])
 
     fig, ax = plt.subplots(figsize=(10, 5))
-    ax.plot(user_df["date"], user_df["stress_level"], marker="o")
+    sns.lineplot(data=user_df, x="date", y="stress_level", hue="user_id", marker="o", palette="tab10", ax=ax)
 
-    ax.set_title("Temporal Pattern — user_id=4")
+    ax.set_title("Temporal Pattern — All Users")
     ax.set_xlabel("Date")
     ax.set_ylabel("Stress Level")
     ax.set_yticks([0, 1, 2])
@@ -183,64 +180,35 @@ def plot_class_balance(forecast_df, out_dir):
     plt.close(fig)
 
 
-# ⭐ FIXED VERSION (NO OVERLAP)
-def plot_f1_threshold_sweep(forecast_df, out_dir):
-    features = [
-        "gpa",
-        "extracurricular_hour_per_day",
-        "physical_activity_hour_per_day",
-        "sleep_hour_per_day",
-        "study_hour_per_day",
-        "social_hour_per_day",
-        "emoji",
-    ]
-
-    data = forecast_df.dropna(subset=features + ["stress_level"])
-
-    X = data[features]
-    y = (data["stress_level"] == 2).astype(int)
-
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.3, random_state=42, stratify=y
-    )
-
-    model = LogisticRegression(max_iter=1000)
-    model.fit(X_train, y_train)
-
-    probs = model.predict_proba(X_test)[:, 1]
-
-    thresholds = np.arange(0.05, 1.0, 0.05)
-    f1_values = [f1_score(y_test, (probs >= t).astype(int), zero_division=0)
-                 for t in thresholds]
-
+def plot_autocorrelation(forecast_df, out_dir):
+    """Plot average autocorrelation of stress_level across all users up to 7 days lag."""
+    lags = range(1, 8)
+    acf_values = {lag: [] for lag in lags}
+    
+    for uid, group in forecast_df.groupby("user_id"):
+        group = group.sort_values("date")
+        if len(group) > max(lags):
+            for lag in lags:
+                corr = group["stress_level"].autocorr(lag=lag)
+                if not np.isnan(corr):
+                    acf_values[lag].append(corr)
+                    
+    avg_acf = {lag: np.mean(vals) for lag, vals in acf_values.items() if vals}
+    
     fig, ax = plt.subplots(figsize=(8, 5))
-
-    ax.plot(thresholds, f1_values, marker="o")
-
-    best_idx = int(np.argmax(f1_values))
-    best_t = thresholds[best_idx]
-    best_f1 = f1_values[best_idx]
-
-    ax.scatter(best_t, best_f1, zorder=5)
-    ax.axvline(best_t, linestyle="--", alpha=0.4)
-
-    ax.annotate(
-        f"best={best_t:.2f}, F1={best_f1:.2f}",
-        (best_t, best_f1),
-        xytext=(10, -15),
-        textcoords="offset points",
-    )
-
-    ax.set_title("F1 vs Threshold Sweep (0.05 → 0.95)", pad=15)
-    ax.set_xlabel("Threshold")
-    ax.set_ylabel("F1 Score")
-
-    ax.set_xlim(0.05, 0.95)
-    ax.set_ylim(0, 1.05)  # extra space biar ga nabrak
-    ax.grid(alpha=0.3)
-
-    fig.tight_layout(pad=2)
-    fig.savefig(out_dir / "08_f1_vs_threshold_sweep.png", dpi=180)
+    ax.bar(avg_acf.keys(), avg_acf.values(), color="skyblue", edgecolor="black")
+    ax.set_title("Average Autocorrelation of Stress Level (1-7 Days)")
+    ax.set_xlabel("Lag (Days)")
+    ax.set_ylabel("Average Autocorrelation")
+    ax.set_ylim(-0.5, 1)
+    ax.axhline(0, color="black", linewidth=1.2)
+    
+    for lag, val in avg_acf.items():
+        vpos = val + 0.02 if val >= 0 else val - 0.08
+        ax.text(lag, vpos, f"{val:.2f}", ha="center", fontweight="bold")
+    
+    fig.tight_layout()
+    fig.savefig(out_dir / "08_autocorrelation_analysis.png", dpi=180)
     plt.close(fig)
 
 
@@ -255,11 +223,9 @@ def main():
 
     current_df, forecast_df = load_datasets()
 
-    # FILTER USER 4
-    forecast_df = forecast_df[forecast_df["user_id"] == 4]
-
+    # Use all users
     if forecast_df.empty:
-        raise ValueError("user_id=4 tidak ditemukan")
+        raise ValueError("Dataset forecast kosong")
 
     plot_stress_distribution(current_df, args.output_dir)
     plot_correlation_heatmap(current_df, args.output_dir)
@@ -269,9 +235,9 @@ def main():
     plot_temporal_pattern(forecast_df, args.output_dir)
     plot_transition_heatmap(forecast_df, args.output_dir)
     plot_class_balance(forecast_df, args.output_dir)
-    plot_f1_threshold_sweep(forecast_df, args.output_dir)
+    plot_autocorrelation(forecast_df, args.output_dir)
 
-    print("Generated 8 plots (user_id=4)")
+    print("Generated 8 plots (All Users)")
 
 
 if __name__ == "__main__":

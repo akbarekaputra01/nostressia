@@ -44,7 +44,7 @@ WINDOW = 7  # Personalized forecast uses 7-day window
 TARGET_COL = "stress_level"
 DATE_COL = "date"
 USER_COL = "user_id"
-REGISTERED_MODEL_NAME = "Personalized_Stress_Forecast"
+REGISTERED_MODEL_NAME = "StressForecastPersonalized"
 
 
 def _ensure_registered_model_with_description(
