@@ -1,23 +1,23 @@
 {
-  "created_at": "2026-02-22T14:37:20.581426+00:00",
-  "data_hash": "54715fc4f4f2491a4da301fd643010674a093b33b802abf2d0a54a35e922d067",
+  "created_at": "2026-02-24T07:45:22.549578+00:00",
+  "data_hash": "d7468b6138deab60afc667b84fbfddf2edb91eb85950d5243d61bb0caf24cc44",
   "features": [
     "lag_sp_*",
     "gap_*",
     "dow",
     "behavior_lag_features"
   ],
-  "git_sha": "",
+  "git_sha": "bb489191729d200ccc3be5432e5841c1883d0fe0",
   "horizon_days": 7,
-  "mlflow_run_id": "6cfe8a42452f41a08d4d7f09d01cce42",
+  "mlflow_run_id": "6d3b6efb7f1d497b8ab49d64e099ba58",
   "mlflow_run_ids": [
-    "6cfe8a42452f41a08d4d7f09d01cce42"
+    "6d3b6efb7f1d497b8ab49d64e099ba58"
   ],
-  "trained_at": "2026-02-22T14:37:20.581426+00:00",
+  "trained_at": "2026-02-24T07:45:22.549578+00:00",
   "users": [
     {
       "milestone": 60,
-      "user_id": 5
+      "user_id": 1
     }
   ],
   "version": "personalized-forecast-v1"

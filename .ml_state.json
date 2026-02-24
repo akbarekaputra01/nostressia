@@ -6,10 +6,10 @@
   "personalized": {
     "users": {
       "1": {
-        "data_hash": "54715fc4f4f2491a4da301fd643010674a093b33b802abf2d0a54a35e922d067",
-        "last_trained_at": "2026-02-22T14:19:08.080263+00:00",
+        "data_hash": "d7468b6138deab60afc667b84fbfddf2edb91eb85950d5243d61bb0caf24cc44",
+        "last_trained_at": "2026-02-24T07:45:22.466927+00:00",
         "last_trained_milestone": 60,
-        "streak_end_date": "2026-01-19",
+        "streak_end_date": "2026-02-24",
         "streak_start_date": "2025-11-21"
       },
       "2": {
