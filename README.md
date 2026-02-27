@@ -138,7 +138,7 @@ cp .env.example .env
 
 # siapkan python env
 # Linux/macOS
-python -m venv .venv
+python3.10 -m venv .venv
 # Windows
 py -3.10 -m venv .venv
 
@@ -191,7 +191,7 @@ cp .env.example .env
 
 # siapkan python env
 # Linux/macOS
-python -m venv .venv
+python3.10 -m venv .venv
 # Windows
 py -3.10 -m venv .venv
 
@@ -217,7 +217,7 @@ pytest
 ```bash
 cd nostressia-backend
 # Linux/macOS
-python -m venv .venv
+python3.10 -m venv .venv
 # Windows
 py -3.10 -m venv .venv
 # Linux/macOS: source .venv/bin/activate
@@ -242,7 +242,7 @@ npm run test
 ```bash
 cd nostressia-machine-learning
 # Linux/macOS
-python -m venv .venv
+python3.10 -m venv .venv
 # Windows
 py -3.10 -m venv .venv
 # Linux/macOS: source .venv/bin/activate

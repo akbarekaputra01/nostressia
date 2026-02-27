@@ -45,7 +45,7 @@ nostressia-machine-learning/
 
    ```bash
    # Linux/macOS (bash/zsh)
-   python -m venv .venv
+   python3.10 -m venv .venv
    source .venv/bin/activate
 
    # Windows Git Bash
