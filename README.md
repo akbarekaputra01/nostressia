@@ -121,7 +121,7 @@ nostressia/
 ### 1) Clone repository
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/akbarekaputra01/nostressia.git
 cd nostressia
 ```
 
