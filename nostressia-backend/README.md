@@ -63,6 +63,10 @@ nostressia-backend/
    python -m venv .venv
    source .venv/bin/activate
 
+   # Windows Git Bash
+   py -3.10 -m venv .venv
+   source .venv/Scripts/activate
+
    # Windows PowerShell
    py -3.10 -m venv .venv
    .\.venv\Scripts\Activate.ps1

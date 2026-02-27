@@ -6,7 +6,7 @@
 
 <p align="center">
   <a href="https://www.python.org/" target="_blank" rel="noopener noreferrer">
-    <img alt="Python" src="https://img.shields.io/badge/Python-3.10%2B-blue" />
+    <img alt="Python" src="https://img.shields.io/badge/Python-3.10.19-blue" />
   </a>
   <a href="https://fastapi.tiangolo.com/" target="_blank" rel="noopener noreferrer">
     <img alt="FastAPI" src="https://img.shields.io/badge/FastAPI-Backend-009688" />
@@ -144,6 +144,7 @@ py -3.10 -m venv .venv
 
 # aktivasi env
 # Linux/macOS: source .venv/bin/activate
+# Windows Git Bash: source .venv/Scripts/activate
 # PowerShell: .\.venv\Scripts\Activate.ps1
 # CMD: .venv\Scripts\activate.bat
 
@@ -196,6 +197,7 @@ py -3.10 -m venv .venv
 
 # aktivasi env
 # Linux/macOS: source .venv/bin/activate
+# Windows Git Bash: source .venv/Scripts/activate
 # PowerShell: .\.venv\Scripts\Activate.ps1
 # CMD: .venv\Scripts\activate.bat
 
@@ -219,6 +221,7 @@ python -m venv .venv
 # Windows
 py -3.10 -m venv .venv
 # Linux/macOS: source .venv/bin/activate
+# Windows Git Bash: source .venv/Scripts/activate
 # PowerShell: .\.venv\Scripts\Activate.ps1
 # CMD: .venv\Scripts\activate.bat
 pip install -r requirements.txt
@@ -243,6 +246,7 @@ python -m venv .venv
 # Windows
 py -3.10 -m venv .venv
 # Linux/macOS: source .venv/bin/activate
+# Windows Git Bash: source .venv/Scripts/activate
 # PowerShell: .\.venv\Scripts\Activate.ps1
 # CMD: .venv\Scripts\activate.bat
 pip install -r requirements.txt

@@ -21,6 +21,8 @@ Frontend web **Nostressia** dibangun menggunakan **React + Vite** untuk menghadi
 - Vitest + Testing Library
 - ESLint + Prettier
 
+Catatan konsistensi environment repo: backend dan machine learning menggunakan Python **3.10.19** pada Linux/macOS/Windows.
+
 ## Struktur Direktori (Ringkas)
 
 ```text
