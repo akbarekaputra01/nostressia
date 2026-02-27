@@ -109,7 +109,6 @@ nostressia/
 - **MySQL 8+** (Database)
 - **Git** (version control)
 
-Python untuk Backend dan ML disarankan konsisten pada semua OS: **3.10.19**.
 
 ### Opsional
 
@@ -122,7 +121,7 @@ Python untuk Backend dan ML disarankan konsisten pada semua OS: **3.10.19**.
 ### 1) Clone repository
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/akbarekaputra01/nostressia.git
 cd nostressia
 ```
 

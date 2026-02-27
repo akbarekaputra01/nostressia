@@ -30,7 +30,7 @@ nostressia-machine-learning/
 
 ## Prasyarat
 
-- Python 3.10.19 (gunakan versi yang sama pada Linux/macOS/Windows)
+- Python 3.10.19
 - Koneksi database MySQL (untuk training yang menarik data dari tabel `stress_levels`)
 
 ## Setup Lokal
