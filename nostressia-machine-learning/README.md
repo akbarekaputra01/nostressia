@@ -30,7 +30,7 @@ nostressia-machine-learning/
 
 ## Prasyarat
 
-- Python 3.10+
+- Python 3.10.19 (gunakan versi yang sama pada Linux/macOS/Windows)
 - Koneksi database MySQL (untuk training yang menarik data dari tabel `stress_levels`)
 
 ## Setup Lokal
@@ -48,12 +48,16 @@ nostressia-machine-learning/
    python -m venv .venv
    source .venv/bin/activate
 
+   # Windows Git Bash
+   py -3.10 -m venv .venv
+   source .venv/Scripts/activate
+
    # Windows PowerShell
-   py -m venv .venv
+   py -3.10 -m venv .venv
    .\.venv\Scripts\Activate.ps1
 
    # Windows CMD
-   py -m venv .venv
+   py -3.10 -m venv .venv
    .venv\Scripts\activate.bat
    ```
 
