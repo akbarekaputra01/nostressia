@@ -105,7 +105,20 @@ nostressia-backend/
 python main.py
 ```
 
-Server default berjalan di `http://localhost:8000`.
+Server default berjalan di `http://127.0.0.1:8000` (tanpa auto-reload).
+
+Opsional (mode development dengan auto-reload):
+
+```bash
+# Linux/macOS
+UVICORN_RELOAD=true python main.py
+
+# Windows PowerShell
+$env:UVICORN_RELOAD="true"; python main.py
+
+# Windows CMD
+set UVICORN_RELOAD=true && python main.py
+```
 
 ## Menjalankan Test
 
