@@ -25,7 +25,7 @@ Backend untuk aplikasi **Nostressia** dibangun dengan **FastAPI** dan berfungsi 
 
 ## Teknologi
 
-- Python 3.10+
+- Python 3.10.19
 - FastAPI + Uvicorn
 - SQLAlchemy + MySQL
 - Scikit-learn/Joblib (inference model)
@@ -64,11 +64,11 @@ nostressia-backend/
    source .venv/bin/activate
 
    # Windows PowerShell
-   py -m venv .venv
+   py -3.10 -m venv .venv
    .\.venv\Scripts\Activate.ps1
 
    # Windows Command Prompt (CMD)
-   py -m venv .venv
+   py -3.10 -m venv .venv
    .venv\Scripts\activate.bat
    ```
 

@@ -105,9 +105,10 @@ nostressia/
 ### Runtime & Tooling
 
 - **Node.js 18+** (Frontend)
-- **Python 3.10+** (Backend & ML)
+- **Python 3.10.19** (Backend & ML)
 - **MySQL 8+** (Database)
 - **Git** (version control)
+
 
 ### Opsional
 
@@ -136,7 +137,12 @@ cp .env.example .env
 # Windows CMD: copy .env.example .env
 
 # siapkan python env
+# Linux/macOS
 python -m venv .venv
+# Windows
+py -3.10 -m venv .venv
+
+# aktivasi env
 # Linux/macOS: source .venv/bin/activate
 # PowerShell: .\.venv\Scripts\Activate.ps1
 # CMD: .venv\Scripts\activate.bat
@@ -183,7 +189,12 @@ cp .env.example .env
 # Windows CMD: copy .env.example .env
 
 # siapkan python env
+# Linux/macOS
 python -m venv .venv
+# Windows
+py -3.10 -m venv .venv
+
+# aktivasi env
 # Linux/macOS: source .venv/bin/activate
 # PowerShell: .\.venv\Scripts\Activate.ps1
 # CMD: .venv\Scripts\activate.bat
@@ -203,7 +214,10 @@ pytest
 
 ```bash
 cd nostressia-backend
+# Linux/macOS
 python -m venv .venv
+# Windows
+py -3.10 -m venv .venv
 # Linux/macOS: source .venv/bin/activate
 # PowerShell: .\.venv\Scripts\Activate.ps1
 # CMD: .venv\Scripts\activate.bat
@@ -224,7 +238,10 @@ npm run test
 
 ```bash
 cd nostressia-machine-learning
+# Linux/macOS
 python -m venv .venv
+# Windows
+py -3.10 -m venv .venv
 # Linux/macOS: source .venv/bin/activate
 # PowerShell: .\.venv\Scripts\Activate.ps1
 # CMD: .venv\Scripts\activate.bat
@@ -242,6 +259,7 @@ pytest
 - Untuk workflow Hugging Face/CI, gunakan secret manager platform (bukan hardcode token di source).
 
 ---
+
 
 ## ☁️ Deployment Notes
 
