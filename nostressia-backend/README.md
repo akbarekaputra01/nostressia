@@ -25,7 +25,7 @@ Backend untuk aplikasi **Nostressia** dibangun dengan **FastAPI** dan berfungsi 
 
 ## Teknologi
 
-- Python 3.10+
+- Python 3.10.19
 - FastAPI + Uvicorn
 - SQLAlchemy + MySQL
 - Scikit-learn/Joblib (inference model)
@@ -64,11 +64,11 @@ nostressia-backend/
    source .venv/bin/activate
 
    # Windows PowerShell
-   py -m venv .venv
+   py -3.10 -m venv .venv
    .\.venv\Scripts\Activate.ps1
 
    # Windows Command Prompt (CMD)
-   py -m venv .venv
+   py -3.10 -m venv .venv
    .venv\Scripts\activate.bat
    ```
 
@@ -105,7 +105,20 @@ nostressia-backend/
 python main.py
 ```
 
-Server default berjalan di `http://localhost:8000`.
+Server default berjalan di `http://127.0.0.1:8000` (tanpa auto-reload).
+
+Opsional (mode development dengan auto-reload):
+
+```bash
+# Linux/macOS
+UVICORN_RELOAD=true python main.py
+
+# Windows PowerShell
+$env:UVICORN_RELOAD="true"; python main.py
+
+# Windows CMD
+set UVICORN_RELOAD=true && python main.py
+```
 
 ## Menjalankan Test
 
