@@ -25,7 +25,7 @@ Backend untuk aplikasi **Nostressia** dibangun dengan **FastAPI** dan berfungsi 
 
 ## Teknologi
 
-- Python 3.10.19 (gunakan versi yang sama pada Linux/macOS/Windows)
+- Python 3.10.19
 - FastAPI + Uvicorn
 - SQLAlchemy + MySQL
 - Scikit-learn/Joblib (inference model)
