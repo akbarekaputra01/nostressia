@@ -74,6 +74,13 @@ nostressia-backend/
    # Windows Command Prompt (CMD)
    py -3.10 -m venv .venv
    .venv\Scripts\activate.bat
+
+   # Jika muncul: "No suitable Python runtime found"
+   # cek versi yang terdeteksi launcher:
+   # py -0
+   # lalu install Python 3.10 (contoh winget: winget install -e --id Python.Python.3.10), buka terminal baru, lalu ulangi.
+   # alternatif sementara bila 3.10 belum ada:
+   # py -3 -m venv .venv
    ```
 
 3. Install dependency:

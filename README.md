@@ -109,6 +109,13 @@ nostressia/
 - **MySQL 8+** (Database)
 - **Git** (version control)
 
+Contoh instalasi cepat di Windows (winget):
+
+```powershell
+winget install -e --id Python.Python.3.10
+winget install -e --id OpenJS.NodeJS.LTS
+```
+
 
 ### Opsional
 
@@ -142,6 +149,12 @@ python3.10 -m venv .venv
 # Windows
 py -3.10 -m venv .venv
 
+# Jika muncul: "No suitable Python runtime found"
+# cek versi python yang terdeteksi launcher
+# py -0
+# lalu install Python 3.10 (contoh winget: winget install -e --id Python.Python.3.10), buka terminal baru, dan ulangi perintah di atas.
+# alternatif sementara bila 3.10 belum ada: py -3 -m venv .venv
+
 # aktivasi env
 # Linux/macOS: source .venv/bin/activate
 # Windows Git Bash: source .venv/Scripts/activate
@@ -169,6 +182,9 @@ cp .env.example .env
 # Windows PowerShell: Copy-Item .env.example .env
 # Windows CMD: copy .env.example .env
 
+# jika `npm` belum tersedia, install Node.js LTS (Windows):
+# winget install -e --id OpenJS.NodeJS.LTS
+
 # install dependency
 npm install
 
@@ -194,6 +210,12 @@ cp .env.example .env
 python3.10 -m venv .venv
 # Windows
 py -3.10 -m venv .venv
+
+# Jika muncul: "No suitable Python runtime found"
+# cek versi python yang terdeteksi launcher
+# py -0
+# lalu install Python 3.10 (contoh winget: winget install -e --id Python.Python.3.10), buka terminal baru, dan ulangi perintah di atas.
+# alternatif sementara bila 3.10 belum ada: py -3 -m venv .venv
 
 # aktivasi env
 # Linux/macOS: source .venv/bin/activate
