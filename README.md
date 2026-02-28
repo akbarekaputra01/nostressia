@@ -137,11 +137,13 @@ cd nostressia
 ```bash
 cd nostressia-backend
 
-# salin env template
-# Linux/macOS
+# salin env template (pilih satu sesuai terminal)
+# Linux/macOS (bash/zsh)
 cp .env.example .env
-# Windows PowerShell: Copy-Item .env.example .env
-# Windows CMD: copy .env.example .env
+# Windows PowerShell
+Copy-Item .env.example .env
+# Windows CMD
+copy .env.example .env
 
 # siapkan python env
 # Linux/macOS
@@ -176,11 +178,13 @@ Backend default: `http://localhost:8000`
 ```bash
 cd nostressia-frontend
 
-# salin env template
-# Linux/macOS
+# salin env template (pilih satu sesuai terminal)
+# Linux/macOS (bash/zsh)
 cp .env.example .env
-# Windows PowerShell: Copy-Item .env.example .env
-# Windows CMD: copy .env.example .env
+# Windows PowerShell
+Copy-Item .env.example .env
+# Windows CMD
+copy .env.example .env
 
 # jika `npm` belum tersedia, install Node.js LTS (Windows):
 # winget install -e --id OpenJS.NodeJS.LTS
@@ -199,11 +203,13 @@ Frontend default: `http://localhost:5173`
 ```bash
 cd nostressia-machine-learning
 
-# salin env template
-# Linux/macOS
+# salin env template (pilih satu sesuai terminal)
+# Linux/macOS (bash/zsh)
 cp .env.example .env
-# Windows PowerShell: Copy-Item .env.example .env
-# Windows CMD: copy .env.example .env
+# Windows PowerShell
+Copy-Item .env.example .env
+# Windows CMD
+copy .env.example .env
 
 # siapkan python env
 # Linux/macOS

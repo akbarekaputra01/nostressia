@@ -78,7 +78,9 @@ nostressia-machine-learning/
 4. Salin env template:
 
    ```bash
-   # Linux/macOS
+   # pilih satu sesuai terminal
+
+   # Linux/macOS (bash/zsh)
    cp .env.example .env
 
    # Windows PowerShell

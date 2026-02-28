@@ -93,7 +93,9 @@ nostressia-backend/
 4. Salin konfigurasi environment:
 
    ```bash
-   # Linux/macOS
+   # pilih satu sesuai terminal
+
+   # Linux/macOS (bash/zsh)
    cp .env.example .env
 
    # Windows PowerShell

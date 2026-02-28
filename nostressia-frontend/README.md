@@ -71,7 +71,9 @@ nostressia-frontend/
 4. Salin file env:
 
    ```bash
-   # Linux/macOS
+   # pilih satu sesuai terminal
+
+   # Linux/macOS (bash/zsh)
    cp .env.example .env
 
    # Windows PowerShell
