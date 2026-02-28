@@ -109,6 +109,13 @@ nostressia/
 - **MySQL 8+** (Database)
 - **Git** (version control)
 
+Contoh instalasi cepat di Windows (winget):
+
+```powershell
+winget install -e --id Python.Python.3.10
+winget install -e --id OpenJS.NodeJS.LTS
+```
+
 
 ### Opsional
 
@@ -130,11 +137,13 @@ cd nostressia
 ```bash
 cd nostressia-backend
 
-# salin env template
-# Linux/macOS
+# salin env template (pilih satu sesuai terminal)
+# Linux/macOS (bash/zsh)
 cp .env.example .env
-# Windows PowerShell: Copy-Item .env.example .env
-# Windows CMD: copy .env.example .env
+# Windows PowerShell
+Copy-Item .env.example .env
+# Windows CMD
+copy .env.example .env
 
 # siapkan python env
 # Linux/macOS
@@ -142,11 +151,13 @@ python3.10 -m venv .venv
 # Windows
 py -3.10 -m venv .venv
 
-# aktivasi env
-# Linux/macOS: source .venv/bin/activate
-# Windows Git Bash: source .venv/Scripts/activate
-# PowerShell: .\.venv\Scripts\Activate.ps1
-# CMD: .venv\Scripts\activate.bat
+# Jika muncul: "No suitable Python runtime found"
+# cek versi python yang terdeteksi launcher
+# py -0
+# lalu install Python 3.10 (contoh winget: winget install -e --id Python.Python.3.10), buka terminal baru, dan ulangi perintah di atas.
+# alternatif sementara bila 3.10 belum ada: py -3 -m venv .venv
+
+# aktivasi environment: lihat daftar command setelah blok ini (jalankan SATU sesuai terminal)
 
 # install dependency
 pip install -r requirements.txt
@@ -156,6 +167,13 @@ pip install -r requirements-dev.txt
 python main.py
 ```
 
+Aktivasi environment (jalankan **satu** command sesuai terminal):
+
+- Linux/macOS (bash/zsh): `source .venv/bin/activate`
+- Windows Git Bash: `source .venv/Scripts/activate`
+- Windows PowerShell: `.\.venv\Scripts\Activate.ps1`
+- Windows CMD: `.venv\Scripts\activate.bat`
+
 Backend default: `http://localhost:8000`
 
 ### 3) Jalankan Frontend (terminal 2)
@@ -163,11 +181,16 @@ Backend default: `http://localhost:8000`
 ```bash
 cd nostressia-frontend
 
-# salin env template
-# Linux/macOS
+# salin env template (pilih satu sesuai terminal)
+# Linux/macOS (bash/zsh)
 cp .env.example .env
-# Windows PowerShell: Copy-Item .env.example .env
-# Windows CMD: copy .env.example .env
+# Windows PowerShell
+Copy-Item .env.example .env
+# Windows CMD
+copy .env.example .env
+
+# jika `npm` belum tersedia, install Node.js LTS (Windows):
+# winget install -e --id OpenJS.NodeJS.LTS
 
 # install dependency
 npm install
@@ -183,11 +206,13 @@ Frontend default: `http://localhost:5173`
 ```bash
 cd nostressia-machine-learning
 
-# salin env template
-# Linux/macOS
+# salin env template (pilih satu sesuai terminal)
+# Linux/macOS (bash/zsh)
 cp .env.example .env
-# Windows PowerShell: Copy-Item .env.example .env
-# Windows CMD: copy .env.example .env
+# Windows PowerShell
+Copy-Item .env.example .env
+# Windows CMD
+copy .env.example .env
 
 # siapkan python env
 # Linux/macOS
@@ -195,11 +220,13 @@ python3.10 -m venv .venv
 # Windows
 py -3.10 -m venv .venv
 
-# aktivasi env
-# Linux/macOS: source .venv/bin/activate
-# Windows Git Bash: source .venv/Scripts/activate
-# PowerShell: .\.venv\Scripts\Activate.ps1
-# CMD: .venv\Scripts\activate.bat
+# Jika muncul: "No suitable Python runtime found"
+# cek versi python yang terdeteksi launcher
+# py -0
+# lalu install Python 3.10 (contoh winget: winget install -e --id Python.Python.3.10), buka terminal baru, dan ulangi perintah di atas.
+# alternatif sementara bila 3.10 belum ada: py -3 -m venv .venv
+
+# aktivasi environment: lihat daftar command setelah blok ini (jalankan SATU sesuai terminal)
 
 # install dependency
 pip install -r requirements.txt
@@ -207,6 +234,13 @@ pip install -r requirements.txt
 # optional test
 pytest
 ```
+
+Aktivasi environment (jalankan **satu** command sesuai terminal):
+
+- Linux/macOS (bash/zsh): `source .venv/bin/activate`
+- Windows Git Bash: `source .venv/Scripts/activate`
+- Windows PowerShell: `.\.venv\Scripts\Activate.ps1`
+- Windows CMD: `.venv\Scripts\activate.bat`
 
 ---
 
@@ -220,14 +254,17 @@ cd nostressia-backend
 python3.10 -m venv .venv
 # Windows
 py -3.10 -m venv .venv
-# Linux/macOS: source .venv/bin/activate
-# Windows Git Bash: source .venv/Scripts/activate
-# PowerShell: .\.venv\Scripts\Activate.ps1
-# CMD: .venv\Scripts\activate.bat
+# aktivasi environment: jalankan SATU command sesuai terminal (lihat daftar setelah blok ini)
 pip install -r requirements.txt
 pip install -r requirements-dev.txt
 pytest
 ```
+
+Aktivasi environment (pilih satu):
+- Linux/macOS (bash/zsh): `source .venv/bin/activate`
+- Windows Git Bash: `source .venv/Scripts/activate`
+- Windows PowerShell: `.\.venv\Scripts\Activate.ps1`
+- Windows CMD: `.venv\Scripts\activate.bat`
 
 ### Frontend
 
@@ -245,13 +282,16 @@ cd nostressia-machine-learning
 python3.10 -m venv .venv
 # Windows
 py -3.10 -m venv .venv
-# Linux/macOS: source .venv/bin/activate
-# Windows Git Bash: source .venv/Scripts/activate
-# PowerShell: .\.venv\Scripts\Activate.ps1
-# CMD: .venv\Scripts\activate.bat
+# aktivasi environment: jalankan SATU command sesuai terminal (lihat daftar setelah blok ini)
 pip install -r requirements.txt
 pytest
 ```
+
+Aktivasi environment (pilih satu):
+- Linux/macOS (bash/zsh): `source .venv/bin/activate`
+- Windows Git Bash: `source .venv/Scripts/activate`
+- Windows PowerShell: `.\.venv\Scripts\Activate.ps1`
+- Windows CMD: `.venv\Scripts\activate.bat`
 
 ---
 
