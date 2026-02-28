@@ -41,7 +41,7 @@ nostressia-machine-learning/
    cd nostressia-machine-learning
    ```
 
-2. Buat virtual environment dan aktifkan (pilih sesuai terminal):
+2. Buat virtual environment, lalu aktivasi environment (jalankan SATU command aktivasi sesuai terminal):
 
    ```bash
    # Linux/macOS (bash/zsh)

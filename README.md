@@ -157,11 +157,11 @@ py -3.10 -m venv .venv
 # lalu install Python 3.10 (contoh winget: winget install -e --id Python.Python.3.10), buka terminal baru, dan ulangi perintah di atas.
 # alternatif sementara bila 3.10 belum ada: py -3 -m venv .venv
 
-# aktivasi env
-# Linux/macOS: source .venv/bin/activate
+# aktivasi environment (jalankan SATU command sesuai terminal):
+# Linux/macOS (bash/zsh): source .venv/bin/activate
 # Windows Git Bash: source .venv/Scripts/activate
-# PowerShell: .\.venv\Scripts\Activate.ps1
-# CMD: .venv\Scripts\activate.bat
+# Windows PowerShell: .\.venv\Scripts\Activate.ps1
+# Windows CMD: .venv\Scripts\activate.bat
 
 # install dependency
 pip install -r requirements.txt
@@ -223,11 +223,11 @@ py -3.10 -m venv .venv
 # lalu install Python 3.10 (contoh winget: winget install -e --id Python.Python.3.10), buka terminal baru, dan ulangi perintah di atas.
 # alternatif sementara bila 3.10 belum ada: py -3 -m venv .venv
 
-# aktivasi env
-# Linux/macOS: source .venv/bin/activate
+# aktivasi environment (jalankan SATU command sesuai terminal):
+# Linux/macOS (bash/zsh): source .venv/bin/activate
 # Windows Git Bash: source .venv/Scripts/activate
-# PowerShell: .\.venv\Scripts\Activate.ps1
-# CMD: .venv\Scripts\activate.bat
+# Windows PowerShell: .\.venv\Scripts\Activate.ps1
+# Windows CMD: .venv\Scripts\activate.bat
 
 # install dependency
 pip install -r requirements.txt
@@ -248,10 +248,11 @@ cd nostressia-backend
 python3.10 -m venv .venv
 # Windows
 py -3.10 -m venv .venv
-# Linux/macOS: source .venv/bin/activate
+# aktivasi environment (jalankan SATU command sesuai terminal):
+# Linux/macOS (bash/zsh): source .venv/bin/activate
 # Windows Git Bash: source .venv/Scripts/activate
-# PowerShell: .\.venv\Scripts\Activate.ps1
-# CMD: .venv\Scripts\activate.bat
+# Windows PowerShell: .\.venv\Scripts\Activate.ps1
+# Windows CMD: .venv\Scripts\activate.bat
 pip install -r requirements.txt
 pip install -r requirements-dev.txt
 pytest
@@ -273,10 +274,11 @@ cd nostressia-machine-learning
 python3.10 -m venv .venv
 # Windows
 py -3.10 -m venv .venv
-# Linux/macOS: source .venv/bin/activate
+# aktivasi environment (jalankan SATU command sesuai terminal):
+# Linux/macOS (bash/zsh): source .venv/bin/activate
 # Windows Git Bash: source .venv/Scripts/activate
-# PowerShell: .\.venv\Scripts\Activate.ps1
-# CMD: .venv\Scripts\activate.bat
+# Windows PowerShell: .\.venv\Scripts\Activate.ps1
+# Windows CMD: .venv\Scripts\activate.bat
 pip install -r requirements.txt
 pytest
 ```
