@@ -69,12 +69,6 @@ nostressia-machine-learning/
    # py -3 -m venv .venv
    ```
 
-   Aktivasi environment (jalankan **satu** command sesuai terminal):
-   - Linux/macOS (bash/zsh): `source .venv/bin/activate`
-   - Windows Git Bash: `source .venv/Scripts/activate`
-   - Windows PowerShell: `.\.venv\Scripts\Activate.ps1`
-   - Windows CMD: `.venv\Scripts\activate.bat`
-
 3. Install dependency:
 
    ```bash
