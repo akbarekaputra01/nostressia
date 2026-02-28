@@ -14,7 +14,7 @@ Frontend web **Nostressia** dibangun menggunakan **React + Vite** untuk menghadi
 
 ## Teknologi
 
-- Node.js 18+ (disarankan LTS)
+- Node.js 18+ (disarankan LTS, contoh Windows winget: `winget install -e --id OpenJS.NodeJS.LTS`)
 - React 19
 - Vite
 - Tailwind CSS
@@ -49,7 +49,13 @@ nostressia-frontend/
    cd nostressia-frontend
    ```
 
-2. Install dependency (pilih sesuai package manager):
+2. Pastikan Node.js terpasang. Jika Windows dan `node`/`npm` belum tersedia:
+
+   ```powershell
+   winget install -e --id OpenJS.NodeJS.LTS
+   ```
+
+3. Install dependency (pilih sesuai package manager):
 
    ```bash
    # npm
@@ -62,10 +68,12 @@ nostressia-frontend/
    pnpm install
    ```
 
-3. Salin file env:
+4. Salin file env:
 
    ```bash
-   # Linux/macOS
+   # pilih satu sesuai terminal
+
+   # Linux/macOS (bash/zsh)
    cp .env.example .env
 
    # Windows PowerShell
@@ -75,7 +83,7 @@ nostressia-frontend/
    copy .env.example .env
    ```
 
-4. Sesuaikan variabel pada `.env`:
+5. Sesuaikan variabel pada `.env`:
    - `VITE_API_BASE_URL` → URL backend
    - `VITE_VAPID_PUBLIC_KEY` → public key notifikasi web
    - `VITE_LOG_LEVEL` → level logging client
