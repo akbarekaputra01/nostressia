@@ -252,10 +252,13 @@ pytest
 
 ```bash
 cd nostressia-backend
+
 # Linux/macOS
 python3.10 -m venv .venv
+
 # Windows
 py -3.10 -m venv .venv
+
 # aktivasi env (pilih satu sesuai terminal)
 # Linux/macOS (bash/zsh)
 source .venv/bin/activate
@@ -265,8 +268,10 @@ source .venv/Scripts/activate
 .\.venv\Scripts\Activate.ps1
 # Windows CMD
 .venv\Scripts\activate.bat
+
 pip install -r requirements.txt
 pip install -r requirements-dev.txt
+
 pytest
 ```
 
@@ -282,10 +287,13 @@ npm run test
 
 ```bash
 cd nostressia-machine-learning
+
 # Linux/macOS
 python3.10 -m venv .venv
+
 # Windows
 py -3.10 -m venv .venv
+
 # aktivasi env (pilih satu sesuai terminal)
 # Linux/macOS (bash/zsh)
 source .venv/bin/activate
@@ -295,7 +303,9 @@ source .venv/Scripts/activate
 .\.venv\Scripts\Activate.ps1
 # Windows CMD
 .venv\Scripts\activate.bat
+
 pip install -r requirements.txt
+
 pytest
 ```
 
