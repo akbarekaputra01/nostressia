@@ -50,7 +50,9 @@ def test_generate_sas_urls(monkeypatch):
         account_name = "account"
 
     monkeypatch.setattr(azure_sas.settings, "azure_storage_connection_string", "conn")
+    monkeypatch.setattr(azure_sas.settings, "azure_storage_container_name", "")
     monkeypatch.setattr(azure_sas.settings, "azure_storage_container", "container")
+    monkeypatch.setattr(azure_sas.settings, "azure_storage_account_name", "")
     monkeypatch.setattr(azure_sas, "_get_blob_service_client", lambda: DummyClient())
     monkeypatch.setattr(azure_sas, "generate_blob_sas", lambda **_: "token")
 

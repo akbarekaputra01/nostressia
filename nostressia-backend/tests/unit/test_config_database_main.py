@@ -10,7 +10,9 @@ from app.main import create_app
 
 
 def test_settings_db_port_parsing_and_database_url(monkeypatch):
-    monkeypatch.delenv("DATABASE_URL", raising=False)
+    # setenv overwrites the real values from .env (env vars have higher priority than .env file)
+    monkeypatch.setenv("DATABASE_URL", "")
+    monkeypatch.setenv("DB_PORT", "")
     monkeypatch.setenv("DB_USER", "user")
     monkeypatch.setenv("DB_PASSWORD", "pass")
     monkeypatch.setenv("DB_HOST", "localhost")
@@ -43,6 +45,7 @@ def test_settings_db_port_parsing_and_database_url(monkeypatch):
     )
     assert settings_blank_port.db_port == 3306
 
+    monkeypatch.setenv("DATABASE_URL", "sqlite:///override.db")
     settings_override = Settings(
         db_user="user",
         db_password="pass",
@@ -50,7 +53,6 @@ def test_settings_db_port_parsing_and_database_url(monkeypatch):
         db_name="nostressia",
         brevo_api_key="brevo",
         jwt_secret="very-secret-token",
-        database_url_override="sqlite:///override.db",
     )
     assert settings_override.database_url == "sqlite:///override.db"
 
@@ -134,13 +136,14 @@ def test_settings_rejects_weak_jwt_secret():
 
 
 def test_settings_allows_missing_brevo_api_key(monkeypatch):
-    monkeypatch.delenv("BREVO_API_KEY", raising=False)
+    monkeypatch.setenv("BREVO_API_KEY", "")
     settings = Settings(
         db_user="user",
         db_password="pass",
         db_host="localhost",
         db_name="nostressia",
         jwt_secret="very-secret-token",
+        brevo_api_key="",
     )
 
     assert settings.brevo_api_key == ""

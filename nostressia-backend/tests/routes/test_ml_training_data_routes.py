@@ -44,7 +44,8 @@ def _create_log(db_session, user_id, log_date):
     return log
 
 
-def test_ml_training_data_global(client, db_session):
+def test_ml_training_data_global(client, db_session, monkeypatch):
+    monkeypatch.setattr(settings, "internal_training_token", "")
     user = _create_user(db_session)
     _create_log(db_session, user.user_id, date(2024, 1, 1))
 
@@ -53,7 +54,8 @@ def test_ml_training_data_global(client, db_session):
     assert response.json()["data"][0]["user_id"] == user.user_id
 
 
-def test_ml_training_data_personalized(client, db_session):
+def test_ml_training_data_personalized(client, db_session, monkeypatch):
+    monkeypatch.setattr(settings, "internal_training_token", "")
     user = _create_user(db_session)
     _create_log(db_session, user.user_id, date(2024, 1, 1))
 
