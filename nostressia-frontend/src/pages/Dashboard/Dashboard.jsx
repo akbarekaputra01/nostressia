@@ -364,7 +364,7 @@ function buildForecastEligibilityMessage({
   const safeRemaining = Number.isFinite(Number(restoreRemaining)) ? restoreRemaining : "-";
 
   return [
-    "Forecast is not available because your data does not meet the minimum requirement yet.",
+    "Forecast is not available because yOur_Data does not meet the minimum requirement yet.",
     reason ? `Reason: ${reason}` : null,
     `Collected data: ${safeStreak}/${requiredStreak}.`,
     `• Requires ${requiredStreak} logs (not necessarily consecutive).`,

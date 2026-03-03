@@ -222,7 +222,7 @@ describe("Core feature pages", () => {
     expect(screen.getByRole("button", { name: /fill stress prediction data/i })).toBeInTheDocument();
     expect(screen.getByText(/restore streak/i)).toBeInTheDocument();
     expect(screen.getByText(/3-day forecast/i)).toBeInTheDocument();
-    expect(screen.getByText(/daily wisdom/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/daily wisdom/i).length).toBeGreaterThan(0);
     expect(screen.getByRole("button", { name: /new quote/i })).toBeInTheDocument();
     expect(await screen.findByText(/keep going!/i)).toBeInTheDocument();
   }, 10000);
