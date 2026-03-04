@@ -318,6 +318,17 @@ pytest
 - Untuk backend production, pastikan nilai seperti `JWT_SECRET`, storage credential, API key email, dan VAPID key sudah valid.
 - Untuk workflow Hugging Face/CI, gunakan secret manager platform (bukan hardcode token di source).
 
+> **📁 File docs yang berisi `.env` aktual (`.env.docx`)** tersimpan di folder **Final Project Machine Learning - Kelompok 4 - PPTI 22** (Google Drive).
+> Di dalam dokumen tersebut terdapat **3 tab**, salin isi tiap tab ke file `.env` di folder komponen yang sesuai:
+>
+> | Tab di dokumen | Salin ke |
+> |---|---|
+> | **frontend** | `nostressia-frontend/.env` |
+> | **backend** | `nostressia-backend/.env` |
+> | **machine-learning** | `nostressia-machine-learning/.env` |
+>
+> Setelah menyalin, lanjutkan langkah *Quick Start* di atas.
+
 ---
 
 
