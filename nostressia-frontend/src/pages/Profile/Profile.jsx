@@ -988,9 +988,8 @@ export default function Profile() {
         return false;
       }
 
-      if (shouldClearProfilePicture) {
-        await saveProfilePictureUrl(null);
-      }
+      // Note: local/bundled avatar selection is saved via updateProfile below (avatar field).
+      // saveProfilePictureUrl is only used for Azure blob URLs uploaded via handleAvatarUpload.
 
       const payload = {
         username: formData.username,
@@ -1528,10 +1527,10 @@ export default function Profile() {
         <div className="fixed top-24 right-4 z-[300] animate-bounce-in">
           <div
             className={`flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl border ${notification.type === "success"
-                ? "bg-surface-elevated glass-panel text-brand-info border-brand-info/20 dark:bg-surface dark:text-brand-info dark:border-brand-info/30"
-                : notification.type === "error"
-                  ? "bg-surface-elevated glass-panel text-brand-accent border-brand-accent/20 dark:bg-surface dark:text-brand-accent dark:border-brand-accent/30"
-                  : "bg-surface-elevated glass-panel text-brand-primary border-brand-primary/20 dark:bg-surface dark:text-brand-primary dark:border-brand-primary/30"
+              ? "bg-surface-elevated glass-panel text-brand-info border-brand-info/20 dark:bg-surface dark:text-brand-info dark:border-brand-info/30"
+              : notification.type === "error"
+                ? "bg-surface-elevated glass-panel text-brand-accent border-brand-accent/20 dark:bg-surface dark:text-brand-accent dark:border-brand-accent/30"
+                : "bg-surface-elevated glass-panel text-brand-primary border-brand-primary/20 dark:bg-surface dark:text-brand-primary dark:border-brand-primary/30"
               }`}
           >
             {notification.type === "success" ? (
@@ -2170,14 +2169,14 @@ export default function Profile() {
                           type="button"
                           onClick={() => handleThemeSelect(option.value)}
                           className={`flex w-full items-center gap-3 rounded-xl border px-3 py-2 text-left text-sm font-semibold transition-all ${isActive
-                              ? "border-blue-200 bg-blue-50 text-blue-700 shadow-sm"
-                              : "border-border bg-surface-elevated glass-panel hover:border-blue-200 hover:bg-blue-50/60"
+                            ? "border-blue-200 bg-blue-50 text-blue-700 shadow-sm"
+                            : "border-border bg-surface-elevated glass-panel hover:border-blue-200 hover:bg-blue-50/60"
                             }`}
                         >
                           <span
                             className={`flex h-9 w-9 items-center justify-center rounded-full ${isActive
-                                ? "bg-blue-100 text-blue-600"
-                                : "bg-surface-muted text-text-secondary"
+                              ? "bg-blue-100 text-blue-600"
+                              : "bg-surface-muted text-text-secondary"
                               }`}
                           >
                             <Icon className="h-4 w-4" />
