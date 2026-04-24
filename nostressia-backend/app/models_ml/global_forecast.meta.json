@@ -1,24 +1,24 @@
 {
-  "created_at": "2026-02-22T14:46:26.602309+00:00",
-  "data_hash": "54715fc4f4f2491a4da301fd643010674a093b33b802abf2d0a54a35e922d067",
+  "created_at": "2026-04-24T02:12:25.216316+00:00",
+  "data_hash": "d81c0a1854b5fc3f1ce818414fb8917e8cb37a42ec9dde8a26d8274228c82f88",
   "features": [
     "lag_sp_*",
     "gap_*",
     "dow",
     "behavior_lag_features"
   ],
-  "git_sha": "",
+  "git_sha": "6b5e885c353c2be92412cad0fda8fc25589e4268",
   "horizon_days": 7,
   "metrics": {
-    "latency_p50": 7.344100005866494,
-    "latency_p90": 20.038260001456365,
-    "latency_p95": 22.238944993296155,
-    "latency_p99": 50.60076799811196,
-    "rows": 300.0,
-    "top_test_acc": 0.75,
-    "top_test_f1": 0.7887323943661971
+    "latency_p50": 4.420156499975292,
+    "latency_p90": 4.988166599997612,
+    "latency_p95": 5.00713415000007,
+    "latency_p99": 5.151226600002019,
+    "rows": 516.0,
+    "top_test_acc": 0.8,
+    "top_test_f1": 0.8823529411764706
   },
-  "mlflow_run_id": "ac410ad8373d47ebad7ba561418b4c6f",
-  "trained_at": "2026-02-22T14:46:26.602309+00:00",
+  "mlflow_run_id": "f908323dc27b4f948e11534e347e3f9b",
+  "trained_at": "2026-04-24T02:12:25.216316+00:00",
   "version": "global-forecast-v1"
 }
