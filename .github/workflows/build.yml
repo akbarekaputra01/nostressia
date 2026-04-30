@@ -23,8 +23,9 @@ jobs:
           pip install -r nostressia-backend/requirements.txt
       - name: Generate backend coverage report
         run: |
-          pytest nostressia-backend/tests --cov=nostressia-backend/app --cov-report=xml:nostressia-backend/coverage.xml
+          cd nostressia-backend
+          pytest tests --cov=app --cov=main --cov-report=xml:coverage.xml
       - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@v6
+        uses: SonarSource/sonarqube-scan-action@v7
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
