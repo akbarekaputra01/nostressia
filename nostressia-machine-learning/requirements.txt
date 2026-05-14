@@ -8,7 +8,7 @@ nbformat==5.10.4
 nbconvert==7.16.4
 sqlalchemy==2.0.30
 mysql-connector-python==8.4.0
-pymysql==1.1.0
+pymysql==1.1.2
 mlflow==3.9.0
 matplotlib==3.8.4
 seaborn==0.13.2
