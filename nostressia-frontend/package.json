@@ -16,7 +16,7 @@
     "test:integration": "vitest run --config vitest.integration.config.js"
   },
   "dependencies": {
-    "@azure/storage-blob": "^12.27.0",
+    "@azure/storage-blob": "^12.31.0",
     "@headlessui/react": "^2.2.9",
     "@heroicons/react": "^2.2.0",
     "@hookform/resolvers": "^5.2.2",
