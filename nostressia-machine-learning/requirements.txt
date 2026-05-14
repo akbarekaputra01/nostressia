@@ -13,7 +13,7 @@ mlflow==3.9.0
 matplotlib==3.8.4
 seaborn==0.13.2
 python-dotenv==1.0.1
-requests==2.31.0
+requests==2.32.5
 ipykernel==6.29.4
 ipython==8.24.0
 jupyter==1.0.0
